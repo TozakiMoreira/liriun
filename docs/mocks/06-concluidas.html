@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Jarvis — Concluídas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #08090a;
+    --bg-elev: #101113;
+    --bg-elev-2: #16181c;
+    --bg-sidebar: #0b0c0e;
+    --border: #1f2023;
+    --border-strong: #2a2b2f;
+    --text: #f7f8f8;
+    --text-dim: #8a8f98;
+    --text-subtle: #62666d;
+    --accent: #5e6ad2;
+    --accent-hover: #7179d8;
+    --accent-soft: rgba(94, 106, 210, 0.12);
+    --danger: #eb5757;
+    --warning: #f2994a;
+    --success: #27ae60;
+    --success-soft: rgba(39, 174, 96, 0.12);
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+
+  /* SIDEBAR */
+  .sidebar { background: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 16px 12px; }
+  .sidebar-brand { display: flex; align-items: center; gap: 10px; padding: 6px 8px; margin-bottom: 20px; }
+  .logo { width: 24px; height: 24px; border-radius: 6px; background: linear-gradient(135deg, #5e6ad2, #8b5cf6); display: grid; place-items: center; font-size: 12px; font-weight: 700; letter-spacing: -0.3px; }
+  .sidebar-brand-name { font-size: 13px; font-weight: 600; letter-spacing: -0.2px; }
+  .sidebar-section-label { font-size: 11px; color: var(--text-subtle); padding: 6px 8px; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 500; }
+  .sidebar-nav { display: flex; flex-direction: column; gap: 1px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 7px 8px; border-radius: 5px; color: var(--text-dim); text-decoration: none; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.1s, color 0.1s; }
+  .nav-item i { width: 14px; font-size: 12px; text-align: center; }
+  .nav-item:hover { background: var(--bg-elev); color: var(--text); }
+  .nav-item.active { background: var(--bg-elev); color: var(--text); }
+  .nav-item.active i { color: var(--accent); }
+  .nav-item .count { margin-left: auto; font-size: 11px; color: var(--text-subtle); font-variant-numeric: tabular-nums; }
+  .sidebar-footer { margin-top: auto; border-top: 1px solid var(--border); padding-top: 12px; }
+  .user-pill { display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 5px; cursor: pointer; transition: background 0.1s; }
+  .user-pill:hover { background: var(--bg-elev); }
+  .avatar { width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6, #ec4899); display: grid; place-items: center; font-size: 11px; font-weight: 600; color: #fff; }
+  .user-name { font-size: 13px; font-weight: 500; flex: 1; }
+  .user-pill i { color: var(--text-subtle); font-size: 12px; }
+
+  /* MAIN */
+  .main { display: flex; flex-direction: column; min-width: 0; }
+
+  .main-header {
+    display: flex; align-items: center; padding: 14px 32px;
+    border-bottom: 1px solid var(--border); gap: 16px;
+  }
+  .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-dim); flex: 1; }
+  .breadcrumb strong { color: var(--text); font-weight: 500; }
+  .breadcrumb .count-pill { font-size: 11px; padding: 2px 7px; background: var(--bg-elev); border: 1px solid var(--border); border-radius: 999px; color: var(--text-dim); margin-left: 6px; font-variant-numeric: tabular-nums; }
+
+  .toolbar { display: flex; align-items: center; gap: 10px; }
+
+  .period-switcher {
+    display: flex;
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 2px;
+    gap: 2px;
+  }
+
+  .period-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    padding: 5px 12px;
+    border-radius: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.1s, color 0.1s;
+  }
+
+  .period-btn:hover { color: var(--text); }
+  .period-btn.active {
+    background: var(--bg-elev-2);
+    color: var(--text);
+    box-shadow: 0 0 0 1px var(--border-strong) inset;
+  }
+
+  /* Stats strip */
+  .stats-strip {
+    margin: 24px 32px 0;
+    padding: 16px 20px;
+    background:
+      linear-gradient(180deg, var(--success-soft), transparent),
+      var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .stats-icon {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: var(--success-soft); color: var(--success);
+    display: grid; place-items: center; font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .stats-text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stats-title {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .stats-sub {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .stats-big {
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.8px;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    padding-right: 8px;
+  }
+
+  .main-content {
+    flex: 1;
+    padding: 20px 32px 64px;
+    overflow-y: auto;
+  }
+
+  .group { margin-bottom: 24px; }
+
+  .group-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px; margin-bottom: 2px;
+  }
+
+  .group-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-dim);
+  }
+
+  .group-count {
+    font-size: 11px; padding: 2px 7px;
+    border-radius: 999px;
+    background: var(--bg-elev); border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .task-list { display: flex; flex-direction: column; }
+
+  .task {
+    display: grid;
+    grid-template-columns: 24px 1fr auto auto;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+
+  .task:hover { background: var(--bg-elev); }
+  .task:last-child { border-bottom: none; }
+
+  .check-done {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--success-soft);
+    border: 1.5px solid rgba(39, 174, 96, 0.4);
+    color: var(--success);
+    display: grid; place-items: center;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  .task-name {
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-dim);
+    text-decoration: line-through;
+    text-decoration-color: var(--text-subtle);
+    text-decoration-thickness: 1px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .chips { display: flex; gap: 4px; flex-wrap: nowrap; }
+  .chip-cat {
+    font-size: 11px; padding: 2px 8px;
+    background: var(--bg-elev-2); border: 1px solid var(--border);
+    border-radius: 999px; color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  .done-at {
+    font-size: 12px; color: var(--text-subtle);
+    font-variant-numeric: tabular-nums;
+    min-width: 120px; text-align: right;
+    display: flex; align-items: center; gap: 6px;
+    justify-content: flex-end;
+  }
+  .done-at i { font-size: 10px; }
+
+  .empty-state {
+    text-align: center;
+    padding: 80px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .empty-icon {
+    width: 48px; height: 48px; border-radius: 10px;
+    background: var(--bg-elev); border: 1px solid var(--border);
+    display: grid; place-items: center;
+    color: var(--text-subtle); font-size: 18px;
+  }
+
+  .empty-msg { font-size: 14px; color: var(--text-dim); max-width: 320px; line-height: 1.55; }
+</style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" data-testid="sidebar">
+      <div class="sidebar-brand">
+        <div class="logo" aria-hidden="true">J</div>
+        <div class="sidebar-brand-name">Jarvis</div>
+      </div>
+
+      <div class="sidebar-section-label">Principal</div>
+      <nav class="sidebar-nav">
+        <a class="nav-item" data-testid="nav-captura" href="04-captura-rapida.html">
+          <i class="fa-solid fa-bolt"></i>
+          <span>Captura Rápida</span>
+        </a>
+        <a class="nav-item" data-testid="nav-tarefas" href="05-minhas-tarefas.html">
+          <i class="fa-solid fa-list-check"></i>
+          <span>Minhas Tarefas</span>
+          <span class="count">7</span>
+        </a>
+        <a class="nav-item active" data-testid="nav-concluidas">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>Concluídas</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-section-label" style="margin-top: 16px;">Ajustes</div>
+      <nav class="sidebar-nav">
+        <a class="nav-item" data-testid="nav-configs" href="#">
+          <i class="fa-solid fa-gear"></i>
+          <span>Configurações</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-pill" data-testid="user-menu">
+          <div class="avatar">P</div>
+          <div class="user-name">Pedro</div>
+          <i class="fa-solid fa-right-from-bracket" title="Sair"></i>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="main-header">
+        <div class="breadcrumb">
+          <i class="fa-solid fa-circle-check" style="color: var(--success); font-size: 11px;"></i>
+          <strong>Concluídas</strong>
+          <span class="count-pill" data-testid="completed-count">12 nesta semana</span>
+        </div>
+
+        <div class="toolbar">
+          <div class="period-switcher" data-testid="period-switcher" role="tablist">
+            <button class="period-btn" data-testid="period-hoje">Hoje</button>
+            <button class="period-btn active" data-testid="period-semana">Semana</button>
+            <button class="period-btn" data-testid="period-mes">Mês</button>
+          </div>
+        </div>
+      </header>
+
+      <div class="stats-strip" data-testid="stats-strip">
+        <div class="stats-icon"><i class="fa-solid fa-trophy"></i></div>
+        <div class="stats-big">12</div>
+        <div class="stats-text">
+          <div class="stats-title">Tarefas concluídas nesta semana</div>
+          <div class="stats-sub">Bom ritmo, Pedro. Mais quatro e você bate a semana passada.</div>
+        </div>
+      </div>
+
+      <div class="main-content">
+        <!-- HOJE -->
+        <section class="group" data-testid="group-hoje">
+          <div class="group-header">
+            <span class="group-title">Hoje · Domingo, 19 abr</span>
+            <span class="group-count">3</span>
+          </div>
+          <div class="task-list">
+            <div class="task" data-testid="done-1">
+              <div class="check-done"><i class="fa-solid fa-check"></i></div>
+              <div class="task-name">Revisar relatório de vendas</div>
+              <div class="chips"><span class="chip-cat">Trabalho</span></div>
+              <div class="done-at"><i class="fa-regular fa-circle-check"></i> 14:32</div>
+            </div>
+            <div class="task" data-testid="done-2">
+              <div class="check-done"><i class="fa-solid fa-check"></i></div>
+              <div class="task-name">Trocar lâmpada do quarto</div>
+              <div class="chips"><span class="chip-cat">Casa</span></div>
+              <div class="done-at"><i class="fa-regular fa-circle-check"></i> 11:15</div>
+            </div>
+            <div class="task" data-testid="done-3">
+              <div class="check-done"><i class="fa-solid fa-check"></i></div>
+              <div class="task-name">Responder email do coordenador</div>
+              <div class="chips"><span class="chip-cat">Faculdade</span></div>
+              <div class="done-at"><i class="fa-regular fa-circle-check"></i> 09:48</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ONTEM -->
+        <section class="group" data-testid="group-ontem">
+          <div class="group-header">
+            <span class="group-title">Ontem · Sábado, 18 abr</span>
+            <span class="group-count">4</span>
+          </div>
+          <div class="task-list">
+            <div class="task" data-testid="done-4">
+              <div class="check-done"><i class="fa-solid fa-check"></i></div>
+              <div class="task-name">Comprar ração do gato</div>
+              <div class="chips"><span class="chip-cat">Compras</span><span class="chip-cat">Casa</span></div>
+              <div class="done-at"><i class="fa-regular fa-circle-check"></i> 17:22</div>
+            </div>
+            <div class="task" data-testid="done-5">
+              <div class="check-done"><i class="fa-solid fa-check"></i></div>
+              <div class="task-name">Estudar cálculo (integrais)</div>
+              <div class="chips"><span class="chip-cat">Faculdade</span></div>
+              <div class="done-at"><i class="fa-regular fa-circle-check"></i> 16:05</div>
+            </div>
+            <div class="task" data-testid="done-6">
+              <div class="check-done"><i class="fa-solid fa-check"></i></div>
+              <div class="task-name">Arrumar a estante da sala</div>
+              <div class="chips"><span class="chip-cat">Casa</span></div>
+              <div class="done-at"><i class="fa-regular fa-circle-check"></i> 15:40</div>
+            </div>
+            <div class="task" data-testid="done-7">
+              <div class="check-done"><i class="fa-solid fa-check"></i></div>
+              <div class="task-name">Marcar exame de sangue</div>
+              <div class="chips"><span class="chip-cat">Pessoal</span></div>
+              <div class="done-at"><i class="fa-regular fa-circle-check"></i> 10:11</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- QUINTA -->
+        <section class="group" data-testid="group-quinta">
+          <div class="group-header">
+            <span class="group-title">Quinta, 16 abr</span>
+            <span class="group-count">3</span>
+          </div>
+          <div class="task-list">
+            <div class="task" data-testid="done-8">
+              <div class="check-done"><i class="fa-solid fa-check"></i></div>
+              <div class="task-name">Enviar proposta pro cliente</div>
+              <div class="chips"><span class="chip-cat">Trabalho</span></div>
+              <div class="done-at"><i class="fa-regular fa-circle-check"></i> 18:00</div>
+            </div>
+            <div class="task" data-testid="done-9">
+              <div class="check-done"><i class="fa-solid fa-check"></i></div>
+              <div class="task-name">Ligar pro suporte da operadora</div>
+              <div class="chips"><span class="chip-cat">Pessoal</span></div>
+              <div class="done-at"><i class="fa-regular fa-circle-check"></i> 14:27</div>
+            </div>
+            <div class="task" data-testid="done-10">
+              <div class="check-done"><i class="fa-solid fa-check"></i></div>
+              <div class="task-name">Pagar conta de luz</div>
+              <div class="chips"><span class="chip-cat">Casa</span></div>
+              <div class="done-at"><i class="fa-regular fa-circle-check"></i> 08:30</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SEGUNDA -->
+        <section class="group" data-testid="group-segunda">
+          <div class="group-header">
+            <span class="group-title">Segunda, 13 abr</span>
+            <span class="group-count">2</span>
+          </div>
+          <div class="task-list">
+            <div class="task" data-testid="done-11">
+              <div class="check-done"><i class="fa-solid fa-check"></i></div>
+              <div class="task-name">Entregar lista de exercícios de POO</div>
+              <div class="chips"><span class="chip-cat">Faculdade</span></div>
+              <div class="done-at"><i class="fa-regular fa-circle-check"></i> 23:45</div>
+            </div>
+            <div class="task" data-testid="done-12">
+              <div class="check-done"><i class="fa-solid fa-check"></i></div>
+              <div class="task-name">Comprar café</div>
+              <div class="chips"><span class="chip-cat">Compras</span></div>
+              <div class="done-at"><i class="fa-regular fa-circle-check"></i> 12:20</div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

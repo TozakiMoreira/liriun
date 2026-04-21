@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Jarvis — Configuração inicial</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #08090a;
+    --bg-elev: #101113;
+    --bg-elev-2: #16181c;
+    --border: #1f2023;
+    --border-strong: #2a2b2f;
+    --text: #f7f8f8;
+    --text-dim: #8a8f98;
+    --text-subtle: #62666d;
+    --accent: #5e6ad2;
+    --accent-hover: #7179d8;
+    --accent-soft: rgba(94, 106, 210, 0.12);
+    --danger: #eb5757;
+    --danger-soft: rgba(235, 87, 87, 0.12);
+  }
+
+  html, body {
+    min-height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    min-height: 100vh;
+    padding: 64px 24px 120px;
+    background:
+      radial-gradient(ellipse 80% 40% at 50% -10%, rgba(94, 106, 210, 0.12), transparent),
+      var(--bg);
+  }
+
+  .container {
+    width: 100%;
+    max-width: 560px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .brand-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: linear-gradient(135deg, #5e6ad2, #8b5cf6);
+    display: grid;
+    place-items: center;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .brand-name {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+    color: var(--text);
+  }
+
+  .step-pill {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--text-dim);
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    letter-spacing: 0.3px;
+  }
+
+  .header h1 {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.6px;
+    margin-bottom: 12px;
+  }
+
+  .header p {
+    color: var(--text-dim);
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .header p strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .section {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .section-head {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .section-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.1px;
+  }
+
+  .section-hint {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .info-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1px solid var(--border-strong);
+    color: var(--text-dim);
+    font-size: 10px;
+    font-weight: 600;
+    font-style: italic;
+    font-family: 'Inter', serif;
+    cursor: help;
+    position: relative;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .info-icon:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .info-icon::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    background: #000;
+    color: var(--text);
+    border: 1px solid var(--border-strong);
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1.5;
+    text-align: left;
+    white-space: pre-line;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+    z-index: 10;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  }
+
+  .info-icon::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: var(--border-strong);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s;
+    z-index: 10;
+  }
+
+  .info-icon:hover::after,
+  .info-icon:hover::before {
+    opacity: 1;
+  }
+
+  .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px 5px 12px;
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border-strong);
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .chip button {
+    background: transparent;
+    border: none;
+    color: var(--text-subtle);
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    padding: 2px;
+    border-radius: 3px;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .chip button:hover {
+    background: var(--danger-soft);
+    color: var(--danger);
+  }
+
+  .inline-input {
+    display: flex;
+    gap: 8px;
+  }
+
+  .inline-input input {
+    flex: 1;
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+  }
+
+  .inline-input input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .inline-input input::placeholder {
+    color: var(--text-subtle);
+  }
+
+  .btn {
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn-secondary {
+    background: var(--bg-elev-2);
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--accent);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    background: var(--accent-hover);
+  }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--text-dim);
+    border: none;
+    font-size: 12px;
+    padding: 6px 0;
+  }
+
+  .btn-ghost:hover {
+    color: var(--text);
+  }
+
+  .prazo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .prazo-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+
+  .prazo-row:hover {
+    border-color: var(--border-strong);
+  }
+
+  .prazo-name {
+    font-size: 13px;
+    font-weight: 500;
+  }
+
+  .prazo-duration {
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .prazo-row button {
+    background: transparent;
+    border: none;
+    color: var(--text-subtle);
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+    padding: 4px 6px;
+    border-radius: 4px;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .prazo-row button:hover {
+    background: var(--danger-soft);
+    color: var(--danger);
+  }
+
+  .prazo-add {
+    display: grid;
+    grid-template-columns: 1fr 140px auto;
+    gap: 8px;
+  }
+
+  .prazo-add input,
+  .prazo-add select {
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+  }
+
+  .prazo-add input:focus,
+  .prazo-add select:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  .footer-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 8px;
+  }
+
+  .footer-actions .primary-group {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-primary-lg {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  .footnote {
+    margin-top: 16px;
+    text-align: center;
+    color: var(--text-subtle);
+    font-size: 11px;
+    letter-spacing: 0.3px;
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <div class="container">
+      <div class="brand-row">
+        <div class="logo" aria-hidden="true">J</div>
+        <div class="brand-name">Jarvis</div>
+        <div class="step-pill" data-testid="onboarding-step">CONFIGURAÇÃO INICIAL</div>
+      </div>
+
+      <div class="header">
+        <h1 data-testid="onboarding-title">Vamos deixar tudo do seu jeito, Pedro.</h1>
+        <p data-testid="jarvis-greeting">
+          Pra eu organizar suas tarefas sem chutar, preciso que você me diga <strong>em quais categorias</strong> encaixa as coisas do seu dia e <strong>quais prazos</strong> costuma usar. Deixei uns modelos prontos aí pra começar rápido — edita o que quiser ou apaga e cria do zero.
+        </p>
+      </div>
+
+      <section class="section" data-testid="onboarding-categories-section">
+        <div class="section-head">
+          <div class="section-title-row">
+            <div class="section-title">Suas categorias</div>
+            <span
+              class="info-icon"
+              data-testid="info-categorias"
+              data-tooltip="Categorias são rótulos que organizam suas tarefas por contexto. Uma mesma tarefa pode ter várias.
+
+Exemplos:
+• &quot;Estudar cálculo&quot; → Faculdade
+• &quot;Comprar caderno&quot; → Faculdade + Compras
+• &quot;Pagar aluguel&quot; → Casa
+
+Quando você usar o modo Jarvis, a IA escolhe entre as categorias que estão aqui — por isso é importante criar as que fazem sentido pra você.">i</span>
+          </div>
+          <div class="section-hint">Uma tarefa pode ter mais de uma. Vai que é lembrete da faculdade e compra ao mesmo tempo.</div>
+        </div>
+
+        <div class="chips" data-testid="onboarding-categories-list">
+          <div class="chip">Trabalho <button aria-label="Remover">×</button></div>
+          <div class="chip">Faculdade <button aria-label="Remover">×</button></div>
+          <div class="chip">Casa <button aria-label="Remover">×</button></div>
+          <div class="chip">Compras <button aria-label="Remover">×</button></div>
+          <div class="chip">Pessoal <button aria-label="Remover">×</button></div>
+        </div>
+
+        <div class="inline-input">
+          <input
+            type="text"
+            placeholder="Nova categoria (ex: Academia, Projetos, Leitura)"
+            data-testid="onboarding-category-input">
+          <button class="btn btn-secondary" data-testid="onboarding-category-add-btn">Adicionar</button>
+        </div>
+      </section>
+
+      <section class="section" data-testid="onboarding-prazos-section">
+        <div class="section-head">
+          <div class="section-title-row">
+            <div class="section-title">Seus prazos</div>
+            <span
+              class="info-icon"
+              data-testid="info-prazos"
+              data-tooltip="Prazos são durações nomeadas que você reutiliza ao criar tarefas — em vez de escolher uma data toda vez, você diz &quot;Essa semana&quot; e o Jarvis calcula a data.
+
+Exemplos:
+• &quot;Hoje&quot; = até 23:59 de hoje
+• &quot;Amanhã&quot; = +1 dia
+• &quot;Essa semana&quot; = +7 dias
+
+O horário final padrão é 23:59, mas você pode mudar ao criar cada tarefa (ex: pagar aluguel até 18:00).">i</span>
+          </div>
+          <div class="section-hint">Durações nomeadas que eu vou usar quando criar tarefas. Horário final padrão é 23:59.</div>
+        </div>
+
+        <div class="prazo-list" data-testid="onboarding-prazos-list">
+          <div class="prazo-row">
+            <span class="prazo-name">Hoje</span>
+            <span class="prazo-duration">até 23:59 de hoje</span>
+            <button aria-label="Remover">×</button>
+          </div>
+          <div class="prazo-row">
+            <span class="prazo-name">Amanhã</span>
+            <span class="prazo-duration">1 dia</span>
+            <button aria-label="Remover">×</button>
+          </div>
+          <div class="prazo-row">
+            <span class="prazo-name">Essa semana</span>
+            <span class="prazo-duration">7 dias</span>
+            <button aria-label="Remover">×</button>
+          </div>
+          <div class="prazo-row">
+            <span class="prazo-name">Esse mês</span>
+            <span class="prazo-duration">30 dias</span>
+            <button aria-label="Remover">×</button>
+          </div>
+          <div class="prazo-row">
+            <span class="prazo-name">Sem prazo</span>
+            <span class="prazo-duration">sem data limite</span>
+            <button aria-label="Remover">×</button>
+          </div>
+        </div>
+
+        <div class="prazo-add">
+          <input
+            type="text"
+            placeholder="Nome do prazo (ex: Próxima sprint)"
+            data-testid="onboarding-prazo-name-input">
+          <select data-testid="onboarding-prazo-duration-select">
+            <option value="" disabled selected>Duração</option>
+            <option value="0">Hoje</option>
+            <option value="1">1 dia</option>
+            <option value="2">2 dias</option>
+            <option value="3">3 dias</option>
+            <option value="7">7 dias</option>
+            <option value="14">14 dias</option>
+            <option value="30">30 dias</option>
+            <option value="null">Sem prazo</option>
+          </select>
+          <button class="btn btn-secondary" data-testid="onboarding-prazo-add-btn">Adicionar</button>
+        </div>
+      </section>
+
+      <div class="footer-actions">
+        <button class="btn btn-ghost" data-testid="onboarding-reset-btn">
+          Começar do zero (limpar tudo)
+        </button>
+        <div class="primary-group">
+          <button class="btn btn-primary btn-primary-lg" data-testid="onboarding-finish-btn">
+            Pronto, pode começar
+          </button>
+        </div>
+      </div>
+
+      <div class="footnote">Você pode ajustar tudo isso depois em Configurações.</div>
+    </div>
+  </main>
+</body>
+</html>

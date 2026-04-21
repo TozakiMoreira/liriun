@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Jarvis — Captura Rápida</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #08090a;
+    --bg-elev: #101113;
+    --bg-elev-2: #16181c;
+    --bg-sidebar: #0b0c0e;
+    --border: #1f2023;
+    --border-strong: #2a2b2f;
+    --text: #f7f8f8;
+    --text-dim: #8a8f98;
+    --text-subtle: #62666d;
+    --accent: #5e6ad2;
+    --accent-hover: #7179d8;
+    --accent-soft: rgba(94, 106, 210, 0.12);
+    --danger: #eb5757;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app {
+    display: grid;
+    grid-template-columns: 232px 1fr;
+    min-height: 100vh;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    background: var(--bg-sidebar);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 16px 12px;
+  }
+
+  .sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    margin-bottom: 20px;
+  }
+
+  .logo {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #5e6ad2, #8b5cf6);
+    display: grid;
+    place-items: center;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+
+  .sidebar-brand-name {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: -0.2px;
+  }
+
+  .sidebar-section-label {
+    font-size: 11px;
+    color: var(--text-subtle);
+    padding: 6px 8px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 8px;
+    border-radius: 5px;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.1s, color 0.1s;
+  }
+
+  .nav-item i {
+    width: 14px;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .nav-item:hover {
+    background: var(--bg-elev);
+    color: var(--text);
+  }
+
+  .nav-item.active {
+    background: var(--bg-elev);
+    color: var(--text);
+  }
+
+  .nav-item.active i {
+    color: var(--accent);
+  }
+
+  .sidebar-footer {
+    margin-top: auto;
+    border-top: 1px solid var(--border);
+    padding-top: 12px;
+  }
+
+  .user-pill {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+
+  .user-pill:hover {
+    background: var(--bg-elev);
+  }
+
+  .avatar {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .user-name {
+    font-size: 13px;
+    font-weight: 500;
+    flex: 1;
+  }
+
+  .user-pill i {
+    color: var(--text-subtle);
+    font-size: 12px;
+  }
+
+  .user-pill:hover i {
+    color: var(--text-dim);
+  }
+
+  /* MAIN */
+  .main {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .main-header {
+    display: flex;
+    align-items: center;
+    padding: 14px 32px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+  }
+
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  .breadcrumb strong {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .main-content {
+    flex: 1;
+    display: grid;
+    place-items: center;
+    padding: 48px 32px;
+    background:
+      radial-gradient(ellipse 60% 30% at 50% 0%, rgba(94, 106, 210, 0.08), transparent),
+      var(--bg);
+  }
+
+  .hub {
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    align-items: center;
+  }
+
+  .hub-greeting {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .hub-greeting h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.8px;
+    line-height: 1.25;
+  }
+
+  .subgreeting {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-dim);
+    letter-spacing: -0.3px;
+  }
+
+  .hub-greeting p {
+    color: var(--text-dim);
+    font-size: 14px;
+    max-width: 440px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  .mode-picker {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    width: 100%;
+  }
+
+  .mode-card {
+    background: var(--bg-elev);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    cursor: pointer;
+    transition: border-color 0.15s, transform 0.1s, background 0.15s;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .mode-card:hover {
+    border-color: var(--border-strong);
+    background: var(--bg-elev-2);
+  }
+
+  .mode-card.jarvis:hover {
+    border-color: var(--accent);
+  }
+
+  .mode-card.jarvis::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 100% 0%, rgba(94, 106, 210, 0.08), transparent);
+    pointer-events: none;
+  }
+
+  .mode-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: relative;
+  }
+
+  .mode-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: var(--bg-elev-2);
+    border: 1px solid var(--border-strong);
+    display: grid;
+    place-items: center;
+    color: var(--text-dim);
+    font-size: 15px;
+  }
+
+  .mode-card.jarvis .mode-icon {
+    background: var(--accent-soft);
+    border-color: rgba(94, 106, 210, 0.3);
+    color: var(--accent);
+  }
+
+  .badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 7px;
+    border-radius: 4px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    letter-spacing: 0.4px;
+  }
+
+  .mode-title {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    position: relative;
+  }
+
+  .mode-card.manual .mode-title {
+    color: var(--text-dim);
+  }
+
+  .mode-card.jarvis .mode-title {
+    color: var(--accent);
+  }
+
+  .mode-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.55;
+    position: relative;
+  }
+
+  .mode-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 6px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+    position: relative;
+  }
+
+  .mode-action {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .mode-card:hover .mode-action {
+    color: var(--accent);
+  }
+
+  .kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border: 1px solid var(--border-strong);
+    border-radius: 4px;
+    background: var(--bg-elev-2);
+    font-family: 'SF Mono', ui-monospace, monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .hint-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-subtle);
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar" data-testid="sidebar">
+      <div class="sidebar-brand">
+        <div class="logo" aria-hidden="true">J</div>
+        <div class="sidebar-brand-name">Jarvis</div>
+      </div>
+
+      <div class="sidebar-section-label">Principal</div>
+      <nav class="sidebar-nav">
+        <a class="nav-item active" data-testid="nav-captura">
+          <i class="fa-solid fa-bolt"></i>
+          <span>Captura Rápida</span>
+        </a>
+        <a class="nav-item" data-testid="nav-tarefas" href="#">
+          <i class="fa-solid fa-list-check"></i>
+          <span>Minhas Tarefas</span>
+        </a>
+        <a class="nav-item" data-testid="nav-concluidas" href="#">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>Concluídas</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-section-label" style="margin-top: 16px;">Ajustes</div>
+      <nav class="sidebar-nav">
+        <a class="nav-item" data-testid="nav-configs" href="#">
+          <i class="fa-solid fa-gear"></i>
+          <span>Configurações</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-pill" data-testid="user-menu">
+          <div class="avatar">P</div>
+          <div class="user-name">Pedro</div>
+          <i class="fa-solid fa-right-from-bracket" title="Sair"></i>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="main-header">
+        <div class="breadcrumb">
+          <i class="fa-solid fa-bolt" style="color: var(--accent); font-size: 11px;"></i>
+          <strong>Captura Rápida</strong>
+        </div>
+      </header>
+
+      <div class="main-content">
+        <div class="hub">
+          <div class="hub-greeting">
+            <h1 data-testid="jarvis-greeting">Boa tarde, Pedro</h1>
+            <div class="subgreeting" data-testid="jarvis-prompt">O que você precisa anotar?</div>
+            <p>Escolha como quer criar a tarefa. Manual pra quando você já sabe tudo, Jarvis pra quando quer que eu organize pra você.</p>
+          </div>
+
+          <div class="mode-picker" data-testid="mode-picker">
+            <button class="mode-card manual" data-testid="mode-manual-btn">
+              <div class="mode-card-head">
+                <div class="mode-icon">
+                  <i class="fa-solid fa-pen-to-square"></i>
+                </div>
+              </div>
+              <div class="mode-title">Manual</div>
+              <div class="mode-desc">
+                Você preenche os campos na mão: nome, categoria, prazo e prioridade. Rápido e sem surpresas.
+              </div>
+              <div class="mode-footer">
+                <div class="mode-action">
+                  Criar tarefa
+                  <i class="fa-solid fa-arrow-right" style="font-size: 11px;"></i>
+                </div>
+                <span class="kbd">M</span>
+              </div>
+            </button>
+
+            <button class="mode-card jarvis" data-testid="mode-jarvis-btn">
+              <div class="mode-card-head">
+                <div class="mode-icon">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <span class="badge">COM IA</span>
+              </div>
+              <div class="mode-title">Jarvis</div>
+              <div class="mode-desc">
+                Me conta em texto livre o que você precisa fazer. Eu categorizo, defino prazo e te mando pra revisão.
+              </div>
+              <div class="mode-footer">
+                <div class="mode-action">
+                  Deixar com o Jarvis
+                  <i class="fa-solid fa-arrow-right" style="font-size: 11px;"></i>
+                </div>
+                <span class="kbd">J</span>
+              </div>
+            </button>
+          </div>
+
+          <div class="hint-row" data-testid="keyboard-hint">
+            <i class="fa-solid fa-keyboard"></i>
+            <span>Use <span class="kbd">M</span> ou <span class="kbd">J</span> pra começar mais rápido.</span>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

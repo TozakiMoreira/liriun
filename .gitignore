@@ -1,0 +1,39 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDEs
+.vs/
+.vscode/
+.idea/
+*.suo
+*.user
+
+# .NET
+bin/
+obj/
+*.dll
+*.pdb
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Logs
+*.log
+logs/
