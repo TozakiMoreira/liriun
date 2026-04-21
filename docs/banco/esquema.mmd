@@ -1,0 +1,48 @@
+erDiagram
+    USUARIOS ||--o{ CATEGORIAS : possui
+    USUARIOS ||--o{ PRAZOS : possui
+    USUARIOS ||--o{ TAREFAS : possui
+    PRAZOS ||--o{ TAREFAS : define
+    TAREFAS ||--o{ TAREFAS_CATEGORIAS : tem
+    CATEGORIAS ||--o{ TAREFAS_CATEGORIAS : tem
+
+    USUARIOS {
+        uuid id PK
+        varchar_100 nome
+        varchar_150 email UK
+        varchar_255 senha_hash
+        timestamp criado_em
+    }
+
+    CATEGORIAS {
+        uuid id PK
+        uuid usuario_id FK
+        varchar_50 nome
+        timestamp criada_em
+    }
+
+    PRAZOS {
+        uuid id PK
+        uuid usuario_id FK
+        varchar_50 nome
+        int duracao_dias "NULL = sem prazo"
+        timestamp criado_em
+    }
+
+    TAREFAS {
+        uuid id PK
+        uuid usuario_id FK
+        varchar_200 nome
+        uuid prazo_id FK "NULL = prazo custom ad-hoc"
+        date data_prazo "NULL = sem prazo"
+        time horario_final "default 23:59"
+        smallint prioridade "1=Urgente 2=Importante 3=Normal 4=Baixa"
+        smallint status "1=Pendente 2=Concluida (Atrasada é computado)"
+        timestamp criada_em
+        timestamp concluida_em "NULL se pendente"
+    }
+
+    TAREFAS_CATEGORIAS {
+        uuid tarefa_id PK_FK
+        uuid categoria_id PK_FK
+    }

@@ -6,7 +6,7 @@ Organizador pessoal de ideias e tarefas com IA.
 
 ```
 Jarvis/
-├── backend/      # API .NET 8 (ASP.NET Core, Clean Architecture)
+├── backend/      # API .NET 10 (ASP.NET Core, Clean Architecture)
 ├── frontend/     # Angular 17+ (standalone, PrimeNG, TailwindCSS, Signals)
 ├── docs/         # Documentação de produto e desenvolvimento
 └── CLAUDE.md     # Contexto do projeto pra Claude Code
@@ -29,7 +29,7 @@ Tudo em `docs/`:
 
 ## Stack
 
-- **Backend:** .NET 8 + ASP.NET Core Web API
+- **Backend:** .NET 10 (LTS) + ASP.NET Core Web API
 - **Frontend:** Angular 17+ + PrimeNG + TailwindCSS
 - **Banco:** Supabase (PostgreSQL)
 - **IA:** Google Gemini API

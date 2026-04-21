@@ -31,33 +31,33 @@ Documento de acompanhamento do desenvolvimento do Jarvis, do zero até estar pub
 
 ## Fase 2 — Setup de ambiente
 
-- [ ] Criar repositório Git
-- [ ] Configurar projeto Supabase (banco PostgreSQL)
+- [x] Criar repositório Git
+- [x] Configurar projeto Supabase (banco PostgreSQL)
 - [ ] Obter chave da Google Gemini API
-- [ ] Criar projeto .NET 8 Web API com Clean Architecture
+- [x] Criar projeto .NET 10 Web API com Clean Architecture
 - [ ] Criar projeto Angular 17+ com standalone components
 - [ ] Configurar PrimeNG + TailwindCSS no front
 - [ ] Configurar ESLint/Prettier (front) e analyzers (back)
-- [ ] Configurar variáveis de ambiente (.env, appsettings, secrets)
-- [ ] README inicial com instruções de setup local
+- [x] Configurar variáveis de ambiente (user-secrets pra dev)
+- [x] README inicial com instruções de setup local
 
 ## Fase 3 — Backend
 
-- [ ] Migrations/schema inicial do banco (tabelas das entidades)
-- [ ] Camada de Domain (entidades, enums de prioridade/status)
-- [ ] Camada de Application (use cases, interfaces)
-- [ ] Camada de Infrastructure (repositories, EF Core, cliente Gemini)
-- [ ] Camada de API (controllers, middleware, validação)
+- [x] Migrations/schema inicial do banco (tabelas das entidades)
+- [x] Camada de Domain (entidades, enums de prioridade/status)
+- [~] Camada de Application (use cases, interfaces) — Auth pronto; falta Categorias/Prazos/Tarefas/IA
+- [~] Camada de Infrastructure (repositories, EF Core) — repos e auth prontos; falta cliente Gemini
+- [~] Camada de API (controllers, middleware, validação) — AuthController + middleware prontos
 - [ ] Setup de `IStringLocalizer` (ASP.NET) com resource files — mensagens de erro, validação e respostas do Jarvis via chave de tradução (V1 preenche só pt-BR)
-- [ ] Endpoints de autenticação (cadastro inicial, login só com senha)
+- [x] Endpoints de autenticação (cadastro + login + JWT)
 - [ ] CRUD de categorias
-- [ ] CRUD de tags
-- [ ] CRUD de anotações (com relação N:N com tags)
+- [ ] CRUD de prazos
+- [ ] CRUD de tarefas (com relação N:N com categorias)
 - [ ] Endpoint de análise pela IA (recebe texto, retorna sugestões)
-- [ ] Endpoint de conclusão/reabertura de anotações
+- [ ] Endpoint de conclusão de tarefas
 - [ ] Filtros no listagem (pendentes, concluídas por período)
-- [ ] Tratamento de erros global
-- [ ] Logs estruturados
+- [x] Tratamento de erros global (ExceptionHandlingMiddleware)
+- [ ] Logs estruturados (Serilog)
 
 ## Fase 4 — Frontend
 
