@@ -40,6 +40,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+const string CorsFront = "FrontDev";
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy(CorsFront, policy =>
+    {
+        policy
+            .WithOrigins("http://localhost:4200")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 WebApplication app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -48,7 +60,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+app.UseCors(CorsFront);
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

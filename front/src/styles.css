@@ -1,0 +1,67 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import "primeicons/primeicons.css";
+@import "@fortawesome/fontawesome-free/css/all.min.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background: theme("colors.bg.DEFAULT");
+    color: theme("colors.text.DEFAULT");
+    font-family: theme("fontFamily.sans");
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  body {
+    @apply bg-bg text-text;
+  }
+}
+
+@layer components {
+  .input-base {
+    @apply bg-bg-elev border border-border text-text rounded px-3 py-2.5 text-sm transition-colors;
+    @apply hover:border-border-strong focus:outline-none focus:border-accent focus:bg-bg-input;
+  }
+
+  .input-base::placeholder {
+    color: theme("colors.text.subtle");
+  }
+
+  .btn-base {
+    @apply rounded px-4 py-2.5 text-sm font-medium cursor-pointer border border-transparent transition-colors;
+  }
+
+  .btn-primary {
+    @apply btn-base bg-accent text-white hover:bg-accent-hover active:translate-y-px;
+  }
+
+  .btn-secondary {
+    @apply btn-base bg-bg-elev text-text border-border hover:border-border-strong;
+  }
+
+  .btn-danger {
+    @apply btn-base bg-danger text-white hover:opacity-90;
+  }
+
+  .field-label {
+    @apply text-xs font-medium text-text-dim;
+  }
+
+  .card-elev {
+    @apply bg-bg-elev border border-border rounded-lg;
+  }
+}
