@@ -14,13 +14,13 @@ public partial class UsuarioRepository : IUsuarioRepository
         _db = db;
     }
 
-    public async Task AdicionarAsync(Usuario usuario, CancellationToken ct = default)
+    public async Task Adicionar(Usuario usuario, CancellationToken ct = default)
     {
         await _db.Usuarios.AddAsync(usuario, ct);
         await _db.SaveChangesAsync(ct);
     }
 
-    public async Task AtualizarAsync(Usuario usuario, CancellationToken ct = default)
+    public async Task Atualizar(Usuario usuario, CancellationToken ct = default)
     {
         _db.Usuarios.Update(usuario);
         await _db.SaveChangesAsync(ct);

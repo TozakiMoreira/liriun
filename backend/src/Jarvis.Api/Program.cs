@@ -1,11 +1,13 @@
 using System.Text;
+using Jarvis.Api.Auth;
 using Jarvis.Api.Middlewares;
+using Jarvis.Application.Interfaces.Auth;
 using Jarvis.Application.IoC;
 using Jarvis.Infra.IoC;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
@@ -13,10 +15,13 @@ builder.Services.AddOpenApi();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
 
-var jwtSecret = builder.Configuration["Jwt:Secret"]
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUsuarioLogado, UsuarioLogadoContext>();
+
+string jwtSecret = builder.Configuration["Jwt:Secret"]
     ?? throw new InvalidOperationException("Jwt:Secret não configurada");
-var jwtIssuer = builder.Configuration["Jwt:Issuer"];
-var jwtAudience = builder.Configuration["Jwt:Audience"];
+string? jwtIssuer = builder.Configuration["Jwt:Issuer"];
+string? jwtAudience = builder.Configuration["Jwt:Audience"];
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -35,7 +40,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {

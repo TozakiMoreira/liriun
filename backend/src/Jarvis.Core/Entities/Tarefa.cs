@@ -99,7 +99,7 @@ public class Tarefa
         if (!DataPrazo.HasValue)
             return StatusTarefa.Pendente;
 
-        var limite = DataPrazo.Value.Add(HorarioFinal);
+        DateTime limite = DataPrazo.Value.Add(HorarioFinal);
         return agora > limite ? StatusTarefa.Atrasada : StatusTarefa.Pendente;
     }
 }

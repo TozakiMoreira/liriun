@@ -6,23 +6,23 @@ namespace Jarvis.Infra.Repositories;
 
 public partial class TarefaRepository
 {
-    public Task<Tarefa?> ObterPorIdAsync(Guid id, Guid usuarioId, CancellationToken ct = default)
+    public Task<Tarefa?> ObterPorId(Guid id, Guid usuarioId, CancellationToken ct = default)
         => _db.Tarefas
-            .Include(t => t.Categorias)
+            .Include(t => t.Categorias).ThenInclude(tc => tc.Categoria)
             .FirstOrDefaultAsync(t => t.Id == id && t.UsuarioId == usuarioId, ct);
 
-    public async Task<IReadOnlyList<Tarefa>> ListarPendentesAsync(Guid usuarioId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<Tarefa>> ListarPendentes(Guid usuarioId, CancellationToken ct = default)
         => await _db.Tarefas.AsNoTracking()
-            .Include(t => t.Categorias)
+            .Include(t => t.Categorias).ThenInclude(tc => tc.Categoria)
             .Where(t => t.UsuarioId == usuarioId && t.Status == StatusTarefa.Pendente)
             .OrderBy(t => t.DataPrazo ?? DateTime.MaxValue)
             .ThenBy(t => t.Prioridade)
             .ToListAsync(ct);
 
-    public async Task<IReadOnlyList<Tarefa>> ListarConcluidasAsync(Guid usuarioId, DateTime? de, DateTime? ate, CancellationToken ct = default)
+    public async Task<IReadOnlyList<Tarefa>> ListarConcluidas(Guid usuarioId, DateTime? de, DateTime? ate, CancellationToken ct = default)
     {
         var query = _db.Tarefas.AsNoTracking()
-            .Include(t => t.Categorias)
+            .Include(t => t.Categorias).ThenInclude(tc => tc.Categoria)
             .Where(t => t.UsuarioId == usuarioId && t.Status == StatusTarefa.Concluida);
 
         if (de.HasValue)

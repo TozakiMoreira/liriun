@@ -20,17 +20,17 @@ public class CadastrarUsuarioUseCase
         _jwt = jwt;
     }
 
-    public async Task<AutenticacaoViewModel> ExecutarAsync(CadastrarUsuarioInput input, CancellationToken ct = default)
+    public async Task<AutenticacaoViewModel> Executar(CadastrarUsuarioInput input, CancellationToken ct = default)
     {
-        if (await _usuarios.ExisteEmailAsync(input.Email, ct))
+        if (await _usuarios.ExisteEmail(input.Email, ct))
             throw new ApplicationLayerException("Já existe um usuário com esse email", 409);
 
-        var senhaHash = _hasher.Hash(input.Senha);
-        var usuario = new Usuario(input.Nome, input.Email, senhaHash);
+        string senhaHash = _hasher.Hash(input.Senha);
+        Usuario usuario = new(input.Nome, input.Email, senhaHash);
 
-        await _usuarios.AdicionarAsync(usuario, ct);
+        await _usuarios.Adicionar(usuario, ct);
 
-        var (token, expira) = _jwt.Gerar(usuario);
+        (string token, DateTime expira) = _jwt.Gerar(usuario);
 
         return new AutenticacaoViewModel
         {

@@ -14,7 +14,7 @@ public class ExceptionHandlingMiddleware
         _logger = logger;
     }
 
-    public async Task InvokeAsync(HttpContext context)
+    public async Task Invoke(HttpContext context)
     {
         try
         {
@@ -22,21 +22,21 @@ public class ExceptionHandlingMiddleware
         }
         catch (DomainException ex)
         {
-            await EscreverErroAsync(context, ex.StatusCode, ex.ErrorCode, ex.Message);
+            await EscreverErro(context, ex.StatusCode, ex.ErrorCode, ex.Message);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Erro não tratado");
-            await EscreverErroAsync(context, 500, "ERRO_INTERNO", "Erro inesperado. Tente novamente.");
+            await EscreverErro(context, 500, "ERRO_INTERNO", "Erro inesperado. Tente novamente.");
         }
     }
 
-    private static Task EscreverErroAsync(HttpContext context, int statusCode, string errorCode, string mensagem)
+    private static Task EscreverErro(HttpContext context, int statusCode, string errorCode, string mensagem)
     {
         context.Response.StatusCode = statusCode;
         context.Response.ContentType = "application/json";
 
-        var payload = JsonSerializer.Serialize(new
+        string payload = JsonSerializer.Serialize(new
         {
             errorCode,
             mensagem

@@ -13,19 +13,19 @@ public partial class CategoriaRepository : ICategoriaRepository
         _db = db;
     }
 
-    public async Task AdicionarAsync(Categoria categoria, CancellationToken ct = default)
+    public async Task Adicionar(Categoria categoria, CancellationToken ct = default)
     {
         await _db.Categorias.AddAsync(categoria, ct);
         await _db.SaveChangesAsync(ct);
     }
 
-    public async Task AtualizarAsync(Categoria categoria, CancellationToken ct = default)
+    public async Task Atualizar(Categoria categoria, CancellationToken ct = default)
     {
         _db.Categorias.Update(categoria);
         await _db.SaveChangesAsync(ct);
     }
 
-    public async Task RemoverAsync(Categoria categoria, CancellationToken ct = default)
+    public async Task Remover(Categoria categoria, CancellationToken ct = default)
     {
         _db.Categorias.Remove(categoria);
         await _db.SaveChangesAsync(ct);

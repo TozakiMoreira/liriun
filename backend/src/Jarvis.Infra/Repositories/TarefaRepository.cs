@@ -14,7 +14,7 @@ public partial class TarefaRepository : ITarefaRepository
         _db = db;
     }
 
-    public async Task AdicionarAsync(Tarefa tarefa, IEnumerable<Guid> categoriaIds, CancellationToken ct = default)
+    public async Task Adicionar(Tarefa tarefa, IEnumerable<Guid> categoriaIds, CancellationToken ct = default)
     {
         await _db.Tarefas.AddAsync(tarefa, ct);
 
@@ -24,7 +24,7 @@ public partial class TarefaRepository : ITarefaRepository
         await _db.SaveChangesAsync(ct);
     }
 
-    public async Task AtualizarAsync(Tarefa tarefa, IEnumerable<Guid> categoriaIds, CancellationToken ct = default)
+    public async Task Atualizar(Tarefa tarefa, IEnumerable<Guid> categoriaIds, CancellationToken ct = default)
     {
         _db.Tarefas.Update(tarefa);
 
@@ -40,13 +40,13 @@ public partial class TarefaRepository : ITarefaRepository
         await _db.SaveChangesAsync(ct);
     }
 
-    public async Task ConcluirAsync(Tarefa tarefa, CancellationToken ct = default)
+    public async Task Concluir(Tarefa tarefa, CancellationToken ct = default)
     {
         _db.Tarefas.Update(tarefa);
         await _db.SaveChangesAsync(ct);
     }
 
-    public async Task RemoverAsync(Tarefa tarefa, CancellationToken ct = default)
+    public async Task Remover(Tarefa tarefa, CancellationToken ct = default)
     {
         _db.Tarefas.Remove(tarefa);
         await _db.SaveChangesAsync(ct);

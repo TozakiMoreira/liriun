@@ -2,6 +2,7 @@ using FluentAssertions;
 using Jarvis.Application.InputModels.Auth;
 using Jarvis.Application.Interfaces.Auth;
 using Jarvis.Application.UseCases.Auth;
+using Jarvis.Application.ViewModels.Auth;
 using Jarvis.Core.Entities;
 using Jarvis.Core.Exceptions;
 using Jarvis.Core.Interfaces.Repositories;
@@ -20,14 +21,14 @@ public class LoginUseCaseTests
     [Fact]
     public async Task Retorna_token_quando_credenciais_corretas()
     {
-        var usuario = new Usuario("Pedro", "pedro@ex.com", "hash-valido");
-        _usuarios.Setup(r => r.ObterPorEmailAsync("pedro@ex.com", It.IsAny<CancellationToken>()))
+        Usuario usuario = new("Pedro", "pedro@ex.com", "hash-valido");
+        _usuarios.Setup(r => r.ObterPorEmail("pedro@ex.com", It.IsAny<CancellationToken>()))
             .ReturnsAsync(usuario);
         _hasher.Setup(h => h.Verificar("senha1234", "hash-valido")).Returns(true);
         _jwt.Setup(j => j.Gerar(usuario))
             .Returns(("token-fake", DateTime.UtcNow.AddHours(24)));
 
-        var result = await Criar().ExecutarAsync(new LoginInput("pedro@ex.com", "senha1234"));
+        AutenticacaoViewModel result = await Criar().Executar(new LoginInput("pedro@ex.com", "senha1234"));
 
         result.Token.Should().Be("token-fake");
         result.UsuarioId.Should().Be(usuario.Id);
@@ -36,10 +37,10 @@ public class LoginUseCaseTests
     [Fact]
     public async Task Lanca_401_quando_usuario_nao_existe()
     {
-        _usuarios.Setup(r => r.ObterPorEmailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        _usuarios.Setup(r => r.ObterPorEmail(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Usuario?)null);
 
-        var act = () => Criar().ExecutarAsync(new LoginInput("nao@existe.com", "senha1234"));
+        Func<Task> act = () => Criar().Executar(new LoginInput("nao@existe.com", "senha1234"));
 
         (await act.Should().ThrowAsync<ApplicationLayerException>())
             .Which.StatusCode.Should().Be(401);
@@ -48,12 +49,12 @@ public class LoginUseCaseTests
     [Fact]
     public async Task Lanca_401_quando_senha_invalida()
     {
-        var usuario = new Usuario("Pedro", "pedro@ex.com", "hash-valido");
-        _usuarios.Setup(r => r.ObterPorEmailAsync("pedro@ex.com", It.IsAny<CancellationToken>()))
+        Usuario usuario = new("Pedro", "pedro@ex.com", "hash-valido");
+        _usuarios.Setup(r => r.ObterPorEmail("pedro@ex.com", It.IsAny<CancellationToken>()))
             .ReturnsAsync(usuario);
         _hasher.Setup(h => h.Verificar(It.IsAny<string>(), It.IsAny<string>())).Returns(false);
 
-        var act = () => Criar().ExecutarAsync(new LoginInput("pedro@ex.com", "senha-errada"));
+        Func<Task> act = () => Criar().Executar(new LoginInput("pedro@ex.com", "senha-errada"));
 
         (await act.Should().ThrowAsync<ApplicationLayerException>())
             .Which.StatusCode.Should().Be(401);

@@ -1,6 +1,7 @@
 using Jarvis.Application.InputModels.Auth;
 using Jarvis.Application.Interfaces.Auth;
 using Jarvis.Application.ViewModels.Auth;
+using Jarvis.Core.Entities;
 using Jarvis.Core.Exceptions;
 using Jarvis.Core.Interfaces.Repositories;
 
@@ -19,14 +20,14 @@ public class LoginUseCase
         _jwt = jwt;
     }
 
-    public async Task<AutenticacaoViewModel> ExecutarAsync(LoginInput input, CancellationToken ct = default)
+    public async Task<AutenticacaoViewModel> Executar(LoginInput input, CancellationToken ct = default)
     {
-        var usuario = await _usuarios.ObterPorEmailAsync(input.Email, ct);
+        Usuario? usuario = await _usuarios.ObterPorEmail(input.Email, ct);
 
         if (usuario is null || !_hasher.Verificar(input.Senha, usuario.SenhaHash))
             throw new ApplicationLayerException("Email ou senha inválidos", 401);
 
-        var (token, expira) = _jwt.Gerar(usuario);
+        (string token, DateTime expira) = _jwt.Gerar(usuario);
 
         return new AutenticacaoViewModel
         {

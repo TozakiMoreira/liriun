@@ -45,17 +45,17 @@ Documento de acompanhamento do desenvolvimento do Jarvis, do zero até estar pub
 
 - [x] Migrations/schema inicial do banco (tabelas das entidades)
 - [x] Camada de Domain (entidades, enums de prioridade/status)
-- [~] Camada de Application (use cases, interfaces) — Auth pronto; falta Categorias/Prazos/Tarefas/IA
-- [~] Camada de Infrastructure (repositories, EF Core) — repos e auth prontos; falta cliente Gemini
-- [~] Camada de API (controllers, middleware, validação) — AuthController + middleware prontos
+- [~] Camada de Application (use cases, interfaces) — Auth + Categorias + Prazos + Tarefas prontos; falta IA (adiada)
+- [~] Camada de Infrastructure (repositories, EF Core) — repos e auth prontos; falta cliente Gemini (adiado)
+- [x] Camada de API (controllers, middleware, validação) — Auth/Categorias/Prazos/Tarefas + middleware prontos
 - [ ] Setup de `IStringLocalizer` (ASP.NET) com resource files — mensagens de erro, validação e respostas do Jarvis via chave de tradução (V1 preenche só pt-BR)
 - [x] Endpoints de autenticação (cadastro + login + JWT)
-- [ ] CRUD de categorias
-- [ ] CRUD de prazos
-- [ ] CRUD de tarefas (com relação N:N com categorias)
-- [ ] Endpoint de análise pela IA (recebe texto, retorna sugestões)
-- [ ] Endpoint de conclusão de tarefas
-- [ ] Filtros no listagem (pendentes, concluídas por período)
+- [x] CRUD de categorias
+- [x] CRUD de prazos
+- [x] CRUD de tarefas (com relação N:N com categorias)
+- [ ] Endpoint de análise pela IA (recebe texto, retorna sugestões) — **adiado, V1 manual primeiro**
+- [x] Endpoint de conclusão de tarefas
+- [x] Filtros no listagem (pendentes, concluídas por período)
 - [x] Tratamento de erros global (ExceptionHandlingMiddleware)
 - [ ] Logs estruturados (Serilog)
 

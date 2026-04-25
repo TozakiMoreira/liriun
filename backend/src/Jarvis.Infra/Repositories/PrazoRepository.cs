@@ -13,19 +13,19 @@ public partial class PrazoRepository : IPrazoRepository
         _db = db;
     }
 
-    public async Task AdicionarAsync(Prazo prazo, CancellationToken ct = default)
+    public async Task Adicionar(Prazo prazo, CancellationToken ct = default)
     {
         await _db.Prazos.AddAsync(prazo, ct);
         await _db.SaveChangesAsync(ct);
     }
 
-    public async Task AtualizarAsync(Prazo prazo, CancellationToken ct = default)
+    public async Task Atualizar(Prazo prazo, CancellationToken ct = default)
     {
         _db.Prazos.Update(prazo);
         await _db.SaveChangesAsync(ct);
     }
 
-    public async Task RemoverAsync(Prazo prazo, CancellationToken ct = default)
+    public async Task Remover(Prazo prazo, CancellationToken ct = default)
     {
         _db.Prazos.Remove(prazo);
         await _db.SaveChangesAsync(ct);
