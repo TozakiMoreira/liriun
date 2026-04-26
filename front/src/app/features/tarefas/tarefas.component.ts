@@ -15,7 +15,7 @@ interface Grupo {
   standalone: true,
   imports: [CommonModule, TarefaFormComponent],
   template: `
-    <header class="flex items-center px-8 py-3.5 border-b border-border gap-4">
+    <header class="flex items-center px-4 md:px-8 py-3.5 border-b border-border gap-4">
       <div class="flex items-center gap-2 text-[13px] text-text-dim">
         <i class="fa-solid fa-list-check text-accent text-[11px]"></i>
         <strong class="text-text font-medium">Minhas Tarefas</strong>
@@ -35,12 +35,13 @@ interface Grupo {
           (click)="abrirNova()"
         >
           <i class="fa-solid fa-plus text-[10px]"></i>
-          Nova tarefa
+          <span class="hidden sm:inline">Nova tarefa</span>
+          <span class="sm:hidden">Nova</span>
         </button>
       </div>
     </header>
 
-    <div class="flex-1 px-8 py-6 overflow-auto" data-testid="tarefas-page">
+    <div class="flex-1 px-4 md:px-8 py-6 overflow-auto" data-testid="tarefas-page">
       @if (carregando()) {
         <p class="text-text-subtle text-sm">Carregando...</p>
       } @else if (pendentes().length === 0) {
@@ -81,55 +82,80 @@ interface Grupo {
             <div class="flex flex-col">
               @for (t of g.tarefas; track t.id) {
                 <div
-                  class="grid grid-cols-[28px_1fr_auto_auto_auto_auto] items-center gap-3.5 px-3 py-2.5 rounded border-b border-border last:border-b-0 hover:bg-bg-elev group transition-colors"
+                  class="flex flex-col gap-2 md:grid md:grid-cols-[28px_1fr_auto_auto_auto_auto] md:items-center md:gap-3.5 px-3 py-2.5 rounded border-b border-border last:border-b-0 hover:bg-bg-elev group transition-colors"
                   [attr.data-testid]="'task-' + t.id"
                 >
-                  <button
-                    type="button"
-                    class="w-[18px] h-[18px] border-[1.5px] border-border-strong rounded-full grid place-items-center hover:border-accent hover:bg-accent/15 transition-colors"
-                    [attr.data-testid]="'task-' + t.id + '-complete'"
-                    (click)="concluir(t)"
-                    [disabled]="processando().has(t.id)"
-                    title="Concluir"
-                  >
-                    <i class="fa-solid fa-check text-[10px] text-transparent hover:text-accent"></i>
-                  </button>
+                  <div class="flex items-center gap-3 md:contents">
+                    <button
+                      type="button"
+                      class="shrink-0 w-[18px] h-[18px] border-[1.5px] border-border-strong rounded-full grid place-items-center hover:border-accent hover:bg-accent/15 transition-colors"
+                      [attr.data-testid]="'task-' + t.id + '-complete'"
+                      (click)="concluir(t)"
+                      [disabled]="processando().has(t.id)"
+                      title="Concluir"
+                    >
+                      <i class="fa-solid fa-check text-[10px] text-transparent hover:text-accent"></i>
+                    </button>
 
-                  <div class="text-sm font-medium truncate">{{ t.nome }}</div>
+                    <div class="text-sm font-medium truncate flex-1 min-w-0">{{ t.nome }}</div>
 
-                  <div class="flex gap-1 flex-nowrap">
-                    @for (c of t.categorias; track c.id) {
-                      <span
-                        class="text-[11px] px-2 py-0.5 bg-[#16181c] border border-border rounded-full text-text-dim whitespace-nowrap"
-                        >{{ c.nome }}</span
+                    <div class="flex md:hidden gap-0.5 shrink-0">
+                      <button
+                        type="button"
+                        class="w-[28px] h-[28px] rounded grid place-items-center text-text-subtle active:bg-[#16181c]"
+                        title="Editar"
+                        [attr.data-testid]="'task-' + t.id + '-edit-mobile'"
+                        (click)="editar(t)"
                       >
-                    }
+                        <i class="fa-solid fa-pen text-xs"></i>
+                      </button>
+                      <button
+                        type="button"
+                        class="w-[28px] h-[28px] rounded grid place-items-center text-text-subtle active:bg-danger/15 active:text-danger"
+                        title="Excluir"
+                        [attr.data-testid]="'task-' + t.id + '-delete-mobile'"
+                        (click)="excluir(t)"
+                      >
+                        <i class="fa-solid fa-trash text-xs"></i>
+                      </button>
+                    </div>
                   </div>
 
-                  <div
-                    class="flex items-center gap-1.5 text-xs text-text-dim font-medium min-w-[90px]"
-                  >
-                    <span
-                      class="w-2 h-2 rounded-full"
-                      [style.background]="corPrioridade(t.prioridade)"
-                      [style.box-shadow]="
-                        t.prioridade === 1 ? '0 0 8px rgba(235,87,87,0.4)' : 'none'
-                      "
-                    ></span>
-                    {{ rotuloPrioridade(t.prioridade) }}
+                  <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 pl-[30px] md:p-0 md:contents">
+                    <div class="flex gap-1 flex-wrap md:flex-nowrap">
+                      @for (c of t.categorias; track c.id) {
+                        <span
+                          class="text-[11px] px-2 py-0.5 bg-[#16181c] border border-border rounded-full text-text-dim whitespace-nowrap"
+                          >{{ c.nome }}</span
+                        >
+                      }
+                    </div>
+
+                    <div
+                      class="flex items-center gap-1.5 text-xs text-text-dim font-medium md:min-w-[90px]"
+                    >
+                      <span
+                        class="w-2 h-2 rounded-full"
+                        [style.background]="corPrioridade(t.prioridade)"
+                        [style.box-shadow]="
+                          t.prioridade === 1 ? '0 0 8px rgba(235,87,87,0.4)' : 'none'
+                        "
+                      ></span>
+                      {{ rotuloPrioridade(t.prioridade) }}
+                    </div>
+
+                    <div
+                      class="text-xs flex items-center gap-1.5 tabular-nums md:text-right md:justify-end md:min-w-[120px]"
+                      [class.text-danger]="t.status === 3"
+                      [class.font-medium]="t.status === 3"
+                      [class.text-text-dim]="t.status !== 3"
+                    >
+                      <i class="fa-solid fa-clock text-[10px]"></i>
+                      {{ formatarPrazo(t) }}
+                    </div>
                   </div>
 
-                  <div
-                    class="text-xs text-right min-w-[120px] flex items-center justify-end gap-1.5 tabular-nums"
-                    [class.text-danger]="t.status === 3"
-                    [class.font-medium]="t.status === 3"
-                    [class.text-text-dim]="t.status !== 3"
-                  >
-                    <i class="fa-solid fa-clock text-[10px]"></i>
-                    {{ formatarPrazo(t) }}
-                  </div>
-
-                  <div class="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div class="hidden md:flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       type="button"
                       class="w-[26px] h-[26px] rounded grid place-items-center text-text-subtle hover:bg-[#16181c] hover:text-text"

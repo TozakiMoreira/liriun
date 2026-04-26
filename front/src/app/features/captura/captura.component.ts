@@ -10,7 +10,7 @@ type Modo = 'manual' | 'jarvis' | null;
   standalone: true,
   imports: [TarefaFormComponent],
   template: `
-    <header class="flex items-center px-8 py-3.5 border-b border-border gap-4">
+    <header class="flex items-center px-4 md:px-8 py-3.5 border-b border-border gap-4">
       <div class="flex items-center gap-2 text-[13px] text-text-dim">
         <i class="fa-solid fa-bolt text-accent text-[11px]"></i>
         <strong class="text-text font-medium">Captura Rápida</strong>
@@ -18,13 +18,13 @@ type Modo = 'manual' | 'jarvis' | null;
     </header>
 
     <div
-      class="flex-1 grid place-items-center px-8 py-12 bg-bg"
+      class="flex-1 grid place-items-center px-4 md:px-8 py-8 md:py-12 bg-bg"
       style="background-image: radial-gradient(ellipse 60% 30% at 50% 0%, rgba(94, 106, 210, 0.08), transparent);"
       data-testid="captura-page"
     >
-      <div class="w-full max-w-[720px] flex flex-col gap-10 items-center">
+      <div class="w-full max-w-[720px] flex flex-col gap-8 md:gap-10 items-center">
         <div class="text-center flex flex-col gap-2.5">
-          <h1 class="text-[28px] font-semibold tracking-tight leading-tight" data-testid="jarvis-greeting">
+          <h1 class="text-2xl md:text-[28px] font-semibold tracking-tight leading-tight" data-testid="jarvis-greeting">
             {{ saudacao() }}{{ nomeUsuario() ? ', ' + nomeUsuario() : '' }}
           </h1>
           <div class="text-lg font-medium text-text-dim tracking-tight" data-testid="jarvis-prompt">
@@ -36,7 +36,7 @@ type Modo = 'manual' | 'jarvis' | null;
           </p>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 w-full" data-testid="mode-picker">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full" data-testid="mode-picker">
           <button
             type="button"
             class="bg-bg-elev border border-border rounded-lg p-6 cursor-pointer text-left flex flex-col gap-3.5 hover:border-border-strong hover:bg-[#16181c] transition-colors group"

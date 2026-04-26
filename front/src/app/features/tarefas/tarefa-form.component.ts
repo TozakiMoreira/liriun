@@ -88,7 +88,7 @@ import {
             </div>
           </div>
 
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div class="flex flex-col gap-1.5">
               <label class="field-label" for="prioridade">Prioridade</label>
               <select
@@ -125,7 +125,7 @@ import {
           </div>
 
           @if (prazoEscolha === 'custom') {
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div class="flex flex-col gap-1.5">
                 <label class="field-label" for="dataCustom">Data</label>
                 <input

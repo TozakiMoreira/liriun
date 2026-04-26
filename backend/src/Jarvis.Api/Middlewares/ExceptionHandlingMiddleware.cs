@@ -7,11 +7,16 @@ public class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+    private readonly IHostEnvironment _env;
 
-    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
+    public ExceptionHandlingMiddleware(
+        RequestDelegate next,
+        ILogger<ExceptionHandlingMiddleware> logger,
+        IHostEnvironment env)
     {
         _next = next;
         _logger = logger;
+        _env = env;
     }
 
     public async Task Invoke(HttpContext context)
@@ -22,26 +27,49 @@ public class ExceptionHandlingMiddleware
         }
         catch (DomainException ex)
         {
-            await EscreverErro(context, ex.StatusCode, ex.ErrorCode, ex.Message);
+            await EscreverErro(context, ex.StatusCode, ex.ErrorCode, ex.Message, ex);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro não tratado");
-            await EscreverErro(context, 500, "ERRO_INTERNO", "Erro inesperado. Tente novamente.");
+            _logger.LogError(ex, "Erro não tratado em {Method} {Path}", context.Request.Method, context.Request.Path);
+            await EscreverErro(context, 500, "ERRO_INTERNO", "Erro inesperado. Tente novamente.", ex);
         }
     }
 
-    private static Task EscreverErro(HttpContext context, int statusCode, string errorCode, string mensagem)
+    private Task EscreverErro(HttpContext context, int statusCode, string errorCode, string mensagem, Exception ex)
     {
         context.Response.StatusCode = statusCode;
         context.Response.ContentType = "application/json";
 
-        string payload = JsonSerializer.Serialize(new
-        {
-            errorCode,
-            mensagem
-        }, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        object payload = _env.IsDevelopment()
+            ? new
+            {
+                errorCode,
+                mensagem,
+                tipo = ex.GetType().FullName,
+                detalhe = ex.Message,
+                inner = ColetarInner(ex),
+                stack = ex.StackTrace
+            }
+            : (object)new { errorCode, mensagem };
 
-        return context.Response.WriteAsync(payload);
+        string json = JsonSerializer.Serialize(payload, new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        });
+
+        return context.Response.WriteAsync(json);
+    }
+
+    private static List<object> ColetarInner(Exception ex)
+    {
+        List<object> list = new();
+        Exception? cur = ex.InnerException;
+        while (cur != null)
+        {
+            list.Add(new { tipo = cur.GetType().FullName, detalhe = cur.Message });
+            cur = cur.InnerException;
+        }
+        return list;
     }
 }

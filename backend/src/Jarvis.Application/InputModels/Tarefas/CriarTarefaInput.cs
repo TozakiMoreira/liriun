@@ -15,7 +15,7 @@ public class CriarTarefaInput
     public CriarTarefaInput(
         string nome,
         Prioridade prioridade,
-        IEnumerable<Guid>? categoriaIds = null,
+        IReadOnlyList<Guid>? categoriaIds = null,
         Guid? prazoId = null,
         DateTime? dataPrazoCustom = null,
         TimeSpan? horarioFinal = null)

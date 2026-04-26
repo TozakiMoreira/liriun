@@ -11,14 +11,14 @@ import { TokenStorage } from '../../core/auth/token.storage';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <header class="flex items-center px-8 py-3.5 border-b border-border gap-4">
+    <header class="flex items-center px-4 md:px-8 py-3.5 border-b border-border gap-4">
       <div class="flex items-center gap-2 text-[13px] text-text-dim">
         <i class="fa-solid fa-gear text-accent text-[11px]"></i>
         <strong class="text-text font-medium">Configurações</strong>
       </div>
     </header>
 
-    <div class="flex-1 px-8 py-8 overflow-auto" data-testid="configuracoes-page">
+    <div class="flex-1 px-4 md:px-8 py-6 md:py-8 overflow-auto" data-testid="configuracoes-page">
       <div class="max-w-[760px] flex flex-col gap-7">
         <div class="flex flex-col gap-1">
           <h1 class="text-xl font-semibold tracking-tight">Configurações</h1>
@@ -34,7 +34,7 @@ import { TokenStorage } from '../../core/auth/token.storage';
               Só leitura por enquanto. Edição de conta chega em uma próxima versão.
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div class="flex flex-col gap-1">
               <div
                 class="text-[11px] font-medium text-text-subtle uppercase tracking-wider"
@@ -187,7 +187,7 @@ import { TokenStorage } from '../../core/auth/token.storage';
             }
           </div>
 
-          <div class="grid grid-cols-[1fr_160px_auto] gap-2">
+          <div class="grid grid-cols-1 sm:grid-cols-[1fr_160px_auto] gap-2">
             <input
               type="text"
               class="input-base"

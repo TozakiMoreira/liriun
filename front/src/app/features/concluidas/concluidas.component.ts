@@ -15,7 +15,7 @@ interface GrupoData {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <header class="flex items-center px-8 py-3.5 border-b border-border gap-4">
+    <header class="flex flex-col sm:flex-row sm:items-center px-4 md:px-8 py-3.5 border-b border-border gap-3 sm:gap-4">
       <div class="flex items-center gap-2 text-[13px] text-text-dim">
         <i class="fa-solid fa-circle-check text-[#22c55e] text-[11px]"></i>
         <strong class="text-text font-medium">Concluídas</strong>
@@ -27,7 +27,7 @@ interface GrupoData {
         </span>
       </div>
 
-      <div class="ml-auto flex items-center gap-1 bg-bg-elev border border-border rounded p-0.5" data-testid="period-switcher">
+      <div class="sm:ml-auto flex items-center gap-1 bg-bg-elev border border-border rounded p-0.5 self-start sm:self-auto" data-testid="period-switcher">
         <button
           type="button"
           class="px-3 py-1 text-xs rounded transition-colors"
@@ -58,7 +58,7 @@ interface GrupoData {
       </div>
     </header>
 
-    <div class="flex-1 px-8 py-6 overflow-auto" data-testid="concluidas-page">
+    <div class="flex-1 px-4 md:px-8 py-6 overflow-auto" data-testid="concluidas-page">
       @if (carregando()) {
         <p class="text-text-subtle text-sm">Carregando...</p>
       } @else if (concluidas().length === 0) {
@@ -96,26 +96,30 @@ interface GrupoData {
             <div class="flex flex-col">
               @for (t of g.tarefas; track t.id) {
                 <div
-                  class="grid grid-cols-[28px_1fr_auto_auto] items-center gap-3.5 px-3 py-2.5 border-b border-border last:border-b-0"
+                  class="flex flex-col gap-2 md:grid md:grid-cols-[28px_1fr_auto_auto] md:items-center md:gap-3.5 px-3 py-2.5 border-b border-border last:border-b-0"
                   [attr.data-testid]="'done-' + t.id"
                 >
-                  <div
-                    class="w-[18px] h-[18px] rounded-full bg-[#22c55e]/15 border border-[#22c55e]/30 grid place-items-center text-[#22c55e]"
-                  >
-                    <i class="fa-solid fa-check text-[10px]"></i>
+                  <div class="flex items-center gap-3 md:contents">
+                    <div
+                      class="shrink-0 w-[18px] h-[18px] rounded-full bg-[#22c55e]/15 border border-[#22c55e]/30 grid place-items-center text-[#22c55e]"
+                    >
+                      <i class="fa-solid fa-check text-[10px]"></i>
+                    </div>
+                    <div class="text-sm text-text-dim line-through flex-1 min-w-0 truncate">{{ t.nome }}</div>
                   </div>
-                  <div class="text-sm text-text-dim line-through">{{ t.nome }}</div>
-                  <div class="flex gap-1 flex-nowrap">
-                    @for (c of t.categorias; track c.id) {
-                      <span
-                        class="text-[11px] px-2 py-0.5 bg-[#16181c] border border-border rounded-full text-text-dim whitespace-nowrap"
-                        >{{ c.nome }}</span
-                      >
-                    }
-                  </div>
-                  <div class="text-xs text-text-dim flex items-center gap-1.5 tabular-nums">
-                    <i class="fa-regular fa-circle-check text-[10px]"></i>
-                    {{ formatarHora(t.concluidaEm) }}
+                  <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 pl-[30px] md:p-0 md:contents">
+                    <div class="flex gap-1 flex-wrap md:flex-nowrap">
+                      @for (c of t.categorias; track c.id) {
+                        <span
+                          class="text-[11px] px-2 py-0.5 bg-[#16181c] border border-border rounded-full text-text-dim whitespace-nowrap"
+                          >{{ c.nome }}</span
+                        >
+                      }
+                    </div>
+                    <div class="text-xs text-text-dim flex items-center gap-1.5 tabular-nums">
+                      <i class="fa-regular fa-circle-check text-[10px]"></i>
+                      {{ formatarHora(t.concluidaEm) }}
+                    </div>
                   </div>
                 </div>
               }

@@ -27,7 +27,7 @@ const PRAZOS_PADRAO: PrazoLocal[] = [
   imports: [FormsModule],
   template: `
     <main
-      class="min-h-screen px-6 pt-16 pb-32 bg-bg bg-accent-glow"
+      class="min-h-screen px-4 sm:px-6 pt-10 sm:pt-16 pb-24 sm:pb-32 bg-bg bg-accent-glow"
       data-testid="onboarding-page"
     >
       <div class="max-w-[560px] mx-auto flex flex-col gap-8">
@@ -141,7 +141,7 @@ const PRAZOS_PADRAO: PrazoLocal[] = [
             }
           </div>
 
-          <div class="grid grid-cols-[1fr_140px_auto] gap-2">
+          <div class="grid grid-cols-1 sm:grid-cols-[1fr_140px_auto] gap-2">
             <input
               type="text"
               class="bg-[#16181c] border border-border text-text rounded px-3 py-2 text-[13px] focus:outline-none focus:border-accent"

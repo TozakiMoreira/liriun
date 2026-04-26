@@ -8,9 +8,33 @@ import { TokenStorage } from '../core/auth/token.storage';
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive],
   template: `
-    <div class="grid grid-cols-[232px_1fr] min-h-screen bg-bg text-text">
+    <div class="flex flex-col md:grid md:grid-cols-[232px_1fr] min-h-screen bg-bg text-text">
+      <header
+        class="md:hidden flex items-center justify-between h-12 px-4 border-b border-border bg-[#0b0c0e]"
+        data-testid="mobile-topbar"
+      >
+        <div class="flex items-center gap-2">
+          <div
+            class="w-6 h-6 rounded-md bg-logo-grad grid place-items-center text-xs font-bold tracking-tight"
+            aria-hidden="true"
+          >
+            J
+          </div>
+          <div class="text-[13px] font-semibold tracking-tight">Jarvis</div>
+        </div>
+        <button
+          type="button"
+          class="flex items-center gap-1.5 text-text-dim hover:text-text text-xs px-2 py-1"
+          data-testid="mobile-logout"
+          (click)="sair()"
+        >
+          <span>{{ storage.usuario()?.nome }}</span>
+          <i class="fa-solid fa-right-from-bracket text-[11px]"></i>
+        </button>
+      </header>
+
       <aside
-        class="bg-[#0b0c0e] border-r border-border flex flex-col p-4"
+        class="hidden md:flex bg-[#0b0c0e] border-r border-border flex-col p-4"
         data-testid="sidebar"
       >
         <div class="flex items-center gap-2.5 px-2 py-1.5 mb-5">
@@ -96,9 +120,51 @@ import { TokenStorage } from '../core/auth/token.storage';
         </div>
       </aside>
 
-      <main class="flex flex-col min-w-0">
+      <main class="flex flex-col min-w-0 flex-1 pb-16 md:pb-0">
         <router-outlet></router-outlet>
       </main>
+
+      <nav
+        class="md:hidden fixed bottom-0 inset-x-0 grid grid-cols-4 h-16 bg-[#0b0c0e] border-t border-border z-40"
+        data-testid="mobile-bottom-nav"
+      >
+        <a
+          routerLink="/captura"
+          routerLinkActive="text-accent [&>i]:text-accent"
+          class="flex flex-col items-center justify-center gap-0.5 text-text-dim active:bg-bg-elev"
+          data-testid="nav-mobile-captura"
+        >
+          <i class="fa-solid fa-bolt text-base"></i>
+          <span class="text-[10px] font-medium">Captura</span>
+        </a>
+        <a
+          routerLink="/tarefas"
+          routerLinkActive="text-accent [&>i]:text-accent"
+          class="flex flex-col items-center justify-center gap-0.5 text-text-dim active:bg-bg-elev"
+          data-testid="nav-mobile-tarefas"
+        >
+          <i class="fa-solid fa-list-check text-base"></i>
+          <span class="text-[10px] font-medium">Tarefas</span>
+        </a>
+        <a
+          routerLink="/concluidas"
+          routerLinkActive="text-accent [&>i]:text-accent"
+          class="flex flex-col items-center justify-center gap-0.5 text-text-dim active:bg-bg-elev"
+          data-testid="nav-mobile-concluidas"
+        >
+          <i class="fa-solid fa-circle-check text-base"></i>
+          <span class="text-[10px] font-medium">Concluídas</span>
+        </a>
+        <a
+          routerLink="/configuracoes"
+          routerLinkActive="text-accent [&>i]:text-accent"
+          class="flex flex-col items-center justify-center gap-0.5 text-text-dim active:bg-bg-elev"
+          data-testid="nav-mobile-configs"
+        >
+          <i class="fa-solid fa-gear text-base"></i>
+          <span class="text-[10px] font-medium">Ajustes</span>
+        </a>
+      </nav>
     </div>
   `,
 })
