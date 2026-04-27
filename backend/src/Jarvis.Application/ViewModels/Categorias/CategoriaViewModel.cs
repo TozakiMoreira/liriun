@@ -1,17 +1,16 @@
+using Jarvis.Application.ReadModels;
 using Jarvis.Core.Entities;
 
 namespace Jarvis.Application.ViewModels.Categorias;
 
-public class CategoriaViewModel
+public sealed record CategoriaViewModel(
+    Guid Id,
+    string Nome,
+    DateTime CriadaEm)
 {
-    public Guid Id { get; init; }
-    public string Nome { get; init; } = null!;
-    public DateTime CriadaEm { get; init; }
+    public static CategoriaViewModel FromEntity(Categoria categoria)
+        => new(categoria.Id, categoria.Nome, categoria.CriadaEm);
 
-    public static CategoriaViewModel From(Categoria categoria) => new()
-    {
-        Id = categoria.Id,
-        Nome = categoria.Nome,
-        CriadaEm = categoria.CriadaEm
-    };
+    public static CategoriaViewModel FromReadModel(CategoriaReadModel readModel)
+        => new(readModel.Id, readModel.Nome, readModel.CriadaEm);
 }

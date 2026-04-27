@@ -1,19 +1,17 @@
+using Jarvis.Application.ReadModels;
 using Jarvis.Core.Entities;
 
 namespace Jarvis.Application.ViewModels.Prazos;
 
-public class PrazoViewModel
+public sealed record PrazoViewModel(
+    Guid Id,
+    string Nome,
+    int? DuracaoDias,
+    DateTime CriadoEm)
 {
-    public Guid Id { get; init; }
-    public string Nome { get; init; } = null!;
-    public int? DuracaoDias { get; init; }
-    public DateTime CriadoEm { get; init; }
+    public static PrazoViewModel FromEntity(Prazo prazo)
+        => new(prazo.Id, prazo.Nome, prazo.DuracaoDias, prazo.CriadoEm);
 
-    public static PrazoViewModel From(Prazo prazo) => new()
-    {
-        Id = prazo.Id,
-        Nome = prazo.Nome,
-        DuracaoDias = prazo.DuracaoDias,
-        CriadoEm = prazo.CriadoEm
-    };
+    public static PrazoViewModel FromReadModel(PrazoReadModel readModel)
+        => new(readModel.Id, readModel.Nome, readModel.DuracaoDias, readModel.CriadoEm);
 }

@@ -18,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Jarvis.Infra\Jarvis.Infra.csproj" />
+    <ProjectReference Include="..\Jarvis.Infrastructure\Jarvis.Infrastructure.csproj" />
     <ProjectReference Include="..\Jarvis.Application\Jarvis.Application.csproj" />
     <ProjectReference Include="..\Jarvis.Core\Jarvis.Core.csproj" />
   </ItemGroup>

@@ -4,9 +4,8 @@ namespace Jarvis.Core.Interfaces.Repositories;
 
 public interface IUsuarioRepository
 {
-    Task<Usuario?> ObterPorId(Guid id, CancellationToken ct = default);
-    Task<Usuario?> ObterPorEmail(string email, CancellationToken ct = default);
-    Task<bool> ExisteEmail(string email, CancellationToken ct = default);
-    Task Adicionar(Usuario usuario, CancellationToken ct = default);
-    Task Atualizar(Usuario usuario, CancellationToken ct = default);
+    Task<Usuario?> ObterPorIdAsync(Guid id, CancellationToken ct);
+    Task<Usuario?> ObterPorEmailAsync(string email, CancellationToken ct);
+    Task<Usuario> AdicionarAsync(Usuario usuario, CancellationToken ct);
+    Task<Usuario> AtualizarAsync(Usuario usuario, CancellationToken ct);
 }

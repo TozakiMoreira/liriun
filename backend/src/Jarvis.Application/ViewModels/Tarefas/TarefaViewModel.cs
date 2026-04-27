@@ -1,41 +1,61 @@
+using Jarvis.Application.ReadModels;
 using Jarvis.Core.Entities;
 using Jarvis.Core.Enums;
 
 namespace Jarvis.Application.ViewModels.Tarefas;
 
-public class TarefaCategoriaViewModel
-{
-    public Guid Id { get; init; }
-    public string Nome { get; init; } = null!;
-}
+public sealed record TarefaCategoriaViewModel(Guid Id, string Nome);
 
-public class TarefaViewModel
+public sealed record TarefaViewModel(
+    Guid Id,
+    string Nome,
+    Prioridade Prioridade,
+    StatusTarefa Status,
+    Guid? PrazoId,
+    DateTime? DataPrazo,
+    TimeSpan HorarioFinal,
+    DateTime CriadaEm,
+    DateTime? ConcluidaEm,
+    IReadOnlyList<TarefaCategoriaViewModel> Categorias)
 {
-    public Guid Id { get; init; }
-    public string Nome { get; init; } = null!;
-    public Prioridade Prioridade { get; init; }
-    public StatusTarefa Status { get; init; }
-    public Guid? PrazoId { get; init; }
-    public DateTime? DataPrazo { get; init; }
-    public TimeSpan HorarioFinal { get; init; }
-    public DateTime CriadaEm { get; init; }
-    public DateTime? ConcluidaEm { get; init; }
-    public IReadOnlyList<TarefaCategoriaViewModel> Categorias { get; init; } = Array.Empty<TarefaCategoriaViewModel>();
+    public static TarefaViewModel FromEntity(Tarefa tarefa, DateTime agora)
+        => new(
+            tarefa.Id,
+            tarefa.Nome,
+            tarefa.Prioridade,
+            tarefa.StatusComputado(agora),
+            tarefa.PrazoId,
+            tarefa.DataPrazo,
+            tarefa.HorarioFinal,
+            tarefa.CriadaEm,
+            tarefa.ConcluidaEm,
+            tarefa.Categorias
+                .Where(tc => tc.Categoria != null)
+                .Select(tc => new TarefaCategoriaViewModel(tc.CategoriaId, tc.Categoria!.Nome))
+                .ToList());
 
-    public static TarefaViewModel From(Tarefa tarefa, DateTime agora) => new()
+    public static TarefaViewModel FromReadModel(TarefaReadModel readModel, DateTime agora)
     {
-        Id = tarefa.Id,
-        Nome = tarefa.Nome,
-        Prioridade = tarefa.Prioridade,
-        Status = tarefa.StatusComputado(agora),
-        PrazoId = tarefa.PrazoId,
-        DataPrazo = tarefa.DataPrazo,
-        HorarioFinal = tarefa.HorarioFinal,
-        CriadaEm = tarefa.CriadaEm,
-        ConcluidaEm = tarefa.ConcluidaEm,
-        Categorias = tarefa.Categorias
-            .Where(tc => tc.Categoria != null)
-            .Select(tc => new TarefaCategoriaViewModel { Id = tc.CategoriaId, Nome = tc.Categoria!.Nome })
-            .ToList()
-    };
+        StatusTarefa statusComputado = readModel.Status;
+        if (statusComputado != StatusTarefa.Concluida && readModel.DataPrazo.HasValue)
+        {
+            DateTime limite = readModel.DataPrazo.Value.Add(readModel.HorarioFinal);
+            if (agora > limite)
+                statusComputado = StatusTarefa.Atrasada;
+        }
+
+        return new(
+            readModel.Id,
+            readModel.Nome,
+            readModel.Prioridade,
+            statusComputado,
+            readModel.PrazoId,
+            readModel.DataPrazo,
+            readModel.HorarioFinal,
+            readModel.CriadaEm,
+            readModel.ConcluidaEm,
+            readModel.Categorias
+                .Select(c => new TarefaCategoriaViewModel(c.Id, c.Nome))
+                .ToList());
+    }
 }

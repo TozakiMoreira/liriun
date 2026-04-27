@@ -1,6 +1,8 @@
+using Jarvis.Api.Extensions;
 using Jarvis.Application.InputModels.Categorias;
 using Jarvis.Application.UseCases.Categorias;
 using Jarvis.Application.ViewModels.Categorias;
+using Jarvis.Core.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,33 +14,33 @@ namespace Jarvis.Api.Controllers;
 public class CategoriasController : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<CategoriaViewModel>>> Listar(
+    public async Task<IActionResult> Listar(
         [FromServices] ListarCategoriasUseCase useCase,
         CancellationToken ct)
     {
-        IReadOnlyList<CategoriaViewModel> lista = await useCase.Executar(ct);
-        return Ok(lista);
+        Result<IReadOnlyList<CategoriaViewModel>> result = await useCase.ExecuteAsync(ct);
+        return result.ToActionResult(lista => Ok(lista));
     }
 
     [HttpPost]
-    public async Task<ActionResult<CategoriaViewModel>> Criar(
+    public async Task<IActionResult> Criar(
         [FromBody] CriarCategoriaInput input,
         [FromServices] CriarCategoriaUseCase useCase,
         CancellationToken ct)
     {
-        CategoriaViewModel categoria = await useCase.Executar(input, ct);
-        return Created($"/categorias/{categoria.Id}", categoria);
+        Result<CategoriaViewModel> result = await useCase.ExecuteAsync(input, ct);
+        return result.ToActionResult(view => Created($"/categorias/{view.Id}", view));
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<ActionResult<CategoriaViewModel>> Atualizar(
+    public async Task<IActionResult> Atualizar(
         [FromRoute] Guid id,
         [FromBody] AtualizarCategoriaInput input,
         [FromServices] AtualizarCategoriaUseCase useCase,
         CancellationToken ct)
     {
-        CategoriaViewModel categoria = await useCase.Executar(id, input, ct);
-        return Ok(categoria);
+        Result<CategoriaViewModel> result = await useCase.ExecuteAsync(id, input, ct);
+        return result.ToActionResult(view => Ok(view));
     }
 
     [HttpDelete("{id:guid}")]
@@ -47,7 +49,7 @@ public class CategoriasController : ControllerBase
         [FromServices] RemoverCategoriaUseCase useCase,
         CancellationToken ct)
     {
-        await useCase.Executar(id, ct);
-        return NoContent();
+        Result result = await useCase.ExecuteAsync(id, ct);
+        return result.ToActionResult(() => NoContent());
     }
 }

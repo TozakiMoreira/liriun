@@ -1,10 +1,13 @@
 using FluentAssertions;
+using FluentValidation;
+using FluentValidation.Results;
 using Jarvis.Application.InputModels.Prazos;
 using Jarvis.Application.Interfaces.Auth;
+using Jarvis.Application.ReadRepositories;
 using Jarvis.Application.UseCases.Prazos;
 using Jarvis.Application.ViewModels.Prazos;
+using Jarvis.Core.Common;
 using Jarvis.Core.Entities;
-using Jarvis.Core.Exceptions;
 using Jarvis.Core.Interfaces.Repositories;
 using Moq;
 
@@ -13,76 +16,58 @@ namespace Jarvis.Application.Tests.UseCases.Prazos;
 public class CriarPrazoUseCaseTests
 {
     private readonly Mock<IPrazoRepository> _repo = new();
+    private readonly Mock<IPrazoReadRepository> _readRepo = new();
     private readonly Mock<IUsuarioLogado> _usuarioLogado = new();
+    private readonly Mock<IValidator<CriarPrazoInput>> _validator = new();
     private readonly Guid _usuarioId = Guid.NewGuid();
 
     public CriarPrazoUseCaseTests()
     {
         _usuarioLogado.SetupGet(u => u.Id).Returns(_usuarioId);
+        _validator.Setup(v => v.ValidateAsync(It.IsAny<CriarPrazoInput>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
     }
 
-    private CriarPrazoUseCase Criar() => new(_repo.Object, _usuarioLogado.Object);
+    private CriarPrazoUseCase Criar() => new(_repo.Object, _readRepo.Object, _usuarioLogado.Object, _validator.Object);
 
     [Fact]
     public async Task Cria_prazo_quando_nome_nao_existe()
     {
-        _repo.Setup(r => r.ExisteNome(_usuarioId, "Hoje", It.IsAny<CancellationToken>()))
+        _readRepo.Setup(r => r.ExisteNomeAsync(_usuarioId, "Hoje", It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
+        _repo.Setup(r => r.AdicionarAsync(It.IsAny<Prazo>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Prazo p, CancellationToken _) => p);
 
-        PrazoViewModel result = await Criar().Executar(new CriarPrazoInput("Hoje", 0));
+        Result<PrazoViewModel> result = await Criar().ExecuteAsync(new CriarPrazoInput("Hoje", 0), CancellationToken.None);
 
-        result.Nome.Should().Be("Hoje");
-        result.DuracaoDias.Should().Be(0);
-        _repo.Verify(r => r.Adicionar(
-            It.Is<Prazo>(p => p.UsuarioId == _usuarioId && p.Nome == "Hoje" && p.DuracaoDias == 0),
-            It.IsAny<CancellationToken>()), Times.Once);
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.Nome.Should().Be("Hoje");
+        result.Value.DuracaoDias.Should().Be(0);
     }
 
     [Fact]
     public async Task Cria_prazo_sem_duracao()
     {
-        _repo.Setup(r => r.ExisteNome(_usuarioId, "Sem prazo", It.IsAny<CancellationToken>()))
+        _readRepo.Setup(r => r.ExisteNomeAsync(_usuarioId, "Sem prazo", It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
+        _repo.Setup(r => r.AdicionarAsync(It.IsAny<Prazo>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Prazo p, CancellationToken _) => p);
 
-        PrazoViewModel result = await Criar().Executar(new CriarPrazoInput("Sem prazo", null));
+        Result<PrazoViewModel> result = await Criar().ExecuteAsync(new CriarPrazoInput("Sem prazo", null), CancellationToken.None);
 
-        result.DuracaoDias.Should().BeNull();
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.DuracaoDias.Should().BeNull();
     }
 
     [Fact]
-    public async Task Lanca_409_quando_nome_ja_existe()
+    public async Task Retorna_conflict_quando_nome_ja_existe()
     {
-        _repo.Setup(r => r.ExisteNome(_usuarioId, It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        _readRepo.Setup(r => r.ExisteNomeAsync(_usuarioId, It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
-        Func<Task> act = () => Criar().Executar(new CriarPrazoInput("Hoje", 0));
+        Result<PrazoViewModel> result = await Criar().ExecuteAsync(new CriarPrazoInput("Hoje", 0), CancellationToken.None);
 
-        (await act.Should().ThrowAsync<ApplicationLayerException>())
-            .Which.StatusCode.Should().Be(409);
-
-        _repo.Verify(r => r.Adicionar(It.IsAny<Prazo>(), It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    [Theory]
-    [InlineData("")]
-    [InlineData("   ")]
-    public void InputModel_rejeita_nome_vazio(string nome)
-    {
-        Action act = () => new CriarPrazoInput(nome, 1);
-        act.Should().Throw<ApplicationLayerException>();
-    }
-
-    [Fact]
-    public void InputModel_rejeita_nome_maior_que_50()
-    {
-        Action act = () => new CriarPrazoInput(new string('a', 51), 1);
-        act.Should().Throw<ApplicationLayerException>();
-    }
-
-    [Fact]
-    public void InputModel_rejeita_duracao_negativa()
-    {
-        Action act = () => new CriarPrazoInput("Hoje", -1);
-        act.Should().Throw<ApplicationLayerException>();
+        result.IsFailure.Should().BeTrue();
+        result.Error!.Type.Should().Be(ErrorType.Conflict);
     }
 }

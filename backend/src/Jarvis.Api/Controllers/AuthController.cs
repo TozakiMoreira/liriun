@@ -1,6 +1,8 @@
+using Jarvis.Api.Extensions;
 using Jarvis.Application.InputModels.Auth;
 using Jarvis.Application.UseCases.Auth;
 using Jarvis.Application.ViewModels.Auth;
+using Jarvis.Core.Common;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Jarvis.Api.Controllers;
@@ -10,22 +12,22 @@ namespace Jarvis.Api.Controllers;
 public class AuthController : ControllerBase
 {
     [HttpPost("cadastro")]
-    public async Task<ActionResult<AutenticacaoViewModel>> Cadastrar(
+    public async Task<IActionResult> Cadastrar(
         [FromBody] CadastrarUsuarioInput input,
         [FromServices] CadastrarUsuarioUseCase useCase,
         CancellationToken ct)
     {
-        AutenticacaoViewModel resultado = await useCase.Executar(input, ct);
-        return Created(string.Empty, resultado);
+        Result<AutenticacaoViewModel> result = await useCase.ExecuteAsync(input, ct);
+        return result.ToActionResult(view => Created(string.Empty, view));
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<AutenticacaoViewModel>> Login(
+    public async Task<IActionResult> Login(
         [FromBody] LoginInput input,
         [FromServices] LoginUseCase useCase,
         CancellationToken ct)
     {
-        AutenticacaoViewModel resultado = await useCase.Executar(input, ct);
-        return Ok(resultado);
+        Result<AutenticacaoViewModel> result = await useCase.ExecuteAsync(input, ct);
+        return result.ToActionResult(view => Ok(view));
     }
 }

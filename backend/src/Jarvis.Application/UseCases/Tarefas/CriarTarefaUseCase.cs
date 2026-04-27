@@ -1,8 +1,12 @@
+using FluentValidation;
+using FluentValidation.Results;
 using Jarvis.Application.InputModels.Tarefas;
 using Jarvis.Application.Interfaces.Auth;
+using Jarvis.Application.ReadRepositories;
 using Jarvis.Application.ViewModels.Tarefas;
+using Jarvis.Core.Common;
 using Jarvis.Core.Entities;
-using Jarvis.Core.Exceptions;
+using Jarvis.Core.Errors;
 using Jarvis.Core.Interfaces.Repositories;
 
 namespace Jarvis.Application.UseCases.Tarefas;
@@ -11,40 +15,56 @@ public class CriarTarefaUseCase
 {
     private readonly ITarefaRepository _tarefas;
     private readonly IPrazoRepository _prazos;
-    private readonly ICategoriaRepository _categorias;
+    private readonly ICategoriaReadRepository _categoriaRead;
     private readonly IUsuarioLogado _usuarioLogado;
+    private readonly IValidator<CriarTarefaInput> _validator;
 
     public CriarTarefaUseCase(
         ITarefaRepository tarefas,
         IPrazoRepository prazos,
-        ICategoriaRepository categorias,
-        IUsuarioLogado usuarioLogado)
+        ICategoriaReadRepository categoriaRead,
+        IUsuarioLogado usuarioLogado,
+        IValidator<CriarTarefaInput> validator)
     {
         _tarefas = tarefas;
         _prazos = prazos;
-        _categorias = categorias;
+        _categoriaRead = categoriaRead;
         _usuarioLogado = usuarioLogado;
+        _validator = validator;
     }
 
-    public async Task<TarefaViewModel> Executar(CriarTarefaInput input, CancellationToken ct = default)
+    public async Task<Result<TarefaViewModel>> ExecuteAsync(CriarTarefaInput input, CancellationToken ct)
     {
-        if (input.CategoriaIds.Count > 0 &&
-            !await _categorias.TodasPertencemAoUsuario(input.CategoriaIds, _usuarioLogado.Id, ct))
+        ValidationResult validation = await _validator.ValidateAsync(input, ct);
+        if (!validation.IsValid)
         {
-            throw new ApplicationLayerException("Uma ou mais categorias informadas não existem", 400);
+            Dictionary<string, string[]> details = validation.Errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
+            return Result<TarefaViewModel>.Failure(
+                Error.Validation("tarefa.validacao", "Dados invalidos", details));
         }
 
-        DateTime? dataPrazo = input.DataPrazoCustom;
+        IReadOnlyList<Guid> categoriaIds = input.CategoriaIds?.Distinct().ToList() ?? [];
+
+        if (categoriaIds.Count > 0 &&
+            !await _categoriaRead.TodasPertencemAoUsuarioAsync(categoriaIds, _usuarioLogado.Id, ct))
+        {
+            return Result<TarefaViewModel>.Failure(TarefaErrors.CategoriasInvalidas());
+        }
+
+        DateTime? dataPrazo = input.DataPrazoCustom?.Date;
 
         if (input.PrazoId.HasValue)
         {
-            Prazo prazo = await _prazos.ObterPorId(input.PrazoId.Value, _usuarioLogado.Id, ct)
-                ?? throw new ApplicationLayerException("Prazo não encontrado", 400);
+            Prazo? prazo = await _prazos.ObterPorIdAsync(input.PrazoId.Value, _usuarioLogado.Id, ct);
+            if (prazo is null)
+                return Result<TarefaViewModel>.Failure(TarefaErrors.PrazoNaoEncontrado());
 
             dataPrazo = prazo.ResolverDataPrazo(DateTime.UtcNow);
         }
 
-        Tarefa tarefa = new(
+        Result<Tarefa> criacaoResult = Tarefa.Criar(
             _usuarioLogado.Id,
             input.Nome,
             input.Prioridade,
@@ -52,9 +72,11 @@ public class CriarTarefaUseCase
             dataPrazo,
             input.HorarioFinal);
 
-        await _tarefas.Adicionar(tarefa, input.CategoriaIds, ct);
+        if (criacaoResult.IsFailure)
+            return Result<TarefaViewModel>.Failure(criacaoResult.Error!);
 
-        Tarefa? completa = await _tarefas.ObterPorId(tarefa.Id, _usuarioLogado.Id, ct);
-        return TarefaViewModel.From(completa ?? tarefa, DateTime.UtcNow);
+        Tarefa tarefa = await _tarefas.AdicionarAsync(criacaoResult.Value!, categoriaIds, ct);
+
+        return Result<TarefaViewModel>.Success(TarefaViewModel.FromEntity(tarefa, DateTime.UtcNow));
     }
 }

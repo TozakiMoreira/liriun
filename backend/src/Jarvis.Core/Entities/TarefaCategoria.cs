@@ -13,6 +13,9 @@ public class TarefaCategoria
 
     private TarefaCategoria() { }
 
+    internal static TarefaCategoria Reconstituir(Guid tarefaId, Guid categoriaId, Categoria? categoria = null)
+        => new() { TarefaId = tarefaId, CategoriaId = categoriaId, Categoria = categoria! };
+
     public TarefaCategoria(Guid tarefaId, Guid categoriaId)
     {
         TarefaId = tarefaId;

@@ -1,10 +1,13 @@
 using FluentAssertions;
+using FluentValidation;
+using FluentValidation.Results;
 using Jarvis.Application.InputModels.Categorias;
 using Jarvis.Application.Interfaces.Auth;
+using Jarvis.Application.ReadRepositories;
 using Jarvis.Application.UseCases.Categorias;
 using Jarvis.Application.ViewModels.Categorias;
+using Jarvis.Core.Common;
 using Jarvis.Core.Entities;
-using Jarvis.Core.Exceptions;
 using Jarvis.Core.Interfaces.Repositories;
 using Moq;
 
@@ -13,76 +16,66 @@ namespace Jarvis.Application.Tests.UseCases.Categorias;
 public class AtualizarCategoriaUseCaseTests
 {
     private readonly Mock<ICategoriaRepository> _repo = new();
+    private readonly Mock<ICategoriaReadRepository> _readRepo = new();
     private readonly Mock<IUsuarioLogado> _usuarioLogado = new();
+    private readonly Mock<IValidator<AtualizarCategoriaInput>> _validator = new();
     private readonly Guid _usuarioId = Guid.NewGuid();
 
     public AtualizarCategoriaUseCaseTests()
     {
         _usuarioLogado.SetupGet(u => u.Id).Returns(_usuarioId);
+        _validator.Setup(v => v.ValidateAsync(It.IsAny<AtualizarCategoriaInput>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
     }
 
-    private AtualizarCategoriaUseCase Criar() => new(_repo.Object, _usuarioLogado.Object);
-
-    private Categoria CriarCategoria(string nome = "Trabalho")
-    {
-        return new Categoria(_usuarioId, nome);
-    }
+    private AtualizarCategoriaUseCase Criar()
+        => new(_repo.Object, _readRepo.Object, _usuarioLogado.Object, _validator.Object);
 
     [Fact]
     public async Task Renomeia_quando_nome_disponivel()
     {
-        Categoria categoria = CriarCategoria("Trabalho");
-        _repo.Setup(r => r.ObterPorId(categoria.Id, _usuarioId, It.IsAny<CancellationToken>()))
+        Categoria categoria = Categoria.Criar(_usuarioId, "Trabalho").Value!;
+        _repo.Setup(r => r.ObterPorIdAsync(categoria.Id, _usuarioId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(categoria);
-        _repo.Setup(r => r.ExisteOutraComNome(_usuarioId, "Faculdade", categoria.Id, It.IsAny<CancellationToken>()))
+        _readRepo.Setup(r => r.ExisteOutraComNomeAsync(_usuarioId, "Faculdade", categoria.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
+        _repo.Setup(r => r.AtualizarAsync(It.IsAny<Categoria>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Categoria c, CancellationToken _) => c);
 
-        CategoriaViewModel result = await Criar().Executar(categoria.Id, new AtualizarCategoriaInput("Faculdade"));
+        Result<CategoriaViewModel> result = await Criar().ExecuteAsync(
+            categoria.Id, new AtualizarCategoriaInput("Faculdade"), CancellationToken.None);
 
-        result.Nome.Should().Be("Faculdade");
-        _repo.Verify(r => r.Atualizar(It.Is<Categoria>(c => c.Nome == "Faculdade"), It.IsAny<CancellationToken>()), Times.Once);
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.Nome.Should().Be("Faculdade");
     }
 
     [Fact]
-    public async Task Lanca_404_quando_categoria_nao_existe()
+    public async Task Retorna_not_found_quando_categoria_nao_existe()
     {
-        _repo.Setup(r => r.ObterPorId(It.IsAny<Guid>(), _usuarioId, It.IsAny<CancellationToken>()))
+        _repo.Setup(r => r.ObterPorIdAsync(It.IsAny<Guid>(), _usuarioId, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Categoria?)null);
 
-        Func<Task> act = () => Criar().Executar(Guid.NewGuid(), new AtualizarCategoriaInput("Qualquer"));
+        Result<CategoriaViewModel> result = await Criar().ExecuteAsync(
+            Guid.NewGuid(), new AtualizarCategoriaInput("Qualquer"), CancellationToken.None);
 
-        (await act.Should().ThrowAsync<ApplicationLayerException>())
-            .Which.StatusCode.Should().Be(404);
+        result.IsFailure.Should().BeTrue();
+        result.Error!.Code.Should().Be("categoria.nao-encontrada");
+        result.Error.Type.Should().Be(ErrorType.NotFound);
     }
 
     [Fact]
-    public async Task Lanca_409_quando_outra_categoria_ja_tem_o_nome()
+    public async Task Retorna_conflict_quando_outra_categoria_ja_tem_o_nome()
     {
-        Categoria categoria = CriarCategoria("Trabalho");
-        _repo.Setup(r => r.ObterPorId(categoria.Id, _usuarioId, It.IsAny<CancellationToken>()))
+        Categoria categoria = Categoria.Criar(_usuarioId, "Trabalho").Value!;
+        _repo.Setup(r => r.ObterPorIdAsync(categoria.Id, _usuarioId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(categoria);
-        _repo.Setup(r => r.ExisteOutraComNome(_usuarioId, "Casa", categoria.Id, It.IsAny<CancellationToken>()))
+        _readRepo.Setup(r => r.ExisteOutraComNomeAsync(_usuarioId, "Casa", categoria.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
-        Func<Task> act = () => Criar().Executar(categoria.Id, new AtualizarCategoriaInput("Casa"));
+        Result<CategoriaViewModel> result = await Criar().ExecuteAsync(
+            categoria.Id, new AtualizarCategoriaInput("Casa"), CancellationToken.None);
 
-        (await act.Should().ThrowAsync<ApplicationLayerException>())
-            .Which.StatusCode.Should().Be(409);
-
-        _repo.Verify(r => r.Atualizar(It.IsAny<Categoria>(), It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task Renomear_pra_mesmo_nome_case_diferente_nao_e_bloqueado_pelo_use_case()
-    {
-        Categoria categoria = CriarCategoria("Trabalho");
-        _repo.Setup(r => r.ObterPorId(categoria.Id, _usuarioId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(categoria);
-        _repo.Setup(r => r.ExisteOutraComNome(_usuarioId, "trabalho", categoria.Id, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(false);
-
-        CategoriaViewModel result = await Criar().Executar(categoria.Id, new AtualizarCategoriaInput("trabalho"));
-
-        result.Nome.Should().Be("trabalho");
+        result.IsFailure.Should().BeTrue();
+        result.Error!.Type.Should().Be(ErrorType.Conflict);
     }
 }

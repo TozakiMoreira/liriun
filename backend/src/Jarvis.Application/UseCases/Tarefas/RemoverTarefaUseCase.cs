@@ -1,6 +1,7 @@
 using Jarvis.Application.Interfaces.Auth;
+using Jarvis.Core.Common;
 using Jarvis.Core.Entities;
-using Jarvis.Core.Exceptions;
+using Jarvis.Core.Errors;
 using Jarvis.Core.Interfaces.Repositories;
 
 namespace Jarvis.Application.UseCases.Tarefas;
@@ -16,11 +17,13 @@ public class RemoverTarefaUseCase
         _usuarioLogado = usuarioLogado;
     }
 
-    public async Task Executar(Guid id, CancellationToken ct = default)
+    public async Task<Result> ExecuteAsync(Guid id, CancellationToken ct)
     {
-        Tarefa tarefa = await _tarefas.ObterPorId(id, _usuarioLogado.Id, ct)
-            ?? throw new ApplicationLayerException("Tarefa não encontrada", 404);
+        Tarefa? tarefa = await _tarefas.ObterPorIdAsync(id, _usuarioLogado.Id, ct);
+        if (tarefa is null)
+            return Result.Failure(TarefaErrors.NaoEncontrada());
 
-        await _tarefas.Remover(tarefa, ct);
+        await _tarefas.RemoverAsync(tarefa, ct);
+        return Result.Success();
     }
 }

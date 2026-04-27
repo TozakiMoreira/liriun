@@ -1,4 +1,5 @@
-using Jarvis.Core.Exceptions;
+using Jarvis.Core.Common;
+using Jarvis.Core.Errors;
 
 namespace Jarvis.Core.Entities;
 
@@ -12,37 +13,50 @@ public class Usuario
 
     private Usuario() { }
 
-    public Usuario(string nome, string email, string senhaHash)
+    internal static Usuario Reconstituir(Guid id, string nome, string email, string senhaHash, DateTime criadoEm)
+        => new() { Id = id, Nome = nome, Email = email, SenhaHash = senhaHash, CriadoEm = criadoEm };
+
+    public static Result<Usuario> Criar(string nome, string email, string senhaHash)
     {
-        Id = Guid.NewGuid();
-        Nome = nome;
-        Email = email?.Trim().ToLowerInvariant() ?? string.Empty;
-        SenhaHash = senhaHash;
-        CriadoEm = DateTime.UtcNow;
-        Validar();
+        Usuario usuario = new()
+        {
+            Id = Guid.NewGuid(),
+            Nome = nome?.Trim() ?? string.Empty,
+            Email = email?.Trim().ToLowerInvariant() ?? string.Empty,
+            SenhaHash = senhaHash,
+            CriadoEm = DateTime.UtcNow
+        };
+
+        Result validacao = usuario.Validar();
+        if (validacao.IsFailure)
+            return Result<Usuario>.Failure(validacao.Error!);
+
+        return Result<Usuario>.Success(usuario);
     }
 
-    private void Validar()
+    public Result AtualizarNome(string novoNome)
+    {
+        Nome = novoNome?.Trim() ?? string.Empty;
+        return Validar();
+    }
+
+    private Result Validar()
     {
         if (string.IsNullOrWhiteSpace(Nome))
-            throw new UsuarioException("Nome do usuário é obrigatório");
+            return Result.Failure(UsuarioErrors.NomeObrigatorio());
 
         if (Nome.Length > 100)
-            throw new UsuarioException("Nome não pode passar de 100 caracteres");
+            return Result.Failure(UsuarioErrors.NomeMuitoLongo());
 
         if (string.IsNullOrWhiteSpace(Email))
-            throw new UsuarioException("Email é obrigatório");
+            return Result.Failure(UsuarioErrors.EmailObrigatorio());
 
         if (!Email.Contains('@') || !Email.Contains('.'))
-            throw new UsuarioException("Email em formato inválido");
+            return Result.Failure(UsuarioErrors.EmailInvalido());
 
         if (string.IsNullOrWhiteSpace(SenhaHash))
-            throw new UsuarioException("Senha é obrigatória");
-    }
+            return Result.Failure(UsuarioErrors.SenhaObrigatoria());
 
-    public void AtualizarNome(string novoNome)
-    {
-        Nome = novoNome;
-        Validar();
+        return Result.Success();
     }
 }

@@ -1,10 +1,12 @@
 using FluentAssertions;
+using FluentValidation;
+using FluentValidation.Results;
 using Jarvis.Application.InputModels.Auth;
 using Jarvis.Application.Interfaces.Auth;
 using Jarvis.Application.UseCases.Auth;
 using Jarvis.Application.ViewModels.Auth;
+using Jarvis.Core.Common;
 using Jarvis.Core.Entities;
-using Jarvis.Core.Exceptions;
 using Jarvis.Core.Interfaces.Repositories;
 using Moq;
 
@@ -15,48 +17,60 @@ public class LoginUseCaseTests
     private readonly Mock<IUsuarioRepository> _usuarios = new();
     private readonly Mock<IPasswordHasher> _hasher = new();
     private readonly Mock<IJwtTokenService> _jwt = new();
+    private readonly Mock<IValidator<LoginInput>> _validator = new();
 
-    private LoginUseCase Criar() => new(_usuarios.Object, _hasher.Object, _jwt.Object);
+    public LoginUseCaseTests()
+    {
+        _validator.Setup(v => v.ValidateAsync(It.IsAny<LoginInput>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult());
+    }
+
+    private LoginUseCase Criar() => new(_usuarios.Object, _hasher.Object, _jwt.Object, _validator.Object);
 
     [Fact]
     public async Task Retorna_token_quando_credenciais_corretas()
     {
-        Usuario usuario = new("Pedro", "pedro@ex.com", "hash-valido");
-        _usuarios.Setup(r => r.ObterPorEmail("pedro@ex.com", It.IsAny<CancellationToken>()))
+        Usuario usuario = Usuario.Criar("Pedro", "pedro@ex.com", "hash-valido").Value!;
+        _usuarios.Setup(r => r.ObterPorEmailAsync("pedro@ex.com", It.IsAny<CancellationToken>()))
             .ReturnsAsync(usuario);
         _hasher.Setup(h => h.Verificar("senha1234", "hash-valido")).Returns(true);
         _jwt.Setup(j => j.Gerar(usuario))
             .Returns(("token-fake", DateTime.UtcNow.AddHours(24)));
 
-        AutenticacaoViewModel result = await Criar().Executar(new LoginInput("pedro@ex.com", "senha1234"));
+        Result<AutenticacaoViewModel> result = await Criar().ExecuteAsync(
+            new LoginInput("pedro@ex.com", "senha1234"), CancellationToken.None);
 
-        result.Token.Should().Be("token-fake");
-        result.UsuarioId.Should().Be(usuario.Id);
+        result.IsSuccess.Should().BeTrue();
+        result.Value!.Token.Should().Be("token-fake");
+        result.Value.UsuarioId.Should().Be(usuario.Id);
     }
 
     [Fact]
-    public async Task Lanca_401_quando_usuario_nao_existe()
+    public async Task Retorna_unauthorized_quando_usuario_nao_existe()
     {
-        _usuarios.Setup(r => r.ObterPorEmail(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+        _usuarios.Setup(r => r.ObterPorEmailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((Usuario?)null);
 
-        Func<Task> act = () => Criar().Executar(new LoginInput("nao@existe.com", "senha1234"));
+        Result<AutenticacaoViewModel> result = await Criar().ExecuteAsync(
+            new LoginInput("nao@existe.com", "senha1234"), CancellationToken.None);
 
-        (await act.Should().ThrowAsync<ApplicationLayerException>())
-            .Which.StatusCode.Should().Be(401);
+        result.IsFailure.Should().BeTrue();
+        result.Error!.Code.Should().Be("usuario.credenciais-invalidas");
+        result.Error.Type.Should().Be(ErrorType.Unauthorized);
     }
 
     [Fact]
-    public async Task Lanca_401_quando_senha_invalida()
+    public async Task Retorna_unauthorized_quando_senha_invalida()
     {
-        Usuario usuario = new("Pedro", "pedro@ex.com", "hash-valido");
-        _usuarios.Setup(r => r.ObterPorEmail("pedro@ex.com", It.IsAny<CancellationToken>()))
+        Usuario usuario = Usuario.Criar("Pedro", "pedro@ex.com", "hash-valido").Value!;
+        _usuarios.Setup(r => r.ObterPorEmailAsync("pedro@ex.com", It.IsAny<CancellationToken>()))
             .ReturnsAsync(usuario);
         _hasher.Setup(h => h.Verificar(It.IsAny<string>(), It.IsAny<string>())).Returns(false);
 
-        Func<Task> act = () => Criar().Executar(new LoginInput("pedro@ex.com", "senha-errada"));
+        Result<AutenticacaoViewModel> result = await Criar().ExecuteAsync(
+            new LoginInput("pedro@ex.com", "senha-errada"), CancellationToken.None);
 
-        (await act.Should().ThrowAsync<ApplicationLayerException>())
-            .Which.StatusCode.Should().Be(401);
+        result.IsFailure.Should().BeTrue();
+        result.Error!.Type.Should().Be(ErrorType.Unauthorized);
     }
 }

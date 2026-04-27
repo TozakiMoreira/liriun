@@ -1,8 +1,12 @@
+using FluentValidation;
+using FluentValidation.Results;
 using Jarvis.Application.InputModels.Categorias;
 using Jarvis.Application.Interfaces.Auth;
+using Jarvis.Application.ReadRepositories;
 using Jarvis.Application.ViewModels.Categorias;
+using Jarvis.Core.Common;
 using Jarvis.Core.Entities;
-using Jarvis.Core.Exceptions;
+using Jarvis.Core.Errors;
 using Jarvis.Core.Interfaces.Repositories;
 
 namespace Jarvis.Application.UseCases.Categorias;
@@ -10,25 +14,47 @@ namespace Jarvis.Application.UseCases.Categorias;
 public class AtualizarCategoriaUseCase
 {
     private readonly ICategoriaRepository _categorias;
+    private readonly ICategoriaReadRepository _categoriaRead;
     private readonly IUsuarioLogado _usuarioLogado;
+    private readonly IValidator<AtualizarCategoriaInput> _validator;
 
-    public AtualizarCategoriaUseCase(ICategoriaRepository categorias, IUsuarioLogado usuarioLogado)
+    public AtualizarCategoriaUseCase(
+        ICategoriaRepository categorias,
+        ICategoriaReadRepository categoriaRead,
+        IUsuarioLogado usuarioLogado,
+        IValidator<AtualizarCategoriaInput> validator)
     {
         _categorias = categorias;
+        _categoriaRead = categoriaRead;
         _usuarioLogado = usuarioLogado;
+        _validator = validator;
     }
 
-    public async Task<CategoriaViewModel> Executar(Guid id, AtualizarCategoriaInput input, CancellationToken ct = default)
+    public async Task<Result<CategoriaViewModel>> ExecuteAsync(Guid id, AtualizarCategoriaInput input, CancellationToken ct)
     {
-        Categoria categoria = await _categorias.ObterPorId(id, _usuarioLogado.Id, ct)
-            ?? throw new ApplicationLayerException("Categoria não encontrada", 404);
+        ValidationResult validation = await _validator.ValidateAsync(input, ct);
+        if (!validation.IsValid)
+        {
+            Dictionary<string, string[]> details = validation.Errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
+            return Result<CategoriaViewModel>.Failure(
+                Error.Validation("categoria.validacao", "Dados invalidos", details));
+        }
 
-        if (await _categorias.ExisteOutraComNome(_usuarioLogado.Id, input.Nome, id, ct))
-            throw new ApplicationLayerException("Já existe uma categoria com esse nome", 409);
+        Categoria? categoria = await _categorias.ObterPorIdAsync(id, _usuarioLogado.Id, ct);
+        if (categoria is null)
+            return Result<CategoriaViewModel>.Failure(CategoriaErrors.NaoEncontrada());
 
-        categoria.Renomear(input.Nome);
-        await _categorias.Atualizar(categoria, ct);
+        if (await _categoriaRead.ExisteOutraComNomeAsync(_usuarioLogado.Id, input.Nome.Trim(), id, ct))
+            return Result<CategoriaViewModel>.Failure(CategoriaErrors.NomeJaExiste());
 
-        return CategoriaViewModel.From(categoria);
+        Result renomearResult = categoria.Renomear(input.Nome);
+        if (renomearResult.IsFailure)
+            return Result<CategoriaViewModel>.Failure(renomearResult.Error!);
+
+        Categoria atualizada = await _categorias.AtualizarAsync(categoria, ct);
+
+        return Result<CategoriaViewModel>.Success(CategoriaViewModel.FromEntity(atualizada));
     }
 }

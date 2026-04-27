@@ -1,7 +1,8 @@
 using Jarvis.Application.Interfaces.Auth;
 using Jarvis.Application.ViewModels.Tarefas;
+using Jarvis.Core.Common;
 using Jarvis.Core.Entities;
-using Jarvis.Core.Exceptions;
+using Jarvis.Core.Errors;
 using Jarvis.Core.Interfaces.Repositories;
 
 namespace Jarvis.Application.UseCases.Tarefas;
@@ -17,14 +18,18 @@ public class ConcluirTarefaUseCase
         _usuarioLogado = usuarioLogado;
     }
 
-    public async Task<TarefaViewModel> Executar(Guid id, CancellationToken ct = default)
+    public async Task<Result<TarefaViewModel>> ExecuteAsync(Guid id, CancellationToken ct)
     {
-        Tarefa tarefa = await _tarefas.ObterPorId(id, _usuarioLogado.Id, ct)
-            ?? throw new ApplicationLayerException("Tarefa não encontrada", 404);
+        Tarefa? tarefa = await _tarefas.ObterPorIdAsync(id, _usuarioLogado.Id, ct);
+        if (tarefa is null)
+            return Result<TarefaViewModel>.Failure(TarefaErrors.NaoEncontrada());
 
-        tarefa.Concluir();
-        await _tarefas.Concluir(tarefa, ct);
+        Result concluirResult = tarefa.Concluir();
+        if (concluirResult.IsFailure)
+            return Result<TarefaViewModel>.Failure(concluirResult.Error!);
 
-        return TarefaViewModel.From(tarefa, DateTime.UtcNow);
+        await _tarefas.AtualizarAsync(tarefa, tarefa.Categorias.Select(c => c.CategoriaId), ct);
+
+        return Result<TarefaViewModel>.Success(TarefaViewModel.FromEntity(tarefa, DateTime.UtcNow));
     }
 }

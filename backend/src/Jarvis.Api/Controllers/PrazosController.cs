@@ -1,6 +1,8 @@
+using Jarvis.Api.Extensions;
 using Jarvis.Application.InputModels.Prazos;
 using Jarvis.Application.UseCases.Prazos;
 using Jarvis.Application.ViewModels.Prazos;
+using Jarvis.Core.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,33 +14,33 @@ namespace Jarvis.Api.Controllers;
 public class PrazosController : ControllerBase
 {
     [HttpGet]
-    public async Task<ActionResult<IReadOnlyList<PrazoViewModel>>> Listar(
+    public async Task<IActionResult> Listar(
         [FromServices] ListarPrazosUseCase useCase,
         CancellationToken ct)
     {
-        IReadOnlyList<PrazoViewModel> lista = await useCase.Executar(ct);
-        return Ok(lista);
+        Result<IReadOnlyList<PrazoViewModel>> result = await useCase.ExecuteAsync(ct);
+        return result.ToActionResult(lista => Ok(lista));
     }
 
     [HttpPost]
-    public async Task<ActionResult<PrazoViewModel>> Criar(
+    public async Task<IActionResult> Criar(
         [FromBody] CriarPrazoInput input,
         [FromServices] CriarPrazoUseCase useCase,
         CancellationToken ct)
     {
-        PrazoViewModel prazo = await useCase.Executar(input, ct);
-        return Created($"/prazos/{prazo.Id}", prazo);
+        Result<PrazoViewModel> result = await useCase.ExecuteAsync(input, ct);
+        return result.ToActionResult(view => Created($"/prazos/{view.Id}", view));
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<ActionResult<PrazoViewModel>> Atualizar(
+    public async Task<IActionResult> Atualizar(
         [FromRoute] Guid id,
         [FromBody] AtualizarPrazoInput input,
         [FromServices] AtualizarPrazoUseCase useCase,
         CancellationToken ct)
     {
-        PrazoViewModel prazo = await useCase.Executar(id, input, ct);
-        return Ok(prazo);
+        Result<PrazoViewModel> result = await useCase.ExecuteAsync(id, input, ct);
+        return result.ToActionResult(view => Ok(view));
     }
 
     [HttpDelete("{id:guid}")]
@@ -47,7 +49,7 @@ public class PrazosController : ControllerBase
         [FromServices] RemoverPrazoUseCase useCase,
         CancellationToken ct)
     {
-        await useCase.Executar(id, ct);
-        return NoContent();
+        Result result = await useCase.ExecuteAsync(id, ct);
+        return result.ToActionResult(() => NoContent());
     }
 }

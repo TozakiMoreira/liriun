@@ -1,6 +1,8 @@
+using Jarvis.Api.Extensions;
 using Jarvis.Application.InputModels.Tarefas;
 using Jarvis.Application.UseCases.Tarefas;
 using Jarvis.Application.ViewModels.Tarefas;
+using Jarvis.Core.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,54 +14,54 @@ namespace Jarvis.Api.Controllers;
 public class TarefasController : ControllerBase
 {
     [HttpGet("pendentes")]
-    public async Task<ActionResult<IReadOnlyList<TarefaViewModel>>> ListarPendentes(
+    public async Task<IActionResult> ListarPendentes(
         [FromServices] ListarTarefasPendentesUseCase useCase,
         CancellationToken ct)
     {
-        IReadOnlyList<TarefaViewModel> lista = await useCase.Executar(ct);
-        return Ok(lista);
+        Result<IReadOnlyList<TarefaViewModel>> result = await useCase.ExecuteAsync(ct);
+        return result.ToActionResult(lista => Ok(lista));
     }
 
     [HttpGet("concluidas")]
-    public async Task<ActionResult<IReadOnlyList<TarefaViewModel>>> ListarConcluidas(
+    public async Task<IActionResult> ListarConcluidas(
         [FromServices] ListarTarefasConcluidasUseCase useCase,
         [FromQuery] DateTime? de,
         [FromQuery] DateTime? ate,
         CancellationToken ct)
     {
-        IReadOnlyList<TarefaViewModel> lista = await useCase.Executar(de, ate, ct);
-        return Ok(lista);
+        Result<IReadOnlyList<TarefaViewModel>> result = await useCase.ExecuteAsync(de, ate, ct);
+        return result.ToActionResult(lista => Ok(lista));
     }
 
     [HttpPost]
-    public async Task<ActionResult<TarefaViewModel>> Criar(
+    public async Task<IActionResult> Criar(
         [FromBody] CriarTarefaInput input,
         [FromServices] CriarTarefaUseCase useCase,
         CancellationToken ct)
     {
-        TarefaViewModel tarefa = await useCase.Executar(input, ct);
-        return Created($"/tarefas/{tarefa.Id}", tarefa);
+        Result<TarefaViewModel> result = await useCase.ExecuteAsync(input, ct);
+        return result.ToActionResult(view => Created($"/tarefas/{view.Id}", view));
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<ActionResult<TarefaViewModel>> Atualizar(
+    public async Task<IActionResult> Atualizar(
         [FromRoute] Guid id,
         [FromBody] AtualizarTarefaInput input,
         [FromServices] AtualizarTarefaUseCase useCase,
         CancellationToken ct)
     {
-        TarefaViewModel tarefa = await useCase.Executar(id, input, ct);
-        return Ok(tarefa);
+        Result<TarefaViewModel> result = await useCase.ExecuteAsync(id, input, ct);
+        return result.ToActionResult(view => Ok(view));
     }
 
     [HttpPost("{id:guid}/concluir")]
-    public async Task<ActionResult<TarefaViewModel>> Concluir(
+    public async Task<IActionResult> Concluir(
         [FromRoute] Guid id,
         [FromServices] ConcluirTarefaUseCase useCase,
         CancellationToken ct)
     {
-        TarefaViewModel tarefa = await useCase.Executar(id, ct);
-        return Ok(tarefa);
+        Result<TarefaViewModel> result = await useCase.ExecuteAsync(id, ct);
+        return result.ToActionResult(view => Ok(view));
     }
 
     [HttpDelete("{id:guid}")]
@@ -68,7 +70,7 @@ public class TarefasController : ControllerBase
         [FromServices] RemoverTarefaUseCase useCase,
         CancellationToken ct)
     {
-        await useCase.Executar(id, ct);
-        return NoContent();
+        Result result = await useCase.ExecuteAsync(id, ct);
+        return result.ToActionResult(() => NoContent());
     }
 }

@@ -1,3 +1,4 @@
+using FluentValidation;
 using Jarvis.Application.UseCases.Auth;
 using Jarvis.Application.UseCases.Categorias;
 using Jarvis.Application.UseCases.Prazos;
@@ -10,6 +11,8 @@ public static class ApplicationModule
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
+        services.AddValidatorsFromAssemblyContaining<CadastrarUsuarioUseCase>(ServiceLifetime.Scoped);
+
         services.AddScoped<CadastrarUsuarioUseCase>();
         services.AddScoped<LoginUseCase>();
 

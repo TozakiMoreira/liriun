@@ -1,24 +1,28 @@
 using Jarvis.Application.Interfaces.Auth;
+using Jarvis.Application.ReadModels;
+using Jarvis.Application.ReadRepositories;
 using Jarvis.Application.ViewModels.Prazos;
-using Jarvis.Core.Entities;
-using Jarvis.Core.Interfaces.Repositories;
+using Jarvis.Core.Common;
 
 namespace Jarvis.Application.UseCases.Prazos;
 
 public class ListarPrazosUseCase
 {
-    private readonly IPrazoRepository _prazos;
+    private readonly IPrazoReadRepository _prazoRead;
     private readonly IUsuarioLogado _usuarioLogado;
 
-    public ListarPrazosUseCase(IPrazoRepository prazos, IUsuarioLogado usuarioLogado)
+    public ListarPrazosUseCase(IPrazoReadRepository prazoRead, IUsuarioLogado usuarioLogado)
     {
-        _prazos = prazos;
+        _prazoRead = prazoRead;
         _usuarioLogado = usuarioLogado;
     }
 
-    public async Task<IReadOnlyList<PrazoViewModel>> Executar(CancellationToken ct = default)
+    public async Task<Result<IReadOnlyList<PrazoViewModel>>> ExecuteAsync(CancellationToken ct)
     {
-        IReadOnlyList<Prazo> lista = await _prazos.ListarPorUsuario(_usuarioLogado.Id, ct);
-        return lista.Select(PrazoViewModel.From).ToList();
+        IReadOnlyList<PrazoReadModel> lista = await _prazoRead.ListarPorUsuarioAsync(_usuarioLogado.Id, ct);
+        IReadOnlyList<PrazoViewModel> viewModels = lista
+            .Select(PrazoViewModel.FromReadModel)
+            .ToList();
+        return Result<IReadOnlyList<PrazoViewModel>>.Success(viewModels);
     }
 }

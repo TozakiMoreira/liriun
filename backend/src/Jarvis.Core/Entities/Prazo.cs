@@ -1,11 +1,8 @@
-using Jarvis.Core.Exceptions;
+using Jarvis.Core.Common;
+using Jarvis.Core.Errors;
 
 namespace Jarvis.Core.Entities;
 
-/// <summary>
-/// Template de duração nomeada (ex: "Hoje" = 0 dias, "Amanhã" = 1 dia, "Essa semana" = 7 dias).
-/// DuracaoDias = null representa "Sem prazo".
-/// </summary>
 public class Prazo
 {
     public Guid Id { get; private set; }
@@ -16,29 +13,25 @@ public class Prazo
 
     private Prazo() { }
 
-    public Prazo(Guid usuarioId, string nome, int? duracaoDias)
+    internal static Prazo Reconstituir(Guid id, Guid usuarioId, string nome, int? duracaoDias, DateTime criadoEm)
+        => new() { Id = id, UsuarioId = usuarioId, Nome = nome, DuracaoDias = duracaoDias, CriadoEm = criadoEm };
+
+    public static Result<Prazo> Criar(Guid usuarioId, string nome, int? duracaoDias)
     {
-        Id = Guid.NewGuid();
-        UsuarioId = usuarioId;
-        Nome = nome?.Trim() ?? string.Empty;
-        DuracaoDias = duracaoDias;
-        CriadoEm = DateTime.UtcNow;
-        Validar();
-    }
+        Prazo prazo = new()
+        {
+            Id = Guid.NewGuid(),
+            UsuarioId = usuarioId,
+            Nome = nome?.Trim() ?? string.Empty,
+            DuracaoDias = duracaoDias,
+            CriadoEm = DateTime.UtcNow
+        };
 
-    private void Validar()
-    {
-        if (UsuarioId == Guid.Empty)
-            throw new PrazoException("Prazo precisa estar vinculado a um usuário");
+        Result validacao = prazo.Validar();
+        if (validacao.IsFailure)
+            return Result<Prazo>.Failure(validacao.Error!);
 
-        if (string.IsNullOrWhiteSpace(Nome))
-            throw new PrazoException("Nome do prazo é obrigatório");
-
-        if (Nome.Length > 50)
-            throw new PrazoException("Nome do prazo não pode passar de 50 caracteres");
-
-        if (DuracaoDias.HasValue && DuracaoDias.Value < 0)
-            throw new PrazoException("Duração em dias não pode ser negativa");
+        return Result<Prazo>.Success(prazo);
     }
 
     public DateTime? ResolverDataPrazo(DateTime referencia)
@@ -49,10 +42,27 @@ public class Prazo
         return referencia.Date.AddDays(DuracaoDias.Value);
     }
 
-    public void Atualizar(string novoNome, int? novaDuracao)
+    public Result Atualizar(string novoNome, int? novaDuracao)
     {
         Nome = novoNome?.Trim() ?? string.Empty;
         DuracaoDias = novaDuracao;
-        Validar();
+        return Validar();
+    }
+
+    private Result Validar()
+    {
+        if (UsuarioId == Guid.Empty)
+            return Result.Failure(PrazoErrors.UsuarioObrigatorio());
+
+        if (string.IsNullOrWhiteSpace(Nome))
+            return Result.Failure(PrazoErrors.NomeObrigatorio());
+
+        if (Nome.Length > 50)
+            return Result.Failure(PrazoErrors.NomeMuitoLongo());
+
+        if (DuracaoDias.HasValue && DuracaoDias.Value < 0)
+            return Result.Failure(PrazoErrors.DuracaoNegativa());
+
+        return Result.Success();
     }
 }

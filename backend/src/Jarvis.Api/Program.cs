@@ -3,7 +3,7 @@ using Jarvis.Api.Auth;
 using Jarvis.Api.Middlewares;
 using Jarvis.Application.Interfaces.Auth;
 using Jarvis.Application.IoC;
-using Jarvis.Infra.IoC;
+using Jarvis.Infrastructure.IoC;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 

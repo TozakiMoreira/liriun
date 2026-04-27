@@ -1,24 +1,28 @@
 using Jarvis.Application.Interfaces.Auth;
+using Jarvis.Application.ReadModels;
+using Jarvis.Application.ReadRepositories;
 using Jarvis.Application.ViewModels.Categorias;
-using Jarvis.Core.Entities;
-using Jarvis.Core.Interfaces.Repositories;
+using Jarvis.Core.Common;
 
 namespace Jarvis.Application.UseCases.Categorias;
 
 public class ListarCategoriasUseCase
 {
-    private readonly ICategoriaRepository _categorias;
+    private readonly ICategoriaReadRepository _categoriaRead;
     private readonly IUsuarioLogado _usuarioLogado;
 
-    public ListarCategoriasUseCase(ICategoriaRepository categorias, IUsuarioLogado usuarioLogado)
+    public ListarCategoriasUseCase(ICategoriaReadRepository categoriaRead, IUsuarioLogado usuarioLogado)
     {
-        _categorias = categorias;
+        _categoriaRead = categoriaRead;
         _usuarioLogado = usuarioLogado;
     }
 
-    public async Task<IReadOnlyList<CategoriaViewModel>> Executar(CancellationToken ct = default)
+    public async Task<Result<IReadOnlyList<CategoriaViewModel>>> ExecuteAsync(CancellationToken ct)
     {
-        IReadOnlyList<Categoria> lista = await _categorias.ListarPorUsuario(_usuarioLogado.Id, ct);
-        return lista.Select(CategoriaViewModel.From).ToList();
+        IReadOnlyList<CategoriaReadModel> lista = await _categoriaRead.ListarPorUsuarioAsync(_usuarioLogado.Id, ct);
+        IReadOnlyList<CategoriaViewModel> viewModels = lista
+            .Select(CategoriaViewModel.FromReadModel)
+            .ToList();
+        return Result<IReadOnlyList<CategoriaViewModel>>.Success(viewModels);
     }
 }

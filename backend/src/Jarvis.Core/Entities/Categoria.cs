@@ -1,4 +1,5 @@
-using Jarvis.Core.Exceptions;
+using Jarvis.Core.Common;
+using Jarvis.Core.Errors;
 
 namespace Jarvis.Core.Entities;
 
@@ -13,30 +14,43 @@ public class Categoria
 
     private Categoria() { }
 
-    public Categoria(Guid usuarioId, string nome)
+    internal static Categoria Reconstituir(Guid id, Guid usuarioId, string nome, DateTime criadaEm)
+        => new() { Id = id, UsuarioId = usuarioId, Nome = nome, CriadaEm = criadaEm };
+
+    public static Result<Categoria> Criar(Guid usuarioId, string nome)
     {
-        Id = Guid.NewGuid();
-        UsuarioId = usuarioId;
-        Nome = nome?.Trim() ?? string.Empty;
-        CriadaEm = DateTime.UtcNow;
-        Validar();
+        Categoria categoria = new()
+        {
+            Id = Guid.NewGuid(),
+            UsuarioId = usuarioId,
+            Nome = nome?.Trim() ?? string.Empty,
+            CriadaEm = DateTime.UtcNow
+        };
+
+        Result validacao = categoria.Validar();
+        if (validacao.IsFailure)
+            return Result<Categoria>.Failure(validacao.Error!);
+
+        return Result<Categoria>.Success(categoria);
     }
 
-    private void Validar()
-    {
-        if (UsuarioId == Guid.Empty)
-            throw new CategoriaException("Categoria precisa estar vinculada a um usuário");
-
-        if (string.IsNullOrWhiteSpace(Nome))
-            throw new CategoriaException("Nome da categoria é obrigatório");
-
-        if (Nome.Length > 50)
-            throw new CategoriaException("Nome da categoria não pode passar de 50 caracteres");
-    }
-
-    public void Renomear(string novoNome)
+    public Result Renomear(string novoNome)
     {
         Nome = novoNome?.Trim() ?? string.Empty;
-        Validar();
+        return Validar();
+    }
+
+    private Result Validar()
+    {
+        if (UsuarioId == Guid.Empty)
+            return Result.Failure(CategoriaErrors.UsuarioObrigatorio());
+
+        if (string.IsNullOrWhiteSpace(Nome))
+            return Result.Failure(CategoriaErrors.NomeObrigatorio());
+
+        if (Nome.Length > 50)
+            return Result.Failure(CategoriaErrors.NomeMuitoLongo());
+
+        return Result.Success();
     }
 }

@@ -1,6 +1,8 @@
 using Jarvis.Application.Interfaces.Auth;
+using Jarvis.Application.ReadRepositories;
+using Jarvis.Core.Common;
 using Jarvis.Core.Entities;
-using Jarvis.Core.Exceptions;
+using Jarvis.Core.Errors;
 using Jarvis.Core.Interfaces.Repositories;
 
 namespace Jarvis.Application.UseCases.Prazos;
@@ -8,22 +10,29 @@ namespace Jarvis.Application.UseCases.Prazos;
 public class RemoverPrazoUseCase
 {
     private readonly IPrazoRepository _prazos;
+    private readonly IPrazoReadRepository _prazoRead;
     private readonly IUsuarioLogado _usuarioLogado;
 
-    public RemoverPrazoUseCase(IPrazoRepository prazos, IUsuarioLogado usuarioLogado)
+    public RemoverPrazoUseCase(
+        IPrazoRepository prazos,
+        IPrazoReadRepository prazoRead,
+        IUsuarioLogado usuarioLogado)
     {
         _prazos = prazos;
+        _prazoRead = prazoRead;
         _usuarioLogado = usuarioLogado;
     }
 
-    public async Task Executar(Guid id, CancellationToken ct = default)
+    public async Task<Result> ExecuteAsync(Guid id, CancellationToken ct)
     {
-        Prazo prazo = await _prazos.ObterPorId(id, _usuarioLogado.Id, ct)
-            ?? throw new ApplicationLayerException("Prazo não encontrado", 404);
+        Prazo? prazo = await _prazos.ObterPorIdAsync(id, _usuarioLogado.Id, ct);
+        if (prazo is null)
+            return Result.Failure(PrazoErrors.NaoEncontrado());
 
-        if (await _prazos.TemTarefaPendente(prazo.Id, ct))
-            throw new ApplicationLayerException("Prazo possui tarefas pendentes vinculadas. Conclua ou remova as tarefas antes de excluir o prazo.", 409);
+        if (await _prazoRead.TemTarefaPendenteAsync(prazo.Id, ct))
+            return Result.Failure(PrazoErrors.PossuiTarefasPendentes());
 
-        await _prazos.Remover(prazo, ct);
+        await _prazos.RemoverAsync(prazo, ct);
+        return Result.Success();
     }
 }

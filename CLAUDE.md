@@ -119,7 +119,7 @@ Usuario escolhe ANTES de digitar qual modo usar (2 botoes: Manual ou Jarvis).
 - `docs/PROJETO.md` - Documento principal completo
 - `docs/ENTREVISTA.md` - Descoberta de produto consolidada (fonte autoritativa de decisoes de produto)
 - `docs/DESENVOLVIMENTO.md` - Plano de desenvolvimento em fases com checklist
-- `docs/ARQUITETURA.md` - Arquitetura do backend (camadas, padrões, convenções, exceções, JWT)
+- `backend/ARCHITECTURE.md` - Arquitetura do backend (Clean Architecture, Result<T>, ProblemDetails, FluentValidation, Read/Write repos)
 - `docs/FUTURO.md` - Visão de longo prazo / ideias futuras
 - `docs/SEMANA.md` - Planejamento da semana corrente
 - `docs/fluxos/` - Diagramas e fluxos de uso

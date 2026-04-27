@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Jarvis.Core.Exceptions;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Jarvis.Api.Middlewares;
 
@@ -7,16 +7,11 @@ public class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-    private readonly IHostEnvironment _env;
 
-    public ExceptionHandlingMiddleware(
-        RequestDelegate next,
-        ILogger<ExceptionHandlingMiddleware> logger,
-        IHostEnvironment env)
+    public ExceptionHandlingMiddleware(RequestDelegate next, ILogger<ExceptionHandlingMiddleware> logger)
     {
         _next = next;
         _logger = logger;
-        _env = env;
     }
 
     public async Task Invoke(HttpContext context)
@@ -25,51 +20,29 @@ public class ExceptionHandlingMiddleware
         {
             await _next(context);
         }
-        catch (DomainException ex)
-        {
-            await EscreverErro(context, ex.StatusCode, ex.ErrorCode, ex.Message, ex);
-        }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Erro não tratado em {Method} {Path}", context.Request.Method, context.Request.Path);
-            await EscreverErro(context, 500, "ERRO_INTERNO", "Erro inesperado. Tente novamente.", ex);
-        }
-    }
+            _logger.LogError(ex, "Erro nao tratado em {Method} {Path}", context.Request.Method, context.Request.Path);
 
-    private Task EscreverErro(HttpContext context, int statusCode, string errorCode, string mensagem, Exception ex)
-    {
-        context.Response.StatusCode = statusCode;
-        context.Response.ContentType = "application/json";
-
-        object payload = _env.IsDevelopment()
-            ? new
+            ProblemDetails problem = new()
             {
-                errorCode,
-                mensagem,
-                tipo = ex.GetType().FullName,
-                detalhe = ex.Message,
-                inner = ColetarInner(ex),
-                stack = ex.StackTrace
-            }
-            : (object)new { errorCode, mensagem };
+                Type = "https://jarvis-api/erros/interno",
+                Title = "Erro interno",
+                Status = StatusCodes.Status500InternalServerError,
+                Detail = "Erro inesperado. Tente novamente."
+            };
 
-        string json = JsonSerializer.Serialize(payload, new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+            problem.Extensions["traceId"] = context.TraceIdentifier;
 
-        return context.Response.WriteAsync(json);
-    }
+            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+            context.Response.ContentType = "application/problem+json";
 
-    private static List<object> ColetarInner(Exception ex)
-    {
-        List<object> list = new();
-        Exception? cur = ex.InnerException;
-        while (cur != null)
-        {
-            list.Add(new { tipo = cur.GetType().FullName, detalhe = cur.Message });
-            cur = cur.InnerException;
+            string json = JsonSerializer.Serialize(problem, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            });
+
+            await context.Response.WriteAsync(json);
         }
-        return list;
     }
 }
