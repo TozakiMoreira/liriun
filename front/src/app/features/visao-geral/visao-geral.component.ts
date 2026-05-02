@@ -100,6 +100,7 @@ interface DiaResumo {
         >
           <a
             routerLink="/app/tarefas"
+            [queryParams]="{ periodo: 'hoje' }"
             class="card-elev p-4 flex flex-col gap-1.5 hover:border-accent/40 hover:-translate-y-0.5 transition-all duration-300 ease-out"
             data-testid="card-pendentes"
           >
@@ -113,6 +114,7 @@ interface DiaResumo {
 
           <a
             routerLink="/app/tarefas"
+            [queryParams]="{ status: 'atrasadas' }"
             class="card-elev p-4 flex flex-col gap-1.5 hover:border-danger/40 hover:-translate-y-0.5 transition-all duration-300 ease-out"
             data-testid="card-atrasadas"
           >
@@ -178,6 +180,7 @@ interface DiaResumo {
             </div>
             <a
               routerLink="/app/tarefas"
+              [queryParams]="{ view: 'semana' }"
               class="text-[11px] text-accent hover:text-accent-hover"
             >
               Ver semana →

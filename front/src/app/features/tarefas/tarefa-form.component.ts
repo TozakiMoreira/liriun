@@ -40,7 +40,6 @@ export interface SugestaoTarefa {
       role="dialog"
       aria-modal="true"
       aria-labelledby="tarefa-form-title"
-      (click)="fechar()"
     >
       <div
         class="card-elev w-full max-w-[520px] max-h-[90vh] overflow-y-auto animate-scale-in"

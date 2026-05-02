@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, HostListener, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { Tarefa, TarefasService } from '../../core/api/tarefas.service';
 import { ConfirmModalComponent } from '../../shared/confirm-modal.component';
 import { extrairProblemDetails } from '../../shared/problem-details';
@@ -29,11 +30,16 @@ interface ColunaKanban {
   tarefas: Tarefa[];
 }
 
+type PeriodoFiltro = 'todas' | 'hoje' | 'amanha' | 'semana' | 'mes' | 'proximoMes';
+
 interface FiltrosTarefas {
   categoriaIds: string[];
   prioridades: number[];
   statusAtraso: 'todas' | 'atrasadas' | 'noprazo';
+  periodo: PeriodoFiltro;
 }
+
+const PERIODOS_VALIDOS: PeriodoFiltro[] = ['todas', 'hoje', 'amanha', 'semana', 'mes', 'proximoMes'];
 
 type TarefasView = 'lista' | 'kanban' | 'semana';
 
@@ -44,6 +50,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
   categoriaIds: [],
   prioridades: [],
   statusAtraso: 'todas',
+  periodo: 'todas',
 };
 
 @Component({
@@ -216,6 +223,38 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                   [style.background]="corPrioridade(p.v)"
                 ></span>
                 {{ p.label }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">
+            Período
+          </span>
+          <div class="flex flex-wrap gap-1.5" role="radiogroup">
+            @for (opt of [
+              { v: 'todas', label: 'Todas' },
+              { v: 'hoje', label: 'Hoje' },
+              { v: 'amanha', label: 'Amanhã' },
+              { v: 'semana', label: 'Esta semana' },
+              { v: 'mes', label: 'Este mês' },
+              { v: 'proximoMes', label: 'Mês que vem' }
+            ]; track opt.v) {
+              <button
+                type="button"
+                role="radio"
+                [attr.aria-checked]="filtros().periodo === opt.v"
+                class="px-2.5 py-1 rounded text-[12px] border transition-colors"
+                [class]="
+                  filtros().periodo === opt.v
+                    ? 'bg-accent/15 border-accent/40 text-text'
+                    : 'bg-[#16181c] border-border-strong text-text-dim hover:text-text'
+                "
+                [attr.data-testid]="'filtro-periodo-' + opt.v"
+                (click)="setFiltroPeriodo($any(opt.v))"
+              >
+                {{ opt.label }}
               </button>
             }
           </div>
@@ -504,7 +543,8 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                 <div class="flex flex-col gap-2">
                   @for (t of col.tarefas; track t.id) {
                     <article
-                      class="relative bg-bg-input border border-border rounded p-2.5 cursor-pointer hover:border-border-strong hover:-translate-y-px hover:shadow-md focus:outline-none focus:border-accent transition-all duration-200"
+                      class="relative bg-bg-input border border-border rounded p-2.5 cursor-pointer hover:border-border-strong hover:-translate-y-px hover:shadow-md focus:outline-none focus-visible:outline-none transition-all duration-200"
+                      style="outline: none !important; -webkit-tap-highlight-color: transparent;"
                       [class.opacity-0]="saindo().has(t.id)"
                       [class.scale-95]="saindo().has(t.id)"
                       [class.pointer-events-none]="processando().has(t.id) || saindo().has(t.id)"
@@ -729,6 +769,22 @@ const FILTROS_PADRAO: FiltrosTarefas = {
       ></app-confirm-modal>
     }
 
+    @if (toast(); as t) {
+      <div
+        class="fixed bottom-6 right-6 z-[60] rounded-lg px-4 py-3 text-[13px] shadow-xl max-w-sm slide-up flex items-center gap-3 border toast-sucesso"
+        data-testid="tarefas-toast"
+        role="status"
+      >
+        <span
+          class="w-7 h-7 rounded-full grid place-items-center shrink-0 toast-sucesso-icone"
+          aria-hidden="true"
+        >
+          <i class="fa-solid fa-check text-[13px]"></i>
+        </span>
+        <span class="flex-1 leading-snug font-medium">{{ t }}</span>
+      </div>
+    }
+
     @if (tarefaDetalhe(); as t) {
       <app-tarefa-detalhe-modal
         [tarefa]="t"
@@ -742,6 +798,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
 })
 export class TarefasComponent implements OnInit, OnDestroy {
   private readonly tarefasApi = inject(TarefasService);
+  private readonly route = inject(ActivatedRoute);
 
   readonly pendentes = signal<Tarefa[]>([]);
   readonly carregando = signal(true);
@@ -751,6 +808,8 @@ export class TarefasComponent implements OnInit, OnDestroy {
   readonly processando = signal(new Set<string>());
   readonly saindo = signal(new Set<string>());
   readonly erroLista = signal<string | null>(null);
+  readonly toast = signal<string | null>(null);
+  private toastTimer: ReturnType<typeof setTimeout> | null = null;
   readonly confirmacao = signal<Confirmacao | null>(null);
   readonly view = signal<TarefasView>(this.lerView());
   readonly filtros = signal<FiltrosTarefas>(this.lerFiltros());
@@ -779,12 +838,14 @@ export class TarefasComponent implements OnInit, OnDestroy {
     return (
       f.categoriaIds.length +
       f.prioridades.length +
-      (f.statusAtraso !== 'todas' ? 1 : 0)
+      (f.statusAtraso !== 'todas' ? 1 : 0) +
+      (f.periodo !== 'todas' ? 1 : 0)
     );
   });
 
   readonly tarefasFiltradas = computed(() => {
     const f = this.filtros();
+    const range = this.rangePeriodo(f.periodo);
     return this.pendentes().filter((t) => {
       if (f.categoriaIds.length > 0) {
         const tem = t.categorias.some((c) => f.categoriaIds.includes(c.id));
@@ -793,9 +854,56 @@ export class TarefasComponent implements OnInit, OnDestroy {
       if (f.prioridades.length > 0 && !f.prioridades.includes(t.prioridade)) return false;
       if (f.statusAtraso === 'atrasadas' && t.status !== 3) return false;
       if (f.statusAtraso === 'noprazo' && t.status === 3) return false;
+      if (range) {
+        if (!t.dataPrazo) return false;
+        const d = this.parseDataLocal(t.dataPrazo);
+        if (!d) return false;
+        if (d < range.inicio || d > range.fim) return false;
+      }
       return true;
     });
   });
+
+  private rangePeriodo(p: PeriodoFiltro): { inicio: Date; fim: Date } | null {
+    if (p === 'todas') return null;
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    if (p === 'hoje') {
+      const fim = new Date(hoje);
+      fim.setHours(23, 59, 59, 999);
+      return { inicio: hoje, fim };
+    }
+    if (p === 'amanha') {
+      const ini = new Date(hoje);
+      ini.setDate(ini.getDate() + 1);
+      const fim = new Date(ini);
+      fim.setHours(23, 59, 59, 999);
+      return { inicio: ini, fim };
+    }
+    if (p === 'semana') {
+      const ini = this.segundaDaSemana(hoje);
+      const fim = new Date(ini);
+      fim.setDate(fim.getDate() + 6);
+      fim.setHours(23, 59, 59, 999);
+      return { inicio: ini, fim };
+    }
+    if (p === 'mes') {
+      const ini = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+      const fim = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0, 23, 59, 59, 999);
+      return { inicio: ini, fim };
+    }
+    // proximoMes
+    const ini = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
+    const fim = new Date(hoje.getFullYear(), hoje.getMonth() + 2, 0, 23, 59, 59, 999);
+    return { inicio: ini, fim };
+  }
+
+  private parseDataLocal(iso: string): Date | null {
+    // dataPrazo vem como ISO 'YYYY-MM-DD' ou ISO completa. Usa só a parte da data, local.
+    const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso);
+    if (!m) return null;
+    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  }
 
   readonly colunasKanban = computed<ColunaKanban[]>(() => {
     const ordem = [
@@ -861,6 +969,22 @@ export class TarefasComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    const qp = this.route.snapshot.queryParamMap;
+    const v = qp.get('view');
+    if (v === 'semana' || v === 'kanban' || v === 'lista') {
+      this.setView(v);
+    }
+    const periodo = qp.get('periodo');
+    const status = qp.get('status');
+    if (periodo || status) {
+      this.limparFiltros();
+    }
+    if (periodo && PERIODOS_VALIDOS.includes(periodo as PeriodoFiltro)) {
+      this.setFiltroPeriodo(periodo as PeriodoFiltro);
+    }
+    if (status === 'atrasadas' || status === 'noprazo' || status === 'todas') {
+      this.setFiltroStatus(status);
+    }
     this.carregar();
     this.agoraTimer = window.setInterval(() => this.agora.set(new Date()), 60000);
   }
@@ -869,6 +993,10 @@ export class TarefasComponent implements OnInit, OnDestroy {
     if (this.agoraTimer !== null) {
       window.clearInterval(this.agoraTimer);
       this.agoraTimer = null;
+    }
+    if (this.toastTimer) {
+      clearTimeout(this.toastTimer);
+      this.toastTimer = null;
     }
   }
 
@@ -1141,6 +1269,10 @@ export class TarefasComponent implements OnInit, OnDestroy {
     this.atualizarFiltros((f) => ({ ...f, statusAtraso: valor }));
   }
 
+  setFiltroPeriodo(v: PeriodoFiltro): void {
+    this.atualizarFiltros((f) => ({ ...f, periodo: v }));
+  }
+
   limparFiltros(): void {
     this.atualizarFiltros(() => ({ ...FILTROS_PADRAO }));
   }
@@ -1167,6 +1299,10 @@ export class TarefasComponent implements OnInit, OnDestroy {
           parsed.statusAtraso === 'atrasadas' || parsed.statusAtraso === 'noprazo'
             ? parsed.statusAtraso
             : 'todas',
+        periodo:
+          parsed.periodo && PERIODOS_VALIDOS.includes(parsed.periodo as PeriodoFiltro)
+            ? (parsed.periodo as PeriodoFiltro)
+            : 'todas',
       };
     } catch {
       return { ...FILTROS_PADRAO };
@@ -1185,8 +1321,16 @@ export class TarefasComponent implements OnInit, OnDestroy {
   }
 
   aposSalvar(): void {
+    const editou = this.emEdicao() !== null;
     this.fecharForm();
     this.carregar();
+    this.mostrarToast(editou ? 'Tarefa editada.' : 'Tarefa criada.');
+  }
+
+  private mostrarToast(texto: string): void {
+    this.toast.set(texto);
+    if (this.toastTimer) clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => this.toast.set(null), 3500);
   }
 
   executarConfirmacao(): void {

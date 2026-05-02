@@ -151,6 +151,18 @@ type Modo = 'manual' | 'jarvis' | null;
           class="w-full max-w-[680px] flex flex-col gap-5 fade-in"
           data-testid="jarvis-panel"
         >
+          <div class="flex items-center">
+            <button
+              type="button"
+              class="inline-flex items-center gap-2 px-3 h-9 rounded-md text-[13px] text-text-dim border border-border bg-bg-elev/40 hover:text-text hover:border-border-strong hover:bg-bg-elev transition-colors"
+              data-testid="jarvis-voltar"
+              aria-label="Voltar"
+              (click)="modo.set(null)"
+            >
+              <i class="fa-solid fa-arrow-left text-[12px]"></i>
+              Voltar
+            </button>
+          </div>
           @if (!chatAtivo()) {
             <div class="text-center flex flex-col gap-2 fade-down">
               <div class="flex items-center justify-center gap-2 mb-1">
@@ -560,7 +572,7 @@ type Modo = 'manual' | 'jarvis' | null;
               </form>
               @if (!chatAtivo()) {
                 <div
-                  class="flex items-center justify-between mt-2 text-[11px] text-text-subtle px-1"
+                  class="flex items-center mt-2 text-[11px] text-text-subtle px-1"
                 >
                   <span class="flex items-center gap-1.5">
                     <i class="fa-solid fa-circle-info text-[10px]"></i>
@@ -571,14 +583,6 @@ type Modo = 'manual' | 'jarvis' | null;
                       </span>
                     }
                   </span>
-                  <button
-                    type="button"
-                    class="hover:text-text-dim transition-colors"
-                    data-testid="jarvis-voltar"
-                    (click)="modo.set(null)"
-                  >
-                    voltar
-                  </button>
                 </div>
               } @else {
                 <div
@@ -600,7 +604,7 @@ type Modo = 'manual' | 'jarvis' | null;
       @if (toast(); as t) {
         <div
           [ngClass]="[
-            'fixed bottom-6 right-6 rounded-lg px-4 py-3 text-[13px] shadow-xl max-w-sm slide-up flex items-center gap-3 border',
+            'fixed bottom-6 right-6 z-[60] rounded-lg px-4 py-3 text-[13px] shadow-xl max-w-sm slide-up flex items-center gap-3 border',
             t.tipo === 'sucesso' ? 'toast-sucesso' : 'bg-bg-elev border-border text-text-dim'
           ]"
           data-testid="captura-toast"

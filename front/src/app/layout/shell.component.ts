@@ -47,11 +47,11 @@ import { AvatarComponent } from '../shared/avatar.component';
         style="background-image: radial-gradient(ellipse 70% 30% at 50% 0%, rgba(94, 106, 210, 0.08), transparent);"
       >
         <a
-          routerLink="/"
+          routerLink="/app/visao-geral"
           class="flex items-center gap-2.5 px-2 py-2 mb-3 rounded-md hover:bg-bg-elev/60 transition-colors"
           data-testid="sidebar-logo"
-          aria-label="Voltar pra landing"
-          title="Voltar pra landing"
+          aria-label="Ir pra visão geral"
+          title="Visão geral"
         >
           <div
             class="w-8 h-8 rounded-lg bg-logo-grad grid place-items-center text-sm font-bold tracking-tight shadow-logo"

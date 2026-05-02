@@ -23,7 +23,6 @@ import { resizeImageToDataUrl } from './image-resize';
       aria-modal="true"
       aria-labelledby="foto-modal-title"
       data-testid="foto-modal-overlay"
-      (click)="onCancelar()"
     >
       <div
         class="card-elev w-full max-w-[400px] animate-scale-in"
