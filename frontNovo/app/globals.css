@@ -1,0 +1,63 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* shadcn HSL tokens — apontam pra paleta Jarvis */
+    --background: 220 8% 4%;
+    --foreground: 210 6% 97%;
+    --card: 220 8% 7%;
+    --card-foreground: 210 6% 97%;
+    --popover: 220 8% 7%;
+    --popover-foreground: 210 6% 97%;
+    --primary: 232 56% 60%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 6% 11%;
+    --secondary-foreground: 210 6% 97%;
+    --muted: 220 6% 11%;
+    --muted-foreground: 215 6% 57%;
+    --destructive: 0 79% 63%;
+    --destructive-foreground: 0 0% 100%;
+    --ring: 232 56% 60%;
+  }
+
+  * {
+    @apply border-border box-border;
+  }
+
+  html,
+  body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #08090a;
+    color: #f7f8f8;
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui,
+      sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer components {
+  .field-label {
+    @apply text-xs font-medium text-text-dim;
+  }
+
+  .card-elev {
+    @apply bg-bg-elev border border-border rounded-lg;
+  }
+}
+
+@layer utilities {
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}

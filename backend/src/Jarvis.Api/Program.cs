@@ -6,11 +6,38 @@ using Jarvis.Application.IoC;
 using Jarvis.Infrastructure.IoC;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(opt =>
+{
+    opt.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Jarvis API",
+        Version = "v1",
+        Description = "Organizador pessoal de tarefas. Use /auth/cadastro ou /auth/login pra obter um token, depois clique em Authorize e cole o JWT."
+    });
+
+    opt.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Cole apenas o token JWT (sem o prefixo 'Bearer ')."
+    });
+
+    opt.AddSecurityRequirement(doc =>
+    {
+        OpenApiSecurityRequirement req = new();
+        req[new OpenApiSecuritySchemeReference("Bearer", doc, null)] = new List<string>();
+        return req;
+    });
+});
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddApplication();
@@ -56,7 +83,13 @@ WebApplication app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI(opt =>
+    {
+        opt.SwaggerEndpoint("/swagger/v1/swagger.json", "Jarvis API v1");
+        opt.RoutePrefix = "swagger";
+        opt.DocumentTitle = "Jarvis API";
+    });
 }
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
