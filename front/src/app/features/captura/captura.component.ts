@@ -599,42 +599,42 @@ type Modo = 'manual' | 'jarvis' | null;
               class="flex flex-col gap-3 px-1 fade-in"
               data-testid="jarvis-exemplos"
             >
-              <div class="flex items-center gap-2 text-[11px] text-text-subtle">
-                <i class="fa-solid fa-lightbulb text-accent/70 text-[10px]"></i>
-                <span>Tente algo como</span>
+              <div class="flex items-center gap-2.5 text-[14px] font-medium text-text">
+                <span
+                  class="w-7 h-7 rounded-lg bg-accent/15 border border-accent/30 grid place-items-center"
+                  aria-hidden="true"
+                >
+                  <i class="fa-solid fa-lightbulb text-accent text-[14px]"></i>
+                </span>
+                <span>Sugestões de uso</span>
               </div>
-              <div class="flex flex-wrap gap-1.5">
+              <div class="flex flex-wrap gap-2">
                 <button
                   type="button"
-                  class="example-chip"
+                  class="example-pill"
                   data-testid="exemplo-1"
-                  (click)="usarExemplo('Comprar fita métrica até sexta na loja do Pedrão')"
+                  (click)="usarExemplo('Tenho uma reunião amanhã às 14h, online via Teams, com o Lucas')"
                 >
-                  Comprar fita métrica até sexta
+                  <i class="fa-solid fa-people-group text-[11px]"></i>
+                  <span>Tenho uma reunião amanhã às 14h, online via Teams, com o Lucas</span>
                 </button>
                 <button
                   type="button"
-                  class="example-chip"
+                  class="example-pill"
                   data-testid="exemplo-2"
-                  (click)="usarExemplo('Reunião com a Camila amanhã às 14h, na sala de reuniões')"
+                  (click)="usarExemplo('Vou estudar para a prova do dia 15/03')"
                 >
-                  Reunião amanhã às 14h
+                  <i class="fa-solid fa-graduation-cap text-[11px]"></i>
+                  <span>Vou estudar para a prova do dia 15/03</span>
                 </button>
                 <button
                   type="button"
-                  class="example-chip"
+                  class="example-pill"
                   data-testid="exemplo-3"
-                  (click)="usarExemplo('Estudar capítulo 3 de banco de dados antes da prova de quinta')"
+                  (click)="usarExemplo('Comprar fita métrica até sexta na loja do Pedrão, urgente')"
                 >
-                  Estudar antes da prova
-                </button>
-                <button
-                  type="button"
-                  class="example-chip"
-                  data-testid="exemplo-4"
-                  (click)="usarExemplo('Pagar a conta de luz hoje pelo app do banco — urgente')"
-                >
-                  Pagar conta urgente hoje
+                  <i class="fa-solid fa-cart-shopping text-[11px]"></i>
+                  <span>Comprar fita métrica até sexta na loja do Pedrão, urgente</span>
                 </button>
               </div>
               <div class="text-[11px] text-text-subtle leading-relaxed px-0.5">
@@ -694,24 +694,34 @@ type Modo = 'manual' | 'jarvis' | null;
         flex: 1 1 auto;
         min-height: 0;
       }
-      .example-chip {
+      .example-pill {
         display: inline-flex;
         align-items: center;
-        padding: 5px 12px;
+        gap: 8px;
+        padding: 7px 14px;
         border-radius: 9999px;
-        border: 1px solid #2a2b2f;
-        background: rgba(22, 24, 28, 0.4);
-        color: #b1b6bd;
-        font-size: 12px;
+        border: 1px solid rgba(94, 106, 210, 0.35);
+        background: rgba(94, 106, 210, 0.1);
+        color: #c4caf2;
+        font-size: 12.5px;
         line-height: 1.3;
         cursor: pointer;
-        transition: background-color 160ms, border-color 160ms, color 160ms, transform 160ms;
+        text-align: left;
+        max-width: 100%;
+        transition:
+          background-color 200ms cubic-bezier(0.22, 1, 0.36, 1),
+          border-color 200ms cubic-bezier(0.22, 1, 0.36, 1),
+          transform 200ms cubic-bezier(0.22, 1, 0.36, 1),
+          box-shadow 200ms cubic-bezier(0.22, 1, 0.36, 1);
       }
-      .example-chip:hover {
-        background: rgba(94, 106, 210, 0.08);
-        border-color: rgba(94, 106, 210, 0.4);
-        color: #e6e6e6;
+      .example-pill:hover {
+        background: rgba(94, 106, 210, 0.18);
+        border-color: rgba(94, 106, 210, 0.55);
         transform: translateY(-1px);
+        box-shadow: 0 4px 14px -6px rgba(94, 106, 210, 0.5);
+      }
+      .example-pill:active {
+        transform: translateY(0);
       }
       .chat-input-wrap {
         position: relative;

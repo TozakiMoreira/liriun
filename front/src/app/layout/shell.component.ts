@@ -82,18 +82,24 @@ import { AvatarComponent } from '../shared/avatar.component';
             </button>
           </div>
         } @else {
+          <a
+            routerLink="/app/visao-geral"
+            class="w-8 h-8 rounded-lg bg-logo-grad grid place-items-center text-sm font-bold tracking-tight text-white shadow-logo shrink-0 mb-2 transition-transform hover:scale-105"
+            data-testid="sidebar-logo"
+            aria-label="Ir pra visão geral"
+            title="Visão geral"
+          >
+            J
+          </a>
           <button
             type="button"
-            class="w-8 h-8 rounded-lg bg-logo-grad grid place-items-center text-sm font-bold tracking-tight shadow-logo shrink-0 mb-3 group/logo relative cursor-pointer transition-transform hover:scale-105"
+            class="w-8 h-8 rounded-md grid place-items-center text-text-subtle hover:text-text hover:bg-bg-elev shrink-0 mb-3 transition-colors"
             data-testid="sidebar-toggle"
             title="Expandir barra lateral"
             aria-label="Expandir barra lateral"
             (click)="alternarSidebar()"
           >
-            <span class="text-white opacity-30 group-hover/logo:opacity-15 transition-opacity">J</span>
-            <span class="absolute inset-0 grid place-items-center text-white">
-              <i class="fa-solid fa-angles-right text-[13px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"></i>
-            </span>
+            <i class="fa-solid fa-angles-right text-[12px]"></i>
           </button>
         }
 
