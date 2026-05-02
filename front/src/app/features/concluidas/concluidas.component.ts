@@ -1,6 +1,17 @@
 import { CommonModule } from '@angular/common';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Tarefa, TarefasService } from '../../core/api/tarefas.service';
+import { ConfirmModalComponent } from '../../shared/confirm-modal.component';
+import { extrairProblemDetails } from '../../shared/problem-details';
+import { TarefaDetalheModalComponent } from '../tarefas/tarefa-detalhe-modal.component';
+
+interface Confirmacao {
+  titulo: string;
+  mensagem: string;
+  textoConfirmar: string;
+  acao: () => void;
+}
 
 type Periodo = 'hoje' | 'semana' | 'mes';
 
@@ -13,7 +24,7 @@ interface GrupoData {
 @Component({
   selector: 'app-concluidas',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, TarefaDetalheModalComponent, ConfirmModalComponent],
   template: `
     <header class="flex flex-col sm:flex-row sm:items-center px-4 md:px-8 py-3.5 border-b border-border gap-3 sm:gap-4">
       <div class="flex items-center gap-2 text-[13px] text-text-dim">
@@ -59,6 +70,15 @@ interface GrupoData {
     </header>
 
     <div class="flex-1 px-4 md:px-8 py-6 overflow-auto" data-testid="concluidas-page">
+      @if (erroReabrir()) {
+        <div
+          class="mb-4 px-3 py-2.5 rounded border border-danger/30 bg-danger/10 text-danger text-xs"
+          data-testid="concluidas-erro-reabrir"
+        >
+          {{ erroReabrir() }}
+        </div>
+      }
+
       @if (carregando()) {
         <p class="text-text-subtle text-sm">Carregando...</p>
       } @else if (concluidas().length === 0) {
@@ -96,15 +116,27 @@ interface GrupoData {
             <div class="flex flex-col">
               @for (t of g.tarefas; track t.id) {
                 <div
-                  class="flex flex-col gap-2 md:grid md:grid-cols-[28px_1fr_auto_auto] md:items-center md:gap-3.5 px-3 py-2.5 border-b border-border last:border-b-0"
+                  class="flex flex-col gap-2 md:grid md:grid-cols-[28px_1fr_auto_auto] md:items-center md:gap-3.5 px-3 py-2.5 border-b border-border last:border-b-0 hover:bg-bg-elev focus-within:bg-bg-elev group transition-colors cursor-pointer"
+                  [class.opacity-50]="reabrindo().has(t.id)"
+                  [class.pointer-events-none]="reabrindo().has(t.id)"
                   [attr.data-testid]="'done-' + t.id"
+                  role="button"
+                  tabindex="0"
+                  (click)="abrirDetalhe(t)"
+                  (keydown.enter)="abrirDetalhe(t)"
                 >
                   <div class="flex items-center gap-3 md:contents">
-                    <div
-                      class="shrink-0 w-[18px] h-[18px] rounded-full bg-[#22c55e]/15 border border-[#22c55e]/30 grid place-items-center text-[#22c55e]"
+                    <button
+                      type="button"
+                      class="shrink-0 w-[18px] h-[18px] rounded-full bg-[#22c55e]/15 border border-[#22c55e]/30 grid place-items-center text-[#22c55e] hover:bg-[#22c55e]/30 hover:border-[#22c55e]/50 focus:outline-none focus:ring-2 focus:ring-[#22c55e]/40 transition-colors"
+                      [attr.data-testid]="'done-' + t.id + '-reabrir'"
+                      aria-label="Desmarcar e reabrir como pendente"
+                      title="Clique pra desmarcar e voltar pra pendentes"
+                      (click)="$event.stopPropagation(); reabrir(t)"
                     >
-                      <i class="fa-solid fa-check text-[10px]"></i>
-                    </div>
+                      <i class="fa-solid fa-check text-[10px] group-hover:hidden"></i>
+                      <i class="fa-solid fa-rotate-left text-[9px] hidden group-hover:inline"></i>
+                    </button>
                     <div class="text-sm text-text-dim line-through flex-1 min-w-0 truncate">{{ t.nome }}</div>
                   </div>
                   <div class="flex flex-wrap items-center gap-x-3 gap-y-1.5 pl-[30px] md:p-0 md:contents">
@@ -128,6 +160,27 @@ interface GrupoData {
         }
       }
     </div>
+
+    @if (tarefaDetalhe(); as t) {
+      <app-tarefa-detalhe-modal
+        [tarefa]="t"
+        (fechado)="tarefaDetalhe.set(null)"
+        (reabrir)="reabrirDoDetalhe($event)"
+        (excluir)="pedirExcluirDoDetalhe($event)"
+        (observacoesAtualizadas)="aplicarTarefaAtualizada($event)"
+      ></app-tarefa-detalhe-modal>
+    }
+
+    @if (confirmacao(); as c) {
+      <app-confirm-modal
+        [titulo]="c.titulo"
+        [mensagem]="c.mensagem"
+        [textoConfirmar]="c.textoConfirmar"
+        [perigo]="true"
+        (confirmado)="executarConfirmacao()"
+        (cancelado)="confirmacao.set(null)"
+      ></app-confirm-modal>
+    }
   `,
 })
 export class ConcluidasComponent implements OnInit {
@@ -136,6 +189,10 @@ export class ConcluidasComponent implements OnInit {
   readonly periodo = signal<Periodo>('semana');
   readonly concluidas = signal<Tarefa[]>([]);
   readonly carregando = signal(true);
+  readonly reabrindo = signal(new Set<string>());
+  readonly erroReabrir = signal<string | null>(null);
+  readonly tarefaDetalhe = signal<Tarefa | null>(null);
+  readonly confirmacao = signal<Confirmacao | null>(null);
 
   readonly grupos = computed<GrupoData[]>(() => {
     const lista = this.concluidas();
@@ -165,6 +222,77 @@ export class ConcluidasComponent implements OnInit {
   setPeriodo(p: Periodo): void {
     this.periodo.set(p);
     this.carregar();
+  }
+
+  reabrir(t: Tarefa): void {
+    if (this.reabrindo().has(t.id)) return;
+    this.reabrindo.update((s) => new Set(s).add(t.id));
+    this.erroReabrir.set(null);
+
+    this.tarefasApi.reabrir(t.id).subscribe({
+      next: () => {
+        this.concluidas.update((list) => list.filter((x) => x.id !== t.id));
+        this.reabrindo.update((s) => {
+          const n = new Set(s);
+          n.delete(t.id);
+          return n;
+        });
+      },
+      error: (err: HttpErrorResponse) => {
+        this.reabrindo.update((s) => {
+          const n = new Set(s);
+          n.delete(t.id);
+          return n;
+        });
+        const r = extrairProblemDetails(err, 'Não consegui reabrir essa tarefa.');
+        this.erroReabrir.set(r.mensagemGeral ?? 'Não consegui reabrir essa tarefa.');
+      },
+    });
+  }
+
+  abrirDetalhe(t: Tarefa): void {
+    if (this.reabrindo().has(t.id)) return;
+    this.tarefaDetalhe.set(t);
+  }
+
+  reabrirDoDetalhe(t: Tarefa): void {
+    this.tarefaDetalhe.set(null);
+    this.reabrir(t);
+  }
+
+  pedirExcluirDoDetalhe(t: Tarefa): void {
+    this.tarefaDetalhe.set(null);
+    this.confirmacao.set({
+      titulo: 'Excluir tarefa',
+      mensagem: `Excluir "${t.nome}"? Não dá pra desfazer.`,
+      textoConfirmar: 'Excluir',
+      acao: () => this.excluir(t),
+    });
+  }
+
+  private excluir(t: Tarefa): void {
+    this.erroReabrir.set(null);
+    this.tarefasApi.remover(t.id).subscribe({
+      next: () => {
+        this.concluidas.update((list) => list.filter((x) => x.id !== t.id));
+      },
+      error: (err: HttpErrorResponse) => {
+        const r = extrairProblemDetails(err, 'Não consegui excluir essa tarefa.');
+        this.erroReabrir.set(r.mensagemGeral ?? 'Não consegui excluir essa tarefa.');
+      },
+    });
+  }
+
+  aplicarTarefaAtualizada(atual: Tarefa): void {
+    this.concluidas.update((list) => list.map((x) => (x.id === atual.id ? atual : x)));
+    this.tarefaDetalhe.set(atual);
+  }
+
+  executarConfirmacao(): void {
+    const c = this.confirmacao();
+    if (!c) return;
+    this.confirmacao.set(null);
+    c.acao();
   }
 
   carregar(): void {

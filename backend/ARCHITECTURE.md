@@ -95,8 +95,8 @@ Detalhes tecnicos. Depende de Core e Application.
 
 Contem:
 - `Persistence/JarvisDbContext.cs` — DbContext configurado com Npgsql, usa data models
-- `Persistence/Models/` — POCOs planos para EF Core (UsuarioModel, TarefaModel, CategoriaModel, PrazoModel, TarefaCategoriaModel)
-- `Persistence/Mappers/` — Mappers manuais dominio <-> data model (UsuarioMapper, TarefaMapper, CategoriaMapper, PrazoMapper)
+- `Persistence/Models/` — POCOs planos para EF Core (UsuarioModel, TarefaModel, CategoriaModel, TarefaCategoriaModel)
+- `Persistence/Mappers/` — Mappers manuais dominio <-> data model (UsuarioMapper, TarefaMapper, CategoriaMapper)
 - `Persistence/Configurations/` — `IEntityTypeConfiguration<TModel>` por data model
 - `Persistence/Migrations/` — Migrations do EF Core
 - `Persistence/UnitOfWork.cs` — Implementacao de `IUnitOfWork`
@@ -127,33 +127,29 @@ backend/
   src/
     Jarvis.Core/
       Common/                  # Result, Result<T>, Error, ErrorType
-      Entities/                # Usuario, Tarefa, Categoria, Prazo, TarefaCategoria
+      Entities/                # Usuario, Tarefa, Categoria, TarefaCategoria
       Enums/                   # Prioridade, StatusTarefa
-      Errors/                  # TarefaErrors, CategoriaErrors, PrazoErrors, UsuarioErrors
+      Errors/                  # TarefaErrors, CategoriaErrors, UsuarioErrors
       Interfaces/
-        Repositories/          # IUsuarioRepository, ITarefaRepository, ICategoriaRepository, IPrazoRepository
+        Repositories/          # IUsuarioRepository, ITarefaRepository, ICategoriaRepository
     Jarvis.Application/
       InputModels/
         Auth/                  # CadastrarUsuarioInput, LoginInput
         Categorias/            # CriarCategoriaInput, AtualizarCategoriaInput
-        Prazos/                # CriarPrazoInput, AtualizarPrazoInput
         Tarefas/               # CriarTarefaInput, AtualizarTarefaInput
       ViewModels/
         Auth/                  # AutenticacaoViewModel
         Categorias/            # CategoriaViewModel
-        Prazos/                # PrazoViewModel
         Tarefas/               # TarefaViewModel, TarefaCategoriaViewModel
       Validators/
         Auth/                  # CadastrarUsuarioValidator, LoginValidator
         Categorias/            # CriarCategoriaValidator, AtualizarCategoriaValidator
-        Prazos/                # CriarPrazoValidator, AtualizarPrazoValidator
         Tarefas/               # CriarTarefaValidator, AtualizarTarefaValidator
-      ReadModels/              # CategoriaReadModel, PrazoReadModel, TarefaReadModel
-      ReadRepositories/        # ICategoriaReadRepository, IPrazoReadRepository, ITarefaReadRepository, IUsuarioReadRepository
+      ReadModels/              # CategoriaReadModel, TarefaReadModel
+      ReadRepositories/        # ICategoriaReadRepository, ITarefaReadRepository, IUsuarioReadRepository
       UseCases/
         Auth/                  # CadastrarUsuario, Login
         Categorias/            # CriarCategoria, ListarCategorias, AtualizarCategoria, RemoverCategoria
-        Prazos/                # CriarPrazo, ListarPrazos, AtualizarPrazo, RemoverPrazo
         Tarefas/               # CriarTarefa, ListarPendentes, ListarConcluidas, Atualizar, Concluir, Remover
       Interfaces/
         Auth/                  # IJwtTokenService, IPasswordHasher, IUsuarioLogado
@@ -164,15 +160,15 @@ backend/
       Persistence/
         JarvisDbContext.cs
         UnitOfWork.cs
-        Models/                # UsuarioModel, TarefaModel, CategoriaModel, PrazoModel, TarefaCategoriaModel
-        Mappers/               # UsuarioMapper, TarefaMapper, CategoriaMapper, PrazoMapper
+        Models/                # UsuarioModel, TarefaModel, CategoriaModel, TarefaCategoriaModel
+        Mappers/               # UsuarioMapper, TarefaMapper, CategoriaMapper
         Configurations/        # UsuarioConfiguration, TarefaConfiguration, etc.
         Migrations/
-      Repositories/            # UsuarioRepository, TarefaRepository, CategoriaRepository, PrazoRepository
-      ReadRepositories/        # UsuarioReadRepository, TarefaReadRepository, CategoriaReadRepository, PrazoReadRepository
+      Repositories/            # UsuarioRepository, TarefaRepository, CategoriaRepository
+      ReadRepositories/        # UsuarioReadRepository, TarefaReadRepository, CategoriaReadRepository
       IoC/                     # InfrastructureModule.cs
     Jarvis.Api/
-      Controllers/             # AuthController, TarefasController, CategoriasController, PrazosController
+      Controllers/             # AuthController, TarefasController, CategoriasController
       Extensions/              # ResultExtensions.cs
       Middlewares/             # ExceptionHandlingMiddleware.cs
       Auth/                    # UsuarioLogadoContext.cs
@@ -291,7 +287,7 @@ public class Tarefa
 }
 ```
 
-Entidades atuais: `Usuario`, `Tarefa`, `Categoria`, `Prazo`, `TarefaCategoria` (juncao N:N).
+Entidades atuais: `Usuario`, `Tarefa`, `Categoria`, `TarefaCategoria` (juncao N:N).
 
 ---
 
@@ -336,8 +332,8 @@ Interface `IUnitOfWork` em `Application/Interfaces/`, implementada por `Persiste
 
 - `JarvisDbContext` em `Infrastructure/Persistence/` com `DbSet<TModel>` para cada data model.
 - Configurations via `IEntityTypeConfiguration<TModel>` em `Persistence/Configurations/`.
-- Tabelas: `usuarios`, `tarefas`, `categorias`, `prazos`, `tarefas_categorias`.
-- Indices: `(usuario_id, status)`, `(usuario_id, data_prazo)` em tarefas; `(usuario_id, nome)` unique em categorias e prazos.
+- Tabelas: `usuarios`, `tarefas`, `categorias`, `tarefas_categorias`.
+- Indices: `(usuario_id, status)`, `(usuario_id, data_prazo)` em tarefas; `(usuario_id, nome)` unique em categorias.
 
 ---
 
@@ -353,10 +349,9 @@ Fluxo padrao:
 
 Use cases de leitura usam read repository + ReadModel. Use cases de escrita usam write repository + entidade.
 
-Use cases atuais (16 total):
-- **Auth**: CadastrarUsuario, Login
+Use cases atuais (14 total):
+- **Auth**: CadastrarUsuario, Login, AlterarSenha, AtualizarPerfil
 - **Categorias**: CriarCategoria, ListarCategorias, AtualizarCategoria, RemoverCategoria
-- **Prazos**: CriarPrazo, ListarPrazos, AtualizarPrazo, RemoverPrazo
 - **Tarefas**: CriarTarefa, ListarTarefasPendentes, ListarTarefasConcluidas, AtualizarTarefa, ConcluirTarefa, RemoverTarefa
 
 ---
@@ -424,14 +419,12 @@ Padrao dos testes:
 |--------|----------|------|--------|-----------|
 | POST | `/auth/cadastro` | Nao | 201 | Cadastrar usuario |
 | POST | `/auth/login` | Nao | 200 | Login + JWT |
+| POST | `/auth/alterar-senha` | Sim | 204 | Alterar senha (exige senha atual) |
+| PUT | `/auth/perfil` | Sim | 200 | Atualizar nome/email |
 | GET | `/categorias` | Sim | 200 | Listar categorias do usuario |
 | POST | `/categorias` | Sim | 201 | Criar categoria |
 | PUT | `/categorias/{id}` | Sim | 200 | Renomear categoria |
 | DELETE | `/categorias/{id}` | Sim | 204 | Remover categoria |
-| GET | `/prazos` | Sim | 200 | Listar prazos do usuario |
-| POST | `/prazos` | Sim | 201 | Criar prazo |
-| PUT | `/prazos/{id}` | Sim | 200 | Atualizar prazo |
-| DELETE | `/prazos/{id}` | Sim | 204 | Remover prazo |
 | GET | `/tarefas/pendentes` | Sim | 200 | Listar pendentes + atrasadas |
 | GET | `/tarefas/concluidas` | Sim | 200 | Listar concluidas (filtro ?de=&ate=) |
 | POST | `/tarefas` | Sim | 201 | Criar tarefa |

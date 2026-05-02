@@ -11,9 +11,9 @@ public sealed record TarefaReadModel(
     string Nome,
     Prioridade Prioridade,
     StatusTarefa Status,
-    Guid? PrazoId,
-    DateTime? DataPrazo,
-    TimeSpan HorarioFinal,
+    DateTime DataPrazo,
+    TimeSpan? HorarioFinal,
+    string? Observacoes,
     DateTime CriadaEm,
     DateTime? ConcluidaEm,
     IReadOnlyList<TarefaCategoriaReadModel> Categorias);

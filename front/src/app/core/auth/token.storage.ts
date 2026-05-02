@@ -7,6 +7,7 @@ export interface UsuarioLocal {
   id: string;
   email: string;
   nome: string;
+  fotoUrl: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -22,6 +23,14 @@ export class TokenStorage {
     localStorage.setItem(USER_KEY, JSON.stringify(usuario));
     this._token.set(token);
     this._usuario.set(usuario);
+  }
+
+  atualizarUsuario(parcial: Partial<UsuarioLocal>): void {
+    const atual = this._usuario();
+    if (!atual) return;
+    const novo: UsuarioLocal = { ...atual, ...parcial };
+    localStorage.setItem(USER_KEY, JSON.stringify(novo));
+    this._usuario.set(novo);
   }
 
   clear(): void {

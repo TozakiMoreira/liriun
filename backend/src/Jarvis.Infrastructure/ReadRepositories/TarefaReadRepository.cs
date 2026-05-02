@@ -19,16 +19,16 @@ public class TarefaReadRepository : ITarefaReadRepository
     public async Task<IReadOnlyList<TarefaReadModel>> ListarPendentesAsync(Guid usuarioId, CancellationToken ct)
         => await _db.Tarefas.AsNoTracking()
             .Where(t => t.UsuarioId == usuarioId && t.Status == StatusTarefa.Pendente)
-            .OrderBy(t => t.DataPrazo ?? DateTime.MaxValue)
+            .OrderBy(t => t.DataPrazo)
             .ThenBy(t => t.Prioridade)
             .Select(t => new TarefaReadModel(
                 t.Id,
                 t.Nome,
                 t.Prioridade,
                 t.Status,
-                t.PrazoId,
                 t.DataPrazo,
                 t.HorarioFinal,
+                t.Observacoes,
                 t.CriadaEm,
                 t.ConcluidaEm,
                 t.Categorias
@@ -55,9 +55,9 @@ public class TarefaReadRepository : ITarefaReadRepository
                 t.Nome,
                 t.Prioridade,
                 t.Status,
-                t.PrazoId,
                 t.DataPrazo,
                 t.HorarioFinal,
+                t.Observacoes,
                 t.CriadaEm,
                 t.ConcluidaEm,
                 t.Categorias

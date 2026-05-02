@@ -3,6 +3,12 @@ import { authGuard, guestGuard } from './core/auth/auth.guard';
 
 export const routes: Routes = [
   {
+    path: '',
+    pathMatch: 'full',
+    loadComponent: () =>
+      import('./features/landing/landing.component').then((m) => m.LandingComponent),
+  },
+  {
     path: 'login',
     canActivate: [guestGuard],
     loadComponent: () =>
@@ -21,7 +27,7 @@ export const routes: Routes = [
       import('./features/onboarding/onboarding.component').then((m) => m.OnboardingComponent),
   },
   {
-    path: '',
+    path: 'app',
     canActivate: [authGuard],
     loadComponent: () =>
       import('./layout/shell.component').then((m) => m.ShellComponent),
@@ -46,6 +52,13 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/configuracoes/configuracoes.component').then(
             (m) => m.ConfiguracoesComponent,
+          ),
+      },
+      {
+        path: 'configuracoes/alterar-senha',
+        loadComponent: () =>
+          import('./features/configuracoes/alterar-senha.component').then(
+            (m) => m.AlterarSenhaComponent,
           ),
       },
       { path: '', redirectTo: 'captura', pathMatch: 'full' },

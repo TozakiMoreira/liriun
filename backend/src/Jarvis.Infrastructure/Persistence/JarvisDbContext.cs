@@ -9,7 +9,6 @@ public class JarvisDbContext : DbContext
 
     public DbSet<UsuarioModel> Usuarios => Set<UsuarioModel>();
     public DbSet<CategoriaModel> Categorias => Set<CategoriaModel>();
-    public DbSet<PrazoModel> Prazos => Set<PrazoModel>();
     public DbSet<TarefaModel> Tarefas => Set<TarefaModel>();
     public DbSet<TarefaCategoriaModel> TarefasCategorias => Set<TarefaCategoriaModel>();
 

@@ -17,7 +17,6 @@ namespace Jarvis.Application.Tests.UseCases.Tarefas;
 public class AtualizarTarefaUseCaseTests
 {
     private readonly Mock<ITarefaRepository> _tarefas = new();
-    private readonly Mock<IPrazoRepository> _prazos = new();
     private readonly Mock<ICategoriaReadRepository> _categoriaRead = new();
     private readonly Mock<IUsuarioLogado> _usuarioLogado = new();
     private readonly Mock<IValidator<AtualizarTarefaInput>> _validator = new();
@@ -35,21 +34,25 @@ public class AtualizarTarefaUseCaseTests
     }
 
     private AtualizarTarefaUseCase Criar()
-        => new(_tarefas.Object, _prazos.Object, _categoriaRead.Object, _usuarioLogado.Object, _validator.Object);
+        => new(_tarefas.Object, _categoriaRead.Object, _usuarioLogado.Object, _validator.Object);
+
+    private static readonly DateTime DataDefault = new(2026, 5, 10);
 
     [Fact]
     public async Task Atualiza_tarefa_existente()
     {
-        Tarefa tarefa = Tarefa.Criar(_usuarioId, "Antigo", Prioridade.Normal).Value!;
+        Tarefa tarefa = Tarefa.Criar(_usuarioId, "Antigo", Prioridade.Normal, DataDefault).Value!;
         _tarefas.Setup(t => t.ObterPorIdAsync(tarefa.Id, _usuarioId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(tarefa);
 
         Result<TarefaViewModel> result = await Criar().ExecuteAsync(
-            tarefa.Id, new AtualizarTarefaInput("Novo", Prioridade.Urgente), CancellationToken.None);
+            tarefa.Id, new AtualizarTarefaInput("Novo", Prioridade.Urgente, DataDefault, Observacoes: "obs"),
+            CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value!.Nome.Should().Be("Novo");
         result.Value.Prioridade.Should().Be(Prioridade.Urgente);
+        result.Value.Observacoes.Should().Be("obs");
     }
 
     [Fact]
@@ -59,7 +62,7 @@ public class AtualizarTarefaUseCaseTests
             .ReturnsAsync((Tarefa?)null);
 
         Result<TarefaViewModel> result = await Criar().ExecuteAsync(
-            Guid.NewGuid(), new AtualizarTarefaInput("X", Prioridade.Normal), CancellationToken.None);
+            Guid.NewGuid(), new AtualizarTarefaInput("X", Prioridade.Normal, DataDefault), CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
         result.Error!.Type.Should().Be(ErrorType.NotFound);

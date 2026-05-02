@@ -64,6 +64,16 @@ public class TarefasController : ControllerBase
         return result.ToActionResult(view => Ok(view));
     }
 
+    [HttpPost("{id:guid}/reabrir")]
+    public async Task<IActionResult> Reabrir(
+        [FromRoute] Guid id,
+        [FromServices] ReabrirTarefaUseCase useCase,
+        CancellationToken ct)
+    {
+        Result<TarefaViewModel> result = await useCase.ExecuteAsync(id, ct);
+        return result.ToActionResult(view => Ok(view));
+    }
+
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Remover(
         [FromRoute] Guid id,

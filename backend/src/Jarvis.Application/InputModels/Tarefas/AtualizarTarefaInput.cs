@@ -5,7 +5,7 @@ namespace Jarvis.Application.InputModels.Tarefas;
 public sealed record AtualizarTarefaInput(
     string Nome,
     Prioridade Prioridade,
+    DateTime DataPrazo,
     IReadOnlyList<Guid>? CategoriaIds = null,
-    Guid? PrazoId = null,
-    DateTime? DataPrazoCustom = null,
-    TimeSpan? HorarioFinal = null);
+    TimeSpan? HorarioFinal = null,
+    string? Observacoes = null);

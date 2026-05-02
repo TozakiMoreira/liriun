@@ -25,7 +25,7 @@ public class RemoverTarefaUseCaseTests
     [Fact]
     public async Task Remove_quando_existe()
     {
-        Tarefa tarefa = Tarefa.Criar(_usuarioId, "X", Prioridade.Normal).Value!;
+        Tarefa tarefa = Tarefa.Criar(_usuarioId, "X", Prioridade.Normal, new DateTime(2026, 5, 10)).Value!;
         _tarefas.Setup(t => t.ObterPorIdAsync(tarefa.Id, _usuarioId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(tarefa);
 

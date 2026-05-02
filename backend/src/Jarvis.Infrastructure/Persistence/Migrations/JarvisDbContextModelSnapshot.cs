@@ -17,12 +17,12 @@ namespace Jarvis.Infrastructure.Persistence.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.7")
+                .HasAnnotation("ProductVersion", "9.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Jarvis.Core.Entities.Categoria", b =>
+            modelBuilder.Entity("Jarvis.Infrastructure.Persistence.Models.CategoriaModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -51,96 +51,7 @@ namespace Jarvis.Infrastructure.Persistence.Migrations
                     b.ToTable("categorias", (string)null);
                 });
 
-            modelBuilder.Entity("Jarvis.Core.Entities.Prazo", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime>("CriadoEm")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("criado_em");
-
-                    b.Property<int?>("DuracaoDias")
-                        .HasColumnType("integer")
-                        .HasColumnName("duracao_dias");
-
-                    b.Property<string>("Nome")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
-                        .HasColumnName("nome");
-
-                    b.Property<Guid>("UsuarioId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("usuario_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UsuarioId", "Nome")
-                        .IsUnique();
-
-                    b.ToTable("prazos", (string)null);
-                });
-
-            modelBuilder.Entity("Jarvis.Core.Entities.Tarefa", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<DateTime?>("ConcluidaEm")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("concluida_em");
-
-                    b.Property<DateTime>("CriadaEm")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("criada_em");
-
-                    b.Property<DateTime?>("DataPrazo")
-                        .HasColumnType("date")
-                        .HasColumnName("data_prazo");
-
-                    b.Property<TimeSpan>("HorarioFinal")
-                        .HasColumnType("time")
-                        .HasColumnName("horario_final");
-
-                    b.Property<string>("Nome")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("nome");
-
-                    b.Property<Guid?>("PrazoId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("prazo_id");
-
-                    b.Property<short>("Prioridade")
-                        .HasColumnType("smallint")
-                        .HasColumnName("prioridade");
-
-                    b.Property<short>("Status")
-                        .HasColumnType("smallint")
-                        .HasColumnName("status");
-
-                    b.Property<Guid>("UsuarioId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("usuario_id");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("PrazoId");
-
-                    b.HasIndex("UsuarioId", "DataPrazo");
-
-                    b.HasIndex("UsuarioId", "Status");
-
-                    b.ToTable("tarefas", (string)null);
-                });
-
-            modelBuilder.Entity("Jarvis.Core.Entities.TarefaCategoria", b =>
+            modelBuilder.Entity("Jarvis.Infrastructure.Persistence.Models.TarefaCategoriaModel", b =>
                 {
                     b.Property<Guid>("TarefaId")
                         .HasColumnType("uuid")
@@ -157,7 +68,61 @@ namespace Jarvis.Infrastructure.Persistence.Migrations
                     b.ToTable("tarefas_categorias", (string)null);
                 });
 
-            modelBuilder.Entity("Jarvis.Core.Entities.Usuario", b =>
+            modelBuilder.Entity("Jarvis.Infrastructure.Persistence.Models.TarefaModel", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTime?>("ConcluidaEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("concluida_em");
+
+                    b.Property<DateTime>("CriadaEm")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("criada_em");
+
+                    b.Property<DateTime>("DataPrazo")
+                        .HasColumnType("date")
+                        .HasColumnName("data_prazo");
+
+                    b.Property<TimeSpan?>("HorarioFinal")
+                        .HasColumnType("time")
+                        .HasColumnName("horario_final");
+
+                    b.Property<string>("Nome")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("nome");
+
+                    b.Property<string>("Observacoes")
+                        .HasColumnType("text")
+                        .HasColumnName("observacoes");
+
+                    b.Property<short>("Prioridade")
+                        .HasColumnType("smallint")
+                        .HasColumnName("prioridade");
+
+                    b.Property<short>("Status")
+                        .HasColumnType("smallint")
+                        .HasColumnName("status");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("usuario_id");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UsuarioId", "DataPrazo");
+
+                    b.HasIndex("UsuarioId", "Status");
+
+                    b.ToTable("tarefas", (string)null);
+                });
+
+            modelBuilder.Entity("Jarvis.Infrastructure.Persistence.Models.UsuarioModel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -173,6 +138,10 @@ namespace Jarvis.Infrastructure.Persistence.Migrations
                         .HasMaxLength(150)
                         .HasColumnType("character varying(150)")
                         .HasColumnName("email");
+
+                    b.Property<string>("FotoUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("foto_url");
 
                     b.Property<string>("Nome")
                         .IsRequired()
@@ -194,47 +163,24 @@ namespace Jarvis.Infrastructure.Persistence.Migrations
                     b.ToTable("usuarios", (string)null);
                 });
 
-            modelBuilder.Entity("Jarvis.Core.Entities.Categoria", b =>
+            modelBuilder.Entity("Jarvis.Infrastructure.Persistence.Models.CategoriaModel", b =>
                 {
-                    b.HasOne("Jarvis.Core.Entities.Usuario", null)
+                    b.HasOne("Jarvis.Infrastructure.Persistence.Models.UsuarioModel", null)
                         .WithMany()
                         .HasForeignKey("UsuarioId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Jarvis.Core.Entities.Prazo", b =>
+            modelBuilder.Entity("Jarvis.Infrastructure.Persistence.Models.TarefaCategoriaModel", b =>
                 {
-                    b.HasOne("Jarvis.Core.Entities.Usuario", null)
-                        .WithMany()
-                        .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Jarvis.Core.Entities.Tarefa", b =>
-                {
-                    b.HasOne("Jarvis.Core.Entities.Prazo", null)
-                        .WithMany()
-                        .HasForeignKey("PrazoId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("Jarvis.Core.Entities.Usuario", null)
-                        .WithMany()
-                        .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Jarvis.Core.Entities.TarefaCategoria", b =>
-                {
-                    b.HasOne("Jarvis.Core.Entities.Categoria", "Categoria")
+                    b.HasOne("Jarvis.Infrastructure.Persistence.Models.CategoriaModel", "Categoria")
                         .WithMany("Tarefas")
                         .HasForeignKey("CategoriaId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Jarvis.Core.Entities.Tarefa", "Tarefa")
+                    b.HasOne("Jarvis.Infrastructure.Persistence.Models.TarefaModel", "Tarefa")
                         .WithMany("Categorias")
                         .HasForeignKey("TarefaId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -245,12 +191,21 @@ namespace Jarvis.Infrastructure.Persistence.Migrations
                     b.Navigation("Tarefa");
                 });
 
-            modelBuilder.Entity("Jarvis.Core.Entities.Categoria", b =>
+            modelBuilder.Entity("Jarvis.Infrastructure.Persistence.Models.TarefaModel", b =>
+                {
+                    b.HasOne("Jarvis.Infrastructure.Persistence.Models.UsuarioModel", null)
+                        .WithMany()
+                        .HasForeignKey("UsuarioId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Jarvis.Infrastructure.Persistence.Models.CategoriaModel", b =>
                 {
                     b.Navigation("Tarefas");
                 });
 
-            modelBuilder.Entity("Jarvis.Core.Entities.Tarefa", b =>
+            modelBuilder.Entity("Jarvis.Infrastructure.Persistence.Models.TarefaModel", b =>
                 {
                     b.Navigation("Categorias");
                 });

@@ -1,8 +1,10 @@
 using Jarvis.Application.Interfaces;
 using Jarvis.Application.Interfaces.Auth;
+using Jarvis.Application.Interfaces.Ia;
 using Jarvis.Application.ReadRepositories;
 using Jarvis.Core.Interfaces.Repositories;
 using Jarvis.Infrastructure.Auth;
+using Jarvis.Infrastructure.Ia;
 using Jarvis.Infrastructure.Persistence;
 using Jarvis.Infrastructure.ReadRepositories;
 using Jarvis.Infrastructure.Repositories;
@@ -26,12 +28,10 @@ public static class InfrastructureModule
 
         services.AddScoped<IUsuarioRepository, UsuarioRepository>();
         services.AddScoped<ICategoriaRepository, CategoriaRepository>();
-        services.AddScoped<IPrazoRepository, PrazoRepository>();
         services.AddScoped<ITarefaRepository, TarefaRepository>();
 
         services.AddScoped<IUsuarioReadRepository, UsuarioReadRepository>();
         services.AddScoped<ICategoriaReadRepository, CategoriaReadRepository>();
-        services.AddScoped<IPrazoReadRepository, PrazoReadRepository>();
         services.AddScoped<ITarefaReadRepository, TarefaReadRepository>();
 
         JwtOptions jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>()
@@ -43,6 +43,16 @@ public static class InfrastructureModule
         services.AddSingleton(jwtOptions);
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
         services.AddSingleton<IPasswordHasher, BCryptPasswordHasher>();
+
+        // Gemini (IA)
+        GeminiOptions geminiOptions = configuration.GetSection(GeminiOptions.SectionName).Get<GeminiOptions>()
+            ?? new GeminiOptions();
+        services.AddSingleton(geminiOptions);
+
+        services.AddHttpClient<IGeminiService, GeminiService>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(geminiOptions.TimeoutSeconds);
+        });
 
         return services;
     }

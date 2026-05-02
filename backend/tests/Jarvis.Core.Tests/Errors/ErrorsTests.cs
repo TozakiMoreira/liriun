@@ -14,7 +14,6 @@ public class ErrorsTests
     [InlineData(nameof(TarefaErrors.JaConcluida), "tarefa.ja-concluida", ErrorType.Conflict)]
     [InlineData(nameof(TarefaErrors.NaoEditavelConcluida), "tarefa.nao-editavel-concluida", ErrorType.Conflict)]
     [InlineData(nameof(TarefaErrors.NaoEncontrada), "tarefa.nao-encontrada", ErrorType.NotFound)]
-    [InlineData(nameof(TarefaErrors.PrazoNaoEncontrado), "tarefa.prazo-nao-encontrado", ErrorType.NotFound)]
     [InlineData(nameof(TarefaErrors.CategoriasInvalidas), "tarefa.categorias-invalidas", ErrorType.Validation)]
     public void TarefaErrors_definidos_com_code_e_tipo(string metodo, string code, ErrorType tipo)
     {
@@ -22,20 +21,6 @@ public class ErrorsTests
         e.Code.Should().Be(code);
         e.Type.Should().Be(tipo);
         e.Message.Should().NotBeNullOrWhiteSpace();
-    }
-
-    [Theory]
-    [InlineData(nameof(PrazoErrors.UsuarioObrigatorio), "prazo.usuario-obrigatorio", ErrorType.Validation)]
-    [InlineData(nameof(PrazoErrors.NomeObrigatorio), "prazo.nome-obrigatorio", ErrorType.Validation)]
-    [InlineData(nameof(PrazoErrors.DuracaoNegativa), "prazo.duracao-negativa", ErrorType.Validation)]
-    [InlineData(nameof(PrazoErrors.NaoEncontrado), "prazo.nao-encontrado", ErrorType.NotFound)]
-    [InlineData(nameof(PrazoErrors.NomeJaExiste), "prazo.nome-ja-existe", ErrorType.Conflict)]
-    [InlineData(nameof(PrazoErrors.PossuiTarefasPendentes), "prazo.possui-tarefas-pendentes", ErrorType.Conflict)]
-    public void PrazoErrors_definidos_com_code_e_tipo(string metodo, string code, ErrorType tipo)
-    {
-        Error e = (Error)typeof(PrazoErrors).GetMethod(metodo)!.Invoke(null, null)!;
-        e.Code.Should().Be(code);
-        e.Type.Should().Be(tipo);
     }
 
     [Theory]

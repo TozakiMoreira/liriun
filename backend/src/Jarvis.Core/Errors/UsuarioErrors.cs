@@ -24,4 +24,16 @@ public static class UsuarioErrors
 
     public static Error CredenciaisInvalidas()
         => Error.Unauthorized("usuario.credenciais-invalidas", "Email ou senha invalidos");
+
+    public static Error NaoEncontrado()
+        => Error.NotFound("usuario.nao-encontrado", "Usuario nao encontrado");
+
+    public static Error SenhaAtualIncorreta()
+        => Error.Validation("usuario.senha-atual-incorreta", "A senha atual nao confere");
+
+    public static Error FotoFormatoInvalido()
+        => Error.Validation("usuario.foto-formato-invalido", "Foto precisa estar em formato data:image/...");
+
+    public static Error FotoMuitoGrande()
+        => Error.Validation("usuario.foto-muito-grande", "A foto excede o tamanho maximo permitido");
 }

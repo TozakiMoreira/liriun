@@ -16,6 +16,7 @@ public class UsuarioConfiguration : IEntityTypeConfiguration<UsuarioModel>
         builder.Property(u => u.Nome).HasColumnName("nome").HasMaxLength(100).IsRequired();
         builder.Property(u => u.Email).HasColumnName("email").HasMaxLength(150).IsRequired();
         builder.Property(u => u.SenhaHash).HasColumnName("senha_hash").HasMaxLength(255).IsRequired();
+        builder.Property(u => u.FotoUrl).HasColumnName("foto_url").HasColumnType("text");
         builder.Property(u => u.CriadoEm).HasColumnName("criado_em").IsRequired();
 
         builder.HasIndex(u => u.Email).IsUnique();

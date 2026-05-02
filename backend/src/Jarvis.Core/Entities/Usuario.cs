@@ -5,16 +5,28 @@ namespace Jarvis.Core.Entities;
 
 public class Usuario
 {
+    private const int FotoUrlMaxLength = 700_000;
+
     public Guid Id { get; private set; }
     public string Nome { get; private set; } = null!;
     public string Email { get; private set; } = null!;
     public string SenhaHash { get; private set; } = null!;
+    public string? FotoUrl { get; private set; }
     public DateTime CriadoEm { get; private set; }
 
     private Usuario() { }
 
-    internal static Usuario Reconstituir(Guid id, string nome, string email, string senhaHash, DateTime criadoEm)
-        => new() { Id = id, Nome = nome, Email = email, SenhaHash = senhaHash, CriadoEm = criadoEm };
+    internal static Usuario Reconstituir(
+        Guid id, string nome, string email, string senhaHash, string? fotoUrl, DateTime criadoEm)
+        => new()
+        {
+            Id = id,
+            Nome = nome,
+            Email = email,
+            SenhaHash = senhaHash,
+            FotoUrl = fotoUrl,
+            CriadoEm = criadoEm,
+        };
 
     public static Result<Usuario> Criar(string nome, string email, string senhaHash)
     {
@@ -24,6 +36,7 @@ public class Usuario
             Nome = nome?.Trim() ?? string.Empty,
             Email = email?.Trim().ToLowerInvariant() ?? string.Empty,
             SenhaHash = senhaHash,
+            FotoUrl = null,
             CriadoEm = DateTime.UtcNow
         };
 
@@ -38,6 +51,47 @@ public class Usuario
     {
         Nome = novoNome?.Trim() ?? string.Empty;
         return Validar();
+    }
+
+    public Result AtualizarPerfil(string novoNome, string novoEmail)
+    {
+        Nome = novoNome?.Trim() ?? string.Empty;
+        Email = novoEmail?.Trim().ToLowerInvariant() ?? string.Empty;
+        return Validar();
+    }
+
+    public Result AlterarSenha(string novoHash)
+    {
+        if (string.IsNullOrWhiteSpace(novoHash))
+            return Result.Failure(UsuarioErrors.SenhaObrigatoria());
+
+        SenhaHash = novoHash;
+        return Result.Success();
+    }
+
+    public Result AtualizarFotoPerfil(string? novaFotoUrl)
+    {
+        if (novaFotoUrl is null)
+        {
+            FotoUrl = null;
+            return Result.Success();
+        }
+
+        string trimmed = novaFotoUrl.Trim();
+        if (trimmed.Length == 0)
+        {
+            FotoUrl = null;
+            return Result.Success();
+        }
+
+        if (!trimmed.StartsWith("data:image/", StringComparison.Ordinal))
+            return Result.Failure(UsuarioErrors.FotoFormatoInvalido());
+
+        if (trimmed.Length > FotoUrlMaxLength)
+            return Result.Failure(UsuarioErrors.FotoMuitoGrande());
+
+        FotoUrl = trimmed;
+        return Result.Success();
     }
 
     private Result Validar()

@@ -14,20 +14,17 @@ namespace Jarvis.Application.UseCases.Tarefas;
 public class CriarTarefaUseCase
 {
     private readonly ITarefaRepository _tarefas;
-    private readonly IPrazoRepository _prazos;
     private readonly ICategoriaReadRepository _categoriaRead;
     private readonly IUsuarioLogado _usuarioLogado;
     private readonly IValidator<CriarTarefaInput> _validator;
 
     public CriarTarefaUseCase(
         ITarefaRepository tarefas,
-        IPrazoRepository prazos,
         ICategoriaReadRepository categoriaRead,
         IUsuarioLogado usuarioLogado,
         IValidator<CriarTarefaInput> validator)
     {
         _tarefas = tarefas;
-        _prazos = prazos;
         _categoriaRead = categoriaRead;
         _usuarioLogado = usuarioLogado;
         _validator = validator;
@@ -53,24 +50,13 @@ public class CriarTarefaUseCase
             return Result<TarefaViewModel>.Failure(TarefaErrors.CategoriasInvalidas());
         }
 
-        DateTime? dataPrazo = input.DataPrazoCustom?.Date;
-
-        if (input.PrazoId.HasValue)
-        {
-            Prazo? prazo = await _prazos.ObterPorIdAsync(input.PrazoId.Value, _usuarioLogado.Id, ct);
-            if (prazo is null)
-                return Result<TarefaViewModel>.Failure(TarefaErrors.PrazoNaoEncontrado());
-
-            dataPrazo = prazo.ResolverDataPrazo(DateTime.UtcNow);
-        }
-
         Result<Tarefa> criacaoResult = Tarefa.Criar(
             _usuarioLogado.Id,
             input.Nome,
             input.Prioridade,
-            input.PrazoId,
-            dataPrazo,
-            input.HorarioFinal);
+            input.DataPrazo,
+            input.HorarioFinal,
+            input.Observacoes);
 
         if (criacaoResult.IsFailure)
             return Result<TarefaViewModel>.Failure(criacaoResult.Error!);

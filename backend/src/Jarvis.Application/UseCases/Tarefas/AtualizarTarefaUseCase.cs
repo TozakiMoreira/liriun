@@ -14,20 +14,17 @@ namespace Jarvis.Application.UseCases.Tarefas;
 public class AtualizarTarefaUseCase
 {
     private readonly ITarefaRepository _tarefas;
-    private readonly IPrazoRepository _prazos;
     private readonly ICategoriaReadRepository _categoriaRead;
     private readonly IUsuarioLogado _usuarioLogado;
     private readonly IValidator<AtualizarTarefaInput> _validator;
 
     public AtualizarTarefaUseCase(
         ITarefaRepository tarefas,
-        IPrazoRepository prazos,
         ICategoriaReadRepository categoriaRead,
         IUsuarioLogado usuarioLogado,
         IValidator<AtualizarTarefaInput> validator)
     {
         _tarefas = tarefas;
-        _prazos = prazos;
         _categoriaRead = categoriaRead;
         _usuarioLogado = usuarioLogado;
         _validator = validator;
@@ -57,18 +54,7 @@ public class AtualizarTarefaUseCase
             return Result<TarefaViewModel>.Failure(TarefaErrors.CategoriasInvalidas());
         }
 
-        DateTime? dataPrazo = input.DataPrazoCustom?.Date;
-
-        if (input.PrazoId.HasValue)
-        {
-            Prazo? prazo = await _prazos.ObterPorIdAsync(input.PrazoId.Value, _usuarioLogado.Id, ct);
-            if (prazo is null)
-                return Result<TarefaViewModel>.Failure(TarefaErrors.PrazoNaoEncontrado());
-
-            dataPrazo = prazo.ResolverDataPrazo(DateTime.UtcNow);
-        }
-
-        Result atualizarResult = tarefa.Atualizar(input.Nome, input.Prioridade, input.PrazoId, dataPrazo, input.HorarioFinal);
+        Result atualizarResult = tarefa.Atualizar(input.Nome, input.Prioridade, input.DataPrazo, input.HorarioFinal, input.Observacoes);
         if (atualizarResult.IsFailure)
             return Result<TarefaViewModel>.Failure(atualizarResult.Error!);
 

@@ -16,21 +16,21 @@ export interface Tarefa {
   nome: string;
   prioridade: Prioridade;
   status: StatusTarefa;
-  prazoId: string | null;
-  dataPrazo: string | null;
-  horarioFinal: string;
+  dataPrazo: string;
+  horarioFinal: string | null;
+  observacoes: string | null;
   criadaEm: string;
   concluidaEm: string | null;
   categorias: TarefaCategoriaRef[];
 }
 
-export interface CriarTarefaPayload {
+export interface TarefaPayload {
   nome: string;
   prioridade: Prioridade;
+  dataPrazo: string;
   categoriaIds?: string[];
-  prazoId?: string | null;
-  dataPrazoCustom?: string | null;
   horarioFinal?: string | null;
+  observacoes?: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -49,16 +49,20 @@ export class TarefasService {
     return this.http.get<Tarefa[]>(`${this.api}/concluidas`, { params });
   }
 
-  criar(payload: CriarTarefaPayload): Observable<Tarefa> {
+  criar(payload: TarefaPayload): Observable<Tarefa> {
     return this.http.post<Tarefa>(this.api, payload);
   }
 
-  atualizar(id: string, payload: CriarTarefaPayload): Observable<Tarefa> {
+  atualizar(id: string, payload: TarefaPayload): Observable<Tarefa> {
     return this.http.put<Tarefa>(`${this.api}/${id}`, payload);
   }
 
   concluir(id: string): Observable<Tarefa> {
     return this.http.post<Tarefa>(`${this.api}/${id}/concluir`, {});
+  }
+
+  reabrir(id: string): Observable<Tarefa> {
+    return this.http.post<Tarefa>(`${this.api}/${id}/reabrir`, {});
   }
 
   remover(id: string): Observable<void> {

@@ -11,13 +11,17 @@ public sealed class CriarTarefaValidator : AbstractValidator<CriarTarefaInput>
             .NotEmpty().WithMessage("Nome da tarefa e obrigatorio")
             .MaximumLength(200).WithMessage("Nome da tarefa nao pode passar de 200 caracteres");
 
-        RuleFor(x => x)
-            .Must(x => !(x.PrazoId.HasValue && x.DataPrazoCustom.HasValue))
-            .WithMessage("Use prazo cadastrado ou data custom, nao os dois");
+        RuleFor(x => x.DataPrazo)
+            .NotEqual(default(DateTime)).WithMessage("Data do prazo e obrigatoria")
+            .Must(d => d.Date >= DateTime.UtcNow.Date.AddDays(-1))
+            .WithMessage("Data do prazo nao pode ser anterior a hoje");
 
         RuleFor(x => x.HorarioFinal)
             .Must(h => h >= TimeSpan.Zero && h < TimeSpan.FromDays(1))
             .When(x => x.HorarioFinal.HasValue)
             .WithMessage("Horario final deve estar entre 00:00 e 23:59");
+
+        RuleFor(x => x.Observacoes)
+            .MaximumLength(4000).WithMessage("Observacoes nao pode passar de 4000 caracteres");
     }
 }

@@ -1,18 +1,30 @@
-import { Component, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { BrandLogoComponent } from '../../shared/brand-logo.component';
+import { PasswordInputComponent } from '../../shared/password-input.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, RouterLink, BrandLogoComponent],
+  imports: [FormsModule, RouterLink, BrandLogoComponent, PasswordInputComponent],
   template: `
     <main
-      class="min-h-screen grid place-items-center px-6 py-12 bg-bg bg-accent-glow"
+      class="relative min-h-screen grid place-items-center px-6 py-12 bg-bg bg-accent-glow"
       data-testid="login-page"
     >
+      <a
+        routerLink="/"
+        class="absolute top-5 left-5 inline-flex items-center gap-2 px-3.5 py-2 text-[13px] font-medium text-text bg-bg-elev border border-border-strong rounded-lg hover:border-accent hover:bg-bg-input hover:text-accent transition-colors shadow-sm"
+        data-testid="login-home-link"
+        aria-label="Voltar pra página inicial"
+      >
+        <i class="fa-solid fa-arrow-left text-xs"></i>
+        Início
+      </a>
+
       <div class="w-full max-w-[380px] flex flex-col gap-8">
         <app-brand-logo />
 
@@ -20,12 +32,7 @@ import { BrandLogoComponent } from '../../shared/brand-logo.component';
           Bem-vindo de volta. Entra com suas credenciais que eu cuido do resto.
         </p>
 
-        <form
-          class="flex flex-col gap-3.5"
-          data-testid="login-form"
-          (ngSubmit)="enviar()"
-          #f="ngForm"
-        >
+        <form class="flex flex-col gap-3.5" data-testid="login-form" (ngSubmit)="enviar()" novalidate>
           <div class="flex flex-col gap-1.5">
             <label class="field-label" for="email">Email</label>
             <input
@@ -37,34 +44,36 @@ import { BrandLogoComponent } from '../../shared/brand-logo.component';
               autocomplete="email"
               data-testid="login-email-input"
               [(ngModel)]="email"
-              required
             />
+            @if (erroEmail()) {
+              <p class="text-danger text-xs" data-testid="login-erro-email">{{ erroEmail() }}</p>
+            }
           </div>
 
           <div class="flex flex-col gap-1.5">
             <label class="field-label" for="senha">Senha</label>
-            <input
-              id="senha"
-              name="senha"
-              type="password"
-              class="input-base"
+            <app-password-input
+              inputId="senha"
               placeholder="••••••••"
               autocomplete="current-password"
-              data-testid="login-password-input"
-              [(ngModel)]="senha"
-              required
+              testid="login-password-input"
+              [value]="senha"
+              (valueChange)="senha = $event"
             />
+            @if (erroSenha()) {
+              <p class="text-danger text-xs" data-testid="login-erro-senha">{{ erroSenha() }}</p>
+            }
           </div>
 
-          @if (erro()) {
-            <p class="text-danger text-xs" data-testid="login-erro">{{ erro() }}</p>
+          @if (erroGeral()) {
+            <p class="text-danger text-xs" data-testid="login-erro">{{ erroGeral() }}</p>
           }
 
           <button
             type="submit"
             class="btn-primary mt-1"
             data-testid="login-submit-btn"
-            [disabled]="carregando() || f.invalid"
+            [disabled]="carregando()"
           >
             {{ carregando() ? 'Entrando...' : 'Entrar' }}
           </button>
@@ -102,22 +111,81 @@ export class LoginComponent {
   email = '';
   senha = '';
   carregando = signal(false);
-  erro = signal<string | null>(null);
+  erroGeral = signal<string | null>(null);
+  errosCampo = signal<Record<string, string>>({});
+
+  erroEmail = computed(() => this.errosCampo()['email'] ?? null);
+  erroSenha = computed(() => this.errosCampo()['senha'] ?? null);
 
   enviar(): void {
     if (this.carregando()) return;
-    this.carregando.set(true);
-    this.erro.set(null);
+    this.erroGeral.set(null);
 
-    this.auth.login(this.email, this.senha).subscribe({
+    const erros = this.validar();
+    if (Object.keys(erros).length > 0) {
+      this.errosCampo.set(erros);
+      return;
+    }
+    this.errosCampo.set({});
+
+    this.carregando.set(true);
+    this.auth.login(this.email.trim(), this.senha).subscribe({
       next: () => {
         this.carregando.set(false);
-        this.router.navigateByUrl('/captura');
+        this.router.navigateByUrl('/app/captura');
       },
-      error: (err) => {
+      error: (err: HttpErrorResponse) => {
         this.carregando.set(false);
-        this.erro.set(err?.error?.mensagem ?? 'Não consegui entrar. Confere os dados.');
+        this.aplicarErroBackend(err);
       },
     });
+  }
+
+  private validar(): Record<string, string> {
+    const erros: Record<string, string> = {};
+    const email = this.email.trim();
+    if (!email) {
+      erros['email'] = 'Email é obrigatório.';
+    } else if (!email.includes('@') || !email.includes('.')) {
+      erros['email'] = 'Esse email não parece válido.';
+    }
+    if (!this.senha) {
+      erros['senha'] = 'Senha é obrigatória.';
+    }
+    return erros;
+  }
+
+  private aplicarErroBackend(err: HttpErrorResponse): void {
+    const body = err?.error;
+
+    if (body?.errors && typeof body.errors === 'object') {
+      const errosNormalizados: Record<string, string> = {};
+      for (const [chave, mensagens] of Object.entries(body.errors)) {
+        const campo = chave.toLowerCase();
+        const msgs = Array.isArray(mensagens) ? mensagens : [String(mensagens)];
+        if (msgs[0]) errosNormalizados[campo] = msgs[0];
+      }
+      if (Object.keys(errosNormalizados).length > 0) {
+        this.errosCampo.set(errosNormalizados);
+        return;
+      }
+    }
+
+    if (err.status === 401 || err.status === 400) {
+      this.erroGeral.set(body?.detail ?? 'Email ou senha incorretos.');
+      return;
+    }
+
+    if (body?.detail) {
+      this.erroGeral.set(body.detail);
+      return;
+    }
+
+    if (err.status === 0) {
+      this.erroGeral.set('Sem conexão com o servidor. Tenta de novo em instantes.');
+      return;
+    }
+
+    this.erroGeral.set('Não consegui entrar. Tenta de novo.');
   }
 }

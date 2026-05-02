@@ -28,7 +28,7 @@ public class ConcluirTarefaUseCaseTests
     [Fact]
     public async Task Conclui_tarefa_pendente()
     {
-        Tarefa tarefa = Tarefa.Criar(_usuarioId, "X", Prioridade.Normal).Value!;
+        Tarefa tarefa = Tarefa.Criar(_usuarioId, "X", Prioridade.Normal, new DateTime(2026, 5, 10)).Value!;
         _tarefas.Setup(t => t.ObterPorIdAsync(tarefa.Id, _usuarioId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(tarefa);
 
@@ -53,7 +53,7 @@ public class ConcluirTarefaUseCaseTests
     [Fact]
     public async Task Retorna_conflict_quando_ja_concluida()
     {
-        Tarefa tarefa = Tarefa.Criar(_usuarioId, "X", Prioridade.Normal).Value!;
+        Tarefa tarefa = Tarefa.Criar(_usuarioId, "X", Prioridade.Normal, new DateTime(2026, 5, 10)).Value!;
         tarefa.Concluir();
         _tarefas.Setup(t => t.ObterPorIdAsync(tarefa.Id, _usuarioId, It.IsAny<CancellationToken>()))
             .ReturnsAsync(tarefa);

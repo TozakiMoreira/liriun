@@ -1,7 +1,7 @@
 using FluentValidation;
 using Jarvis.Application.UseCases.Auth;
 using Jarvis.Application.UseCases.Categorias;
-using Jarvis.Application.UseCases.Prazos;
+using Jarvis.Application.UseCases.Ia;
 using Jarvis.Application.UseCases.Tarefas;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,23 +15,24 @@ public static class ApplicationModule
 
         services.AddScoped<CadastrarUsuarioUseCase>();
         services.AddScoped<LoginUseCase>();
+        services.AddScoped<AlterarSenhaUseCase>();
+        services.AddScoped<AtualizarPerfilUseCase>();
+        services.AddScoped<AtualizarFotoPerfilUseCase>();
 
         services.AddScoped<ListarCategoriasUseCase>();
         services.AddScoped<CriarCategoriaUseCase>();
         services.AddScoped<AtualizarCategoriaUseCase>();
         services.AddScoped<RemoverCategoriaUseCase>();
 
-        services.AddScoped<ListarPrazosUseCase>();
-        services.AddScoped<CriarPrazoUseCase>();
-        services.AddScoped<AtualizarPrazoUseCase>();
-        services.AddScoped<RemoverPrazoUseCase>();
-
         services.AddScoped<ListarTarefasPendentesUseCase>();
         services.AddScoped<ListarTarefasConcluidasUseCase>();
         services.AddScoped<CriarTarefaUseCase>();
         services.AddScoped<AtualizarTarefaUseCase>();
         services.AddScoped<ConcluirTarefaUseCase>();
+        services.AddScoped<ReabrirTarefaUseCase>();
         services.AddScoped<RemoverTarefaUseCase>();
+
+        services.AddScoped<ConversarCapturaUseCase>();
 
         return services;
     }

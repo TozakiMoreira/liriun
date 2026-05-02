@@ -8,8 +8,16 @@ export interface AutenticacaoResposta {
   usuarioId: string;
   nome: string;
   email: string;
+  fotoUrl: string | null;
   token: string;
   expiraEm: string;
+}
+
+export interface PerfilResposta {
+  id: string;
+  nome: string;
+  email: string;
+  fotoUrl: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -30,11 +38,36 @@ export class AuthService {
       .pipe(tap((res) => this.persistir(res)));
   }
 
+  alterarSenha(senhaAtual: string, novaSenha: string): Observable<void> {
+    return this.http.post<void>(`${this.api}/alterar-senha`, { senhaAtual, novaSenha });
+  }
+
+  atualizarPerfil(nome: string, email: string): Observable<PerfilResposta> {
+    return this.http
+      .put<PerfilResposta>(`${this.api}/perfil`, { nome, email })
+      .pipe(
+        tap((p) =>
+          this.storage.atualizarUsuario({ nome: p.nome, email: p.email, fotoUrl: p.fotoUrl }),
+        ),
+      );
+  }
+
+  atualizarFotoPerfil(fotoUrl: string | null): Observable<PerfilResposta> {
+    return this.http
+      .put<PerfilResposta>(`${this.api}/perfil/foto`, { fotoUrl })
+      .pipe(tap((p) => this.storage.atualizarUsuario({ fotoUrl: p.fotoUrl })));
+  }
+
   logout(): void {
     this.storage.clear();
   }
 
   private persistir(res: AutenticacaoResposta): void {
-    this.storage.set(res.token, { id: res.usuarioId, email: res.email, nome: res.nome });
+    this.storage.set(res.token, {
+      id: res.usuarioId,
+      email: res.email,
+      nome: res.nome,
+      fotoUrl: res.fotoUrl,
+    });
   }
 }

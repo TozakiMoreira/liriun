@@ -129,6 +129,44 @@ Ideias que mudam completamente a usabilidade do app. Devem vir primeiro nas prox
 - Implementacao com embeddings de IA (Gemini ou modelos open-source)
 - Custo baixo
 
+## Sistema social: amigos + ranking semanal de tarefas concluidas
+
+- Usuarios se adicionam como amigos e veem um **ranking semanal** com quantas tarefas cada um concluiu — gamificacao via competicao saudavel
+- **Fluxo de amizade**:
+  - Buscar usuario por email (`GET /usuarios/buscar?email=`)
+  - Enviar convite (`POST /amigos/convite`) — fica em status Pendente
+  - Receber notificacao no app (badge no item "Amigos" do sidebar)
+  - Aceitar/Recusar (`POST /amigos/{id}/aceitar` / `recusar`)
+  - Remover amigo (`DELETE /amigos/{id}`)
+- **Ranking semanal** (`GET /amigos/ranking?periodo=semana`):
+  - Retorna lista ordenada desc: `[{ amigoId, nome, fotoUrl, concluidasNaSemana, posicao }]`
+  - Inclui o proprio usuario na lista pra ver sua posicao
+  - Reset automatico toda segunda-feira 00:00 (timezone do usuario)
+- **Privacidade — IMPORTANTE**:
+  - Ranking so mostra **CONTAGEM** de tarefas concluidas, NUNCA o conteudo (titulo, categoria, observacoes vazariam dados privados)
+  - Avatar e nome ja sao expostos (cadastro ja tem isso)
+  - Usuario pode bloquear/sair de ranking individualmente (modo invisivel)
+- **Esboco tecnico**:
+  - Nova entidade `Amizade` (UsuarioAId, UsuarioBId, Status: Pendente/Aceita, CriadaEm, AceitaEm) — relacao simetrica, criada como linha unica
+  - Migration nova com indice composto unique em (UsuarioAId, UsuarioBId)
+  - Read repo `IAmizadeReadRepository` com query agregada por semana
+  - Frontend: nova rota `/app/amigos` com 3 abas (Ranking, Meus amigos, Convites pendentes)
+  - Item no sidebar com badge de convites pendentes
+  - Widget pequeno "sua posicao no ranking" na tela de Minhas Tarefas (opcional, configuravel)
+- **Por que vale a pena**:
+  - Diferencial competitivo (Todoist, TickTick nao tem isso bem feito)
+  - Engagement: pessoas usam mais quando sabem que tem amigo competindo
+  - Ideal pra grupos pequenos (faculdade, time de trabalho, casal)
+- **Evolucoes possiveis** (V1.2+):
+  - Ligas/divisoes (bronze, prata, ouro) que sobem/descem por desempenho
+  - Conquistas/badges ("100 tarefas concluidas", "30 dias seguidos")
+  - Sistema de pontos com peso por prioridade (urgente vale mais que baixa)
+  - Grupos privados (criar uma "liga" so com amigos especificos)
+  - Mensagens curtas entre amigos no app (cuidado com escopo — pode virar feature gigante)
+- **Risco**: feature social adiciona moderacao (perfis falsos, abuso) — limitar adicao por email/aceite manual mitiga inicialmente
+- **Estimativa**: 1-2 dias backend + 1 dia frontend = pode entrar como V1.1 ou V1.2 logo apos deploy do PI
+- Origem da ideia: Lucas, 2026-05-02
+
 ---
 
 # TIER 3 - Inteligencia adicional

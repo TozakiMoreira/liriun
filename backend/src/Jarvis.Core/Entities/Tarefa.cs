@@ -6,15 +6,16 @@ namespace Jarvis.Core.Entities;
 
 public class Tarefa
 {
-    private static readonly TimeSpan HorarioFinalDefault = new(23, 59, 0);
+    private const int ObservacoesMaxLength = 4000;
+    private static readonly TimeSpan FimDoDia = new(23, 59, 59);
 
     public Guid Id { get; private set; }
     public Guid UsuarioId { get; private set; }
     public string Nome { get; private set; } = null!;
 
-    public Guid? PrazoId { get; private set; }
-    public DateTime? DataPrazo { get; private set; }
-    public TimeSpan HorarioFinal { get; private set; }
+    public DateTime DataPrazo { get; private set; }
+    public TimeSpan? HorarioFinal { get; private set; }
+    public string? Observacoes { get; private set; }
 
     public Prioridade Prioridade { get; private set; }
     public StatusTarefa Status { get; private set; }
@@ -28,14 +29,14 @@ public class Tarefa
 
     internal static Tarefa Reconstituir(
         Guid id, Guid usuarioId, string nome,
-        Guid? prazoId, DateTime? dataPrazo, TimeSpan horarioFinal,
+        DateTime dataPrazo, TimeSpan? horarioFinal, string? observacoes,
         Prioridade prioridade, StatusTarefa status,
         DateTime criadaEm, DateTime? concluidaEm,
         ICollection<TarefaCategoria>? categorias = null)
         => new()
         {
             Id = id, UsuarioId = usuarioId, Nome = nome,
-            PrazoId = prazoId, DataPrazo = dataPrazo, HorarioFinal = horarioFinal,
+            DataPrazo = dataPrazo, HorarioFinal = horarioFinal, Observacoes = observacoes,
             Prioridade = prioridade, Status = status,
             CriadaEm = criadaEm, ConcluidaEm = concluidaEm,
             Categorias = categorias ?? new List<TarefaCategoria>()
@@ -45,9 +46,9 @@ public class Tarefa
         Guid usuarioId,
         string nome,
         Prioridade prioridade,
-        Guid? prazoId = null,
-        DateTime? dataPrazo = null,
-        TimeSpan? horarioFinal = null)
+        DateTime dataPrazo,
+        TimeSpan? horarioFinal = null,
+        string? observacoes = null)
     {
         Tarefa tarefa = new()
         {
@@ -55,9 +56,9 @@ public class Tarefa
             UsuarioId = usuarioId,
             Nome = nome?.Trim() ?? string.Empty,
             Prioridade = prioridade,
-            PrazoId = prazoId,
-            DataPrazo = dataPrazo?.Date,
-            HorarioFinal = horarioFinal ?? HorarioFinalDefault,
+            DataPrazo = dataPrazo.Date,
+            HorarioFinal = horarioFinal,
+            Observacoes = NormalizarObservacoes(observacoes),
             Status = StatusTarefa.Pendente,
             CriadaEm = DateTime.UtcNow
         };
@@ -79,21 +80,31 @@ public class Tarefa
         return Result.Success();
     }
 
+    public Result Reabrir()
+    {
+        if (Status != StatusTarefa.Concluida)
+            return Result.Failure(TarefaErrors.NaoConcluidaParaReabrir());
+
+        Status = StatusTarefa.Pendente;
+        ConcluidaEm = null;
+        return Result.Success();
+    }
+
     public Result Atualizar(
         string nome,
         Prioridade prioridade,
-        Guid? prazoId,
-        DateTime? dataPrazo,
-        TimeSpan? horarioFinal)
+        DateTime dataPrazo,
+        TimeSpan? horarioFinal,
+        string? observacoes)
     {
         if (Status == StatusTarefa.Concluida)
             return Result.Failure(TarefaErrors.NaoEditavelConcluida());
 
         Nome = nome?.Trim() ?? string.Empty;
         Prioridade = prioridade;
-        PrazoId = prazoId;
-        DataPrazo = dataPrazo?.Date;
-        HorarioFinal = horarioFinal ?? HorarioFinalDefault;
+        DataPrazo = dataPrazo.Date;
+        HorarioFinal = horarioFinal;
+        Observacoes = NormalizarObservacoes(observacoes);
         return Validar();
     }
 
@@ -102,10 +113,7 @@ public class Tarefa
         if (Status == StatusTarefa.Concluida)
             return StatusTarefa.Concluida;
 
-        if (!DataPrazo.HasValue)
-            return StatusTarefa.Pendente;
-
-        DateTime limite = DataPrazo.Value.Add(HorarioFinal);
+        DateTime limite = DataPrazo.Add(HorarioFinal ?? FimDoDia);
         return agora > limite ? StatusTarefa.Atrasada : StatusTarefa.Pendente;
     }
 
@@ -120,9 +128,22 @@ public class Tarefa
         if (Nome.Length > 200)
             return Result.Failure(TarefaErrors.NomeMuitoLongo());
 
-        if (HorarioFinal < TimeSpan.Zero || HorarioFinal >= TimeSpan.FromDays(1))
+        if (DataPrazo == default)
+            return Result.Failure(TarefaErrors.DataPrazoObrigatoria());
+
+        if (HorarioFinal.HasValue && (HorarioFinal.Value < TimeSpan.Zero || HorarioFinal.Value >= TimeSpan.FromDays(1)))
             return Result.Failure(TarefaErrors.HorarioFinalInvalido());
 
+        if (Observacoes is not null && Observacoes.Length > ObservacoesMaxLength)
+            return Result.Failure(TarefaErrors.ObservacoesMuitoLongas());
+
         return Result.Success();
+    }
+
+    private static string? NormalizarObservacoes(string? observacoes)
+    {
+        if (observacoes is null) return null;
+        string trimmed = observacoes.Trim();
+        return trimmed.Length == 0 ? null : trimmed;
     }
 }

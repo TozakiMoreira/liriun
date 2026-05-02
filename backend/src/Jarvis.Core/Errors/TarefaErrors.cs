@@ -28,9 +28,15 @@ public static class TarefaErrors
     public static Error CategoriasInvalidas()
         => Error.Validation("tarefa.categorias-invalidas", "Uma ou mais categorias informadas nao existem");
 
-    public static Error PrazoNaoEncontrado()
-        => Error.NotFound("tarefa.prazo-nao-encontrado", "Prazo nao encontrado");
+    public static Error DataPrazoObrigatoria()
+        => Error.Validation("tarefa.data-prazo-obrigatoria", "Data do prazo e obrigatoria");
 
-    public static Error PrazoEDataCustomConflito()
-        => Error.Validation("tarefa.prazo-data-custom-conflito", "Use prazo cadastrado ou data custom, nao os dois");
+    public static Error DataPrazoNoPassado()
+        => Error.Validation("tarefa.data-prazo-no-passado", "Data do prazo nao pode ser anterior a hoje");
+
+    public static Error ObservacoesMuitoLongas()
+        => Error.Validation("tarefa.observacoes-muito-longas", "Observacoes nao pode passar de 4000 caracteres");
+
+    public static Error NaoConcluidaParaReabrir()
+        => Error.Conflict("tarefa.nao-concluida-para-reabrir", "So da pra reabrir tarefa que esta concluida");
 }

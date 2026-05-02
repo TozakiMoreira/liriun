@@ -30,16 +30,16 @@
 - 2 entidades principais: Tarefa e Categoria (N:N entre elas)
 - Tag foi UNIFICADA em Categoria — nao existe mais Tag separada
 - Categorias sao criadas/editadas pelo usuario via tela de Configuracoes
-- Prazos pre-definidos tambem sao criados pelo usuario (duracoes nomeadas: Hoje, Amanha, Essa semana, etc)
-- Prazos custom ad-hoc podem ser criados durante a criacao de uma tarefa (valem so pra aquela tarefa, nao viram modelo)
+- **Prazo NAO e entidade.** Cada tarefa tem `DataPrazo: DateTime?` e `HorarioFinal: TimeSpan?` direto, ambos opcionais. Decidido em 2026-04-30 — entidade Prazo (templates "Hoje", "Amanha") foi removida porque cada tarefa tem sua propria data fixa.
+- A apresentacao relativa ("Hoje", "Amanha", "Em N dias", "Em N meses", "Em N anos") e calculada na tela de Minhas Tarefas a partir de `DataPrazo`.
 - Categorias ad-hoc criadas durante criacao de tarefa VIRAM modelo permanente
-- IA so pode escolher entre as categorias e prazos ja cadastrados pelo usuario
+- IA so pode escolher entre as categorias ja cadastradas pelo usuario (e qualquer data como prazo)
 - IA retorna null nos campos quando nao consegue inferir (texto vago)
 - Prioridades fixas: urgente, importante, normal, baixa
 - Status: pendente, concluida, atrasada (transicao pendente→atrasada e calculada no backend ao listar tarefas, nao e job)
 - Ao concluir uma tarefa na tela Minhas Tarefas, o usuario PERMANECE na mesma tela (tarefa some da lista mas a navegacao nao muda) — facilita concluir varias em sequencia
-- Horario final da tarefa: opcional, default 23:59 do dia do prazo
-- Exclusao de categoria/prazo: BLOQUEADA se tiver tarefa pendente vinculada
+- Horario final da tarefa: opcional. Quando null, status atrasado considera fim do dia (23:59:59).
+- Exclusao de categoria: BLOQUEADA se tiver tarefa pendente vinculada
 
 ### Terminologia oficial
 - "Tarefa" (nao "anotacao", nao "nota")
@@ -51,13 +51,13 @@
 Usuario escolhe ANTES de digitar qual modo usar (2 botoes: Manual ou Jarvis).
 
 **Modo Manual:**
-- Form com: nome (obrigatorio), categorias (multi-select, pode criar categoria inline), prazo (lista OU custom so pra essa tarefa), horario final (opcional), prioridade
+- Form com: nome (obrigatorio), categorias (multi-select, pode criar categoria inline — futuro), data (input nativo, opcional), hora (opcional, exige data), prioridade
 - Salva direto
 
-**Modo Jarvis (com IA):**
+**Modo Jarvis (com IA — feature futura, ainda nao implementada):**
 1. Textarea livre — usuario escreve texto ("comprar fita metrica ate sexta")
-2. Backend chama Gemini passando texto + categorias + prazos do usuario
-3. Gemini retorna JSON: titulo, categorias[], prazo, prioridade (pode retornar null em campos)
+2. Backend chama Gemini passando texto + categorias do usuario
+3. Gemini retorna JSON: titulo, categorias[], data, hora opcional, prioridade (pode retornar null em campos)
 4. Frontend mostra tela de revisao — usuario edita livremente
 5. Usuario confirma e salva
 6. Se Gemini falhar/timeout/JSON invalido: toast do Jarvis ("Nao consegui dessa vez, preenche manual") + abre form manual com texto bruto no campo nome
@@ -65,18 +65,21 @@ Usuario escolhe ANTES de digitar qual modo usar (2 botoes: Manual ou Jarvis).
 
 ### Onboarding
 - Bloqueante no primeiro acesso apos cadastro
+- So pergunta categorias (nao tem mais prazos cadastrados — cada tarefa tem data propria)
 - Usuario pode: aceitar templates padrao, editar templates, ou criar do zero
 - Templates padrao de categorias: Trabalho, Faculdade, Casa, Compras, Pessoal
-- Templates padrao de prazos: Hoje, Amanha, Essa semana, Esse mes, Sem prazo
 
 ### Telas
+- Landing (publica, em `/`)
 - Login (email + senha)
 - Cadastro (email + senha + nome)
-- Onboarding (setup inicial de categorias e prazos)
+- Onboarding (setup inicial de categorias)
 - Captura rapida (tela principal — escolhe modo Manual ou Jarvis, volta pra ca apos salvar)
 - Minhas tarefas (listagem de pendentes e atrasadas, filtro principal configuravel — agrupamento padrao: categoria, ordenacao secundaria: prazo mais proximo, atrasadas em destaque no topo)
 - Concluidas (historico completo, filtros por periodo dia/semana/mes, sem desfazer conclusao na V1)
-- Configuracoes (gerenciar categorias e prazos)
+- Configuracoes (Perfil com edit + Alterar senha + Categorias)
+- Alterar senha (subpagina de Configuracoes — card centralizado)
+- Shell autenticado vive em `/app/*`
 
 ### Padroes de UI/UX
 - Paleta: clonar Linear na cara dura na V1 (dark, cinza-azulado, preto, branco, accent roxo/azul)

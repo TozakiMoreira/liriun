@@ -11,22 +11,24 @@ public sealed record TarefaViewModel(
     string Nome,
     Prioridade Prioridade,
     StatusTarefa Status,
-    Guid? PrazoId,
-    DateTime? DataPrazo,
-    TimeSpan HorarioFinal,
+    DateTime DataPrazo,
+    TimeSpan? HorarioFinal,
+    string? Observacoes,
     DateTime CriadaEm,
     DateTime? ConcluidaEm,
     IReadOnlyList<TarefaCategoriaViewModel> Categorias)
 {
+    private static readonly TimeSpan FimDoDia = new(23, 59, 59);
+
     public static TarefaViewModel FromEntity(Tarefa tarefa, DateTime agora)
         => new(
             tarefa.Id,
             tarefa.Nome,
             tarefa.Prioridade,
             tarefa.StatusComputado(agora),
-            tarefa.PrazoId,
             tarefa.DataPrazo,
             tarefa.HorarioFinal,
+            tarefa.Observacoes,
             tarefa.CriadaEm,
             tarefa.ConcluidaEm,
             tarefa.Categorias
@@ -37,9 +39,9 @@ public sealed record TarefaViewModel(
     public static TarefaViewModel FromReadModel(TarefaReadModel readModel, DateTime agora)
     {
         StatusTarefa statusComputado = readModel.Status;
-        if (statusComputado != StatusTarefa.Concluida && readModel.DataPrazo.HasValue)
+        if (statusComputado != StatusTarefa.Concluida)
         {
-            DateTime limite = readModel.DataPrazo.Value.Add(readModel.HorarioFinal);
+            DateTime limite = readModel.DataPrazo.Add(readModel.HorarioFinal ?? FimDoDia);
             if (agora > limite)
                 statusComputado = StatusTarefa.Atrasada;
         }
@@ -49,9 +51,9 @@ public sealed record TarefaViewModel(
             readModel.Nome,
             readModel.Prioridade,
             statusComputado,
-            readModel.PrazoId,
             readModel.DataPrazo,
             readModel.HorarioFinal,
+            readModel.Observacoes,
             readModel.CriadaEm,
             readModel.ConcluidaEm,
             readModel.Categorias

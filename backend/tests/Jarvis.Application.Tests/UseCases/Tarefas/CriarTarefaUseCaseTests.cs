@@ -17,11 +17,11 @@ namespace Jarvis.Application.Tests.UseCases.Tarefas;
 public class CriarTarefaUseCaseTests
 {
     private readonly Mock<ITarefaRepository> _tarefas = new();
-    private readonly Mock<IPrazoRepository> _prazos = new();
     private readonly Mock<ICategoriaReadRepository> _categoriaRead = new();
     private readonly Mock<IUsuarioLogado> _usuarioLogado = new();
     private readonly Mock<IValidator<CriarTarefaInput>> _validator = new();
     private readonly Guid _usuarioId = Guid.NewGuid();
+    private static readonly DateTime DataDefault = new(2026, 5, 10);
 
     public CriarTarefaUseCaseTests()
     {
@@ -35,46 +35,44 @@ public class CriarTarefaUseCaseTests
     }
 
     private CriarTarefaUseCase Criar()
-        => new(_tarefas.Object, _prazos.Object, _categoriaRead.Object, _usuarioLogado.Object, _validator.Object);
+        => new(_tarefas.Object, _categoriaRead.Object, _usuarioLogado.Object, _validator.Object);
 
     [Fact]
-    public async Task Cria_tarefa_sem_prazo()
+    public async Task Cria_tarefa_com_data_obrigatoria()
     {
         Result<TarefaViewModel> result = await Criar().ExecuteAsync(
-            new CriarTarefaInput("Comprar pao", Prioridade.Normal), CancellationToken.None);
+            new CriarTarefaInput("Comprar pao", Prioridade.Normal, DataDefault), CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         result.Value!.Nome.Should().Be("Comprar pao");
         result.Value.Prioridade.Should().Be(Prioridade.Normal);
+        result.Value.DataPrazo.Should().Be(DataDefault);
+        result.Value.HorarioFinal.Should().BeNull();
     }
 
     [Fact]
-    public async Task Cria_tarefa_com_prazo_template_resolvendo_data()
+    public async Task Cria_tarefa_com_data_e_hora()
     {
-        Prazo prazo = Prazo.Criar(_usuarioId, "Amanha", 1).Value!;
-        _prazos.Setup(p => p.ObterPorIdAsync(prazo.Id, _usuarioId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(prazo);
+        DateTime dataPrazo = new(2026, 5, 1);
+        TimeSpan hora = new(14, 30, 0);
 
         Result<TarefaViewModel> result = await Criar().ExecuteAsync(
-            new CriarTarefaInput("Tarefa X", Prioridade.Importante, PrazoId: prazo.Id), CancellationToken.None);
+            new CriarTarefaInput("Tarefa X", Prioridade.Importante, dataPrazo, HorarioFinal: hora), CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value!.PrazoId.Should().Be(prazo.Id);
-        result.Value.DataPrazo.Should().NotBeNull();
-        result.Value.DataPrazo!.Value.Date.Should().Be(DateTime.UtcNow.Date.AddDays(1));
+        result.Value!.DataPrazo.Should().Be(dataPrazo);
+        result.Value.HorarioFinal.Should().Be(hora);
     }
 
     [Fact]
-    public async Task Cria_tarefa_com_data_custom()
+    public async Task Cria_tarefa_com_observacoes()
     {
-        DateTime dataCustom = DateTime.UtcNow.Date.AddDays(3);
-
         Result<TarefaViewModel> result = await Criar().ExecuteAsync(
-            new CriarTarefaInput("Tarefa Y", Prioridade.Baixa, DataPrazoCustom: dataCustom), CancellationToken.None);
+            new CriarTarefaInput("Tarefa Z", Prioridade.Normal, DataDefault, Observacoes: "Levar a chave reserva"),
+            CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        result.Value!.PrazoId.Should().BeNull();
-        result.Value.DataPrazo.Should().Be(dataCustom);
+        result.Value!.Observacoes.Should().Be("Levar a chave reserva");
     }
 
     [Fact]
@@ -84,22 +82,10 @@ public class CriarTarefaUseCaseTests
             .ReturnsAsync(false);
 
         Result<TarefaViewModel> result = await Criar().ExecuteAsync(
-            new CriarTarefaInput("X", Prioridade.Normal, CategoriaIds: new[] { Guid.NewGuid() }), CancellationToken.None);
+            new CriarTarefaInput("X", Prioridade.Normal, DataDefault, CategoriaIds: new[] { Guid.NewGuid() }),
+            CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
         result.Error!.Code.Should().Be("tarefa.categorias-invalidas");
-    }
-
-    [Fact]
-    public async Task Retorna_not_found_quando_prazo_nao_existe()
-    {
-        _prazos.Setup(p => p.ObterPorIdAsync(It.IsAny<Guid>(), _usuarioId, It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Prazo?)null);
-
-        Result<TarefaViewModel> result = await Criar().ExecuteAsync(
-            new CriarTarefaInput("X", Prioridade.Normal, PrazoId: Guid.NewGuid()), CancellationToken.None);
-
-        result.IsFailure.Should().BeTrue();
-        result.Error!.Code.Should().Be("tarefa.prazo-nao-encontrado");
     }
 }

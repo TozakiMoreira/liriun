@@ -60,6 +60,6 @@ public class CadastrarUsuarioUseCase
         (string token, DateTime expira) = _jwt.Gerar(usuario);
 
         return Result<AutenticacaoViewModel>.Success(
-            new AutenticacaoViewModel(usuario.Id, usuario.Nome, usuario.Email, token, expira));
+            new AutenticacaoViewModel(usuario.Id, usuario.Nome, usuario.Email, usuario.FotoUrl, token, expira));
     }
 }
