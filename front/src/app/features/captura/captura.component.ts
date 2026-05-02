@@ -37,9 +37,9 @@ type Modo = 'manual' | 'jarvis' | null;
   standalone: true,
   imports: [CommonModule, FormsModule, TarefaFormComponent],
   template: `
-    <header class="flex items-center px-4 md:px-8 py-3.5 border-b border-border gap-4">
-      <div class="flex items-center gap-2 text-[13px] text-text-dim">
-        <i class="fa-solid fa-bolt text-accent text-[11px]"></i>
+    <header class="flex items-center px-4 md:px-8 py-3.5 border-b border-border gap-3">
+      <div class="flex items-center gap-2 text-[15px] text-text-dim">
+        <i class="fa-solid fa-bolt text-accent text-[12px]"></i>
         <strong class="text-text font-medium">Nova tarefa</strong>
       </div>
     </header>
@@ -49,6 +49,20 @@ type Modo = 'manual' | 'jarvis' | null;
       style="background-image: radial-gradient(ellipse 60% 30% at 50% 0%, rgba(94, 106, 210, 0.08), transparent);"
       data-testid="captura-page"
     >
+      @if (modo() !== null) {
+        <button
+          type="button"
+          class="absolute top-4 left-4 md:top-6 md:left-6 inline-flex items-center gap-1.5 h-9 px-3 rounded-md text-[13px] font-medium bg-accent/15 border border-accent/40 text-accent hover:bg-accent/25 hover:border-accent/60 hover:shadow-glow-sm transition-all z-10"
+          data-testid="captura-voltar"
+          aria-label="Voltar"
+          title="Voltar para escolha de modo"
+          (click)="voltarSelecaoModo()"
+        >
+          <i class="fa-solid fa-arrow-left text-[12px]"></i>
+          <span>Voltar</span>
+        </button>
+      }
+
       @if (modo() === null) {
         <div class="w-full max-w-[720px] flex flex-col gap-8 md:gap-10 items-center fade-in">
           <div class="text-center flex flex-col gap-2.5">
@@ -151,18 +165,6 @@ type Modo = 'manual' | 'jarvis' | null;
           class="w-full max-w-[680px] flex flex-col gap-5 fade-in"
           data-testid="jarvis-panel"
         >
-          <div class="flex items-center">
-            <button
-              type="button"
-              class="inline-flex items-center gap-2 px-3 h-9 rounded-md text-[13px] text-text-dim border border-border bg-bg-elev/40 hover:text-text hover:border-border-strong hover:bg-bg-elev transition-colors"
-              data-testid="jarvis-voltar"
-              aria-label="Voltar"
-              (click)="modo.set(null)"
-            >
-              <i class="fa-solid fa-arrow-left text-[12px]"></i>
-              Voltar
-            </button>
-          </div>
           @if (!chatAtivo()) {
             <div class="text-center flex flex-col gap-2 fade-down">
               <div class="flex items-center justify-center gap-2 mb-1">
@@ -186,9 +188,9 @@ type Modo = 'manual' | 'jarvis' | null;
           }
 
           <div
-            class="card-elev overflow-hidden flex flex-col transition-all duration-500 ease-out"
+            class="overflow-hidden flex flex-col transition-all duration-500 ease-out"
+            [class.card-elev]="chatAtivo()"
             [class.chat-card-expanded]="chatAtivo()"
-            [class.chat-card-compact]="!chatAtivo()"
           >
             @if (chatAtivo()) {
               <div
@@ -386,8 +388,10 @@ type Modo = 'manual' | 'jarvis' | null;
             }
 
             <div
-              class="border-border px-3 py-3 transition-all"
+              class="border-border transition-all"
               [class.border-t]="chatAtivo()"
+              [class.px-3]="chatAtivo()"
+              [class.py-3]="chatAtivo()"
             >
               @if (mostrarChips()) {
                 <div
@@ -433,158 +437,149 @@ type Modo = 'manual' | 'jarvis' | null;
                   </button>
                 </div>
               }
-              <form
-                class="flex items-end gap-2"
-                (ngSubmit)="enviarMensagem()"
-                data-testid="chat-form"
-              >
+              <form (ngSubmit)="enviarMensagem()" data-testid="chat-form">
                 @if (gravando()) {
-                  <div
-                    class="input-base flex-1 flex items-center gap-3 self-stretch"
-                    data-testid="chat-gravando"
-                  >
-                    <span class="w-2 h-2 rounded-full bg-danger animate-pulse shrink-0"></span>
-                    <span class="text-text font-mono text-[13px] tabular-nums shrink-0">{{
-                      formatarTempoGravacao()
-                    }}</span>
+                  <div class="flex items-end gap-2">
                     <div
-                      class="flex-1 flex items-end gap-[2px] h-5 overflow-hidden"
-                      aria-hidden="true"
+                      class="rounded-2xl border border-border bg-bg-elev/40 px-3 py-2 flex-1 flex items-center gap-3"
+                      data-testid="chat-gravando"
                     >
-                      @for (h of volumeBars(); track $index) {
-                        <span
-                          class="flex-1 bg-accent/60 rounded-[1px] transition-[height] duration-75"
-                          [style.height.%]="h"
-                          [style.minHeight.px]="2"
-                        ></span>
-                      }
+                      <span class="w-2 h-2 rounded-full bg-danger animate-pulse shrink-0"></span>
+                      <span class="text-text font-mono text-[13px] tabular-nums shrink-0">{{
+                        formatarTempoGravacao()
+                      }}</span>
+                      <div
+                        class="flex-1 flex items-end gap-[2px] h-5 overflow-hidden"
+                        aria-hidden="true"
+                      >
+                        @for (h of volumeBars(); track $index) {
+                          <span
+                            class="flex-1 bg-accent/60 rounded-[1px] transition-[height] duration-75"
+                            [style.height.%]="h"
+                            [style.minHeight.px]="2"
+                          ></span>
+                        }
+                      </div>
                     </div>
-                  </div>
-                  <button
-                    type="button"
-                    class="btn-secondary px-3.5 py-2 self-stretch"
-                    data-testid="chat-cancelar-audio"
-                    aria-label="Cancelar gravação"
-                    title="Cancelar"
-                    (click)="cancelarGravacao()"
-                  >
-                    <i class="fa-solid fa-trash text-[12px]"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn-primary px-3.5 py-2 self-stretch"
-                    data-testid="chat-parar-audio"
-                    aria-label="Parar gravação"
-                    title="Parar e ouvir"
-                    (click)="pararGravacao()"
-                  >
-                    <i class="fa-solid fa-stop text-[12px]"></i>
-                  </button>
-                } @else if (previaAudio()) {
-                  <div
-                    class="input-base flex-1 flex items-center gap-3 self-stretch"
-                    data-testid="chat-previa"
-                  >
-                    <i class="fa-solid fa-circle-play text-accent text-[14px] shrink-0"></i>
-                    <audio
-                      class="flex-1 h-8"
-                      controls
-                      preload="metadata"
-                      [src]="previaAudio()!.url"
-                      data-testid="chat-previa-player"
-                    ></audio>
-                    <span class="text-text-subtle text-[11px] tabular-nums shrink-0">
-                      {{ formatarSegundos(previaAudio()!.segundos) }}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    class="btn-secondary px-3.5 py-2 self-stretch"
-                    data-testid="chat-previa-descartar"
-                    aria-label="Descartar áudio"
-                    title="Descartar"
-                    (click)="descartarPrevia()"
-                  >
-                    <i class="fa-solid fa-trash text-[12px]"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn-secondary px-3.5 py-2 self-stretch"
-                    data-testid="chat-previa-regravar"
-                    aria-label="Regravar"
-                    title="Regravar"
-                    [disabled]="analisando() || salvando()"
-                    (click)="reGravarPrevia()"
-                  >
-                    <i class="fa-solid fa-microphone text-[12px]"></i>
-                  </button>
-                  <button
-                    type="button"
-                    class="btn-primary px-3.5 py-2 self-stretch"
-                    data-testid="chat-previa-enviar"
-                    aria-label="Enviar áudio"
-                    title="Enviar"
-                    [disabled]="analisando() || salvando()"
-                    (click)="enviarPrevia()"
-                  >
-                    <i class="fa-solid fa-paper-plane text-[12px]"></i>
-                  </button>
-                } @else {
-                  <textarea
-                    #inputChat
-                    class="input-base resize-none flex-1 transition-all"
-                    [rows]="chatAtivo() ? 1 : 3"
-                    [placeholder]="chatAtivo() ? 'Escreve aqui...' : 'Ex: marcar reunião com Pedro amanhã às 18h'"
-                    maxlength="2000"
-                    data-testid="chat-input"
-                    [ngModel]="rascunho()"
-                    (ngModelChange)="rascunho.set($event)"
-                    name="rascunhoChat"
-                    [disabled]="analisando() || salvando()"
-                    (keydown)="onKeyChat($event)"
-                  ></textarea>
-                  @if (gravacaoSuportada()) {
                     <button
                       type="button"
-                      class="btn-secondary px-3.5 py-2 self-stretch"
-                      data-testid="chat-mic"
-                      aria-label="Gravar mensagem de voz"
-                      title="Gravar áudio"
-                      [disabled]="analisando() || salvando()"
-                      (click)="iniciarGravacao()"
+                      class="chat-icon-btn chat-icon-secondary"
+                      data-testid="chat-cancelar-audio"
+                      aria-label="Cancelar gravação"
+                      title="Cancelar"
+                      (click)="cancelarGravacao()"
                     >
-                      <i class="fa-solid fa-microphone text-[12px]"></i>
+                      <i class="fa-solid fa-trash text-[11px]"></i>
                     </button>
-                  }
-                  <button
-                    type="submit"
-                    class="btn-primary px-3.5 py-2 text-[13px] flex items-center gap-1.5 self-stretch"
-                    data-testid="chat-enviar"
-                    [disabled]="!podeEnviar() || analisando() || salvando()"
-                    [attr.aria-label]="chatAtivo() ? 'Enviar mensagem' : 'Iniciar conversa'"
-                  >
-                    <i class="fa-solid fa-paper-plane text-[12px]"></i>
-                    @if (!chatAtivo()) {
-                      <span>Conversar</span>
-                    }
-                  </button>
+                    <button
+                      type="button"
+                      class="chat-icon-btn chat-icon-primary"
+                      data-testid="chat-parar-audio"
+                      aria-label="Parar gravação"
+                      title="Parar e ouvir"
+                      (click)="pararGravacao()"
+                    >
+                      <i class="fa-solid fa-stop text-[11px]"></i>
+                    </button>
+                  </div>
+                } @else if (previaAudio()) {
+                  <div class="flex items-end gap-2 flex-wrap">
+                    <div
+                      class="rounded-2xl border border-border bg-bg-elev/40 px-3 py-2 flex-1 min-w-[200px] flex items-center gap-3"
+                      data-testid="chat-previa"
+                    >
+                      <i class="fa-solid fa-circle-play text-accent text-[14px] shrink-0"></i>
+                      <audio
+                        class="flex-1 h-8"
+                        controls
+                        preload="metadata"
+                        [src]="previaAudio()!.url"
+                        data-testid="chat-previa-player"
+                      ></audio>
+                      <span class="text-text-subtle text-[11px] tabular-nums shrink-0">
+                        {{ formatarSegundos(previaAudio()!.segundos) }}
+                      </span>
+                    </div>
+                    <div class="flex gap-1.5">
+                      <button
+                        type="button"
+                        class="chat-icon-btn chat-icon-secondary"
+                        data-testid="chat-previa-descartar"
+                        aria-label="Descartar áudio"
+                        title="Descartar"
+                        (click)="descartarPrevia()"
+                      >
+                        <i class="fa-solid fa-trash text-[11px]"></i>
+                      </button>
+                      <button
+                        type="button"
+                        class="chat-icon-btn chat-icon-secondary"
+                        data-testid="chat-previa-regravar"
+                        aria-label="Regravar"
+                        title="Regravar"
+                        [disabled]="analisando() || salvando()"
+                        (click)="reGravarPrevia()"
+                      >
+                        <i class="fa-solid fa-microphone text-[11px]"></i>
+                      </button>
+                      <button
+                        type="button"
+                        class="chat-icon-btn chat-icon-primary"
+                        data-testid="chat-previa-enviar"
+                        aria-label="Enviar áudio"
+                        title="Enviar"
+                        [disabled]="analisando() || salvando()"
+                        (click)="enviarPrevia()"
+                      >
+                        <i class="fa-solid fa-paper-plane text-[11px]"></i>
+                      </button>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="chat-input-wrap">
+                    <textarea
+                      #inputChat
+                      class="chat-textarea"
+                      rows="1"
+                      [placeholder]="chatAtivo() ? 'Escreve aqui...' : 'Ex: marcar reunião com Pedro amanhã às 18h'"
+                      maxlength="2000"
+                      data-testid="chat-input"
+                      [ngModel]="rascunho()"
+                      (ngModelChange)="rascunho.set($event)"
+                      name="rascunhoChat"
+                      [disabled]="analisando() || salvando()"
+                      (keydown)="onKeyChat($event)"
+                      (input)="onInputChat($event)"
+                    ></textarea>
+                    <div class="chat-actions">
+                      @if (gravacaoSuportada()) {
+                        <button
+                          type="button"
+                          class="chat-icon-btn chat-icon-secondary"
+                          data-testid="chat-mic"
+                          aria-label="Gravar mensagem de voz"
+                          title="Gravar áudio"
+                          [disabled]="analisando() || salvando()"
+                          (click)="iniciarGravacao()"
+                        >
+                          <i class="fa-solid fa-microphone text-[11px]"></i>
+                        </button>
+                      }
+                      <button
+                        type="submit"
+                        class="chat-icon-btn chat-icon-primary"
+                        data-testid="chat-enviar"
+                        [disabled]="!podeEnviar() || analisando() || salvando()"
+                        [attr.aria-label]="chatAtivo() ? 'Enviar mensagem' : 'Iniciar conversa'"
+                        [title]="chatAtivo() ? 'Enviar' : 'Conversar'"
+                      >
+                        <i class="fa-solid fa-arrow-up text-[12px]"></i>
+                      </button>
+                    </div>
+                  </div>
                 }
               </form>
-              @if (!chatAtivo()) {
-                <div
-                  class="flex items-center mt-2 text-[11px] text-text-subtle px-1"
-                >
-                  <span class="flex items-center gap-1.5">
-                    <i class="fa-solid fa-circle-info text-[10px]"></i>
-                    Me diga qual seria sua tarefa, quando, onde ou como.
-                    @if (gravacaoSuportada()) {
-                      <span class="ml-1">
-                        · <span class="kbd-pill">Ctrl</span>+<span class="kbd-pill">Espaço</span> grava
-                      </span>
-                    }
-                  </span>
-                </div>
-              } @else {
+              @if (chatAtivo()) {
                 <div
                   class="flex items-center justify-end mt-2 text-[11px] text-text-subtle px-1"
                 >
@@ -598,6 +593,58 @@ type Modo = 'manual' | 'jarvis' | null;
               }
             </div>
           </div>
+
+          @if (!chatAtivo()) {
+            <div
+              class="flex flex-col gap-3 px-1 fade-in"
+              data-testid="jarvis-exemplos"
+            >
+              <div class="flex items-center gap-2 text-[11px] text-text-subtle">
+                <i class="fa-solid fa-lightbulb text-accent/70 text-[10px]"></i>
+                <span>Tente algo como</span>
+              </div>
+              <div class="flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  class="example-chip"
+                  data-testid="exemplo-1"
+                  (click)="usarExemplo('Comprar fita métrica até sexta na loja do Pedrão')"
+                >
+                  Comprar fita métrica até sexta
+                </button>
+                <button
+                  type="button"
+                  class="example-chip"
+                  data-testid="exemplo-2"
+                  (click)="usarExemplo('Reunião com a Camila amanhã às 14h, na sala de reuniões')"
+                >
+                  Reunião amanhã às 14h
+                </button>
+                <button
+                  type="button"
+                  class="example-chip"
+                  data-testid="exemplo-3"
+                  (click)="usarExemplo('Estudar capítulo 3 de banco de dados antes da prova de quinta')"
+                >
+                  Estudar antes da prova
+                </button>
+                <button
+                  type="button"
+                  class="example-chip"
+                  data-testid="exemplo-4"
+                  (click)="usarExemplo('Pagar a conta de luz hoje pelo app do banco — urgente')"
+                >
+                  Pagar conta urgente hoje
+                </button>
+              </div>
+              <div class="text-[11px] text-text-subtle leading-relaxed px-0.5">
+                Diga <span class="text-text-dim">o quê</span>, <span class="text-text-dim">quando</span>, <span class="text-text-dim">onde</span> ou <span class="text-text-dim">como</span>. Quanto mais contexto, mais completa fica.
+                @if (gravacaoSuportada()) {
+                  <span class="ml-1 text-text-subtle">·  <span class="kbd-pill">Ctrl</span>+<span class="kbd-pill">Espaço</span> grava áudio</span>
+                }
+              </div>
+            </div>
+          }
         </div>
       }
 
@@ -641,6 +688,124 @@ type Modo = 'manual' | 'jarvis' | null;
   `,
   styles: [
     `
+      :host {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+      }
+      .example-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 5px 12px;
+        border-radius: 9999px;
+        border: 1px solid #2a2b2f;
+        background: rgba(22, 24, 28, 0.4);
+        color: #b1b6bd;
+        font-size: 12px;
+        line-height: 1.3;
+        cursor: pointer;
+        transition: background-color 160ms, border-color 160ms, color 160ms, transform 160ms;
+      }
+      .example-chip:hover {
+        background: rgba(94, 106, 210, 0.08);
+        border-color: rgba(94, 106, 210, 0.4);
+        color: #e6e6e6;
+        transform: translateY(-1px);
+      }
+      .chat-input-wrap {
+        position: relative;
+        border-radius: 18px;
+        border: 1px solid #2a2b2f;
+        background: rgba(22, 24, 28, 0.55);
+        padding: 10px 92px 10px 16px;
+        transition: border-color 180ms, background-color 180ms;
+        min-height: 52px;
+      }
+      .chat-input-wrap:hover {
+        border-color: #3a3b3f;
+      }
+      .chat-input-wrap:focus-within {
+        border-color: #3a3b3f;
+        background: rgba(22, 24, 28, 0.75);
+      }
+      .chat-actions {
+        position: absolute;
+        right: 10px;
+        bottom: 8px;
+        display: flex;
+        gap: 6px;
+      }
+      .chat-textarea {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        background: transparent;
+        border: 0;
+        outline: none !important;
+        box-shadow: none !important;
+        color: #e6e6e6;
+        font-size: 13.5px;
+        line-height: 1.5;
+        padding: 0;
+        resize: none;
+        min-height: 24px;
+        max-height: 200px;
+        overflow-y: auto;
+        font-family: inherit;
+        box-sizing: border-box;
+      }
+      .chat-textarea:focus,
+      .chat-textarea:focus-visible {
+        outline: none !important;
+        box-shadow: none !important;
+        border: 0 !important;
+      }
+      .chat-textarea::placeholder {
+        color: #6e7178;
+      }
+      .chat-textarea:disabled {
+        opacity: 0.5;
+      }
+      .chat-textarea::-webkit-scrollbar {
+        width: 6px;
+      }
+      .chat-textarea::-webkit-scrollbar-thumb {
+        background: #2a2b2f;
+        border-radius: 3px;
+      }
+      .chat-icon-btn {
+        width: 36px;
+        height: 36px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 9999px;
+        border: 1px solid #2a2b2f;
+        transition: background-color 180ms, border-color 180ms, color 180ms, opacity 180ms;
+        flex-shrink: 0;
+      }
+      .chat-icon-btn:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      .chat-icon-secondary {
+        background: #16181c;
+        color: #8a8f98;
+      }
+      .chat-icon-secondary:hover:not(:disabled) {
+        color: #e6e6e6;
+        border-color: #3a3b3f;
+      }
+      .chat-icon-primary {
+        background: #5e6ad2;
+        border-color: #5e6ad2;
+        color: #ffffff;
+      }
+      .chat-icon-primary:hover:not(:disabled) {
+        background: #6e79de;
+        border-color: #6e79de;
+      }
       .kbd-pill {
         display: inline-flex;
         align-items: center;
@@ -769,6 +934,56 @@ export class CapturaComponent implements AfterViewChecked {
 
   readonly podeEnviar = computed(() => this.rascunho().trim().length > 0);
   readonly mostrarChips = computed(() => this.sugestao() !== null && !this.gravando() && !this.previaAudio());
+  readonly inputExpandido = signal(false);
+
+  onInputChat(ev: Event): void {
+    const ta = ev.target as HTMLTextAreaElement;
+    this.autoResizeTextarea(ta);
+  }
+
+  private autoResizeTextarea(ta: HTMLTextAreaElement): void {
+    ta.style.height = 'auto';
+    const max = 200;
+    const novaH = Math.min(max, ta.scrollHeight);
+    ta.style.height = novaH + 'px';
+    const lh = parseFloat(getComputedStyle(ta).lineHeight) || 22;
+    this.inputExpandido.set(ta.scrollHeight > lh * 1.6);
+  }
+
+  private resetarTextarea(): void {
+    const ta = this.inputChat()?.nativeElement;
+    if (ta) {
+      ta.style.height = '';
+    }
+    this.inputExpandido.set(false);
+  }
+
+  usarExemplo(texto: string): void {
+    this.rascunho.set(texto);
+    setTimeout(() => {
+      const el = this.inputChat()?.nativeElement;
+      if (el) {
+        el.focus();
+        el.setSelectionRange(texto.length, texto.length);
+        this.autoResizeTextarea(el);
+      }
+    }, 30);
+  }
+
+  voltarSelecaoModo(): void {
+    if (this.salvando()) return;
+    if (this.gravando()) this.cancelarGravacao();
+    this.descartarPrevia();
+    this.suprimirPersistencia = true;
+    this.modo.set(null);
+    this.mensagens.set([]);
+    this.sugestao.set(null);
+    this.erroChat.set(null);
+    this.rascunho.set('');
+    this.chatAtivo.set(false);
+    this.suprimirPersistencia = false;
+    this.limparPersistencia();
+  }
 
   private readonly scroller = viewChild<ElementRef<HTMLDivElement>>('scroller');
   private readonly inputChat = viewChild<ElementRef<HTMLTextAreaElement>>('inputChat');
@@ -802,6 +1017,15 @@ export class CapturaComponent implements AfterViewChecked {
       if (this.suprimirPersistencia) return;
       if (m !== 'jarvis') return;
       untracked(() => this.persistirChat(rascunho, mensagens, sugestao));
+    });
+
+    effect(() => {
+      // Reset auto-resize quando rascunho fica vazio
+      if (this.rascunho() === '') {
+        const ta = this.inputChat()?.nativeElement;
+        if (ta) ta.style.height = '';
+        untracked(() => this.inputExpandido.set(false));
+      }
     });
   }
 

@@ -26,15 +26,15 @@ import { extrairProblemDetails } from '../../shared/problem-details';
     <header class="flex items-center px-4 md:px-8 py-3.5 border-b border-border gap-4">
       <a
         routerLink="/app/configuracoes"
-        class="text-text-subtle hover:text-text flex items-center gap-1.5 text-[13px]"
+        class="text-text-subtle hover:text-text flex items-center gap-1.5 text-[15px]"
         data-testid="alterar-senha-voltar"
         aria-label="Voltar para Configurações"
       >
         <i class="fa-solid fa-arrow-left text-xs"></i>
         Configurações
       </a>
-      <span class="text-text-subtle text-[13px]">/</span>
-      <strong class="text-text font-medium text-[13px]">Trocar senha</strong>
+      <span class="text-text-subtle text-[15px]">/</span>
+      <strong class="text-text font-medium text-[15px]">Trocar senha</strong>
     </header>
 
     <div

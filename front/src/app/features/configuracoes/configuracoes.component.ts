@@ -31,14 +31,14 @@ interface Confirmacao {
   ],
   template: `
     <header class="flex items-center px-4 md:px-8 py-3.5 border-b border-border gap-4">
-      <div class="flex items-center gap-2 text-[13px] text-text-dim">
-        <i class="fa-solid fa-gear text-accent text-[11px]"></i>
+      <div class="flex items-center gap-2 text-[15px] text-text-dim">
+        <i class="fa-solid fa-gear text-accent text-[12px]"></i>
         <strong class="text-text font-medium">Configurações</strong>
       </div>
     </header>
 
     <div class="flex-1 px-4 md:px-8 py-6 md:py-8 overflow-auto" data-testid="configuracoes-page">
-      <div class="max-w-[760px] flex flex-col gap-7">
+      <div class="max-w-[760px] mx-auto flex flex-col gap-7">
         <div class="flex flex-col gap-1">
           <h1 class="text-xl font-semibold tracking-tight">Configurações</h1>
           <p class="text-text-dim text-[13px]">

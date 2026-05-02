@@ -59,8 +59,8 @@ const FILTROS_PADRAO: FiltrosTarefas = {
   imports: [CommonModule, TarefaFormComponent, TarefaDetalheModalComponent, ConfirmModalComponent],
   template: `
     <header class="flex flex-wrap items-center px-4 md:px-8 py-3.5 border-b border-border gap-3">
-      <div class="flex items-center gap-2 text-[13px] text-text-dim">
-        <i class="fa-solid fa-list-check text-accent text-[11px]"></i>
+      <div class="flex items-center gap-2 text-[15px] text-text-dim">
+        <i class="fa-solid fa-list-check text-accent text-[12px]"></i>
         <strong class="text-text font-medium">Minhas Tarefas</strong>
         <span
           class="ml-1.5 text-[11px] px-2 py-0.5 rounded-full bg-bg-elev border border-border"

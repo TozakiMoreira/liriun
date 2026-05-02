@@ -124,48 +124,68 @@ export interface SugestaoTarefa {
           </div>
 
           <div class="flex flex-col gap-1.5">
-            <label class="field-label" for="prioridade">Prioridade</label>
-            <select
-              id="prioridade"
-              name="prioridade"
-              class="input-base"
+            <label class="field-label">Prioridade</label>
+            <div
+              class="grid grid-cols-2 sm:grid-cols-4 gap-1.5"
               data-testid="tarefa-form-prioridade"
-              [(ngModel)]="prioridade"
+              role="radiogroup"
+              aria-label="Prioridade"
             >
-              <option [ngValue]="1">Urgente</option>
-              <option [ngValue]="2">Importante</option>
-              <option [ngValue]="3">Normal</option>
-              <option [ngValue]="4">Baixa</option>
-            </select>
+              @for (p of opcoesPrioridade; track p.valor) {
+                <button
+                  type="button"
+                  role="radio"
+                  [attr.aria-checked]="prioridade === p.valor"
+                  [attr.data-testid]="'tarefa-form-prioridade-' + p.valor"
+                  class="prioridade-chip"
+                  [class.prioridade-chip-active]="prioridade === p.valor"
+                  [style.--chip-color]="p.cor"
+                  (click)="prioridade = p.valor"
+                >
+                  <span
+                    class="w-1.5 h-1.5 rounded-full"
+                    [style.background-color]="p.cor"
+                    aria-hidden="true"
+                  ></span>
+                  {{ p.rotulo }}
+                </button>
+              }
+            </div>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-[1fr_140px] gap-3">
             <div class="flex flex-col gap-1.5">
               <label class="field-label" for="data">Data</label>
-              <input
-                id="data"
-                name="data"
-                type="date"
-                class="input-base"
-                data-testid="tarefa-form-data"
-                [min]="dataMinima"
-                [(ngModel)]="data"
-              />
+              <div class="datetime-wrap">
+                <i class="fa-solid fa-calendar datetime-icon" aria-hidden="true"></i>
+                <input
+                  id="data"
+                  name="data"
+                  type="date"
+                  class="input-base datetime-input"
+                  data-testid="tarefa-form-data"
+                  [min]="dataMinima"
+                  [(ngModel)]="data"
+                />
+              </div>
               @if (erroData()) {
                 <p class="text-danger text-xs" data-testid="tarefa-form-erro-data">{{ erroData() }}</p>
               }
             </div>
             <div class="flex flex-col gap-1.5">
               <label class="field-label" for="hora">Hora (opcional)</label>
-              <input
-                id="hora"
-                name="hora"
-                type="time"
-                class="input-base"
-                data-testid="tarefa-form-hora"
-                [(ngModel)]="hora"
-                [disabled]="!data"
-              />
+              <div class="datetime-wrap">
+                <i class="fa-solid fa-clock datetime-icon" aria-hidden="true"></i>
+                <input
+                  id="hora"
+                  name="hora"
+                  type="time"
+                  class="input-base datetime-input"
+                  data-testid="tarefa-form-hora"
+                  [(ngModel)]="hora"
+                  [disabled]="!data"
+                />
+              </div>
             </div>
           </div>
 
@@ -215,8 +235,76 @@ export interface SugestaoTarefa {
       </div>
     </div>
   `,
+  styles: [
+    `
+      .prioridade-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid #2a2b2f;
+        background: #16181c;
+        color: #8a8f98;
+        font-size: 12.5px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 160ms, border-color 160ms, color 160ms, transform 120ms;
+      }
+      .prioridade-chip:hover {
+        color: #e6e6e6;
+        border-color: #3a3b3f;
+      }
+      .prioridade-chip-active {
+        background: color-mix(in srgb, var(--chip-color) 14%, #16181c);
+        border-color: color-mix(in srgb, var(--chip-color) 50%, transparent);
+        color: #e6e6e6;
+      }
+      .prioridade-chip-active:hover {
+        border-color: color-mix(in srgb, var(--chip-color) 70%, transparent);
+      }
+      .datetime-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+      .datetime-icon {
+        position: absolute;
+        left: 12px;
+        font-size: 12px;
+        color: #8a8f98;
+        pointer-events: none;
+        z-index: 1;
+      }
+      .datetime-input {
+        padding-left: 34px !important;
+        color-scheme: dark;
+        width: 100%;
+      }
+      .datetime-input::-webkit-calendar-picker-indicator {
+        filter: invert(0.85) brightness(1.2);
+        opacity: 0.85;
+        cursor: pointer;
+        margin-left: 4px;
+      }
+      .datetime-input::-webkit-calendar-picker-indicator:hover {
+        opacity: 1;
+      }
+      .datetime-input:disabled {
+        opacity: 0.5;
+      }
+    `,
+  ],
 })
 export class TarefaFormComponent implements OnInit {
+  readonly opcoesPrioridade: { valor: Prioridade; rotulo: string; cor: string }[] = [
+    { valor: 1, rotulo: 'Urgente', cor: '#ef4444' },
+    { valor: 2, rotulo: 'Importante', cor: '#f59e0b' },
+    { valor: 3, rotulo: 'Normal', cor: '#5e6ad2' },
+    { valor: 4, rotulo: 'Baixa', cor: '#6b7280' },
+  ];
+
   private readonly categoriasApi = inject(CategoriasService);
   private readonly tarefasApi = inject(TarefasService);
 

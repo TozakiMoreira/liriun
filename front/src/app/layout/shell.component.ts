@@ -11,7 +11,11 @@ import { AvatarComponent } from '../shared/avatar.component';
   standalone: true,
   imports: [RouterOutlet, RouterLink, RouterLinkActive, AvatarComponent],
   template: `
-    <div class="flex flex-col md:grid md:grid-cols-[244px_1fr] min-h-screen bg-bg text-text">
+    <div
+      class="flex flex-col min-h-screen bg-bg text-text md:grid"
+      [class.md:grid-cols-[244px_1fr]]="!sidebarCollapsed()"
+      [class.md:grid-cols-[56px_1fr]]="sidebarCollapsed()"
+    >
       <header
         class="md:hidden flex items-center justify-between h-12 px-4 border-b border-border bg-[#0b0c0e]"
         data-testid="mobile-topbar"
@@ -42,145 +46,222 @@ import { AvatarComponent } from '../shared/avatar.component';
       </header>
 
       <aside
-        class="hidden md:flex bg-[#0b0c0e] border-r border-border flex-col p-3 relative"
+        class="hidden md:flex bg-[#0b0c0e] border-r border-border flex-col p-3 relative transition-[width] duration-200"
+        [class.items-center]="sidebarCollapsed()"
         data-testid="sidebar"
         style="background-image: radial-gradient(ellipse 70% 30% at 50% 0%, rgba(94, 106, 210, 0.08), transparent);"
       >
-        <a
-          routerLink="/app/visao-geral"
-          class="flex items-center gap-2.5 px-2 py-2 mb-3 rounded-md hover:bg-bg-elev/60 transition-colors"
-          data-testid="sidebar-logo"
-          aria-label="Ir pra visão geral"
-          title="Visão geral"
-        >
-          <div
-            class="w-8 h-8 rounded-lg bg-logo-grad grid place-items-center text-sm font-bold tracking-tight shadow-logo"
-            aria-hidden="true"
+        @if (!sidebarCollapsed()) {
+          <div class="flex items-center mb-3 justify-between">
+            <a
+              routerLink="/app/visao-geral"
+              class="flex items-center gap-2.5 px-1 py-1 rounded-md hover:bg-bg-elev/60 transition-colors flex-1 min-w-0"
+              data-testid="sidebar-logo"
+              aria-label="Ir pra visão geral"
+              title="Visão geral"
+            >
+              <div
+                class="w-8 h-8 rounded-lg bg-logo-grad grid place-items-center text-sm font-bold tracking-tight shadow-logo shrink-0"
+                aria-hidden="true"
+              >
+                J
+              </div>
+              <div class="flex flex-col leading-tight">
+                <div class="text-[14px] font-semibold tracking-tight">Jarvis</div>
+              </div>
+            </a>
+            <button
+              type="button"
+              class="p-1.5 text-text-subtle hover:text-text hover:bg-bg-elev rounded transition-colors"
+              data-testid="sidebar-toggle"
+              title="Esconder barra lateral"
+              aria-label="Esconder barra lateral"
+              (click)="alternarSidebar()"
+            >
+              <i class="fa-solid fa-angles-left text-[12px]"></i>
+            </button>
+          </div>
+        } @else {
+          <button
+            type="button"
+            class="w-8 h-8 rounded-lg bg-logo-grad grid place-items-center text-sm font-bold tracking-tight shadow-logo shrink-0 mb-3 group/logo relative cursor-pointer transition-transform hover:scale-105"
+            data-testid="sidebar-toggle"
+            title="Expandir barra lateral"
+            aria-label="Expandir barra lateral"
+            (click)="alternarSidebar()"
           >
-            J
-          </div>
-          <div class="flex flex-col leading-tight">
-            <div class="text-[14px] font-semibold tracking-tight">Jarvis</div>
-            <div class="text-[10px] text-text-subtle tracking-wider uppercase font-medium">
-              Organizador pessoal
-            </div>
-          </div>
-        </a>
+            <span class="text-white opacity-30 group-hover/logo:opacity-15 transition-opacity">J</span>
+            <span class="absolute inset-0 grid place-items-center text-white">
+              <i class="fa-solid fa-angles-right text-[13px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"></i>
+            </span>
+          </button>
+        }
 
-        <div
-          class="text-[10px] text-text-subtle px-2 py-1.5 tracking-wider uppercase font-semibold"
-        >
-          Início
-        </div>
-        <nav class="flex flex-col gap-px">
+        @if (!sidebarCollapsed()) {
+          <div
+            class="text-[10px] text-text-subtle px-2 py-1.5 tracking-wider uppercase font-semibold"
+          >
+            Início
+          </div>
+        }
+        <nav class="flex flex-col gap-px" [class.items-center]="sidebarCollapsed()">
           <a
             routerLink="/app/visao-geral"
             routerLinkActive="nav-link-active"
             class="nav-link"
+            [class.nav-link-collapsed]="sidebarCollapsed()"
             data-testid="nav-visao-geral"
+            [title]="sidebarCollapsed() ? 'Visão geral' : null"
           >
             <i class="fa-solid fa-house nav-icon"></i>
-            <span class="flex-1">Visão geral</span>
+            @if (!sidebarCollapsed()) {
+              <span class="flex-1">Visão geral</span>
+            }
           </a>
         </nav>
 
-        <div
-          class="text-[10px] text-text-subtle px-2 py-1.5 tracking-wider uppercase font-semibold mt-4"
-        >
-          Minhas tarefas
-        </div>
-        <nav class="flex flex-col gap-px">
+        @if (!sidebarCollapsed()) {
+          <div
+            class="text-[10px] text-text-subtle px-2 py-1.5 tracking-wider uppercase font-semibold mt-4"
+          >
+            Minhas tarefas
+          </div>
+        }
+        <nav class="flex flex-col gap-px" [class.items-center]="sidebarCollapsed()" [class.mt-4]="sidebarCollapsed()">
           <a
             routerLink="/app/captura"
             routerLinkActive="nav-link-active"
             class="nav-link"
+            [class.nav-link-collapsed]="sidebarCollapsed()"
             data-testid="nav-captura"
+            [title]="sidebarCollapsed() ? 'Nova tarefa' : null"
           >
             <i class="fa-solid fa-bolt nav-icon"></i>
-            <span class="flex-1">Nova tarefa</span>
+            @if (!sidebarCollapsed()) {
+              <span class="flex-1">Nova tarefa</span>
+            }
           </a>
           <a
             routerLink="/app/tarefas"
             routerLinkActive="nav-link-active"
             class="nav-link"
+            [class.nav-link-collapsed]="sidebarCollapsed()"
             data-testid="nav-tarefas"
+            [title]="sidebarCollapsed() ? 'Tarefas' : null"
           >
             <i class="fa-solid fa-list-check nav-icon"></i>
-            <span class="flex-1">Tarefas</span>
-            <span class="flex items-center gap-1">
-              @if (atrasadasCount() > 0) {
-                <span
-                  class="text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums min-w-[18px] text-center bg-danger/15 text-danger border border-danger/30"
-                  data-testid="nav-tarefas-badge-atrasadas"
-                  [title]="atrasadasCount() + ' atrasadas'"
-                >
-                  {{ atrasadasCount() }}
-                </span>
-              }
-              @if (pendentesCount() > 0) {
-                <span
-                  class="text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums min-w-[18px] text-center bg-bg-elev text-text-dim border border-border"
-                  data-testid="nav-tarefas-badge"
-                  [title]="pendentesCount() + ' pendentes no total'"
-                >
-                  {{ pendentesCount() }}
-                </span>
-              }
-            </span>
+            @if (!sidebarCollapsed()) {
+              <span class="flex-1">Tarefas</span>
+              <span class="flex items-center gap-1">
+                @if (atrasadasCount() > 0) {
+                  <span
+                    class="text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums min-w-[18px] text-center bg-danger/15 text-danger border border-danger/30"
+                    data-testid="nav-tarefas-badge-atrasadas"
+                    [title]="atrasadasCount() + ' atrasadas'"
+                  >
+                    {{ atrasadasCount() }}
+                  </span>
+                }
+                @if (pendentesCount() > 0) {
+                  <span
+                    class="text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums min-w-[18px] text-center bg-bg-elev text-text-dim border border-border"
+                    data-testid="nav-tarefas-badge"
+                    [title]="pendentesCount() + ' pendentes no total'"
+                  >
+                    {{ pendentesCount() }}
+                  </span>
+                }
+              </span>
+            }
           </a>
           <a
             routerLink="/app/concluidas"
             routerLinkActive="nav-link-active"
             class="nav-link"
+            [class.nav-link-collapsed]="sidebarCollapsed()"
             data-testid="nav-concluidas"
+            [title]="sidebarCollapsed() ? 'Concluídas' : null"
           >
             <i class="fa-solid fa-circle-check nav-icon"></i>
-            <span class="flex-1">Concluídas</span>
+            @if (!sidebarCollapsed()) {
+              <span class="flex-1">Concluídas</span>
+            }
           </a>
         </nav>
 
-        <div
-          class="text-[10px] text-text-subtle px-2 py-1.5 tracking-wider uppercase font-semibold mt-5"
-        >
-          Ajustes
-        </div>
-        <nav class="flex flex-col gap-px">
+        @if (!sidebarCollapsed()) {
+          <div
+            class="text-[10px] text-text-subtle px-2 py-1.5 tracking-wider uppercase font-semibold mt-5"
+          >
+            Ajustes
+          </div>
+        }
+        <nav class="flex flex-col gap-px" [class.items-center]="sidebarCollapsed()" [class.mt-4]="sidebarCollapsed()">
           <a
             routerLink="/app/configuracoes"
             routerLinkActive="nav-link-active"
             class="nav-link"
+            [class.nav-link-collapsed]="sidebarCollapsed()"
             data-testid="nav-configs"
+            [title]="sidebarCollapsed() ? 'Configurações' : null"
           >
             <i class="fa-solid fa-gear nav-icon"></i>
-            <span class="flex-1">Configurações</span>
+            @if (!sidebarCollapsed()) {
+              <span class="flex-1">Configurações</span>
+            }
           </a>
         </nav>
 
-        <div class="mt-auto pt-3">
-          <div
-            class="border border-border rounded-lg bg-bg-elev/50 hover:bg-bg-elev transition-colors group overflow-hidden"
-            data-testid="user-menu"
-          >
-            <div class="flex items-center gap-2.5 px-2.5 py-2">
+        <div class="mt-auto pt-3 w-full">
+          @if (!sidebarCollapsed()) {
+            <div
+              class="border border-border rounded-lg bg-bg-elev/50 hover:bg-bg-elev transition-colors group overflow-hidden"
+              data-testid="user-menu"
+            >
+              <div class="flex items-center gap-2.5 px-2.5 py-2">
+                <app-avatar
+                  [nome]="storage.usuario()?.nome ?? ''"
+                  [fotoUrl]="storage.usuario()?.fotoUrl ?? null"
+                  [size]="32"
+                />
+                <div class="flex-1 min-w-0 leading-tight">
+                  <div
+                    class="text-[12.5px] font-medium truncate"
+                    [title]="storage.usuario()?.nome"
+                  >
+                    {{ storage.usuario()?.nome }}
+                  </div>
+                  <div
+                    class="text-[10.5px] text-text-subtle truncate"
+                    [title]="storage.usuario()?.email"
+                  >
+                    {{ storage.usuario()?.email }}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  class="p-1.5 text-text-subtle hover:text-danger hover:bg-danger/10 rounded transition-colors"
+                  data-testid="user-logout"
+                  title="Sair"
+                  aria-label="Sair"
+                  (click)="sair()"
+                >
+                  <i class="fa-solid fa-right-from-bracket text-[11px]"></i>
+                </button>
+              </div>
+            </div>
+            <div
+              class="text-[9.5px] text-text-subtle text-center mt-2 tracking-wider uppercase font-medium"
+            >
+              v1 · Jarvis
+            </div>
+          } @else {
+            <div class="flex flex-col items-center gap-2">
               <app-avatar
                 [nome]="storage.usuario()?.nome ?? ''"
                 [fotoUrl]="storage.usuario()?.fotoUrl ?? null"
-                [size]="32"
+                [size]="30"
               />
-              <div class="flex-1 min-w-0 leading-tight">
-                <div
-                  class="text-[12.5px] font-medium truncate"
-                  [title]="storage.usuario()?.nome"
-                >
-                  {{ storage.usuario()?.nome }}
-                </div>
-                <div
-                  class="text-[10.5px] text-text-subtle truncate"
-                  [title]="storage.usuario()?.email"
-                >
-                  {{ storage.usuario()?.email }}
-                </div>
-              </div>
               <button
                 type="button"
                 class="p-1.5 text-text-subtle hover:text-danger hover:bg-danger/10 rounded transition-colors"
@@ -192,12 +273,7 @@ import { AvatarComponent } from '../shared/avatar.component';
                 <i class="fa-solid fa-right-from-bracket text-[11px]"></i>
               </button>
             </div>
-          </div>
-          <div
-            class="text-[9.5px] text-text-subtle text-center mt-2 tracking-wider uppercase font-medium"
-          >
-            v1 · Jarvis
-          </div>
+          }
         </div>
       </aside>
 
@@ -329,6 +405,16 @@ import { AvatarComponent } from '../shared/avatar.component';
         background: #5e6ad2;
         border-radius: 0 2px 2px 0;
       }
+      :host ::ng-deep .nav-link-collapsed {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        justify-content: center;
+        gap: 0;
+      }
+      :host ::ng-deep .nav-link-collapsed:hover {
+        transform: none;
+      }
       .shadow-logo {
         box-shadow: 0 0 16px rgba(94, 106, 210, 0.35),
           inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -344,6 +430,9 @@ export class ShellComponent implements OnInit {
 
   readonly pendentesCount = signal(0);
   readonly atrasadasCount = signal(0);
+  readonly sidebarCollapsed = signal(this.lerEstadoSidebar());
+
+  private static readonly STORAGE_SIDEBAR = 'jarvis-sidebar-collapsed';
 
   ngOnInit(): void {
     this.atualizarContagem();
@@ -355,6 +444,24 @@ export class ShellComponent implements OnInit {
   sair(): void {
     this.auth.logout();
     this.router.navigateByUrl('/');
+  }
+
+  alternarSidebar(): void {
+    const novo = !this.sidebarCollapsed();
+    this.sidebarCollapsed.set(novo);
+    try {
+      localStorage.setItem(ShellComponent.STORAGE_SIDEBAR, novo ? '1' : '0');
+    } catch {
+      /* storage indisponível */
+    }
+  }
+
+  private lerEstadoSidebar(): boolean {
+    try {
+      return localStorage.getItem(ShellComponent.STORAGE_SIDEBAR) === '1';
+    } catch {
+      return false;
+    }
   }
 
   private atualizarContagem(): void {

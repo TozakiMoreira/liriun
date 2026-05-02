@@ -45,8 +45,8 @@ interface DiaResumo {
   imports: [CommonModule, RouterLink, AvatarComponent, StaggerInDirective],
   template: `
     <header class="flex items-center px-4 md:px-8 py-3.5 border-b border-border gap-4">
-      <div class="flex items-center gap-2 text-[13px] text-text-dim">
-        <i class="fa-solid fa-house text-accent text-[11px]"></i>
+      <div class="flex items-center gap-2 text-[15px] text-text-dim">
+        <i class="fa-solid fa-house text-accent text-[12px]"></i>
         <strong class="text-text font-medium">Visão geral</strong>
       </div>
     </header>
