@@ -118,8 +118,8 @@ type Modo = 'manual' | 'jarvis' | null;
               </div>
               <div class="text-base font-semibold tracking-tight text-accent">Jarvis</div>
               <div class="text-[13px] text-text-dim leading-relaxed">
-                Conversa comigo em texto livre. Eu te pergunto o que faltar e fecho a tarefa
-                quando estiver pronta.
+                Texto livre. Diga o que precisa fazer, quando e onde — eu monto a tarefa direto
+                pra você revisar.
               </div>
               <div class="flex items-center justify-between mt-1.5 pt-3.5 border-t border-border">
                 <div
@@ -564,7 +564,7 @@ type Modo = 'manual' | 'jarvis' | null;
                 >
                   <span class="flex items-center gap-1.5">
                     <i class="fa-solid fa-circle-info text-[10px]"></i>
-                    Manda como se estivesse falando comigo. Eu pergunto o que faltar.
+                    Me diga qual seria sua tarefa, quando, onde ou como.
                     @if (gravacaoSuportada()) {
                       <span class="ml-1">
                         · <span class="kbd-pill">Ctrl</span>+<span class="kbd-pill">Espaço</span> grava

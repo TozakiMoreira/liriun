@@ -54,7 +54,7 @@ Usuario escolhe ANTES de digitar qual modo usar (2 botoes: Manual ou Jarvis).
 - Form com: nome (obrigatorio), categorias (multi-select, pode criar categoria inline — futuro), data (input nativo, opcional), hora (opcional, exige data), prioridade
 - Salva direto
 
-**Modo Jarvis (com IA — feature futura, ainda nao implementada):**
+**Modo Jarvis (com IA):**
 1. Textarea livre — usuario escreve texto ("comprar fita metrica ate sexta")
 2. Backend chama Gemini passando texto + categorias do usuario
 3. Gemini retorna JSON: titulo, categorias[], data, hora opcional, prioridade (pode retornar null em campos)
@@ -62,6 +62,14 @@ Usuario escolhe ANTES de digitar qual modo usar (2 botoes: Manual ou Jarvis).
 5. Usuario confirma e salva
 6. Se Gemini falhar/timeout/JSON invalido: toast do Jarvis ("Nao consegui dessa vez, preenche manual") + abre form manual com texto bruto no campo nome
 7. IA NAO re-categoriza ao editar uma tarefa existente
+
+### Modos de IA (one-shot vs interativo)
+Decidido em 2026-05-02. Controlado por `GeminiOptions.ModoInterativo` (default `false`).
+
+- **One-shot (default, todos usuarios hoje):** Jarvis NAO faz perguntas. Sempre retorna `completo=true` com a tarefa preenchida do que foi extraido. Campos faltantes ficam `null` pro usuario completar na UI de revisao. Observacoes copiam o "onde/como" CRU do texto do usuario — sem reescrever, sem checklist, sem enriquecer. Hint do front orienta usuario a dizer **o que / quando / onde ou como**.
+- **Interativo (reservado pro plano pago futuro):** Jarvis pode fazer ate 3 perguntas de contexto antes de fechar e enriquece observacoes com checklist. Codigo PRESERVADO em `GeminiService.MontarInstrucaoInterativo` — nao remover. Quando plano pago entrar, trocar leitura do flag de config global pra campo no `Usuario` (ex: `IaInterativa`) — ponto unico em `GeminiService.MontarInstrucaoSistema`.
+
+Motivacao: economizar tokens. Modo interativo gasta 2-4 turnos antes de fechar a tarefa; one-shot fecha em 1 turno com prompt ~75% menor.
 
 ### Onboarding
 - Bloqueante no primeiro acesso apos cadastro

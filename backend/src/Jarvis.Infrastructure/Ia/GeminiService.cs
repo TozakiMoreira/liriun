@@ -48,6 +48,13 @@ public class GeminiService : IGeminiService
         return ChamarGeminiAsync(body, audio: false, ct);
     }
 
+    private string MontarInstrucaoSistema(ContextoConversa contexto, bool audio)
+    {
+        return _options.ModoInterativo
+            ? MontarInstrucaoInterativo(contexto, audio)
+            : MontarInstrucaoOneShot(contexto, audio);
+    }
+
     public Task<Result<RespostaConversa>> ConversarComAudioAsync(
         ContextoConversa contexto,
         ReadOnlyMemory<byte> audio,
@@ -172,7 +179,58 @@ public class GeminiService : IGeminiService
         thinkingConfig = new { thinkingBudget = 0 },
     };
 
-    private static string MontarInstrucaoSistema(ContextoConversa contexto, bool audio)
+    /// <summary>
+    /// Modo one-shot (default). Nao pergunta nada. Sempre fecha a tarefa com o que o usuario disse.
+    /// Campos faltantes ficam null pro usuario completar na UI de revisao. Observacoes copiam o
+    /// "onde/como" cru, sem reescrever nem enriquecer.
+    /// </summary>
+    private static string MontarInstrucaoOneShot(ContextoConversa contexto, bool audio)
+    {
+        StringBuilder sb = new();
+        sb.Append("Voce e Jarvis, assistente de tarefas. Estilo seco, primeira pessoa, sem emoji.\n");
+        if (audio)
+        {
+            sb.Append("A ULTIMA mensagem do usuario neste turno e um AUDIO. Voce DEVE OBRIGATORIAMENTE preencher 'transcricaoUsuario' com a transcricao literal em portugues (palavra por palavra, sem reescrever). NAO PODE deixar em branco.\n");
+        }
+        sb.Append($"Hoje: {contexto.HojeUtc:yyyy-MM-dd} ({contexto.HojeUtc:dddd}).\n");
+        if (!string.IsNullOrWhiteSpace(contexto.NomeUsuario))
+            sb.Append($"Usuario: {contexto.NomeUsuario}.\n");
+
+        if (contexto.Categorias.Count > 0)
+        {
+            sb.Append("Categorias (so use estes ids):\n");
+            foreach (CategoriaContexto c in contexto.Categorias)
+                sb.Append($"  {c.Id} = {c.Nome}\n");
+        }
+        else
+        {
+            sb.Append("Sem categorias cadastradas. categoriaIds = [].\n");
+        }
+
+        sb.Append(@"
+Modo ONE-SHOT. NAO faca perguntas. SEMPRE retorne completo=true e tarefa preenchida.
+Extraia o que o usuario disse. Campos sem informacao = null (NAO chute, NAO invente).
+
+Saida JSON:
+- titulo: imperativo curto, sem ponto final, max 200ch. Use o 'o que' do usuario. Se faltar acao clara, use as primeiras 6-8 palavras do texto. NAO inclua data/hora no titulo.
+- data: YYYY-MM-DD apenas se houver pista temporal explicita ('hoje', 'amanha', 'sexta', '15/08', 'semana que vem'=+7d, 'mes que vem'=+1mes). null caso contrario.
+- hora: HH:MM 24h apenas se mencionada ('19h'=19:00, '18h30'=18:30, 'manha'=09:00, 'tarde'=14:00, 'noite'=19:00). null caso contrario.
+- categoriaIds: ids quando obvio do texto, [] em caso de duvida.
+- prioridade: 1=Urgente 2=Importante 3=Normal 4=Baixa. Default 3.
+- observacoes: COPIE CRU o 'onde/como' que o usuario falou, sem reescrever, sem enriquecer, sem checklist. NAO repita dados ja em titulo/data/hora. null se nao houver onde/como.
+- mensagem: 1 frase curta. Se algum dos 3 (o que/quando/onde) faltou, liste o que faltou de forma seca. Ex: 'Anotado. Faltou hora e local — ajusta se quiser.' ou 'Anotado.' se tudo veio.
+- completo: SEMPRE true.
+");
+
+        return sb.ToString();
+    }
+
+    /// <summary>
+    /// Modo interativo. Jarvis faz ate 3 perguntas de contexto antes de fechar e enriquece
+    /// observacoes com checklist. Reservado pra plano pago futuro — habilitado via
+    /// <see cref="GeminiOptions.ModoInterativo"/>.
+    /// </summary>
+    private static string MontarInstrucaoInterativo(ContextoConversa contexto, bool audio)
     {
         StringBuilder sb = new();
         sb.Append("Voce e Jarvis, assistente de tarefas (mordomo Homem de Ferro). Estilo seco, primeira pessoa, sem emoji.\n");
