@@ -41,8 +41,9 @@ public sealed record TarefaViewModel(
         StatusTarefa statusComputado = readModel.Status;
         if (statusComputado != StatusTarefa.Concluida)
         {
-            DateTime limite = readModel.DataPrazo.Add(readModel.HorarioFinal ?? FimDoDia);
-            if (agora > limite)
+            DateTime agoraLocal = Tarefa.ConverterParaFusoUsuario(agora);
+            DateTime limite = readModel.DataPrazo.Date.Add(readModel.HorarioFinal ?? FimDoDia);
+            if (agoraLocal > limite)
                 statusComputado = StatusTarefa.Atrasada;
         }
 

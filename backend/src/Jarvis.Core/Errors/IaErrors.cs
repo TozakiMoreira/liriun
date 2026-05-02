@@ -21,4 +21,11 @@ public static class IaErrors
 
     public static Error Timeout()
         => Error.Failure("ia.timeout", "Demorei demais pra pensar. Tenta de novo em alguns segundos.");
+
+    public static Error LimiteExcedido(int? retryEmSegundos)
+        => Error.Failure(
+            "ia.limite-excedido",
+            retryEmSegundos.HasValue
+                ? $"Bati no limite da IA. Espera ~{retryEmSegundos}s e tenta de novo."
+                : "Bati no limite da IA. Espera um pouco e tenta de novo.");
 }

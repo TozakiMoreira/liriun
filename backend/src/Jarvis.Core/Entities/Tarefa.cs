@@ -108,13 +108,32 @@ public class Tarefa
         return Validar();
     }
 
-    public StatusTarefa StatusComputado(DateTime agora)
+    public StatusTarefa StatusComputado(DateTime agoraUtc)
     {
         if (Status == StatusTarefa.Concluida)
             return StatusTarefa.Concluida;
 
-        DateTime limite = DataPrazo.Add(HorarioFinal ?? FimDoDia);
-        return agora > limite ? StatusTarefa.Atrasada : StatusTarefa.Pendente;
+        // DataPrazo (date) e HorarioFinal (time) sao wall-clock no fuso do usuario.
+        // Comparar com agora-em-UTC daria atrasada 3h cedo no Brasil. Converte pra BRT.
+        DateTime agoraLocal = ConverterParaFusoUsuario(agoraUtc);
+        DateTime limite = DataPrazo.Date.Add(HorarioFinal ?? FimDoDia);
+        return agoraLocal > limite ? StatusTarefa.Atrasada : StatusTarefa.Pendente;
+    }
+
+    public static DateTime ConverterParaFusoUsuario(DateTime agoraUtc)
+    {
+        DateTime utc = agoraUtc.Kind == DateTimeKind.Utc ? agoraUtc : DateTime.SpecifyKind(agoraUtc, DateTimeKind.Utc);
+        try
+        {
+            // Linux/Mac usa IANA, Windows usa Win key. TimeZoneInfo cuida do fallback do sistema.
+            TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById(
+                OperatingSystem.IsWindows() ? "E. South America Standard Time" : "America/Sao_Paulo");
+            return TimeZoneInfo.ConvertTimeFromUtc(utc, tz);
+        }
+        catch (TimeZoneNotFoundException)
+        {
+            return utc.AddHours(-3);
+        }
     }
 
     private Result Validar()

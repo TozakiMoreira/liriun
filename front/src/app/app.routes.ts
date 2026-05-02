@@ -33,6 +33,13 @@ export const routes: Routes = [
       import('./layout/shell.component').then((m) => m.ShellComponent),
     children: [
       {
+        path: 'visao-geral',
+        loadComponent: () =>
+          import('./features/visao-geral/visao-geral.component').then(
+            (m) => m.VisaoGeralComponent,
+          ),
+      },
+      {
         path: 'captura',
         loadComponent: () =>
           import('./features/captura/captura.component').then((m) => m.CapturaComponent),
@@ -61,7 +68,7 @@ export const routes: Routes = [
             (m) => m.AlterarSenhaComponent,
           ),
       },
-      { path: '', redirectTo: 'captura', pathMatch: 'full' },
+      { path: '', redirectTo: 'visao-geral', pathMatch: 'full' },
     ],
   },
   { path: '**', redirectTo: '' },

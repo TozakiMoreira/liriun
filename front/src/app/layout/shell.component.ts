@@ -46,7 +46,13 @@ import { AvatarComponent } from '../shared/avatar.component';
         data-testid="sidebar"
         style="background-image: radial-gradient(ellipse 70% 30% at 50% 0%, rgba(94, 106, 210, 0.08), transparent);"
       >
-        <div class="flex items-center gap-2.5 px-2 py-2 mb-3">
+        <a
+          routerLink="/"
+          class="flex items-center gap-2.5 px-2 py-2 mb-3 rounded-md hover:bg-bg-elev/60 transition-colors"
+          data-testid="sidebar-logo"
+          aria-label="Voltar pra landing"
+          title="Voltar pra landing"
+        >
           <div
             class="w-8 h-8 rounded-lg bg-logo-grad grid place-items-center text-sm font-bold tracking-tight shadow-logo"
             aria-hidden="true"
@@ -59,12 +65,29 @@ import { AvatarComponent } from '../shared/avatar.component';
               Organizador pessoal
             </div>
           </div>
-        </div>
+        </a>
 
         <div
           class="text-[10px] text-text-subtle px-2 py-1.5 tracking-wider uppercase font-semibold"
         >
-          Principal
+          Início
+        </div>
+        <nav class="flex flex-col gap-px">
+          <a
+            routerLink="/app/visao-geral"
+            routerLinkActive="nav-link-active"
+            class="nav-link"
+            data-testid="nav-visao-geral"
+          >
+            <i class="fa-solid fa-house nav-icon"></i>
+            <span class="flex-1">Visão geral</span>
+          </a>
+        </nav>
+
+        <div
+          class="text-[10px] text-text-subtle px-2 py-1.5 tracking-wider uppercase font-semibold mt-4"
+        >
+          Minhas tarefas
         </div>
         <nav class="flex flex-col gap-px">
           <a
@@ -83,17 +106,27 @@ import { AvatarComponent } from '../shared/avatar.component';
             data-testid="nav-tarefas"
           >
             <i class="fa-solid fa-list-check nav-icon"></i>
-            <span class="flex-1">Minhas Tarefas</span>
-            @if (pendentesCount() > 0) {
-              <span
-                class="text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums min-w-[18px] text-center"
-                [class]="badgeClasses()"
-                data-testid="nav-tarefas-badge"
-                [title]="atrasadasCount() > 0 ? atrasadasCount() + ' atrasadas' : pendentesCount() + ' pendentes'"
-              >
-                {{ pendentesCount() }}
-              </span>
-            }
+            <span class="flex-1">Tarefas</span>
+            <span class="flex items-center gap-1">
+              @if (atrasadasCount() > 0) {
+                <span
+                  class="text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums min-w-[18px] text-center bg-danger/15 text-danger border border-danger/30"
+                  data-testid="nav-tarefas-badge-atrasadas"
+                  [title]="atrasadasCount() + ' atrasadas'"
+                >
+                  {{ atrasadasCount() }}
+                </span>
+              }
+              @if (pendentesCount() > 0) {
+                <span
+                  class="text-[10px] px-1.5 py-0.5 rounded-full font-semibold tabular-nums min-w-[18px] text-center bg-bg-elev text-text-dim border border-border"
+                  data-testid="nav-tarefas-badge"
+                  [title]="pendentesCount() + ' pendentes no total'"
+                >
+                  {{ pendentesCount() }}
+                </span>
+              }
+            </span>
           </a>
           <a
             routerLink="/app/concluidas"
@@ -173,9 +206,18 @@ import { AvatarComponent } from '../shared/avatar.component';
       </main>
 
       <nav
-        class="md:hidden fixed bottom-0 inset-x-0 grid grid-cols-4 h-16 bg-[#0b0c0e] border-t border-border z-40"
+        class="md:hidden fixed bottom-0 inset-x-0 grid grid-cols-5 h-16 bg-[#0b0c0e] border-t border-border z-40"
         data-testid="mobile-bottom-nav"
       >
+        <a
+          routerLink="/app/visao-geral"
+          routerLinkActive="text-accent [&>i]:text-accent"
+          class="flex flex-col items-center justify-center gap-0.5 text-text-dim active:bg-bg-elev"
+          data-testid="nav-mobile-visao-geral"
+        >
+          <i class="fa-solid fa-house text-base"></i>
+          <span class="text-[10px] font-medium">Início</span>
+        </a>
         <a
           routerLink="/app/captura"
           routerLinkActive="text-accent [&>i]:text-accent"
@@ -193,12 +235,17 @@ import { AvatarComponent } from '../shared/avatar.component';
         >
           <i class="fa-solid fa-list-check text-base"></i>
           <span class="text-[10px] font-medium">Tarefas</span>
+          @if (atrasadasCount() > 0) {
+            <span
+              class="absolute top-1 right-1/2 translate-x-5 text-[9px] px-1 py-0 rounded-full font-bold tabular-nums min-w-[16px] text-center leading-tight bg-danger text-white"
+              [title]="atrasadasCount() + ' atrasadas'"
+            >
+              {{ atrasadasCount() }}
+            </span>
+          }
           @if (pendentesCount() > 0) {
             <span
-              class="absolute top-2 right-1/2 translate-x-3 text-[9px] px-1 py-0 rounded-full font-bold tabular-nums min-w-[16px] text-center leading-tight"
-              [class.bg-danger]="atrasadasCount() > 0"
-              [class.text-white]="atrasadasCount() > 0"
-              [class.bg-accent]="atrasadasCount() === 0"
+              class="absolute top-2 right-1/2 translate-x-3 text-[9px] px-1 py-0 rounded-full font-bold tabular-nums min-w-[16px] text-center leading-tight bg-accent text-white"
             >
               {{ pendentesCount() }}
             </span>
@@ -237,12 +284,16 @@ import { AvatarComponent } from '../shared/avatar.component';
         font-size: 13px;
         font-weight: 500;
         cursor: pointer;
-        transition: background-color 140ms ease, color 140ms ease;
+        transition:
+          background-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+          color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+          transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
         position: relative;
       }
       :host ::ng-deep .nav-link:hover {
         background: #16181c;
         color: #e6e6e6;
+        transform: translateX(2px);
       }
       :host ::ng-deep .nav-link:hover .nav-icon {
         color: #e6e6e6;
@@ -252,7 +303,10 @@ import { AvatarComponent } from '../shared/avatar.component';
         font-size: 12px;
         text-align: center;
         color: #8a8f98;
-        transition: color 140ms ease;
+        transition: color 220ms cubic-bezier(0.22, 1, 0.36, 1), transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      :host ::ng-deep .nav-link:hover .nav-icon {
+        transform: scale(1.08);
       }
       :host ::ng-deep .nav-link-active {
         background: linear-gradient(
@@ -290,11 +344,6 @@ export class ShellComponent implements OnInit {
 
   readonly pendentesCount = signal(0);
   readonly atrasadasCount = signal(0);
-  readonly badgeClasses = computed(() =>
-    this.atrasadasCount() > 0
-      ? 'bg-danger/15 text-danger'
-      : 'bg-bg-elev text-text-dim',
-  );
 
   ngOnInit(): void {
     this.atualizarContagem();

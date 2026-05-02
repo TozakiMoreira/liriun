@@ -18,7 +18,7 @@ import { resizeImageToDataUrl } from './image-resize';
   imports: [CommonModule, AvatarComponent],
   template: `
     <div
-      class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 grid place-items-center px-4 py-8"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 grid place-items-center px-4 py-8 animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="foto-modal-title"
@@ -26,7 +26,7 @@ import { resizeImageToDataUrl } from './image-resize';
       (click)="onCancelar()"
     >
       <div
-        class="card-elev w-full max-w-[400px]"
+        class="card-elev w-full max-w-[400px] animate-scale-in"
         (click)="$event.stopPropagation()"
       >
         <div class="flex items-center justify-between border-b border-border px-5 py-3.5">

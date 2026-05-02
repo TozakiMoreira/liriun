@@ -27,32 +27,78 @@ public class GeminiService : IGeminiService
         _logger = logger;
     }
 
-    public async Task<Result<RespostaConversa>> ConversarAsync(ContextoConversa contexto, CancellationToken ct)
+    public Task<Result<RespostaConversa>> ConversarAsync(ContextoConversa contexto, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(_options.ApiKey))
         {
             _logger.LogWarning("Gemini chamado sem API key configurada");
-            return Result<RespostaConversa>.Failure(IaErrors.NaoConfigurada());
+            return Task.FromResult(Result<RespostaConversa>.Failure(IaErrors.NaoConfigurada()));
         }
 
-        string instrucaoSistema = MontarInstrucaoSistema(contexto);
         object body = new
         {
             systemInstruction = new
             {
-                parts = new[] { new { text = instrucaoSistema } },
+                parts = new[] { new { text = MontarInstrucaoSistema(contexto, audio: false) } },
             },
             contents = MontarHistoricoGemini(contexto.Mensagens),
-            generationConfig = new
-            {
-                responseMimeType = "application/json",
-                responseSchema = ConstruirResponseSchema(),
-                temperature = 0.4,
-                maxOutputTokens = 800,
-                thinkingConfig = new { thinkingBudget = 0 },
-            },
+            generationConfig = ConstruirGenerationConfig(audio: false),
         };
 
+        return ChamarGeminiAsync(body, audio: false, ct);
+    }
+
+    public Task<Result<RespostaConversa>> ConversarComAudioAsync(
+        ContextoConversa contexto,
+        ReadOnlyMemory<byte> audio,
+        string mimeType,
+        CancellationToken ct)
+    {
+        if (string.IsNullOrWhiteSpace(_options.ApiKey))
+        {
+            _logger.LogWarning("Gemini chamado sem API key configurada");
+            return Task.FromResult(Result<RespostaConversa>.Failure(IaErrors.NaoConfigurada()));
+        }
+
+        if (audio.IsEmpty)
+        {
+            _logger.LogWarning("Gemini chamado com audio vazio");
+            return Task.FromResult(Result<RespostaConversa>.Failure(IaErrors.RespostaInvalida()));
+        }
+
+        List<object> contents = MontarHistoricoGemini(contexto.Mensagens);
+        // O turno novo do usuario e um audio: vai como ultimo "user" content com inlineData.
+        contents.Add(new
+        {
+            role = "user",
+            parts = new object[]
+            {
+                new
+                {
+                    inlineData = new
+                    {
+                        mimeType,
+                        data = Convert.ToBase64String(audio.Span),
+                    },
+                },
+            },
+        });
+
+        object body = new
+        {
+            systemInstruction = new
+            {
+                parts = new[] { new { text = MontarInstrucaoSistema(contexto, audio: true) } },
+            },
+            contents,
+            generationConfig = ConstruirGenerationConfig(audio: true),
+        };
+
+        return ChamarGeminiAsync(body, audio: true, ct);
+    }
+
+    private async Task<Result<RespostaConversa>> ChamarGeminiAsync(object body, bool audio, CancellationToken ct)
+    {
         string url = $"{_options.BaseUrl}/models/{_options.Model}:generateContent?key={_options.ApiKey}";
 
         // Tenta 2 vezes — Gemini eventualmente trava em respostas com schema. Segunda chamada quase sempre vai.
@@ -66,10 +112,16 @@ public class GeminiService : IGeminiService
                 if (!resp.IsSuccessStatusCode)
                 {
                     _logger.LogError(
-                        "Gemini retornou {StatusCode} (tentativa {Tentativa}): {Body}",
+                        "Gemini retornou {StatusCode} (tentativa {Tentativa}, audio={Audio}): {Body}",
                         (int)resp.StatusCode,
                         tentativa,
+                        audio,
                         Truncar(corpo, 500));
+                    if ((int)resp.StatusCode == 429)
+                    {
+                        // Rate limit do free tier. Nao adianta tentar de novo em 100ms.
+                        return Result<RespostaConversa>.Failure(IaErrors.LimiteExcedido(ExtrairRetryEmSegundos(corpo)));
+                    }
                     if (tentativa == 2) return Result<RespostaConversa>.Failure(IaErrors.FalhaNaAnalise());
                     continue;
                 }
@@ -82,7 +134,7 @@ public class GeminiService : IGeminiService
                     continue;
                 }
 
-                RespostaConversa? resposta = ParsearResposta(jsonModelo);
+                RespostaConversa? resposta = ParsearResposta(jsonModelo, audio);
                 if (resposta is null)
                 {
                     _logger.LogError("Nao consegui parsear o JSON do Gemini (tentativa {Tentativa}): {Json}", tentativa, Truncar(jsonModelo, 500));
@@ -111,10 +163,23 @@ public class GeminiService : IGeminiService
         return Result<RespostaConversa>.Failure(IaErrors.FalhaNaAnalise());
     }
 
-    private static string MontarInstrucaoSistema(ContextoConversa contexto)
+    private object ConstruirGenerationConfig(bool audio) => new
+    {
+        responseMimeType = "application/json",
+        responseSchema = ConstruirResponseSchema(audio),
+        temperature = 0.4,
+        maxOutputTokens = 800,
+        thinkingConfig = new { thinkingBudget = 0 },
+    };
+
+    private static string MontarInstrucaoSistema(ContextoConversa contexto, bool audio)
     {
         StringBuilder sb = new();
         sb.Append("Voce e Jarvis, assistente de tarefas (mordomo Homem de Ferro). Estilo seco, primeira pessoa, sem emoji.\n");
+        if (audio)
+        {
+            sb.Append("A ULTIMA mensagem do usuario neste turno e um AUDIO. Voce DEVE OBRIGATORIAMENTE preencher o campo 'transcricaoUsuario' com a transcricao literal em portugues (palavra por palavra, sem reescrever, sem resumir, sem corrigir gramatica). NAO PODE deixar em branco mesmo que o audio seja curto, repetido, monossilabico ou apenas confirmacao tipo 'sim'/'salva'. A transcricao e usada como entrada da sua analise normal e tambem mostrada ao usuario na UI como bolha do chat.\n");
+        }
         sb.Append($"Hoje: {contexto.HojeUtc:yyyy-MM-dd} ({contexto.HojeUtc:dddd}).\n");
         if (!string.IsNullOrWhiteSpace(contexto.NomeUsuario))
             sb.Append($"Usuario: {contexto.NomeUsuario}.\n");
@@ -132,12 +197,12 @@ public class GeminiService : IGeminiService
 
         sb.Append(@"
 Saida JSON (responseSchema garante estrutura):
-- titulo: imperativo curto, sem ponto final, max 200ch
-- data: YYYY-MM-DD (resolva 'hoje','amanha','sexta','semana que vem'=+7d,'mes que vem'=+1mes; para viagem/projeto use data de INICIO do planejamento, nao a data do evento)
-- hora: HH:MM 24h opcional ('18h'=18:00, manha=09:00, tarde=14:00, noite=19:00)
+- titulo: imperativo curto, sem ponto final, max 200ch. NAO inclua data nem hora no titulo (vao em campos separados).
+- data: YYYY-MM-DD. EXTRAIA SEMPRE quando o usuario der QUALQUER pista temporal: 'hoje', 'amanha'/'amanhã', 'depois de amanha', 'sexta', 'segunda que vem', 'dia 19', 'semana que vem'=+7d, 'mes que vem'=+1mes, '15/08'. Nunca deixe null se houver pista. So omita se o usuario realmente nao mencionou prazo. Para VIAGEM/PROJETO use data de INICIO do planejamento.
+- hora: HH:MM 24h. EXTRAIA SEMPRE quando aparecer: '19h'=19:00, '18h30'=18:30, '7 da noite'=19:00, 'manha'=09:00, 'tarde'=14:00, 'noite'=19:00, 'meio dia'=12:00. So omita se nada de hora foi dito.
 - categoriaIds: array dos ids acima
 - prioridade: 1=Urgente 2=Importante 3=Normal 4=Baixa (default 3)
-- observacoes: checklist com '- ' por linha, ENRIQUECA tarefas complexas
+- observacoes: checklist com '- ' por linha, ENRIQUECA tarefas complexas. Nao repita aqui dados que ja foram pra titulo/data/hora.
 
 Comportamento:
 1. Falta titulo ou data: pergunte (completo=false, tarefa=null).
@@ -158,6 +223,10 @@ Cookbook de contexto (pergunte 1-2 itens relevantes, depois feche):
 Outros temas: bom senso — o que obviamente falta?
 
 REGRA CHAVE: se o usuario JA RESPONDEU os pontos principais (ex: 'tenho passagem e hospedagem' apos pergunta de viagem), NAO pergunte mais nada — FECHE com observacoes resumindo o que foi acordado e o que ainda falta resolver.
+
+Exemplo reuniao curta com data+hora explicitas:
+U: 'tenho reuniao com pedro amanha as 19h online sobre nossa startup'
+V: {completo:true, mensagem:'Anotado.', tarefa:{titulo:'Reuniao com Pedro sobre startup', data:'<amanha>', hora:'19:00', observacoes:'- Com: Pedro\n- Online\n- Tema: startup'}}
 
 Exemplo viagem:
 U: 'vou viajar pra recife em janeiro'
@@ -180,7 +249,7 @@ V: {completo:true, mensagem:'Anotado. Coloquei o que falta nas observacoes.', ta
             .ToList();
     }
 
-    private static object ConstruirResponseSchema()
+    private static object ConstruirResponseSchema(bool audio)
     {
         return new
         {
@@ -189,6 +258,7 @@ V: {completo:true, mensagem:'Anotado. Coloquei o que falta nas observacoes.', ta
             {
                 completo = new { type = "BOOLEAN" },
                 mensagem = new { type = "STRING" },
+                transcricaoUsuario = new { type = "STRING", description = "Transcricao literal, em portugues, do audio enviado pelo usuario neste turno." },
                 tarefa = new
                 {
                     type = "OBJECT",
@@ -228,7 +298,7 @@ V: {completo:true, mensagem:'Anotado. Coloquei o que falta nas observacoes.', ta
         return text.GetString();
     }
 
-    private static RespostaConversa? ParsearResposta(string json)
+    private static RespostaConversa? ParsearResposta(string json, bool audio)
     {
         try
         {
@@ -248,10 +318,18 @@ V: {completo:true, mensagem:'Anotado. Coloquei o que falta nas observacoes.', ta
                 tarefa = ParsearTarefa(t);
             }
 
+            string? transcricao = null;
+            if (audio && root.TryGetProperty("transcricaoUsuario", out JsonElement tr) && tr.ValueKind == JsonValueKind.String)
+            {
+                string? raw = tr.GetString();
+                if (!string.IsNullOrWhiteSpace(raw))
+                    transcricao = raw.Trim();
+            }
+
             if (string.IsNullOrWhiteSpace(mensagem) && tarefa is null)
                 return null;
 
-            return new RespostaConversa(mensagem, tarefa, completo);
+            return new RespostaConversa(mensagem, tarefa, completo, transcricao);
         }
         catch (JsonException)
         {
@@ -347,4 +425,34 @@ V: {completo:true, mensagem:'Anotado. Coloquei o que falta nas observacoes.', ta
     }
 
     private static string Truncar(string s, int max) => s.Length <= max ? s : s[..max];
+
+    /// <summary>
+    /// Tenta extrair "Please retry in 16.243s" do payload de erro 429 do Gemini.
+    /// Tambem olha em RetryInfo.retryDelay quando presente.
+    /// </summary>
+    private static int? ExtrairRetryEmSegundos(string corpo)
+    {
+        try
+        {
+            using JsonDocument doc = JsonDocument.Parse(corpo);
+            if (doc.RootElement.TryGetProperty("error", out JsonElement err))
+            {
+                if (err.TryGetProperty("message", out JsonElement msg) && msg.ValueKind == JsonValueKind.String)
+                {
+                    string texto = msg.GetString() ?? string.Empty;
+                    System.Text.RegularExpressions.Match m = System.Text.RegularExpressions.Regex.Match(
+                        texto, @"retry in (\d+(?:\.\d+)?)s");
+                    if (m.Success && double.TryParse(m.Groups[1].Value, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out double s))
+                    {
+                        return (int)Math.Ceiling(s);
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // payload nao-json ou estrutura diferente — silencia
+        }
+        return null;
+    }
 }

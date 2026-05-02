@@ -46,14 +46,55 @@ public class ConversarCapturaUseCase
                 Error.Validation("ia.validacao", "Dados invalidos", details));
         }
 
-        var usuario = await _usuarios.ObterPorIdAsync(_usuarioLogado.Id, ct);
-        IReadOnlyList<CategoriaReadModel> categorias = await _categoriaRead.ListarPorUsuarioAsync(_usuarioLogado.Id, ct);
-
         IReadOnlyList<MensagemConversa> mensagens = input.Mensagens
             .Select(m => new MensagemConversa(
                 m.Papel == "jarvis" ? PapelConversa.Jarvis : PapelConversa.Usuario,
                 m.Texto.Trim()))
             .ToList();
+
+        (ContextoConversa contexto, IReadOnlyList<CategoriaReadModel> categorias) = await MontarContextoAsync(mensagens, ct);
+
+        Result<RespostaConversa> respostaResult = await _gemini.ConversarAsync(contexto, ct);
+        return MapearResposta(respostaResult, categorias);
+    }
+
+    public async Task<Result<ConversaCapturaViewModel>> ExecuteComAudioAsync(
+        IReadOnlyList<MensagemInput> historico,
+        ReadOnlyMemory<byte> audio,
+        string mimeType,
+        CancellationToken ct)
+    {
+        // Historico pode ser vazio (primeiro turno e o audio). Validamos so o que veio.
+        if (historico.Count > 30)
+            return Result<ConversaCapturaViewModel>.Failure(
+                Error.Validation("ia.validacao", "Conversa muito longa, recomece",
+                    new Dictionary<string, string[]> { ["historico"] = new[] { "max 30 mensagens" } }));
+
+        foreach (MensagemInput m in historico)
+        {
+            if (string.IsNullOrWhiteSpace(m.Texto) || m.Texto.Length > 2000 || (m.Papel != "usuario" && m.Papel != "jarvis"))
+                return Result<ConversaCapturaViewModel>.Failure(
+                    Error.Validation("ia.validacao", "Historico invalido",
+                        new Dictionary<string, string[]> { ["historico"] = new[] { "mensagens com papel usuario|jarvis e texto 1-2000 chars" } }));
+        }
+
+        IReadOnlyList<MensagemConversa> mensagens = historico
+            .Select(m => new MensagemConversa(
+                m.Papel == "jarvis" ? PapelConversa.Jarvis : PapelConversa.Usuario,
+                m.Texto.Trim()))
+            .ToList();
+
+        (ContextoConversa contexto, IReadOnlyList<CategoriaReadModel> categorias) = await MontarContextoAsync(mensagens, ct);
+
+        Result<RespostaConversa> respostaResult = await _gemini.ConversarComAudioAsync(contexto, audio, mimeType, ct);
+        return MapearResposta(respostaResult, categorias);
+    }
+
+    private async Task<(ContextoConversa, IReadOnlyList<CategoriaReadModel>)> MontarContextoAsync(
+        IReadOnlyList<MensagemConversa> mensagens, CancellationToken ct)
+    {
+        var usuario = await _usuarios.ObterPorIdAsync(_usuarioLogado.Id, ct);
+        IReadOnlyList<CategoriaReadModel> categorias = await _categoriaRead.ListarPorUsuarioAsync(_usuarioLogado.Id, ct);
 
         ContextoConversa contexto = new(
             mensagens,
@@ -61,7 +102,13 @@ public class ConversarCapturaUseCase
             DateTime.UtcNow,
             categorias.Select(c => new CategoriaContexto(c.Id, c.Nome)).ToList());
 
-        Result<RespostaConversa> respostaResult = await _gemini.ConversarAsync(contexto, ct);
+        return (contexto, categorias);
+    }
+
+    private static Result<ConversaCapturaViewModel> MapearResposta(
+        Result<RespostaConversa> respostaResult,
+        IReadOnlyList<CategoriaReadModel> categorias)
+    {
         if (respostaResult.IsFailure)
             return Result<ConversaCapturaViewModel>.Failure(respostaResult.Error!);
 
@@ -106,6 +153,6 @@ public class ConversarCapturaUseCase
         }
 
         return Result<ConversaCapturaViewModel>.Success(
-            new ConversaCapturaViewModel(resposta.Mensagem, tarefa, resposta.Completo));
+            new ConversaCapturaViewModel(resposta.Mensagem, tarefa, resposta.Completo, resposta.TranscricaoUsuario));
     }
 }

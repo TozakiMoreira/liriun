@@ -26,6 +26,7 @@ export interface SugestaoTarefa {
   dataPrazo: string | null;
   horarioFinal: string | null;
   prioridade: Prioridade | null;
+  observacoes: string | null;
 }
 
 @Component({
@@ -34,7 +35,7 @@ export interface SugestaoTarefa {
   imports: [CommonModule, FormsModule],
   template: `
     <div
-      class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 grid place-items-center px-4 py-8"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 grid place-items-center px-4 py-8 animate-fade-in"
       data-testid="tarefa-form-overlay"
       role="dialog"
       aria-modal="true"
@@ -42,7 +43,7 @@ export interface SugestaoTarefa {
       (click)="fechar()"
     >
       <div
-        class="card-elev w-full max-w-[520px] max-h-[90vh] overflow-y-auto"
+        class="card-elev w-full max-w-[520px] max-h-[90vh] overflow-y-auto animate-scale-in"
         (click)="$event.stopPropagation()"
       >
         <div class="flex items-center justify-between border-b border-border px-5 py-3.5">
@@ -271,6 +272,9 @@ export class TarefaFormComponent implements OnInit {
       }
       if (this.sugestao.prioridade) {
         this.prioridade = this.sugestao.prioridade;
+      }
+      if (this.sugestao.observacoes) {
+        this.observacoes = this.sugestao.observacoes;
       }
     } else {
       this.nome = this.nomeInicial;

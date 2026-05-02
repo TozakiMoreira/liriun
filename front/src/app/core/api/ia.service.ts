@@ -24,6 +24,8 @@ export interface RespostaConversa {
   mensagem: string;
   tarefa: SugestaoTarefa | null;
   completo: boolean;
+  /** Preenchido apenas quando o turno foi de audio: o que o Gemini transcreveu. */
+  transcricaoUsuario: string | null;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -33,5 +35,14 @@ export class IaService {
 
   conversar(mensagens: MensagemConversa[]): Observable<RespostaConversa> {
     return this.http.post<RespostaConversa>(`${this.api}/conversar`, { mensagens });
+  }
+
+  conversarComAudio(audio: Blob, historico: MensagemConversa[]): Observable<RespostaConversa> {
+    const form = new FormData();
+    // Nome do arquivo so pra cabecalho multipart; servidor usa apenas bytes + Content-Type.
+    const ext = audio.type.includes('mp4') ? 'm4a' : audio.type.includes('ogg') ? 'ogg' : 'webm';
+    form.append('audio', audio, `mensagem.${ext}`);
+    form.append('historico', JSON.stringify(historico));
+    return this.http.post<RespostaConversa>(`${this.api}/conversar-audio`, form);
   }
 }

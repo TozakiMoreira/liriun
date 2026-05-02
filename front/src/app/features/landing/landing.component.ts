@@ -1,12 +1,14 @@
 import { Component, HostListener, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '../../core/auth/auth.service';
 import { TokenStorage } from '../../core/auth/token.storage';
+import { AvatarComponent } from '../../shared/avatar.component';
 import { FadeInOnViewDirective } from '../../shared/fade-in-on-view.directive';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [RouterLink, FadeInOnViewDirective],
+  imports: [RouterLink, FadeInOnViewDirective, AvatarComponent],
   template: `
     <div class="relative min-h-screen bg-bg text-text overflow-x-hidden" data-testid="landing-page">
       <div class="absolute inset-0 -z-10 pointer-events-none">
@@ -41,13 +43,70 @@ import { FadeInOnViewDirective } from '../../shared/fade-in-on-view.directive';
           </a>
 
           @if (autenticado()) {
-            <a
-              routerLink="/app/captura"
-              class="btn-primary text-[13px] px-4 py-2"
-              data-testid="landing-cta-app"
+            <div
+              class="relative"
+              data-testid="landing-user-menu"
+              (click)="$event.stopPropagation()"
             >
-              Entrar no app
-            </a>
+              <button
+                type="button"
+                class="flex items-center gap-2.5 pr-2 pl-1 py-1 rounded-full border border-border hover:border-border-strong hover:bg-bg-elev/60 transition-colors"
+                data-testid="landing-user-trigger"
+                [attr.aria-expanded]="menuAberto()"
+                aria-haspopup="true"
+                (click)="alternarMenu()"
+              >
+                <app-avatar
+                  [nome]="usuarioNome()"
+                  [fotoUrl]="usuarioFoto()"
+                  [size]="28"
+                />
+                <span class="text-[13px] font-medium text-text max-w-[140px] truncate">
+                  {{ usuarioNome() || 'Conta' }}
+                </span>
+                <i
+                  class="fa-solid fa-chevron-down text-[9px] text-text-subtle transition-transform"
+                  [class.rotate-180]="menuAberto()"
+                ></i>
+              </button>
+
+              @if (menuAberto()) {
+                <div
+                  class="absolute right-0 top-full mt-2 w-[220px] card-elev p-1.5 z-40 flex flex-col gap-px"
+                  role="menu"
+                  data-testid="landing-user-menu-pop"
+                >
+                  <a
+                    routerLink="/app/visao-geral"
+                    class="flex items-center gap-2.5 px-2.5 py-2 rounded text-[13px] text-text-dim hover:text-text hover:bg-bg-elev"
+                    data-testid="landing-menu-visao-geral"
+                    (click)="fecharMenu()"
+                  >
+                    <i class="fa-solid fa-house text-[12px] w-4 text-center"></i>
+                    Visão geral
+                  </a>
+                  <a
+                    routerLink="/app/captura"
+                    class="flex items-center gap-2.5 px-2.5 py-2 rounded text-[13px] text-text-dim hover:text-text hover:bg-bg-elev"
+                    data-testid="landing-menu-nova-tarefa"
+                    (click)="fecharMenu()"
+                  >
+                    <i class="fa-solid fa-bolt text-accent text-[12px] w-4 text-center"></i>
+                    Nova tarefa
+                  </a>
+                  <div class="h-px bg-border my-1"></div>
+                  <button
+                    type="button"
+                    class="flex items-center gap-2.5 px-2.5 py-2 rounded text-[13px] text-text-dim hover:text-danger hover:bg-danger/10 text-left"
+                    data-testid="landing-menu-sair"
+                    (click)="sair(); fecharMenu()"
+                  >
+                    <i class="fa-solid fa-right-from-bracket text-[12px] w-4 text-center"></i>
+                    Sair
+                  </button>
+                </div>
+              }
+            </div>
           } @else {
             <nav class="flex items-center gap-2">
               <a
@@ -121,11 +180,12 @@ import { FadeInOnViewDirective } from '../../shared/fade-in-on-view.directive';
               </a>
             } @else {
               <a
-                routerLink="/app/captura"
-                class="btn-primary px-6 py-3 text-sm shadow-accent"
+                routerLink="/app/visao-geral"
+                class="btn-primary px-6 py-3 text-sm shadow-accent flex items-center gap-2"
                 data-testid="landing-hero-cta-app"
               >
-                Entrar no app
+                <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
+                Ir pro Jarvis
               </a>
             }
           </div>
@@ -540,11 +600,37 @@ import { FadeInOnViewDirective } from '../../shared/fade-in-on-view.directive';
 })
 export class LandingComponent {
   private readonly storage = inject(TokenStorage);
+  private readonly auth = inject(AuthService);
 
   scrollY = signal(0);
   previewQuebrou = signal(false);
+  menuAberto = signal(false);
 
   autenticado = computed(() => this.storage.estaAutenticado());
+  usuarioNome = computed(() => this.storage.usuario()?.nome ?? '');
+  usuarioFoto = computed(() => this.storage.usuario()?.fotoUrl ?? null);
+
+  alternarMenu(): void {
+    this.menuAberto.update((v) => !v);
+  }
+
+  fecharMenu(): void {
+    this.menuAberto.set(false);
+  }
+
+  sair(): void {
+    this.auth.logout();
+  }
+
+  @HostListener('document:click')
+  fecharMenuPorClique(): void {
+    if (this.menuAberto()) this.menuAberto.set(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  fecharMenuPorEsc(): void {
+    if (this.menuAberto()) this.menuAberto.set(false);
+  }
 
   heroOpacity = computed(() => {
     const s = this.scrollY();

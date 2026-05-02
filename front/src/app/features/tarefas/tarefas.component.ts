@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { Tarefa, TarefasService } from '../../core/api/tarefas.service';
 import { ConfirmModalComponent } from '../../shared/confirm-modal.component';
 import { extrairProblemDetails } from '../../shared/problem-details';
@@ -35,7 +35,7 @@ interface FiltrosTarefas {
   statusAtraso: 'todas' | 'atrasadas' | 'noprazo';
 }
 
-type TarefasView = 'lista' | 'kanban';
+type TarefasView = 'lista' | 'kanban' | 'semana';
 
 const STORAGE_FILTROS = 'jarvis.tarefas.filtros';
 const STORAGE_VIEW = 'jarvis.tarefas.view';
@@ -107,47 +107,58 @@ const FILTROS_PADRAO: FiltrosTarefas = {
             <i class="fa-solid fa-columns text-[10px]"></i>
             <span class="hidden sm:inline">Quadro</span>
           </button>
+          <button
+            type="button"
+            role="tab"
+            [attr.aria-selected]="view() === 'semana'"
+            class="px-2.5 py-1 rounded text-[12px] flex items-center gap-1.5 transition-colors"
+            [class]="
+              view() === 'semana'
+                ? 'bg-bg-input text-text'
+                : 'text-text-dim hover:text-text'
+            "
+            data-testid="view-semana-btn"
+            (click)="setView('semana')"
+            title="Visualizar a semana"
+          >
+            <i class="fa-solid fa-calendar-week text-[10px]"></i>
+            <span class="hidden sm:inline">Semana</span>
+          </button>
         </div>
 
-        <button
-          type="button"
-          class="text-[12px] flex items-center gap-1.5 px-2.5 py-1.5 rounded border transition-colors"
-          [class]="
-            filtrosAbertos() || filtrosAtivos() > 0
-              ? 'bg-accent/15 border-accent/40 text-text'
-              : 'bg-bg-elev border-border text-text-dim hover:text-text'
-          "
-          data-testid="toggle-filtros-btn"
-          [attr.aria-expanded]="filtrosAbertos()"
-          (click)="toggleFiltrosPanel()"
-        >
-          <i class="fa-solid fa-filter text-[10px]"></i>
-          Filtros
-          @if (filtrosAtivos() > 0) {
-            <span class="text-[10px] px-1.5 py-px rounded-full bg-accent text-white font-medium">
-              {{ filtrosAtivos() }}
-            </span>
-          }
-        </button>
+        <div class="relative" (click)="$event.stopPropagation()">
+          <button
+            type="button"
+            class="text-[12px] flex items-center gap-1.5 px-2.5 py-1.5 rounded border transition-colors"
+            [class]="
+              filtrosAbertos() || filtrosAtivos() > 0
+                ? 'bg-accent/15 border-accent/40 text-text'
+                : 'bg-bg-elev border-border text-text-dim hover:text-text'
+            "
+            data-testid="toggle-filtros-btn"
+            [attr.aria-expanded]="filtrosAbertos()"
+            aria-haspopup="true"
+            (click)="toggleFiltrosPanel()"
+          >
+            <i class="fa-solid fa-filter text-[10px]"></i>
+            Filtros
+            @if (filtrosAtivos() > 0) {
+              <span class="text-[10px] px-1.5 py-px rounded-full bg-accent text-white font-medium">
+                {{ filtrosAtivos() }}
+              </span>
+            }
+            <i class="fa-solid fa-chevron-down text-[8px] transition-transform"
+              [class.rotate-180]="filtrosAbertos()"
+            ></i>
+          </button>
 
-        <button
-          type="button"
-          class="btn-primary text-[13px] flex items-center gap-1.5"
-          data-testid="new-task-btn"
-          (click)="abrirNova()"
-        >
-          <i class="fa-solid fa-plus text-[10px]"></i>
-          <span class="hidden sm:inline">Nova tarefa</span>
-          <span class="sm:hidden">Nova</span>
-        </button>
-      </div>
-    </header>
-
-    @if (filtrosAbertos()) {
-      <div
-        class="px-4 md:px-8 py-4 border-b border-border bg-bg-elev/40 flex flex-col gap-3"
-        data-testid="filtros-panel"
-      >
+          @if (filtrosAbertos()) {
+            <div
+              class="absolute right-0 top-full mt-1.5 w-[320px] max-w-[calc(100vw-2rem)] z-30 card-elev p-4 flex flex-col gap-3 dropdown-in"
+              data-testid="filtros-panel"
+              role="dialog"
+              aria-label="Filtros"
+            >
         <div class="flex flex-col gap-1.5">
           <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">
             Status
@@ -248,8 +259,22 @@ const FILTROS_PADRAO: FiltrosTarefas = {
             </button>
           </div>
         }
-      </div>
-    }
+              </div>
+            }
+          </div>
+
+          <button
+            type="button"
+            class="btn-primary text-[13px] flex items-center gap-1.5"
+            data-testid="new-task-btn"
+            (click)="abrirNova()"
+          >
+            <i class="fa-solid fa-plus text-[10px]"></i>
+            <span class="hidden sm:inline">Nova tarefa</span>
+            <span class="sm:hidden">Nova</span>
+          </button>
+        </div>
+      </header>
 
     <div class="flex-1 px-4 md:px-8 py-6 overflow-auto" data-testid="tarefas-page">
       @if (erroLista()) {
@@ -280,6 +305,168 @@ const FILTROS_PADRAO: FiltrosTarefas = {
           >
             Limpar filtros
           </button>
+        </div>
+      } @else if (view() === 'semana') {
+        <div class="flex flex-col gap-3" data-testid="semana-view">
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              class="w-7 h-7 rounded grid place-items-center text-text-dim hover:text-text hover:bg-bg-elev border border-border"
+              data-testid="semana-prev"
+              aria-label="Semana anterior"
+              (click)="navegarSemana(-1)"
+            >
+              <i class="fa-solid fa-chevron-left text-[10px]"></i>
+            </button>
+            <button
+              type="button"
+              class="text-[12px] px-2.5 py-1 rounded border border-border text-text-dim hover:text-text"
+              data-testid="semana-hoje"
+              (click)="irHoje()"
+            >
+              Hoje
+            </button>
+            <button
+              type="button"
+              class="w-7 h-7 rounded grid place-items-center text-text-dim hover:text-text hover:bg-bg-elev border border-border"
+              data-testid="semana-next"
+              aria-label="Próxima semana"
+              (click)="navegarSemana(1)"
+            >
+              <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            </button>
+            <span class="text-[13px] font-medium ml-1">{{ rotuloSemana() }}</span>
+          </div>
+
+          <div class="card-elev overflow-hidden">
+            <div class="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border">
+              <div></div>
+              @for (d of diasSemana(); track d.iso) {
+                <div
+                  class="px-2 py-2 text-center border-l border-border"
+                  [ngClass]="{ 'bg-accent/5': d.hoje }"
+                >
+                  <div class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">
+                    {{ d.diaCurto }}
+                  </div>
+                  <div
+                    class="text-[15px] font-semibold tabular-nums"
+                    [class.text-accent]="d.hoje"
+                    [class.text-text]="!d.hoje"
+                  >
+                    {{ d.diaNum }}
+                  </div>
+                </div>
+              }
+            </div>
+
+            @if (tarefasSemSlotDaSemana().length > 0) {
+              <div class="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border bg-bg-elev/30">
+                <div class="text-[10px] uppercase tracking-wider text-text-subtle font-medium px-2 py-2">
+                  Sem hora
+                </div>
+                @for (d of diasSemana(); track d.iso) {
+                  <div class="border-l border-border p-1 flex flex-col gap-1 min-h-[40px]">
+                    @for (t of tarefasSemSlotPorDia(d.iso); track t.id) {
+                      <button
+                        type="button"
+                        class="text-left text-[11px] px-1.5 py-1 rounded border text-text truncate"
+                        [ngClass]="
+                          t.status === 3
+                            ? 'bg-danger/15 border-danger/30 hover:bg-danger/25'
+                            : 'bg-accent/15 border-accent/30 hover:bg-accent/25'
+                        "
+                        [attr.data-testid]="'semana-tarefa-sem-hora-' + t.id"
+                        [title]="t.nome"
+                        (click)="abrirDetalhe(t)"
+                      >
+                        {{ t.nome }}
+                      </button>
+                    }
+                  </div>
+                }
+              </div>
+            }
+
+            <div class="relative grid grid-cols-[60px_repeat(7,1fr)] overflow-y-auto" style="max-height: 70vh">
+              <div class="flex flex-col">
+                @for (h of horasSemana(); track h) {
+                  <div
+                    class="text-[10px] tabular-nums text-text-subtle text-right pr-2 border-b border-border/40"
+                    [style.height.px]="alturaSlot()"
+                  >
+                    {{ formatarHora(h) }}
+                  </div>
+                }
+              </div>
+
+              @if (topoLinhaAgora() !== null && indiceDiaHojeSemana() >= 0) {
+                <div
+                  class="absolute left-0 right-0 pointer-events-none z-10"
+                  [style.top.px]="topoLinhaAgora()"
+                  data-testid="semana-linha-agora"
+                  aria-hidden="true"
+                >
+                  <div class="grid grid-cols-[60px_repeat(7,1fr)] items-center">
+                    <div class="flex justify-end pr-1">
+                      <span
+                        class="text-[9px] tabular-nums font-semibold text-white bg-danger px-1 py-px rounded"
+                      >{{ rotuloAgora() }}</span>
+                    </div>
+                    <div class="col-span-7 relative h-px">
+                      <div class="absolute inset-x-0 top-0 h-px bg-danger/40"></div>
+                      <div
+                        class="absolute top-0 h-px bg-danger"
+                        [style.left.%]="(indiceDiaHojeSemana() / 7) * 100"
+                        [style.width.%]="100 / 7"
+                      ></div>
+                      <div
+                        class="absolute -top-[3px] w-1.5 h-1.5 rounded-full bg-danger"
+                        [style.left.%]="(indiceDiaHojeSemana() / 7) * 100"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              }
+
+              @for (d of diasSemana(); track d.iso) {
+                <div
+                  class="relative border-l border-border"
+                  [ngClass]="{ 'bg-accent/5': d.hoje }"
+                >
+                  @for (h of horasSemana(); track h) {
+                    <div
+                      class="border-b border-border/40"
+                      [style.height.px]="alturaSlot()"
+                    ></div>
+                  }
+                  @for (t of tarefasComSlotPorDia(d.iso); track t.id) {
+                    <button
+                      type="button"
+                      class="absolute left-1 right-1 rounded px-1.5 py-1 text-[11px] text-left border text-text hover:z-10 overflow-hidden"
+                      [ngClass]="
+                        t.status === 3
+                          ? 'bg-danger/20 border-danger/40 hover:bg-danger/30'
+                          : 'bg-accent/20 border-accent/40 hover:bg-accent/30'
+                      "
+                      [style.top.px]="topoTarefa(t)"
+                      [style.minHeight.px]="alturaSlot() - 4"
+                      [attr.data-testid]="'semana-tarefa-' + t.id"
+                      [title]="t.nome + ' — ' + (t.horarioFinal ?? '')"
+                      (click)="abrirDetalhe(t)"
+                    >
+                      <div class="font-medium truncate">{{ t.nome }}</div>
+                      @if (t.horarioFinal) {
+                        <div class="text-[9px] tabular-nums opacity-80">
+                          {{ t.horarioFinal.substring(0, 5) }}
+                        </div>
+                      }
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+          </div>
         </div>
       } @else if (view() === 'kanban') {
         <div
@@ -398,7 +585,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
             <div class="flex flex-col">
               @for (t of g.tarefas; track t.id) {
                 <div
-                  class="relative flex flex-col gap-2 md:grid md:grid-cols-[28px_1fr_auto_auto_auto_auto] md:items-center md:gap-3.5 pl-4 pr-3 py-2.5 rounded border-b border-border last:border-b-0 hover:bg-bg-elev hover:-translate-y-px hover:shadow-md focus-within:bg-bg-elev group transition-all duration-300 cursor-pointer"
+                  class="relative flex flex-col gap-2 md:grid md:grid-cols-[28px_1fr_auto_auto_auto_auto] md:items-center md:gap-3.5 pl-4 pr-3 py-2.5 rounded border-b border-border last:border-b-0 hover:bg-bg-elev hover:-translate-y-px hover:shadow-md focus-within:bg-bg-elev group transition-all duration-300 ease-out cursor-pointer animate-fade-up"
                   [class.opacity-0]="saindo().has(t.id)"
                   [class.scale-95]="saindo().has(t.id)"
                   [class.pointer-events-none]="processando().has(t.id) || saindo().has(t.id)"
@@ -423,8 +610,8 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                       [attr.data-testid]="'task-' + t.id + '-complete'"
                       (click)="$event.stopPropagation(); concluir(t)"
                       [disabled]="processando().has(t.id)"
-                      aria-label="Concluir tarefa"
-                      title="Concluir"
+                      aria-label="Marcar como feita"
+                      title="Marcar como feita"
                     >
                       @if (processando().has(t.id)) {
                         <i class="fa-solid fa-circle-notch fa-spin text-[10px] text-accent"></i>
@@ -549,12 +736,11 @@ const FILTROS_PADRAO: FiltrosTarefas = {
         (editarTudo)="editarDoDetalhe($event)"
         (concluir)="concluirDoDetalhe($event)"
         (excluir)="pedirExcluirDoDetalhe($event)"
-        (observacoesAtualizadas)="aplicarTarefaAtualizada($event)"
       ></app-tarefa-detalhe-modal>
     }
   `,
 })
-export class TarefasComponent implements OnInit {
+export class TarefasComponent implements OnInit, OnDestroy {
   private readonly tarefasApi = inject(TarefasService);
 
   readonly pendentes = signal<Tarefa[]>([]);
@@ -569,6 +755,12 @@ export class TarefasComponent implements OnInit {
   readonly view = signal<TarefasView>(this.lerView());
   readonly filtros = signal<FiltrosTarefas>(this.lerFiltros());
   readonly filtrosAbertos = signal(false);
+  readonly semanaInicio = signal<Date>(this.segundaDaSemana(new Date()));
+  readonly alturaSlot = signal(40);
+  readonly agora = signal(new Date());
+  private agoraTimer: number | null = null;
+  private static readonly HORA_MIN = 6;
+  private static readonly HORA_MAX = 23;
 
   readonly categoriasDisponiveis = computed(() => {
     const set = new Map<string, string>();
@@ -670,6 +862,14 @@ export class TarefasComponent implements OnInit {
 
   ngOnInit(): void {
     this.carregar();
+    this.agoraTimer = window.setInterval(() => this.agora.set(new Date()), 60000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.agoraTimer !== null) {
+      window.clearInterval(this.agoraTimer);
+      this.agoraTimer = null;
+    }
   }
 
   carregar(): void {
@@ -774,11 +974,6 @@ export class TarefasComponent implements OnInit {
     this.pedirExcluir(t);
   }
 
-  aplicarTarefaAtualizada(atual: Tarefa): void {
-    this.pendentes.update((list) => list.map((x) => (x.id === atual.id ? atual : x)));
-    this.tarefaDetalhe.set(atual);
-  }
-
   // ===== View toggle =====
   setView(v: TarefasView): void {
     this.view.set(v);
@@ -789,9 +984,137 @@ export class TarefasComponent implements OnInit {
     }
   }
 
+  // ===== Semana =====
+  navegarSemana(delta: number): void {
+    const nova = new Date(this.semanaInicio());
+    nova.setDate(nova.getDate() + delta * 7);
+    this.semanaInicio.set(nova);
+  }
+
+  irHoje(): void {
+    this.semanaInicio.set(this.segundaDaSemana(new Date()));
+  }
+
+  readonly diasSemana = computed(() => {
+    const inicio = this.semanaInicio();
+    const hojeIso = this.dateParaIsoLocal(new Date());
+    const dias: { iso: string; diaNum: number; diaCurto: string; hoje: boolean }[] = [];
+    const labels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(inicio);
+      d.setDate(inicio.getDate() + i);
+      const iso = this.dateParaIsoLocal(d);
+      dias.push({ iso, diaNum: d.getDate(), diaCurto: labels[i], hoje: iso === hojeIso });
+    }
+    return dias;
+  });
+
+  readonly horasSemana = computed(() => {
+    const arr: number[] = [];
+    for (let h = TarefasComponent.HORA_MIN; h <= TarefasComponent.HORA_MAX; h++) arr.push(h);
+    return arr;
+  });
+
+  rotuloSemana(): string {
+    const dias = this.diasSemana();
+    if (dias.length === 0) return '';
+    const inicio = new Date(dias[0].iso);
+    const fim = new Date(dias[6].iso);
+    const fmt = (d: Date) => `${String(d.getUTCDate()).padStart(2, '0')}/${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+    return `${fmt(inicio)} – ${fmt(fim)} ${fim.getUTCFullYear()}`;
+  }
+
+  formatarHora(h: number): string {
+    return `${String(h).padStart(2, '0')}h`;
+  }
+
+  private tarefasDaSemanaCache(): Tarefa[] {
+    const inicioIso = this.diasSemana()[0]?.iso;
+    const fimIso = this.diasSemana()[6]?.iso;
+    if (!inicioIso || !fimIso) return [];
+    return this.tarefasFiltradas().filter((t) => {
+      if (!t.dataPrazo) return false;
+      const iso = t.dataPrazo.substring(0, 10);
+      return iso >= inicioIso && iso <= fimIso;
+    });
+  }
+
+  readonly tarefasComSlotDaSemana = computed(() =>
+    this.tarefasDaSemanaCache().filter((t) => !!t.horarioFinal),
+  );
+
+  readonly tarefasSemSlotDaSemana = computed(() =>
+    this.tarefasDaSemanaCache().filter((t) => !t.horarioFinal),
+  );
+
+  tarefasComSlotPorDia(iso: string): Tarefa[] {
+    return this.tarefasComSlotDaSemana()
+      .filter((t) => t.dataPrazo?.substring(0, 10) === iso)
+      .sort((a, b) => (a.horarioFinal ?? '').localeCompare(b.horarioFinal ?? ''));
+  }
+
+  tarefasSemSlotPorDia(iso: string): Tarefa[] {
+    return this.tarefasSemSlotDaSemana().filter((t) => t.dataPrazo?.substring(0, 10) === iso);
+  }
+
+  topoTarefa(t: Tarefa): number {
+    if (!t.horarioFinal) return 0;
+    const [hh, mm] = t.horarioFinal.substring(0, 5).split(':').map((x) => parseInt(x, 10));
+    const altura = this.alturaSlot();
+    const offsetHoras = Math.max(0, hh - TarefasComponent.HORA_MIN);
+    return offsetHoras * altura + Math.round((mm / 60) * altura);
+  }
+
+  /** Posicao em px da linha do agora dentro da grade da semana. null se fora do range visivel. */
+  topoLinhaAgora(): number | null {
+    const a = this.agora();
+    const hh = a.getHours();
+    const mm = a.getMinutes();
+    if (hh < TarefasComponent.HORA_MIN || hh > TarefasComponent.HORA_MAX) return null;
+    const altura = this.alturaSlot();
+    return (hh - TarefasComponent.HORA_MIN) * altura + Math.round((mm / 60) * altura);
+  }
+
+  /** Indice 0-6 (Seg-Dom) do dia de hoje na semana atualmente exibida, ou -1 se hoje nao esta na semana. */
+  indiceDiaHojeSemana(): number {
+    const hojeIso = this.dateParaIsoLocal(this.agora());
+    return this.diasSemana().findIndex((d) => d.iso === hojeIso);
+  }
+
+  rotuloAgora(): string {
+    const a = this.agora();
+    return `${String(a.getHours()).padStart(2, '0')}:${String(a.getMinutes()).padStart(2, '0')}`;
+  }
+
+  private segundaDaSemana(d: Date): Date {
+    const data = new Date(d);
+    const dia = data.getDay(); // 0=dom, 1=seg
+    const diff = dia === 0 ? -6 : 1 - dia;
+    data.setDate(data.getDate() + diff);
+    data.setHours(0, 0, 0, 0);
+    return data;
+  }
+
+  private dateParaIsoLocal(d: Date): string {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
   // ===== Filtros =====
   toggleFiltrosPanel(): void {
     this.filtrosAbertos.update((v) => !v);
+  }
+
+  @HostListener('document:click')
+  fecharFiltrosPorClique(): void {
+    if (this.filtrosAbertos()) this.filtrosAbertos.set(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  fecharFiltrosPorEsc(): void {
+    if (this.filtrosAbertos()) this.filtrosAbertos.set(false);
   }
 
   toggleFiltroCategoria(id: string): void {

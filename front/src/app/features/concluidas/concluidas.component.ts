@@ -167,7 +167,6 @@ interface GrupoData {
         (fechado)="tarefaDetalhe.set(null)"
         (reabrir)="reabrirDoDetalhe($event)"
         (excluir)="pedirExcluirDoDetalhe($event)"
-        (observacoesAtualizadas)="aplicarTarefaAtualizada($event)"
       ></app-tarefa-detalhe-modal>
     }
 
@@ -281,11 +280,6 @@ export class ConcluidasComponent implements OnInit {
         this.erroReabrir.set(r.mensagemGeral ?? 'Não consegui excluir essa tarefa.');
       },
     });
-  }
-
-  aplicarTarefaAtualizada(atual: Tarefa): void {
-    this.concluidas.update((list) => list.map((x) => (x.id === atual.id ? atual : x)));
-    this.tarefaDetalhe.set(atual);
   }
 
   executarConfirmacao(): void {

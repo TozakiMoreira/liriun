@@ -1,26 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
-import {
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-  computed,
-  inject,
-  signal,
-} from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { Tarefa, TarefaPayload, TarefasService } from '../../core/api/tarefas.service';
+import { Component, EventEmitter, Input, Output, computed } from '@angular/core';
+import { Tarefa } from '../../core/api/tarefas.service';
 import { quebrarTextoEmSegmentos } from '../../shared/auto-link';
-import { extrairProblemDetails } from '../../shared/problem-details';
 
 @Component({
   selector: 'app-tarefa-detalhe-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule],
   template: `
     <div
-      class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 grid place-items-center px-4 py-8"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 grid place-items-center px-4 py-8 animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="detalhe-titulo"
@@ -28,7 +17,7 @@ import { extrairProblemDetails } from '../../shared/problem-details';
       (click)="fechar()"
     >
       <div
-        class="card-elev w-full max-w-[560px] max-h-[90vh] overflow-y-auto"
+        class="card-elev w-full max-w-[560px] max-h-[90vh] overflow-y-auto animate-scale-in"
         (click)="$event.stopPropagation()"
       >
         <div class="flex items-start justify-between gap-3 border-b border-border px-5 py-4">
@@ -108,58 +97,11 @@ import { extrairProblemDetails } from '../../shared/problem-details';
           }
 
           <div class="flex flex-col gap-1.5">
-            <div class="flex items-center justify-between">
-              <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">
-                Observações
-              </span>
-              @if (!editandoObs() && tarefa.status !== 2) {
-                <button
-                  type="button"
-                  class="text-[12px] text-text-dim hover:text-text flex items-center gap-1.5"
-                  data-testid="detalhe-editar-obs"
-                  (click)="iniciarEdicaoObs()"
-                >
-                  <i class="fa-solid fa-pen text-[10px]"></i>
-                  {{ tarefa.observacoes ? 'Editar' : 'Adicionar' }}
-                </button>
-              }
-            </div>
+            <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">
+              Observações
+            </span>
 
-            @if (editandoObs()) {
-              <textarea
-                class="input-base resize-none"
-                rows="5"
-                placeholder="Detalhes, links, lembretes..."
-                maxlength="4000"
-                data-testid="detalhe-obs-textarea"
-                [(ngModel)]="rascunhoObs"
-                name="observacoes-detalhe"
-                autofocus
-              ></textarea>
-              @if (erroObs()) {
-                <p class="text-danger text-xs" data-testid="detalhe-obs-erro">{{ erroObs() }}</p>
-              }
-              <div class="flex justify-end gap-2">
-                <button
-                  type="button"
-                  class="btn-secondary text-[12px] px-3 py-1.5"
-                  data-testid="detalhe-obs-cancelar"
-                  (click)="cancelarEdicaoObs()"
-                  [disabled]="salvandoObs()"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  class="btn-primary text-[12px] px-3 py-1.5"
-                  data-testid="detalhe-obs-salvar"
-                  (click)="salvarObs()"
-                  [disabled]="salvandoObs()"
-                >
-                  {{ salvandoObs() ? 'Salvando...' : 'Salvar' }}
-                </button>
-              </div>
-            } @else if (tarefa.observacoes) {
+            @if (tarefa.observacoes) {
               <div
                 class="text-[13px] text-text leading-relaxed whitespace-pre-wrap break-words bg-[#16181c] border border-border rounded p-3"
                 data-testid="detalhe-obs-conteudo"
@@ -180,7 +122,7 @@ import { extrairProblemDetails } from '../../shared/problem-details';
               </div>
             } @else {
               <p class="text-text-subtle text-[12px] italic">
-                Nada anotado por aqui ainda.
+                Nada anotado por aqui ainda. Use "Editar tarefa" pra adicionar.
               </p>
             }
           </div>
@@ -213,7 +155,7 @@ import { extrairProblemDetails } from '../../shared/problem-details';
                 (click)="onConcluir()"
               >
                 <i class="fa-solid fa-check text-[10px]"></i>
-                Concluir
+                Marcar como feita
               </button>
             } @else {
               <button
@@ -233,72 +175,15 @@ import { extrairProblemDetails } from '../../shared/problem-details';
   `,
 })
 export class TarefaDetalheModalComponent {
-  private readonly tarefasApi = inject(TarefasService);
-
   @Input({ required: true }) tarefa!: Tarefa;
   @Output() fechado = new EventEmitter<void>();
   @Output() editarTudo = new EventEmitter<Tarefa>();
   @Output() concluir = new EventEmitter<Tarefa>();
   @Output() reabrir = new EventEmitter<Tarefa>();
   @Output() excluir = new EventEmitter<Tarefa>();
-  @Output() observacoesAtualizadas = new EventEmitter<Tarefa>();
-
-  readonly editandoObs = signal(false);
-  readonly salvandoObs = signal(false);
-  readonly erroObs = signal<string | null>(null);
-
-  rascunhoObs = '';
-
   readonly segmentosObs = computed(() => quebrarTextoEmSegmentos(this.tarefa.observacoes));
 
-  iniciarEdicaoObs(): void {
-    this.rascunhoObs = this.tarefa.observacoes ?? '';
-    this.erroObs.set(null);
-    this.editandoObs.set(true);
-  }
-
-  cancelarEdicaoObs(): void {
-    if (this.salvandoObs()) return;
-    this.editandoObs.set(false);
-    this.erroObs.set(null);
-  }
-
-  salvarObs(): void {
-    if (this.salvandoObs()) return;
-    const novo = this.rascunhoObs.trim();
-    if (novo.length > 4000) {
-      this.erroObs.set('Observações passam de 4000 caracteres.');
-      return;
-    }
-
-    const payload: TarefaPayload = {
-      nome: this.tarefa.nome,
-      prioridade: this.tarefa.prioridade,
-      dataPrazo: this.tarefa.dataPrazo,
-      categoriaIds: this.tarefa.categorias.map((c) => c.id),
-      horarioFinal: this.tarefa.horarioFinal,
-      observacoes: novo.length > 0 ? novo : null,
-    };
-
-    this.salvandoObs.set(true);
-    this.erroObs.set(null);
-    this.tarefasApi.atualizar(this.tarefa.id, payload).subscribe({
-      next: (atual) => {
-        this.salvandoObs.set(false);
-        this.editandoObs.set(false);
-        this.observacoesAtualizadas.emit(atual);
-      },
-      error: (err: HttpErrorResponse) => {
-        this.salvandoObs.set(false);
-        const r = extrairProblemDetails(err, 'Não consegui salvar.');
-        const primeiroErro = Object.values(r.errosCampo)[0];
-        this.erroObs.set(primeiroErro ?? r.mensagemGeral ?? 'Não consegui salvar.');
-      },
-    });
-  }
-
   fechar(): void {
-    if (this.salvandoObs()) return;
     this.fechado.emit();
   }
 

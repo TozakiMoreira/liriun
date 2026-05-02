@@ -5,7 +5,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
   standalone: true,
   template: `
     <div
-      class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 grid place-items-center px-4 py-8"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 grid place-items-center px-4 py-8 animate-fade-in"
       data-testid="confirm-modal-overlay"
       role="dialog"
       aria-modal="true"
@@ -13,7 +13,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
       (click)="onCancelar()"
     >
       <div
-        class="card-elev w-full max-w-[420px]"
+        class="card-elev w-full max-w-[420px] animate-scale-in"
         (click)="$event.stopPropagation()"
       >
         <div class="px-5 py-4 border-b border-border">
