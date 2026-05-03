@@ -1,4 +1,4 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { TarefasService } from '../core/api/tarefas.service';
@@ -200,99 +200,107 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
           </a>
         </nav>
 
-        @if (!sidebarCollapsed()) {
-          <div
-            class="text-[10px] text-text-subtle px-2 py-1.5 tracking-wider uppercase font-semibold mt-5"
-          >
-            Ajustes
-          </div>
-        }
-        <nav class="flex flex-col gap-px" [class.items-center]="sidebarCollapsed()" [class.mt-4]="sidebarCollapsed()">
-          <a
-            routerLink="/app/configuracoes"
-            routerLinkActive="nav-link-active"
-            class="nav-link"
-            [class.nav-link-collapsed]="sidebarCollapsed()"
-            data-testid="nav-configs"
-            [title]="sidebarCollapsed() ? 'Configurações' : null"
-          >
-            <i class="fa-solid fa-gear nav-icon"></i>
-            @if (!sidebarCollapsed()) {
-              <span class="flex-1">Configurações</span>
-            }
-          </a>
-        </nav>
-
-        <div class="mt-auto pt-3 w-full">
+        <div class="mt-auto pt-3 w-full" [class.flex]="sidebarCollapsed()" [class.flex-col]="sidebarCollapsed()" [class.items-center]="sidebarCollapsed()">
           @if (!sidebarCollapsed()) {
-            <div class="flex justify-center mb-2">
-              <app-theme-toggle />
-            </div>
             <div
-              class="border border-border rounded-lg bg-bg-elev/50 hover:bg-bg-elev transition-colors group overflow-hidden"
-              data-testid="user-menu"
+              class="text-[10px] text-text-subtle px-2 py-1.5 tracking-wider uppercase font-semibold"
             >
-              <div class="flex items-center gap-2.5 px-2.5 py-2">
-                <app-avatar
-                  [nome]="storage.usuario()?.nome ?? ''"
-                  [fotoUrl]="storage.usuario()?.fotoUrl ?? null"
-                  [size]="32"
-                />
-                <div class="flex-1 min-w-0 leading-tight">
-                  <div
-                    class="text-[12.5px] font-medium truncate"
-                    [title]="storage.usuario()?.nome"
-                  >
-                    {{ storage.usuario()?.nome }}
-                  </div>
-                  <div
-                    class="text-[10.5px] text-text-subtle truncate"
-                    [title]="storage.usuario()?.email"
-                  >
-                    {{ storage.usuario()?.email }}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  class="p-1.5 text-text-subtle hover:text-danger hover:bg-danger/10 rounded transition-colors"
-                  data-testid="user-logout"
-                  title="Sair"
-                  aria-label="Sair"
-                  (click)="sair()"
-                >
-                  <i class="fa-solid fa-right-from-bracket text-[11px]"></i>
-                </button>
-              </div>
+              Ajustes
             </div>
+          }
+          <nav class="flex flex-col gap-px" [class.items-center]="sidebarCollapsed()">
+            <a
+              routerLink="/app/configuracoes"
+              routerLinkActive="nav-link-active"
+              class="nav-link"
+              [class.nav-link-collapsed]="sidebarCollapsed()"
+              data-testid="nav-configs"
+              [title]="sidebarCollapsed() ? 'Configurações' : null"
+            >
+              <i class="fa-solid fa-gear nav-icon"></i>
+              @if (!sidebarCollapsed()) {
+                <span class="flex-1">Configurações</span>
+              }
+            </a>
+          </nav>
+
+          @if (!sidebarCollapsed()) {
             <div
-              class="text-[9.5px] text-text-subtle text-center mt-2 tracking-wider uppercase font-medium"
+              class="pt-3 text-[9.5px] text-text-subtle text-center tracking-wider uppercase font-medium"
             >
               v1 · <app-brand />
-            </div>
-          } @else {
-            <div class="flex flex-col items-center gap-2">
-              <app-theme-toggle [mostrarLabel]="false" />
-              <app-avatar
-                [nome]="storage.usuario()?.nome ?? ''"
-                [fotoUrl]="storage.usuario()?.fotoUrl ?? null"
-                [size]="30"
-              />
-              <button
-                type="button"
-                class="p-1.5 text-text-subtle hover:text-danger hover:bg-danger/10 rounded transition-colors"
-                data-testid="user-logout"
-                title="Sair"
-                aria-label="Sair"
-                (click)="sair()"
-              >
-                <i class="fa-solid fa-right-from-bracket text-[11px]"></i>
-              </button>
             </div>
           }
         </div>
       </aside>
 
       <main class="flex flex-col min-w-0 flex-1 pb-16 md:pb-0">
+        <header
+          class="hidden md:flex items-center justify-end gap-3 h-14 px-4 md:px-8 border-b border-border bg-bg-sidebar/40 backdrop-blur-sm"
+          data-testid="shell-topbar"
+        >
+          <app-theme-toggle />
+
+          <div
+            class="relative"
+            data-testid="user-menu"
+            (click)="$event.stopPropagation()"
+          >
+            <button
+              type="button"
+              class="flex items-center gap-2.5 pr-2 pl-1 py-1 rounded-full border border-border hover:border-border-strong hover:bg-bg-elev/60 transition-colors"
+              data-testid="user-menu-trigger"
+              [attr.aria-expanded]="userMenuAberto()"
+              aria-haspopup="true"
+              (click)="alternarUserMenu()"
+            >
+              <app-avatar
+                [nome]="storage.usuario()?.nome ?? ''"
+                [fotoUrl]="storage.usuario()?.fotoUrl ?? null"
+                [size]="28"
+              />
+              <span class="text-[13px] font-medium text-text max-w-[140px] truncate">
+                {{ storage.usuario()?.nome || 'Conta' }}
+              </span>
+              <i
+                class="fa-solid fa-chevron-down text-[9px] text-text-subtle transition-transform"
+                [class.rotate-180]="userMenuAberto()"
+              ></i>
+            </button>
+
+            @if (userMenuAberto()) {
+              <div
+                class="absolute right-0 top-full mt-2 w-[240px] card-elev p-1.5 z-40 flex flex-col gap-px"
+                role="menu"
+                data-testid="user-menu-pop"
+              >
+                <div class="px-2.5 py-2 border-b border-border mb-1 flex flex-col leading-tight">
+                  <span class="text-[12.5px] font-medium truncate">{{ storage.usuario()?.nome }}</span>
+                  <span class="text-[11px] text-text-subtle truncate">{{ storage.usuario()?.email }}</span>
+                </div>
+                <a
+                  routerLink="/app/configuracoes"
+                  class="flex items-center gap-2.5 px-2.5 py-2 rounded text-[13px] text-text-dim hover:text-text hover:bg-bg-elev"
+                  data-testid="user-menu-configs"
+                  (click)="fecharUserMenu()"
+                >
+                  <i class="fa-solid fa-gear text-[12px] w-4 text-center"></i>
+                  Configurações
+                </a>
+                <button
+                  type="button"
+                  class="flex items-center gap-2.5 px-2.5 py-2 rounded text-[13px] text-text-dim hover:text-danger hover:bg-danger/10 text-left"
+                  data-testid="user-menu-sair"
+                  (click)="sair(); fecharUserMenu()"
+                >
+                  <i class="fa-solid fa-right-from-bracket text-[12px] w-4 text-center"></i>
+                  Sair
+                </button>
+              </div>
+            }
+          </div>
+        </header>
+
         <router-outlet></router-outlet>
       </main>
 
@@ -446,6 +454,25 @@ export class ShellComponent implements OnInit {
   readonly pendentesCount = signal(0);
   readonly atrasadasCount = signal(0);
   readonly sidebarCollapsed = signal(this.lerEstadoSidebar());
+  readonly userMenuAberto = signal(false);
+
+  alternarUserMenu(): void {
+    this.userMenuAberto.update((v) => !v);
+  }
+
+  fecharUserMenu(): void {
+    this.userMenuAberto.set(false);
+  }
+
+  @HostListener('document:click')
+  fecharUserMenuPorClique(): void {
+    if (this.userMenuAberto()) this.userMenuAberto.set(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  fecharUserMenuPorEsc(): void {
+    if (this.userMenuAberto()) this.userMenuAberto.set(false);
+  }
 
   private static readonly STORAGE_SIDEBAR = 'jarvis-sidebar-collapsed';
 

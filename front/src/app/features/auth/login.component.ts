@@ -27,7 +27,7 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
       </a>
 
       <div class="absolute top-5 right-5">
-        <app-theme-toggle [mostrarLabel]="false" />
+        <app-theme-toggle />
       </div>
 
       <div class="w-full max-w-[380px] flex flex-col gap-8">
