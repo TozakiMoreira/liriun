@@ -23,32 +23,58 @@ import { extrairProblemDetails } from '../../shared/problem-details';
     PasswordRequirementsComponent,
   ],
   template: `
-    <header class="flex items-center px-4 md:px-8 py-3.5 border-b border-border gap-4">
+    <header
+      class="flex items-center px-4 md:px-8 py-3.5 border-b border-border gap-3"
+      style="background-image: radial-gradient(ellipse 60% 100% at 0% 50%, rgba(94, 106, 210, 0.08), transparent 60%);"
+    >
       <a
         routerLink="/app/configuracoes"
-        class="text-text-subtle hover:text-text flex items-center gap-1.5 text-[15px]"
+        class="w-8 h-8 grid place-items-center rounded-md text-text-dim hover:text-text hover:bg-bg-elev border border-border hover:border-border-strong transition-colors"
         data-testid="alterar-senha-voltar"
         aria-label="Voltar para Configurações"
+        title="Voltar para Configurações"
       >
-        <i class="fa-solid fa-arrow-left text-xs"></i>
-        Configurações
+        <i class="fa-solid fa-arrow-left text-[12px]"></i>
       </a>
-      <span class="text-text-subtle text-[15px]">/</span>
-      <strong class="text-text font-medium text-[15px]">Trocar senha</strong>
+      <nav
+        class="flex items-center gap-1.5 text-[13px] text-text-dim"
+        aria-label="Trilha"
+      >
+        <a
+          routerLink="/app/configuracoes"
+          class="hover:text-text transition-colors"
+        >
+          Configurações
+        </a>
+        <i class="fa-solid fa-chevron-right text-[9px] text-text-subtle"></i>
+        <span class="text-text font-medium flex items-center gap-1.5">
+          <i class="fa-solid fa-key text-accent text-[11px]"></i>
+          Trocar senha
+        </span>
+      </nav>
     </header>
 
     <div
-      class="flex-1 grid place-items-start md:place-items-center px-4 py-8 md:py-16 overflow-auto"
+      class="flex-1 grid place-items-start md:place-items-center px-4 py-8 md:py-12 overflow-auto"
       data-testid="alterar-senha-page"
     >
-      <div class="w-full max-w-[420px]">
-        <div class="card-elev p-6 flex flex-col gap-5">
+      <div class="w-full max-w-[440px] flex flex-col gap-5 animate-fade-up">
+        <div class="flex flex-col items-center gap-3 text-center">
+          <div
+            class="w-14 h-14 rounded-2xl bg-accent/15 border border-accent/30 grid place-items-center text-accent shadow-glow"
+            aria-hidden="true"
+          >
+            <i class="fa-solid fa-key text-[20px]"></i>
+          </div>
           <div class="flex flex-col gap-1">
-            <h1 class="text-lg font-semibold tracking-tight">Trocar senha</h1>
-            <p class="text-text-dim text-[13px]">
-              Confirma a senha de hoje pra eu garantir que é você.
+            <h1 class="text-2xl font-semibold tracking-tight">Trocar senha</h1>
+            <p class="text-text-dim text-[13px] leading-relaxed max-w-[340px]">
+              Confirma a senha de hoje pra eu garantir que é você. Depois escolhe a nova.
             </p>
           </div>
+        </div>
+
+        <div class="card-elev p-6 flex flex-col gap-5">
 
           <form class="flex flex-col gap-4" (ngSubmit)="trocar()" novalidate>
             <div class="flex flex-col gap-1.5">

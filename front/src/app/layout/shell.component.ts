@@ -6,12 +6,12 @@ import { AuthService } from '../core/auth/auth.service';
 import { TokenStorage } from '../core/auth/token.storage';
 import { AvatarComponent } from '../shared/avatar.component';
 import { BrandComponent } from '../shared/brand.component';
-import { ThemeService } from '../core/theme/theme.service';
+import { ThemeToggleComponent } from '../shared/theme-toggle.component';
 
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, AvatarComponent, BrandComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, AvatarComponent, BrandComponent, ThemeToggleComponent],
   template: `
     <div
       class="flex flex-col min-h-screen bg-bg text-text md:grid"
@@ -31,17 +31,8 @@ import { ThemeService } from '../core/theme/theme.service';
           />
           <div class="text-[13px] font-semibold tracking-tight"><app-brand /></div>
         </div>
-        <div class="flex items-center gap-1">
-          <button
-            type="button"
-            class="w-9 h-9 grid place-items-center text-text-dim hover:text-text rounded-md transition-colors"
-            data-testid="mobile-theme-toggle"
-            [title]="theme.theme() === 'dark' ? 'Tema claro' : 'Tema escuro'"
-            [attr.aria-label]="theme.theme() === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'"
-            (click)="theme.alternar()"
-          >
-            <i [class]="theme.theme() === 'dark' ? 'fa-solid fa-sun text-[14px]' : 'fa-solid fa-moon text-[14px]'"></i>
-          </button>
+        <div class="flex items-center gap-2">
+          <app-theme-toggle [mostrarLabel]="false" />
           <button
             type="button"
             class="flex items-center gap-2 text-text-dim hover:text-text text-xs px-2 py-1 transition-colors"
@@ -234,17 +225,9 @@ import { ThemeService } from '../core/theme/theme.service';
 
         <div class="mt-auto pt-3 w-full">
           @if (!sidebarCollapsed()) {
-            <button
-              type="button"
-              class="w-full flex items-center justify-center gap-2 px-3 py-1.5 mb-2 rounded-md text-[12px] text-text-dim hover:text-text border border-border hover:border-border-strong bg-bg-elev/30 hover:bg-bg-elev transition-colors"
-              data-testid="theme-toggle"
-              [title]="theme.theme() === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'"
-              [attr.aria-label]="theme.theme() === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'"
-              (click)="theme.alternar()"
-            >
-              <i [class]="theme.theme() === 'dark' ? 'fa-solid fa-sun text-[11px]' : 'fa-solid fa-moon text-[11px]'"></i>
-              <span>{{ theme.theme() === 'dark' ? 'Tema claro' : 'Tema escuro' }}</span>
-            </button>
+            <div class="flex justify-center mb-2">
+              <app-theme-toggle />
+            </div>
             <div
               class="border border-border rounded-lg bg-bg-elev/50 hover:bg-bg-elev transition-colors group overflow-hidden"
               data-testid="user-menu"
@@ -288,16 +271,7 @@ import { ThemeService } from '../core/theme/theme.service';
             </div>
           } @else {
             <div class="flex flex-col items-center gap-2">
-              <button
-                type="button"
-                class="p-1.5 text-text-subtle hover:text-text rounded transition-colors"
-                data-testid="theme-toggle"
-                [title]="theme.theme() === 'dark' ? 'Tema claro' : 'Tema escuro'"
-                [attr.aria-label]="theme.theme() === 'dark' ? 'Tema claro' : 'Tema escuro'"
-                (click)="theme.alternar()"
-              >
-                <i [class]="theme.theme() === 'dark' ? 'fa-solid fa-sun text-[12px]' : 'fa-solid fa-moon text-[12px]'"></i>
-              </button>
+              <app-theme-toggle [mostrarLabel]="false" />
               <app-avatar
                 [nome]="storage.usuario()?.nome ?? ''"
                 [fotoUrl]="storage.usuario()?.fotoUrl ?? null"
@@ -468,7 +442,6 @@ export class ShellComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly tarefasApi = inject(TarefasService);
   readonly storage = inject(TokenStorage);
-  readonly theme = inject(ThemeService);
 
   readonly pendentesCount = signal(0);
   readonly atrasadasCount = signal(0);

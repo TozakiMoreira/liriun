@@ -9,6 +9,7 @@ import {
   PasswordRequirementsComponent,
   senhaAtendeRequisitos,
 } from '../../shared/password-requirements.component';
+import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
 
 @Component({
   selector: 'app-cadastro',
@@ -19,6 +20,7 @@ import {
     BrandLogoComponent,
     PasswordInputComponent,
     PasswordRequirementsComponent,
+    ThemeToggleComponent,
   ],
   template: `
     <main
@@ -34,6 +36,10 @@ import {
         <i class="fa-solid fa-arrow-left text-xs"></i>
         Início
       </a>
+
+      <div class="absolute top-5 right-5">
+        <app-theme-toggle [mostrarLabel]="false" />
+      </div>
 
       <div class="w-full max-w-[380px] flex flex-col gap-8">
         <app-brand-logo />

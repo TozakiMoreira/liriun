@@ -38,11 +38,44 @@ type Modo = 'manual' | 'jarvis' | null;
   standalone: true,
   imports: [CommonModule, FormsModule, TarefaFormComponent, BrandComponent],
   template: `
-    <header class="flex items-center px-4 md:px-8 py-3.5 border-b border-border gap-3">
-      <div class="flex items-center gap-2 text-[15px] text-text-dim">
-        <i class="fa-solid fa-bolt text-accent text-[12px]"></i>
-        <strong class="text-text font-medium">Nova tarefa</strong>
-      </div>
+    <header
+      class="flex items-center px-4 md:px-8 py-3.5 border-b border-border gap-3"
+      style="background-image: radial-gradient(ellipse 60% 100% at 0% 50%, rgba(94, 106, 210, 0.08), transparent 60%);"
+    >
+      @if (modo() === 'jarvis') {
+        <button
+          type="button"
+          class="w-8 h-8 grid place-items-center rounded-md text-text-dim hover:text-text hover:bg-bg-elev border border-border hover:border-border-strong transition-colors"
+          data-testid="captura-voltar"
+          aria-label="Voltar pra escolha de modo"
+          title="Voltar pra escolha de modo"
+          (click)="voltarSelecaoModo()"
+        >
+          <i class="fa-solid fa-arrow-left text-[12px]"></i>
+        </button>
+        <nav
+          class="flex items-center gap-1.5 text-[13px] text-text-dim"
+          aria-label="Trilha"
+        >
+          <button
+            type="button"
+            class="hover:text-text transition-colors"
+            (click)="voltarSelecaoModo()"
+          >
+            Nova tarefa
+          </button>
+          <i class="fa-solid fa-chevron-right text-[9px] text-text-subtle"></i>
+          <span class="text-text font-medium flex items-center gap-1.5">
+            <i class="fa-solid fa-wand-magic-sparkles text-accent text-[11px]"></i>
+            <app-brand />
+          </span>
+        </nav>
+      } @else {
+        <div class="flex items-center gap-2 text-[15px] text-text-dim">
+          <i class="fa-solid fa-bolt text-accent text-[12px]"></i>
+          <strong class="text-text font-medium">Nova tarefa</strong>
+        </div>
+      }
     </header>
 
     <div
@@ -50,19 +83,6 @@ type Modo = 'manual' | 'jarvis' | null;
       style="background-image: radial-gradient(ellipse 60% 30% at 50% 0%, rgba(94, 106, 210, 0.08), transparent);"
       data-testid="captura-page"
     >
-      @if (modo() !== null) {
-        <button
-          type="button"
-          class="absolute top-4 left-4 md:top-6 md:left-6 inline-flex items-center gap-1.5 h-9 px-3 rounded-md text-[13px] font-medium bg-accent/15 border border-accent/40 text-accent hover:bg-accent/25 hover:border-accent/60 hover:shadow-glow-sm transition-all z-10"
-          data-testid="captura-voltar"
-          aria-label="Voltar"
-          title="Voltar para escolha de modo"
-          (click)="voltarSelecaoModo()"
-        >
-          <i class="fa-solid fa-arrow-left text-[12px]"></i>
-          <span>Voltar</span>
-        </button>
-      }
 
       @if (modo() === null) {
         <div class="w-full max-w-[720px] flex flex-col gap-8 md:gap-10 items-center fade-in">

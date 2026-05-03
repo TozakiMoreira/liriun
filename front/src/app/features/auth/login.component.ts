@@ -5,11 +5,12 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { BrandLogoComponent } from '../../shared/brand-logo.component';
 import { PasswordInputComponent } from '../../shared/password-input.component';
+import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, RouterLink, BrandLogoComponent, PasswordInputComponent],
+  imports: [FormsModule, RouterLink, BrandLogoComponent, PasswordInputComponent, ThemeToggleComponent],
   template: `
     <main
       class="relative min-h-screen grid place-items-center px-6 py-12 bg-bg bg-accent-glow"
@@ -24,6 +25,10 @@ import { PasswordInputComponent } from '../../shared/password-input.component';
         <i class="fa-solid fa-arrow-left text-xs"></i>
         Início
       </a>
+
+      <div class="absolute top-5 right-5">
+        <app-theme-toggle [mostrarLabel]="false" />
+      </div>
 
       <div class="w-full max-w-[380px] flex flex-col gap-8">
         <app-brand-logo />

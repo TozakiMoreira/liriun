@@ -2,7 +2,7 @@ import { Component, HostListener, computed, inject, signal } from '@angular/core
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { TokenStorage } from '../../core/auth/token.storage';
-import { ThemeService } from '../../core/theme/theme.service';
+import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { FadeInOnViewDirective } from '../../shared/fade-in-on-view.directive';
 import { BrandComponent } from '../../shared/brand.component';
@@ -10,7 +10,7 @@ import { BrandComponent } from '../../shared/brand.component';
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [RouterLink, FadeInOnViewDirective, AvatarComponent, BrandComponent],
+  imports: [RouterLink, FadeInOnViewDirective, AvatarComponent, BrandComponent, ThemeToggleComponent],
   template: `
     <div class="relative min-h-screen bg-bg text-text overflow-x-hidden" data-testid="landing-page">
       <div class="absolute inset-0 -z-10 pointer-events-none">
@@ -45,32 +45,7 @@ import { BrandComponent } from '../../shared/brand.component';
           </a>
 
           <div class="flex items-center gap-2">
-            <span class="text-[12px] font-medium text-text-dim hidden sm:inline">Tema</span>
-            <button
-              type="button"
-              class="theme-switch"
-              role="switch"
-              [attr.aria-checked]="temaAtual() === 'light'"
-              [attr.aria-label]="
-                temaAtual() === 'dark' ? 'Mudar pra tema claro' : 'Mudar pra tema escuro'
-              "
-              [title]="temaAtual() === 'dark' ? 'Mudar pra claro' : 'Mudar pra escuro'"
-              [class.is-light]="temaAtual() === 'light'"
-              data-testid="landing-theme-toggle"
-              (click)="alternarTema()"
-            >
-              <span class="theme-switch-track">
-                <i class="fa-solid fa-moon theme-switch-icon theme-switch-icon-moon"></i>
-                <i class="fa-solid fa-sun theme-switch-icon theme-switch-icon-sun"></i>
-                <span class="theme-switch-knob">
-                  @if (temaAtual() === 'dark') {
-                    <i class="fa-solid fa-moon text-[10px]"></i>
-                  } @else {
-                    <i class="fa-solid fa-sun text-[10px]"></i>
-                  }
-                </span>
-              </span>
-            </button>
+            <app-theme-toggle />
 
           @if (autenticado()) {
             <div
@@ -359,11 +334,11 @@ import { BrandComponent } from '../../shared/brand.component';
               class="text-3xl md:text-4xl font-bold tracking-tight max-w-2xl"
               data-testid="landing-preview-title"
             >
-              Tudo que importa, num só lugar.
+              Conversa com o <app-brand />. Sai com a tarefa pronta.
             </h2>
             <p class="text-text-dim text-base md:text-lg leading-relaxed max-w-2xl">
-              Visão geral com agenda do dia, atividade da semana e distribuição por categoria.
-              Bate o olho e sabe o que precisa fazer agora.
+              Você escreve ou fala. Ele entende o contexto, extrai o que importa
+              e devolve uma tarefa pronta pra confirmar.
             </p>
           </div>
 
@@ -379,7 +354,7 @@ import { BrandComponent } from '../../shared/brand.component';
                   (error)="previewQuebrou.set(true)"
                 />
               } @else {
-                <!-- Mockup CSS-art da Visão geral (fallback quando liriun-preview.png não existe) -->
+                <!-- Mockup CSS-art do chat com o Liriun (fallback quando liriun-preview.png não existe) -->
                 <div
                   class="aspect-[16/10] flex text-left bg-bg"
                   data-testid="landing-preview-mockup"
@@ -406,12 +381,9 @@ import { BrandComponent } from '../../shared/brand.component';
                       Início
                     </div>
                     <div
-                      class="flex items-center gap-2 px-2 py-1 rounded bg-accent/10 text-text text-[11px] relative"
+                      class="flex items-center gap-2 px-2 py-1 rounded text-text-dim text-[11px]"
                     >
-                      <span
-                        class="absolute -left-3 top-1.5 bottom-1.5 w-0.5 bg-accent rounded-r"
-                      ></span>
-                      <i class="fa-solid fa-house text-accent text-[9px] w-3"></i>
+                      <i class="fa-solid fa-house text-[9px] w-3"></i>
                       <span>Visão geral</span>
                     </div>
 
@@ -421,9 +393,12 @@ import { BrandComponent } from '../../shared/brand.component';
                       Minhas tarefas
                     </div>
                     <div
-                      class="flex items-center gap-2 px-2 py-1 rounded text-text-dim text-[11px]"
+                      class="flex items-center gap-2 px-2 py-1 rounded bg-accent/10 text-text text-[11px] relative"
                     >
-                      <i class="fa-solid fa-bolt text-[9px] w-3"></i>
+                      <span
+                        class="absolute -left-3 top-1.5 bottom-1.5 w-0.5 bg-accent rounded-r"
+                      ></span>
+                      <i class="fa-solid fa-bolt text-accent text-[9px] w-3"></i>
                       <span>Nova tarefa</span>
                     </div>
                     <div
@@ -464,139 +439,101 @@ import { BrandComponent } from '../../shared/brand.component';
                     <div
                       class="flex items-center gap-2 px-3 py-2 border-b border-border"
                     >
-                      <i class="fa-solid fa-house text-accent text-[10px]"></i>
-                      <strong class="text-text font-medium text-[10px]">Visão geral</strong>
+                      <i class="fa-solid fa-bolt text-accent text-[10px]"></i>
+                      <strong class="text-text font-medium text-[10px]">Nova tarefa</strong>
                     </div>
 
                     <div class="flex-1 px-3 py-3 flex flex-col gap-2 overflow-hidden">
-                      <div class="flex items-center gap-2 mb-1">
-                        <div
-                          class="w-7 h-7 rounded-md bg-logo-grad grid place-items-center text-[11px] font-bold text-white shrink-0"
-                          style="box-shadow: 0 0 10px rgba(94, 106, 210, 0.35);"
-                        >
-                          P
-                        </div>
+                      <div class="flex items-center gap-2 px-2 py-1.5 border-b border-border">
+                        <img
+                          src="/logo.png"
+                          alt="Liriun"
+                          class="w-5 h-5 rounded object-contain"
+                        />
                         <div class="flex flex-col leading-tight">
-                          <div class="text-[12px] font-semibold tracking-tight">
-                            <span class="text-text-dim">Boa tarde,</span>
-                            <span
-                              class="bg-clip-text text-transparent ml-0.5"
-                              style="background-image: linear-gradient(135deg, #5e6ad2 0%, #8b5cf6 50%, #ec4899 100%);"
-                            >Pedro.</span>
-                          </div>
-                          <div class="text-[9px] text-text-dim">1 atrasada esperando você.</div>
+                          <strong class="text-text font-medium text-[10px]"><app-brand /></strong>
+                          <span class="text-[8px] text-text-subtle flex items-center gap-1">
+                            <span class="w-1 h-1 bg-emerald-500 rounded-full"></span>
+                            online
+                          </span>
                         </div>
                       </div>
 
-                      <div class="grid grid-cols-4 gap-1.5">
-                        <div class="border border-border rounded-md p-1.5 bg-bg-elev flex flex-col gap-0.5">
-                          <div class="text-[7px] uppercase tracking-wider text-text-subtle font-semibold">Hoje</div>
-                          <div class="text-[14px] font-bold tabular-nums leading-none">2</div>
-                        </div>
-                        <div class="border border-danger/40 rounded-md p-1.5 bg-danger/10 flex flex-col gap-0.5">
-                          <div class="text-[7px] uppercase tracking-wider text-danger/80 font-semibold">Atrasadas</div>
-                          <div class="text-[14px] font-bold tabular-nums leading-none text-danger">1</div>
-                        </div>
-                        <div class="border border-border rounded-md p-1.5 bg-bg-elev flex flex-col gap-0.5">
-                          <div class="text-[7px] uppercase tracking-wider text-text-subtle font-semibold">Semana</div>
-                          <div class="text-[14px] font-bold tabular-nums leading-none">5</div>
-                        </div>
-                        <div class="border border-accent/40 rounded-md p-1.5 bg-accent/10 flex flex-col gap-0.5">
-                          <div class="text-[7px] uppercase tracking-wider text-accent font-semibold">+ Nova</div>
-                          <div class="text-[10px] font-medium leading-none mt-1">Liriun</div>
+                      <div class="flex justify-end">
+                        <div
+                          class="bg-accent/15 border border-accent/30 rounded-lg rounded-tr-sm px-2.5 py-1.5 text-[11px] max-w-[80%]"
+                        >
+                          Tenho reunião amanhã às 14h, online via Teams, com o Lucas
                         </div>
                       </div>
 
-                      <div class="grid grid-cols-[1fr_1.4fr] gap-1.5 flex-1 min-h-0">
-                        <div class="border border-border rounded-md bg-bg-elev p-1.5 flex flex-col gap-1 overflow-hidden">
-                          <div class="flex items-center gap-1 text-[9px] font-semibold">
-                            <i class="fa-solid fa-calendar-day text-accent text-[8px]"></i>
-                            Agenda
+                      <div class="flex items-start gap-1.5 max-w-[95%]">
+                        <img
+                          class="w-5 h-5 rounded object-contain shrink-0 mt-0.5"
+                          src="/logo.png"
+                          alt="Liriun"
+                        />
+                        <div
+                          class="flex-1 bg-bg-elev border border-accent/40 rounded-lg overflow-hidden"
+                        >
+                          <div
+                            class="px-2 py-1 border-b border-border bg-accent/5 flex items-center gap-1 text-[8px] uppercase tracking-wider text-accent font-semibold"
+                          >
+                            <i class="fa-solid fa-clipboard-check text-[7px]"></i>
+                            Tarefa pronta
                           </div>
-                          <div class="flex flex-col gap-0.5 text-[8px] text-text-dim relative">
-                            <div class="flex justify-between"><span>09h</span><span></span></div>
-                            <div class="flex justify-between items-center">
-                              <span>10h</span>
-                              <span class="bg-accent/25 border border-accent/40 rounded px-1 py-px text-[7px] text-text">Reunião</span>
+                          <div class="p-2 flex flex-col gap-1">
+                            <div class="text-[11px] font-medium">
+                              Reunião com Lucas sobre projeto
                             </div>
-                            <div class="flex justify-between"><span>11h</span><span></span></div>
-                            <div class="flex justify-between"><span>12h</span><span></span></div>
-                            <div class="flex justify-between items-center relative">
-                              <span>14h</span>
-                              <div class="absolute left-0 right-0 h-px bg-danger top-1/2"></div>
-                              <span class="bg-danger text-white rounded text-[6px] px-0.5 z-10">14:30</span>
+                            <div class="flex items-center gap-2 text-[9px] text-text-dim">
+                              <span>Amanhã, 14:00</span>
+                              <span class="text-text-subtle">·</span>
+                              <span class="text-[8px] px-1 py-px bg-bg border border-border rounded-full">
+                                Trabalho
+                              </span>
                             </div>
-                            <div class="flex justify-between items-center">
-                              <span>15h</span>
-                              <span class="bg-accent/25 border border-accent/40 rounded px-1 py-px text-[7px] text-text">Estudo</span>
+                            <div
+                              class="text-[9px] text-text-dim border-l border-accent/40 pl-1.5 leading-snug whitespace-pre-line"
+                            >
+                              - Online via Teams
+                              - Com: Lucas
                             </div>
-                            <div class="flex justify-between"><span>16h</span><span></span></div>
+                          </div>
+                          <div
+                            class="px-2 py-1 border-t border-border flex gap-1 justify-end"
+                          >
+                            <div
+                              class="text-[8px] px-1.5 py-0.5 rounded border border-border text-text-dim"
+                            >
+                              Ajustar
+                            </div>
+                            <div
+                              class="text-[8px] px-1.5 py-0.5 rounded bg-accent text-white font-medium flex items-center gap-1"
+                            >
+                              <i class="fa-solid fa-check text-[6px]"></i>
+                              Salvar
+                            </div>
                           </div>
                         </div>
+                      </div>
+                    </div>
 
-                        <div class="flex flex-col gap-1.5 min-h-0">
-                          <div class="border border-border rounded-md bg-bg-elev p-1.5 flex flex-col gap-1">
-                            <div class="text-[9px] font-semibold">Atividade da semana</div>
-                            <div class="flex items-end justify-between gap-1 h-10">
-                              <div class="flex-1 flex items-end gap-px justify-center">
-                                <div class="w-1 bg-accent/70 rounded-t" style="height:30%"></div>
-                                <div class="w-1 bg-emerald-500/70 rounded-t" style="height:20%"></div>
-                              </div>
-                              <div class="flex-1 flex items-end gap-px justify-center">
-                                <div class="w-1 bg-accent/70 rounded-t" style="height:60%"></div>
-                                <div class="w-1 bg-emerald-500/70 rounded-t" style="height:40%"></div>
-                              </div>
-                              <div class="flex-1 flex items-end gap-px justify-center">
-                                <div class="w-1 bg-accent/70 rounded-t" style="height:45%"></div>
-                                <div class="w-1 bg-emerald-500/70 rounded-t" style="height:60%"></div>
-                              </div>
-                              <div class="flex-1 flex items-end gap-px justify-center">
-                                <div class="w-1 bg-accent/70 rounded-t" style="height:80%"></div>
-                                <div class="w-1 bg-emerald-500/70 rounded-t" style="height:35%"></div>
-                              </div>
-                              <div class="flex-1 flex items-end gap-px justify-center">
-                                <div class="w-1 bg-accent/70 rounded-t" style="height:50%"></div>
-                                <div class="w-1 bg-emerald-500/70 rounded-t" style="height:75%"></div>
-                              </div>
-                              <div class="flex-1 flex items-end gap-px justify-center">
-                                <div class="w-1 bg-accent/70 rounded-t" style="height:25%"></div>
-                                <div class="w-1 bg-emerald-500/70 rounded-t" style="height:55%"></div>
-                              </div>
-                              <div class="flex-1 flex items-end gap-px justify-center">
-                                <div class="w-1 bg-accent/70 rounded-t" style="height:15%"></div>
-                                <div class="w-1 bg-emerald-500/70 rounded-t" style="height:25%"></div>
-                              </div>
-                            </div>
-                          </div>
-                          <div class="border border-border rounded-md bg-bg-elev p-1.5 flex items-center gap-2">
-                            <svg viewBox="0 0 36 36" class="w-9 h-9 shrink-0">
-                              <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="#1c1d22" stroke-width="3.5" />
-                              <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="#5e6ad2" stroke-width="3.5"
-                                stroke-dasharray="40 60" stroke-dashoffset="100" transform="rotate(-90 18 18)" />
-                              <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="#10b981" stroke-width="3.5"
-                                stroke-dasharray="35 65" stroke-dashoffset="60" transform="rotate(-90 18 18)" />
-                              <circle cx="18" cy="18" r="15.915" fill="transparent" stroke="#f59e0b" stroke-width="3.5"
-                                stroke-dasharray="25 75" stroke-dashoffset="25" transform="rotate(-90 18 18)" />
-                            </svg>
-                            <div class="flex flex-col gap-0.5 text-[8px] flex-1">
-                              <div class="flex items-center gap-1">
-                                <span class="w-1.5 h-1.5 rounded-sm bg-accent"></span>
-                                <span class="flex-1 text-text-dim">Trabalho</span>
-                                <span class="tabular-nums text-text-dim">2</span>
-                              </div>
-                              <div class="flex items-center gap-1">
-                                <span class="w-1.5 h-1.5 rounded-sm bg-emerald-500"></span>
-                                <span class="flex-1 text-text-dim">Faculdade</span>
-                                <span class="tabular-nums text-text-dim">1</span>
-                              </div>
-                              <div class="flex items-center gap-1">
-                                <span class="w-1.5 h-1.5 rounded-sm bg-amber-500"></span>
-                                <span class="flex-1 text-text-dim">Pessoal</span>
-                                <span class="tabular-nums text-text-dim">1</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+                    <div class="border-t border-border px-2 py-2 flex items-center gap-1.5">
+                      <div
+                        class="flex-1 bg-bg-input border border-border rounded px-2 py-1 text-[10px] text-text-subtle"
+                      >
+                        Escreve aqui...
+                      </div>
+                      <div
+                        class="w-7 h-7 rounded border border-border grid place-items-center text-text-dim"
+                      >
+                        <i class="fa-solid fa-microphone text-[9px]"></i>
+                      </div>
+                      <div
+                        class="w-7 h-7 rounded bg-accent grid place-items-center text-white"
+                      >
+                        <i class="fa-solid fa-paper-plane text-[9px]"></i>
                       </div>
                     </div>
                   </div>
@@ -608,7 +545,7 @@ import { BrandComponent } from '../../shared/brand.component';
             class="text-text-dim italic text-[14px] md:text-[15px] leading-relaxed max-w-xl"
             data-testid="landing-preview-quote"
           >
-            "Boa tarde, Pedro. 1 atrasada esperando você. Bora resolver."
+            "Anotado. Coloquei nas observações o que ainda precisa resolver."
           </p>
         </div>
       </section>
@@ -668,80 +605,10 @@ import { BrandComponent } from '../../shared/brand.component';
       </footer>
     </div>
   `,
-  styles: [
-    `
-      .theme-switch {
-        background: transparent;
-        border: 0;
-        padding: 0;
-        cursor: pointer;
-        line-height: 0;
-      }
-      .theme-switch-track {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        width: 56px;
-        height: 28px;
-        border-radius: 9999px;
-        background: rgb(var(--c-bg-elev));
-        border: 1px solid rgb(var(--c-border));
-        transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1),
-          border-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
-      }
-      .theme-switch:hover .theme-switch-track {
-        border-color: rgb(var(--c-border-strong));
-      }
-      .theme-switch-icon {
-        position: absolute;
-        font-size: 10px;
-        color: rgb(var(--c-text-subtle));
-        pointer-events: none;
-        transition: opacity 200ms ease;
-      }
-      .theme-switch-icon-moon {
-        left: 8px;
-      }
-      .theme-switch-icon-sun {
-        right: 8px;
-      }
-      .theme-switch.is-light .theme-switch-icon-sun {
-        opacity: 0;
-      }
-      .theme-switch:not(.is-light) .theme-switch-icon-moon {
-        opacity: 0;
-      }
-      .theme-switch-knob {
-        position: absolute;
-        top: 2px;
-        left: 2px;
-        width: 22px;
-        height: 22px;
-        border-radius: 9999px;
-        background: rgb(var(--c-accent));
-        color: #ffffff;
-        display: grid;
-        place-items: center;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
-        transition: transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1),
-          background-color 200ms ease;
-      }
-      .theme-switch.is-light .theme-switch-knob {
-        transform: translateX(28px);
-        background: #f59e0b;
-      }
-    `,
-  ],
 })
 export class LandingComponent {
   private readonly storage = inject(TokenStorage);
   private readonly auth = inject(AuthService);
-  private readonly themeService = inject(ThemeService);
-  readonly temaAtual = this.themeService.theme;
-
-  alternarTema(): void {
-    this.themeService.alternar();
-  }
 
   scrollY = signal(0);
   previewQuebrou = signal(false);
