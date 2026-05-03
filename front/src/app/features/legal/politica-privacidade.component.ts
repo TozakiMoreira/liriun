@@ -52,8 +52,8 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
             <li><strong class="text-text">CNPJ/CPF:</strong> [a definir]</li>
             <li><strong class="text-text">Endereço:</strong> [a definir]</li>
             <li><strong class="text-text">Encarregado (DPO):</strong> [a definir]</li>
-            <li><strong class="text-text">Contato do DPO:</strong> [a definir]</li>
-            <li><strong class="text-text">Canal de privacidade:</strong> [a definir]</li>
+            <li><strong class="text-text">Contato do DPO:</strong> <a href="mailto:contato@liriun.com" class="text-accent hover:underline">contato&#64;liriun.com</a></li>
+            <li><strong class="text-text">Canal de privacidade:</strong> <a href="mailto:contato@liriun.com" class="text-accent hover:underline">contato&#64;liriun.com</a></li>
           </ul>
           <p>
             Esta política descreve como coletamos, usamos, armazenamos, compartilhamos e protegemos seus
@@ -266,8 +266,9 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
               Atendimento em até 15 dias.
             </li>
             <li>
-              <strong>Por e-mail:</strong> [DPO]. Resposta em até <strong>15 dias</strong> corridos
-              (orientação ANPD).
+              <strong>Por e-mail:</strong>
+              <a href="mailto:contato@liriun.com" class="text-accent hover:underline">contato&#64;liriun.com</a>.
+              Resposta em até <strong>15 dias</strong> corridos (orientação ANPD).
             </li>
             <li>
               <strong>Denúncia à ANPD:</strong>
@@ -356,8 +357,10 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
         <section class="flex flex-col gap-3">
           <h2 class="text-xl font-semibold">14. Contato</h2>
           <p>
-            <strong>E-mail do DPO:</strong> [a definir]<br />
-            <strong>E-mail de privacidade:</strong> [a definir]<br />
+            <strong>E-mail do DPO:</strong>
+            <a href="mailto:contato@liriun.com" class="text-accent hover:underline">contato&#64;liriun.com</a><br />
+            <strong>E-mail de privacidade:</strong>
+            <a href="mailto:contato@liriun.com" class="text-accent hover:underline">contato&#64;liriun.com</a><br />
             <strong>Endereço:</strong> [a definir]
           </p>
         </section>

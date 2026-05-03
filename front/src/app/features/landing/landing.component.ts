@@ -192,7 +192,7 @@ import { SiteFooterComponent } from '../../shared/site-footer.component';
                 data-testid="landing-hero-cta-app"
               >
                 <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
-                Ir pro <app-brand />
+                <span>Ir pro <app-brand /></span>
               </a>
             }
           </div>
@@ -586,7 +586,7 @@ import { SiteFooterComponent } from '../../shared/site-footer.component';
               data-testid="landing-fim-cta-app"
             >
               <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
-              Ir pro <app-brand />
+              <span>Ir pro <app-brand /></span>
             </a>
           } @else {
             <a

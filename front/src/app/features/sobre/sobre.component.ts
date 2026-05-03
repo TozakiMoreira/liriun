@@ -301,7 +301,7 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
 
           <div class="grid sm:grid-cols-3 gap-3 mt-2">
             <a
-              href="mailto:oi@liriun.app"
+              href="mailto:suporte@liriun.com"
               class="card-elev p-5 flex flex-col gap-2 hover:border-accent transition-colors"
               data-testid="contato-card-suporte"
             >
@@ -315,12 +315,12 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
                 Algo quebrou? Conta acidentada? Senha embolou? Manda mensagem.
               </p>
               <span class="text-[12px] text-accent font-medium mt-1 break-all">
-                oi&#64;liriun.app
+                suporte&#64;liriun.com
               </span>
             </a>
 
             <a
-              href="mailto:ideias@liriun.app"
+              href="mailto:contato@liriun.com"
               class="card-elev p-5 flex flex-col gap-2 hover:border-accent transition-colors"
               data-testid="contato-card-ideias"
             >
@@ -334,12 +334,12 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
                 Sentiu falta de algo? Tem ideia que melhoraria seu dia? Conta a real.
               </p>
               <span class="text-[12px] text-accent font-medium mt-1 break-all">
-                ideias&#64;liriun.app
+                contato&#64;liriun.com
               </span>
             </a>
 
             <a
-              href="mailto:tomore@tomore.com.br"
+              href="mailto:contato@liriun.com"
               class="card-elev p-5 flex flex-col gap-2 hover:border-accent transition-colors"
               data-testid="contato-card-empresa"
             >
@@ -353,7 +353,7 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
                 É da imprensa, quer falar de parceria ou só conhecer a ToMore?
               </p>
               <span class="text-[12px] text-accent font-medium mt-1 break-all">
-                tomore&#64;tomore.com.br
+                contato&#64;liriun.com
               </span>
             </a>
           </div>
@@ -390,7 +390,7 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
               data-testid="sobre-cta-app"
             >
               <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
-              Ir pro <app-brand />
+              <span>Ir pro <app-brand /></span>
             </a>
           } @else {
             <div class="flex flex-col sm:flex-row gap-3">

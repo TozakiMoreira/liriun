@@ -73,7 +73,10 @@ builder.Services.AddCors(opt =>
     opt.AddPolicy(CorsFront, policy =>
     {
         policy
-            .WithOrigins("http://localhost:4200")
+            .WithOrigins(
+                "http://localhost:4200",
+                "https://liriun.com",
+                "https://www.liriun.com")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });

@@ -924,6 +924,17 @@ type Modo = 'manual' | 'liriun' | null;
         border: 1px solid rgba(16, 185, 129, 0.5);
         color: #6ee7b7;
       }
+      :host-context(.theme-light) .toast-sucesso {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.10), rgba(5, 150, 105, 0.06));
+        border-color: rgba(5, 150, 105, 0.55);
+        color: #047857;
+        box-shadow: 0 8px 20px -6px rgba(5, 150, 105, 0.25), 0 0 0 1px rgba(5, 150, 105, 0.18);
+      }
+      :host-context(.theme-light) .toast-sucesso-icone {
+        background: rgba(5, 150, 105, 0.12);
+        border-color: rgba(5, 150, 105, 0.55);
+        color: #047857;
+      }
       .shadow-glow-sm {
         box-shadow: 0 0 12px rgba(94, 106, 210, 0.18);
       }
