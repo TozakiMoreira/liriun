@@ -148,7 +148,7 @@ import { SiteFooterComponent } from '../../shared/site-footer.component';
             class="inline-flex items-center gap-2 text-[11px] font-medium tracking-wider uppercase text-text-dim border border-border-strong rounded-full px-3 py-1"
           >
             <span class="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span>
-            v0.1 Beta
+            V1
           </div>
 
           <h1

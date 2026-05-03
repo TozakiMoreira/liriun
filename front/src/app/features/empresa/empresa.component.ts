@@ -52,13 +52,13 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
           <h2 class="text-2xl md:text-3xl font-bold tracking-tight">Dois caras com a mesma briga.</h2>
 
           <div class="grid sm:grid-cols-2 gap-3 mt-2">
-            <div class="card-elev p-5 flex flex-col gap-2" data-testid="empresa-fundador-1">
-              <div class="flex items-center gap-3">
-                <div
-                  class="w-10 h-10 rounded-full bg-accent/15 text-accent grid place-items-center font-semibold"
-                >
-                  LM
-                </div>
+            <div class="card-elev p-5 flex flex-col gap-3" data-testid="empresa-fundador-1">
+              <div class="flex items-center gap-4">
+                <img
+                  src="/lucas.jpg"
+                  alt="Foto de Lucas Moreira"
+                  class="w-16 h-16 rounded-full object-cover border border-border-strong shrink-0"
+                />
                 <div class="flex flex-col">
                   <h3 class="text-[15px] font-semibold">Lucas Moreira</h3>
                   <span class="text-[11px] text-text-subtle">Co-fundador</span>
@@ -66,13 +66,13 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
               </div>
             </div>
 
-            <div class="card-elev p-5 flex flex-col gap-2" data-testid="empresa-fundador-2">
-              <div class="flex items-center gap-3">
-                <div
-                  class="w-10 h-10 rounded-full bg-accent/15 text-accent grid place-items-center font-semibold"
-                >
-                  PT
-                </div>
+            <div class="card-elev p-5 flex flex-col gap-3" data-testid="empresa-fundador-2">
+              <div class="flex items-center gap-4">
+                <img
+                  src="/pedro.jpeg"
+                  alt="Foto de Pedro Tozaki"
+                  class="w-16 h-16 rounded-full object-cover border border-border-strong shrink-0"
+                />
                 <div class="flex flex-col">
                   <h3 class="text-[15px] font-semibold">Pedro Tozaki</h3>
                   <span class="text-[11px] text-text-subtle">Co-fundador</span>

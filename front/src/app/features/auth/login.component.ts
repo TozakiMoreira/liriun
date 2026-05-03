@@ -115,7 +115,7 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
       <div
         class="text-center pb-6 text-text-subtle text-[11px] tracking-wider"
       >
-        LIRIUN • v0.1 BETA
+        LIRIUN • V1
       </div>
     </main>
   `,

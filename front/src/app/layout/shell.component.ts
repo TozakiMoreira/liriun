@@ -235,7 +235,7 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
             <div
               class="pt-3 text-[9.5px] text-text-subtle text-center tracking-wider uppercase font-medium"
             >
-              v1 · <app-brand />
+              V1 · <app-brand />
             </div>
           }
         </div>

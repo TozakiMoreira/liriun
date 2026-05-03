@@ -30,7 +30,7 @@ import { BrandComponent } from './brand.component';
               Feito pra você, que não tem 25h por dia.
             </p>
             <div class="text-[11px] text-text-subtle tracking-wider mt-1">
-              LIRIUN • v0.1 BETA
+              LIRIUN • V1
             </div>
           </div>
 

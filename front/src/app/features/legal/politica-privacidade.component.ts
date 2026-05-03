@@ -33,7 +33,7 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
       <article class="max-w-3xl mx-auto px-4 sm:px-8 py-10 md:py-14 flex flex-col gap-6 text-[14px] leading-relaxed">
         <div class="flex flex-col gap-1">
           <h1 class="text-3xl font-bold tracking-tight">Política de Privacidade</h1>
-          <p class="text-text-subtle text-xs">Última atualização: 03 de maio de 2026 — Versão 2.1</p>
+          <p class="text-text-subtle text-xs">Última atualização: 03 de maio de 2026 — V1</p>
         </div>
 
         <section class="card-elev p-4 border border-amber-500/30 bg-amber-500/5 text-[13px]">
