@@ -36,7 +36,7 @@ public static class ResultExtensions
 
         ProblemDetails problem = new()
         {
-            Type = $"https://jarvis-api/erros/{error.Code}",
+            Type = $"https://liriun-api/erros/{error.Code}",
             Title = error.Code,
             Status = statusCode,
             Detail = error.Message

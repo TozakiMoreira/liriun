@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { AfterViewInit, Component, OnInit, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
 import { Tarefa, TarefasService } from '../../core/api/tarefas.service';
 import { ConfirmModalComponent } from '../../shared/confirm-modal.component';
 import { extrairProblemDetails } from '../../shared/problem-details';
@@ -189,7 +189,7 @@ interface GrupoData {
     }
   `,
 })
-export class ConcluidasComponent implements OnInit, AfterViewInit {
+export class ConcluidasComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly pageHeader = inject(PageHeaderService);
   private readonly acoesTplRef = viewChild<TemplateRef<unknown>>('acoesTpl');
 
@@ -206,6 +206,10 @@ export class ConcluidasComponent implements OnInit, AfterViewInit {
       iconeClasse: 'fa-solid fa-circle-check text-emerald-500 text-[12px]',
       acoesTpl: this.acoesTplRef() ?? null,
     });
+  }
+
+  ngOnDestroy(): void {
+    this.pageHeader.limpar();
   }
 
   private readonly tarefasApi = inject(TarefasService);

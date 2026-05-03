@@ -26,9 +26,9 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
       >
         <div class="flex items-center gap-2">
           <img
-            src="/logocorreta.png"
+            src="/logo.png"
             alt="Liriun"
-            class="w-7 h-7 rounded-md object-contain shadow-logo"
+            class="w-9 h-9 object-contain"
             aria-hidden="true"
           />
           <div class="text-[13px] font-semibold tracking-tight"><app-brand /></div>
@@ -68,9 +68,9 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
               title="Visão geral"
             >
               <img
-                src="/logocorreta.png"
+                src="/logo.png"
                 alt="Liriun"
-                class="w-8 h-8 rounded-lg object-contain shadow-logo shrink-0"
+                class="w-10 h-10 object-contain shrink-0"
                 aria-hidden="true"
               />
               <div class="flex flex-col leading-tight">
@@ -101,12 +101,12 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
           </button>
           <a
             routerLink="/app/visao-geral"
-            class="w-8 h-8 rounded-lg shadow-logo shrink-0 mb-3 transition-transform hover:scale-105 overflow-hidden block"
+            class="w-10 h-10 shrink-0 mb-3 transition-transform hover:scale-105 block"
             data-testid="sidebar-logo"
             aria-label="Ir pra visão geral"
             title="Visão geral"
           >
-            <img src="/logocorreta.png" alt="Liriun" class="w-full h-full object-contain" />
+            <img src="/logo.png" alt="Liriun" class="w-full h-full object-contain" />
           </a>
         }
 

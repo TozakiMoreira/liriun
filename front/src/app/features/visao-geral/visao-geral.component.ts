@@ -618,6 +618,7 @@ export class VisaoGeralComponent implements OnInit, OnDestroy, AfterViewInit {
       window.clearInterval(this.agoraTimer);
       this.agoraTimer = null;
     }
+    this.pageHeader.limpar();
   }
 
   saudacao(): string {

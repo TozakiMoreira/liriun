@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Categoria, CategoriasService } from '../../core/api/categorias.service';
@@ -329,7 +329,7 @@ interface Confirmacao {
     }
   `,
 })
-export class ConfiguracoesComponent implements OnInit {
+export class ConfiguracoesComponent implements OnInit, OnDestroy {
   private readonly catsApi = inject(CategoriasService);
   private readonly auth = inject(AuthService);
   private readonly storage = inject(TokenStorage);
@@ -340,6 +340,10 @@ export class ConfiguracoesComponent implements OnInit {
       titulo: 'Configurações',
       iconeClasse: 'fa-solid fa-gear text-accent text-[12px]',
     });
+  }
+
+  ngOnDestroy(): void {
+    this.pageHeader.limpar();
   }
 
   readonly usuario = this.storage.usuario;

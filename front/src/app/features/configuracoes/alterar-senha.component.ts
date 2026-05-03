@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { AfterViewInit, Component, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
@@ -180,7 +180,7 @@ import { PageHeaderService } from '../../core/layout/page-header.service';
     </div>
   `,
 })
-export class AlterarSenhaComponent implements AfterViewInit {
+export class AlterarSenhaComponent implements AfterViewInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly storage = inject(TokenStorage);
@@ -208,6 +208,10 @@ export class AlterarSenhaComponent implements AfterViewInit {
         testid: 'alterar-senha-voltar-topbar',
       },
     });
+  }
+
+  ngOnDestroy(): void {
+    this.pageHeader.limpar();
   }
 
   readonly senhaAtual = signal('');

@@ -208,9 +208,9 @@ type Modo = 'manual' | 'liriun' | null;
           @if (!chatAtivo()) {
             <div class="text-center flex flex-col items-center gap-3 fade-down">
               <img
-                src="/logocorreta.png"
+                src="/logo.png"
                 alt="Liriun"
-                class="w-14 h-14 rounded-2xl object-contain shadow-glow shrink-0"
+                class="w-20 h-20 object-contain shrink-0"
                 aria-hidden="true"
               />
               <h1
@@ -239,8 +239,8 @@ type Modo = 'manual' | 'liriun' | null;
               >
                 <div class="flex items-center gap-2">
                   <img
-                    class="w-7 h-7 rounded-md object-contain shadow-glow-sm"
-                    src="/logocorreta.png"
+                    class="w-9 h-9 object-contain"
+                    src="/logo.png"
                     alt="Liriun"
                     aria-hidden="true"
                   />
@@ -291,8 +291,8 @@ type Modo = 'manual' | 'liriun' | null;
                   @if (m.papel === 'jarvis') {
                     <div class="flex items-start gap-2 max-w-[88%] msg-in">
                       <img
-                        class="w-7 h-7 rounded-md object-contain shrink-0 mt-0.5 shadow-glow-sm"
-                        src="/logocorreta.png"
+                        class="w-9 h-9 object-contain shrink-0 mt-0.5"
+                        src="/logo.png"
                         alt="Liriun"
                         aria-hidden="true"
                       />
@@ -316,8 +316,8 @@ type Modo = 'manual' | 'liriun' | null;
                 @if (analisando()) {
                   <div class="flex items-start gap-2 max-w-[85%] msg-in">
                     <img
-                      class="w-7 h-7 rounded-md object-contain shrink-0 mt-0.5 shadow-glow-sm"
-                      src="/logocorreta.png"
+                      class="w-9 h-9 object-contain shrink-0 mt-0.5"
+                      src="/logo.png"
                       alt="Liriun"
                       aria-hidden="true"
                     />
@@ -334,8 +334,8 @@ type Modo = 'manual' | 'liriun' | null;
                 @if (sugestao(); as s) {
                   <div class="flex items-start gap-2 max-w-[95%] msg-in" data-testid="chat-sugestao">
                     <img
-                      class="w-7 h-7 rounded-md object-contain shrink-0 mt-0.5 shadow-glow-sm"
-                      src="/logocorreta.png"
+                      class="w-9 h-9 object-contain shrink-0 mt-0.5"
+                      src="/logo.png"
                       alt="Liriun"
                       aria-hidden="true"
                     />

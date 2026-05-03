@@ -1037,6 +1037,7 @@ export class TarefasComponent implements OnInit, AfterViewInit, OnDestroy {
       clearTimeout(this.toastTimer);
       this.toastTimer = null;
     }
+    this.pageHeader.limpar();
   }
 
   carregar(): void {

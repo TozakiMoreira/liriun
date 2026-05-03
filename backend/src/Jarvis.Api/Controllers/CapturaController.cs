@@ -102,7 +102,7 @@ public class CapturaController : ControllerBase
 
     private static ProblemDetails ProblemaSimples(string code, string detail) => new()
     {
-        Type = $"https://jarvis-api/erros/{code}",
+        Type = $"https://liriun-api/erros/{code}",
         Title = code,
         Status = StatusCodes.Status400BadRequest,
         Detail = detail,

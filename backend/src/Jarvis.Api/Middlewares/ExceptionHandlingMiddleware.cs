@@ -26,7 +26,7 @@ public class ExceptionHandlingMiddleware
 
             ProblemDetails problem = new()
             {
-                Type = "https://jarvis-api/erros/interno",
+                Type = "https://liriun-api/erros/interno",
                 Title = "Erro interno",
                 Status = StatusCodes.Status500InternalServerError,
                 Detail = "Erro inesperado. Tente novamente."

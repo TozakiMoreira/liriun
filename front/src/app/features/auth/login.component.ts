@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { BrandLogoComponent } from '../../shared/brand-logo.component';
 import { PasswordInputComponent } from '../../shared/password-input.component';
+import { extrairProblemDetails } from '../../shared/problem-details';
 import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
 
 @Component({
@@ -161,36 +162,14 @@ export class LoginComponent {
   }
 
   private aplicarErroBackend(err: HttpErrorResponse): void {
-    const body = err?.error;
-
-    if (body?.errors && typeof body.errors === 'object') {
-      const errosNormalizados: Record<string, string> = {};
-      for (const [chave, mensagens] of Object.entries(body.errors)) {
-        const campo = chave.toLowerCase();
-        const msgs = Array.isArray(mensagens) ? mensagens : [String(mensagens)];
-        if (msgs[0]) errosNormalizados[campo] = msgs[0];
-      }
-      if (Object.keys(errosNormalizados).length > 0) {
-        this.errosCampo.set(errosNormalizados);
-        return;
-      }
+    const fallback = err.status === 401 || err.status === 400
+      ? 'Email ou senha incorretos.'
+      : 'Não consegui entrar. Tenta de novo.';
+    const r = extrairProblemDetails(err, fallback);
+    if (Object.keys(r.errosCampo).length > 0) {
+      this.errosCampo.set(r.errosCampo);
+    } else {
+      this.erroGeral.set(r.mensagemGeral ?? fallback);
     }
-
-    if (err.status === 401 || err.status === 400) {
-      this.erroGeral.set(body?.detail ?? 'Email ou senha incorretos.');
-      return;
-    }
-
-    if (body?.detail) {
-      this.erroGeral.set(body.detail);
-      return;
-    }
-
-    if (err.status === 0) {
-      this.erroGeral.set('Sem conexão com o servidor. Tenta de novo em instantes.');
-      return;
-    }
-
-    this.erroGeral.set('Não consegui entrar. Tenta de novo.');
   }
 }

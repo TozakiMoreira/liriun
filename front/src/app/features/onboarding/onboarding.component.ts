@@ -22,7 +22,7 @@ const CATEGORIAS_PADRAO = ['Trabalho', 'Faculdade', 'Casa', 'Compras', 'Pessoal'
       <div class="max-w-[560px] mx-auto flex flex-col gap-8">
         <div class="flex items-center gap-2.5">
           <img
-            src="/logocorreta.png"
+            src="/logo.png"
             alt="Liriun"
             class="w-7 h-7 rounded-[7px] object-contain"
           />
