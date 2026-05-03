@@ -14,13 +14,15 @@ Guia executável passo a passo pra subir o Liriun em produção. Marque `[x]` co
 |---|---|---|
 | DNS | Cloudflare | Grátis |
 | Frontend | Cloudflare Pages | Grátis |
-| Backend | Fly.io (Docker) | Grátis (free tier) |
+| Backend | **Render Free (Docker)** | Grátis (cold start 30-60s após 15min idle) |
 | Banco | Supabase Postgres | Grátis |
 | IA | Google Gemini | Grátis (free tier) |
 | Email caixas | Zoho Mail Free | Grátis (5 contas, 5GB cada) |
 | Email transacional | Resend | Grátis (3k/mês) — só V2 |
-| CI/CD | GitHub Actions | Grátis (2000 min/mês) |
+| CI/CD | GitHub push (auto-deploy Render + Pages) | Grátis |
 | **Total V1** | | **R$ 0/mês** |
+
+> **Por que Render e não Fly?** Avaliei Fly ($4/mo), Railway ($5/mo), Oracle Free, Render Free. Pedro escolheu Render Free pelo custo zero. Trade-off aceito: cold start 30-60s na primeira req depois de 15min idle. Pra V1 com 2-3 testers, tolerável. Se virar produto sério, migrar pra Fly/Railway é trivial (Docker padrão, sem lock-in).
 
 ### Endereços de email
 
@@ -34,7 +36,7 @@ Todos forwardam (ou inbox real via Zoho) pro Gmail pessoal: **[a definir]**.
 ### Subdomínios
 
 - `liriun.com` + `www.liriun.com` → frontend (Cloudflare Pages)
-- `api.liriun.com` → backend (Fly.io)
+- `api.liriun.com` → backend (Render — `liriun-api.onrender.com`)
 
 ---
 
@@ -139,92 +141,72 @@ Stack escolhida cobre 0 → 100k+ users sem trocar fornecedor. Vendor lock-in m�
 
 **Concluído 2026-05-03**
 
-### Fase 3 — GitHub: preparar repo pra deploy
+### Fase 3 — Preparar repo pra deploy ✅
 
-- [ ] Confirmar que branch principal é `main`
-- [ ] Confirmar que `.env.local` está no `.gitignore` e não foi commitado
-- [ ] **Resetar senha Supabase** (Settings → Database → Reset password) — senha atual vazou em chat. Anotar nova senha.
-- [ ] **Gerar novo `Jwt:Secret`** forte:
+- [x] Branch principal é `main`
+- [x] `.env.local` no `.gitignore` (regra `.env.*`) — confirmado não commitado
+- [x] **Resetar senha Supabase** (Settings → Database → Reset password) — Pedro fez no painel
+- [x] **Gerar novo `Jwt:Secret`** forte (PowerShell):
   ```powershell
-  [Convert]::ToBase64String((1..64 | ForEach-Object { Get-Random -Maximum 256 }))
+  [Convert]::ToBase64String((1..64 | ForEach-Object { Get-Random -Maximum 256 } | ForEach-Object { [byte]$_ }))
   ```
-- [ ] Anotar novos secrets em gerenciador de senhas (vão pro Fly.io na Fase 4)
+- [x] Secrets guardados em gerenciador (Pedro)
+- [x] `Dockerfile` criado em `backend/` (multi-stage, .NET 10 SDK + ASP.NET runtime, porta 8080 por default — Render sobrescreve via env var pra 10000)
+- [x] `.dockerignore` criado em `backend/`
+- [x] `Program.cs` (Liriun.Api) — CORS atualizado pra aceitar `liriun.com` + `www.liriun.com`
+- [x] `front/src/environments/environment.prod.ts` apontando pra `https://api.liriun.com`
 
-### Fase 4 — Backend Fly.io
+**Concluído 2026-05-03**
 
-- [ ] Criar conta Fly.io em https://fly.io/app/sign-up usando admin@liriun.com
-- [ ] Adicionar cartão de crédito (obrigatório mesmo no free tier — proteção anti-abuso, não cobra se ficar dentro do limite)
-- [ ] Instalar flyctl no Windows:
-  ```powershell
-  iwr https://fly.io/install.ps1 -useb | iex
-  ```
-- [ ] Login: `fly auth login` (abre browser)
-- [ ] Criar `Dockerfile` em `backend/`:
-  ```dockerfile
-  FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
-  WORKDIR /src
-  COPY backend/ .
-  RUN dotnet restore
-  RUN dotnet publish src/Jarvis.Api/Jarvis.Api.csproj -c Release -o /app
+### Fase 4 — Backend Render Free ✅
 
-  FROM mcr.microsoft.com/dotnet/aspnet:10.0
-  WORKDIR /app
-  COPY --from=build /app .
-  ENV ASPNETCORE_URLS=http://+:8080
-  EXPOSE 8080
-  ENTRYPOINT ["dotnet", "Jarvis.Api.dll"]
-  ```
-- [ ] Criar `.dockerignore` em `backend/`:
-  ```
-  **/bin
-  **/obj
-  **/*.user
-  ```
-- [ ] Em `backend/`, rodar `fly launch`:
-  - App name: `liriun-api` (gera URL `liriun-api.fly.dev`)
-  - Region: `gru` (São Paulo) — menor latência pro Brasil
-  - Postgres: **No** (usamos Supabase)
-  - Redis: No
-  - Deploy now: No (precisa setar secrets primeiro)
-- [ ] Setar secrets no Fly:
-  ```powershell
-  fly secrets set ConnectionStrings__Jarvis="Host=db.lmprlnumgculcdbvktmv.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=NOVA_SENHA;SSL Mode=Require;Trust Server Certificate=true"
-  fly secrets set Jwt__Secret="NOVO_SECRET_GERADO"
-  fly secrets set Gemini__ApiKey="AIzaSy..."
-  fly secrets set ASPNETCORE_ENVIRONMENT="Production"
-  ```
-- [ ] Atualizar CORS no `Program.cs` pra aceitar produção (ver Fase 6)
-- [ ] Deploy: `fly deploy`
-- [ ] Verificar logs: `fly logs`
-- [ ] Testar: `curl https://liriun-api.fly.dev/swagger` (deve responder 404 em prod sem swagger, OK)
-- [ ] Testar endpoint público: `curl -X POST https://liriun-api.fly.dev/auth/login -H "Content-Type: application/json" -d "{\"email\":\"x\",\"senha\":\"y\"}"` — deve retornar 401/400, não 500
+> Trade-off Render Free: cold start 30-60s após 15min idle. Tolerável pra V1. Migrar pra Fly $4/mo se UX virar problema.
 
-### Fase 5 — Custom domain api.liriun.com
-
-- [ ] No Cloudflare DNS, add record:
+- [x] Criar conta Render em https://render.com com email pessoal
+- [x] Connect GitHub → Install Render App na Org `Jarvis-by-ToMore` (selected repo: `Liriun`)
+- [x] New → **Web Service** → escolher repo `Liriun`
+- [x] Configurar service:
+  - Name: `liriun-api`
+  - Language: `Docker`
+  - Branch: `main`
+  - Region: `Virginia (US East)` — mais perto do Brasil que Oregon
+  - Root Directory: `backend`
+  - Dockerfile Path: `.` (relativo ao Root Directory = `backend/Dockerfile`)
+  - Instance Type: **Free** ($0/mês, 512MB RAM, 0.1 CPU)
+- [x] Environment Variables:
   ```
-  Type: CNAME | Name: api | Target: liriun-api.fly.dev | Proxy: DNS only (cinza)
+  ConnectionStrings__Liriun  = Host=db.lmprlnumgculcdbvktmv.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=NOVA;SSL Mode=Require;Trust Server Certificate=true
+  Jwt__Secret                = (gerado novo)
+  Gemini__ApiKey             = AIzaSy...
+  ASPNETCORE_ENVIRONMENT     = Production
+  ASPNETCORE_URLS            = http://+:10000
   ```
-  > **Importante:** Proxy DESLIGADO (cinza). Fly emite cert SSL próprio via Let's Encrypt — Cloudflare proxy quebraria.
-- [ ] No Fly: `fly certs add api.liriun.com`
-- [ ] Aguardar Fly gerar cert (~2-5min). Verificar: `fly certs show api.liriun.com`
-- [ ] Testar: `curl https://api.liriun.com` — deve responder
+  > Notação `.NET` no Render usa `__` (duplo underscore) no lugar de `:`. `ASPNETCORE_URLS=http://+:10000` é crítico — Render espera porta 10000.
+- [x] Auto-Deploy: `On Commit` (push na main = build + deploy auto, ~5-10min)
+- [x] Deploy Web Service → primeira build OK
+- [x] Verificar `https://liriun-api.onrender.com` está Live
+- [x] Teste: `https://liriun-api.onrender.com/categorias` → HTTP 401 (correto, exige JWT)
 
-### Fase 6 — Atualizar CORS no backend
+**Concluído 2026-05-03**
 
-- [ ] Editar `backend/src/Jarvis.Api/Program.cs`:
-  ```csharp
-  policy
-      .WithOrigins(
-          "http://localhost:4200",
-          "https://liriun.com",
-          "https://www.liriun.com"
-      )
-      .AllowAnyHeader()
-      .AllowAnyMethod();
+### Fase 5 — Custom domain api.liriun.com ✅
+
+- [x] Render dashboard → Settings → **Custom Domains** → Add → `api.liriun.com`
+- [x] Render mostra valor CNAME pra adicionar no DNS
+- [x] Cloudflare DNS → Add record:
   ```
-- [ ] Commit + push
-- [ ] `fly deploy` novamente
+  Type: CNAME | Name: api | Target: liriun-api.onrender.com | Proxy: DNS only (cinza)
+  ```
+  > **Crítico:** Proxy DESLIGADO (cinza). Render emite cert SSL próprio via Let's Encrypt — Cloudflare proxy quebraria com erro 1000 ("DNS points to prohibited IP").
+- [x] Render → Verify (instantâneo após DNS propagar ~30s)
+- [x] Aguardar Certificate Status virar Active (~1-5min Let's Encrypt)
+- [x] Teste: `https://api.liriun.com/categorias` → HTTP 401 (correto)
+
+**Concluído 2026-05-03**
+
+### Fase 6 — CORS já configurado ✅
+
+CORS pra `liriun.com` + `www.liriun.com` já incluído no `Program.cs` desde Fase 3 — sem ação extra necessária.
 
 ### Fase 7 — Frontend Cloudflare Pages
 
@@ -257,51 +239,26 @@ Stack escolhida cobre 0 → 100k+ users sem trocar fornecedor. Vendor lock-in m�
 - [ ] Acessar https://liriun.com — deve abrir landing
 - [ ] Testar fluxo completo: cadastro → onboarding → criar tarefa → listar
 
-### Fase 9 — CI/CD (GitHub Actions)
+### Fase 9 — CI/CD (já ativo, sem GitHub Actions)
 
-> Setup uma vez, push automatiza deploy do back. Front já é automático via Cloudflare Pages.
+Render auto-deploy `On Commit` + Cloudflare Pages auto-deploy = push na `main` dispara build+deploy automático em ambos. **Zero configuração extra.**
 
-- [ ] Gerar Fly API token: `fly auth token` → copiar
-- [ ] No GitHub repo → Settings → Secrets and variables → Actions → New repository secret:
-  - Name: `FLY_API_TOKEN`
-  - Value: token copiado
-- [ ] Criar `.github/workflows/deploy-backend.yml`:
-  ```yaml
-  name: Deploy Backend
+Workflow opcional pra rodar testes antes (não bloqueia deploy hoje):
 
-  on:
-    push:
-      branches: [main]
-      paths:
-        - 'backend/**'
-        - '.github/workflows/deploy-backend.yml'
-
-  jobs:
-    deploy:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
-        - uses: superfly/flyctl-actions/setup-flyctl@master
-        - run: flyctl deploy --remote-only
-          working-directory: backend
-          env:
-            FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-  ```
-- [ ] Opcional: workflow de testes antes do deploy:
-  ```yaml
-  name: Test Backend
-  on: [push, pull_request]
-  jobs:
-    test:
-      runs-on: ubuntu-latest
-      steps:
-        - uses: actions/checkout@v4
-        - uses: actions/setup-dotnet@v4
-          with:
-            dotnet-version: '10.0.x'
-        - run: dotnet test backend
-  ```
-- [ ] Commit + push → confirmar que workflow roda no Actions tab do GitHub
+```yaml
+# .github/workflows/test-backend.yml
+name: Test Backend
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - run: dotnet test backend
+```
 
 ### Fase 10 — Smoke test produção
 
@@ -317,7 +274,7 @@ Stack escolhida cobre 0 → 100k+ users sem trocar fornecedor. Vendor lock-in m�
 - [ ] Editar perfil + foto
 - [ ] Alterar senha
 - [ ] Logout + login
-- [ ] Verificar logs Fly: `fly logs` — sem erros
+- [ ] Verificar logs Render: dashboard → Logs — sem erros
 - [ ] Verificar Cloudflare Analytics: requests chegando
 - [ ] Verificar Supabase: dados sendo gravados
 
@@ -326,10 +283,11 @@ Stack escolhida cobre 0 → 100k+ users sem trocar fornecedor. Vendor lock-in m�
 ## Pós-deploy — checklist segurança
 
 - [ ] Confirmar `.env.local` NUNCA commitado
-- [ ] Confirmar secrets do Fly setados via `fly secrets`, não em arquivo
+- [ ] Confirmar secrets do Render setados via Environment Variables no painel, não em arquivo
 - [ ] Confirmar Cloudflare Pages env vars (se houver) setadas no painel, não em código
-- [ ] Habilitar 2FA em todas as contas: Cloudflare, Fly.io, GitHub, Zoho, Supabase, Google
+- [ ] Habilitar 2FA em todas as contas: Cloudflare, Render, GitHub, Zoho, Supabase, Google
 - [ ] Documentar credenciais em gerenciador de senhas compartilhado (Pedro + Lucas)
+- [ ] (Opcional) UptimeRobot pingando `https://api.liriun.com/categorias` a cada 5min pra evitar cold start Render Free
 
 ## Backlog pós-V1
 
