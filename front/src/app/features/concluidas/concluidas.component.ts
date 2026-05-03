@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, OnInit, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
 import { Tarefa, TarefasService } from '../../core/api/tarefas.service';
 import { ConfirmModalComponent } from '../../shared/confirm-modal.component';
 import { extrairProblemDetails } from '../../shared/problem-details';
 import { TarefaDetalheModalComponent } from '../tarefas/tarefa-detalhe-modal.component';
+import { PageHeaderService } from '../../core/layout/page-header.service';
 
 interface Confirmacao {
   titulo: string;
@@ -26,7 +27,7 @@ interface GrupoData {
   standalone: true,
   imports: [CommonModule, TarefaDetalheModalComponent, ConfirmModalComponent],
   template: `
-    <header class="flex flex-col sm:flex-row sm:items-center px-4 md:px-8 py-3.5 border-b border-border gap-3 sm:gap-4">
+    <header class="md:hidden flex flex-col sm:flex-row sm:items-center px-4 py-3.5 border-b border-border gap-3 sm:gap-4">
       <div class="flex items-center gap-2 text-[15px] text-text-dim">
         <i class="fa-solid fa-circle-check text-emerald-500 text-[12px]"></i>
         <strong class="text-text font-medium">Concluídas</strong>
@@ -38,7 +39,13 @@ interface GrupoData {
         </span>
       </div>
 
-      <div class="sm:ml-auto flex items-center gap-1 bg-bg-elev border border-border rounded p-0.5 self-start sm:self-auto" data-testid="period-switcher">
+      <div class="sm:ml-auto self-start sm:self-auto">
+        <ng-container *ngTemplateOutlet="acoesTpl"></ng-container>
+      </div>
+    </header>
+
+    <ng-template #acoesTpl>
+      <div class="flex items-center gap-1 bg-bg-elev border border-border rounded p-0.5" data-testid="period-switcher">
         <button
           type="button"
           class="px-3 py-1 text-xs rounded transition-colors"
@@ -67,7 +74,7 @@ interface GrupoData {
           Mês
         </button>
       </div>
-    </header>
+    </ng-template>
 
     <div class="flex-1 px-4 md:px-8 py-6 overflow-auto" data-testid="concluidas-page">
       @if (erroReabrir()) {
@@ -182,7 +189,25 @@ interface GrupoData {
     }
   `,
 })
-export class ConcluidasComponent implements OnInit {
+export class ConcluidasComponent implements OnInit, AfterViewInit {
+  private readonly pageHeader = inject(PageHeaderService);
+  private readonly acoesTplRef = viewChild<TemplateRef<unknown>>('acoesTpl');
+
+  constructor() {
+    this.pageHeader.set({
+      titulo: 'Concluídas',
+      iconeClasse: 'fa-solid fa-circle-check text-emerald-500 text-[12px]',
+    });
+  }
+
+  ngAfterViewInit(): void {
+    this.pageHeader.set({
+      titulo: 'Concluídas',
+      iconeClasse: 'fa-solid fa-circle-check text-emerald-500 text-[12px]',
+      acoesTpl: this.acoesTplRef() ?? null,
+    });
+  }
+
   private readonly tarefasApi = inject(TarefasService);
 
   readonly periodo = signal<Periodo>('semana');

@@ -132,8 +132,6 @@ Motivacao: economizar tokens. Modo interativo gasta 2-4 turnos antes de fechar a
 - `docs/DESENVOLVIMENTO.md` - Plano de desenvolvimento em fases com checklist
 - `backend/ARCHITECTURE.md` - Arquitetura do backend (Clean Architecture, Result<T>, ProblemDetails, FluentValidation, Read/Write repos)
 - `docs/FUTURO.md` - Visão de longo prazo / ideias futuras
-- `docs/SEMANA.md` - Planejamento da semana corrente
-- `docs/fluxos/` - Diagramas e fluxos de uso
-- `docs/mocks/` - Protótipos e mocks de UI
-- `docs/reuniões/` - Atas e notas de reunião
+- `docs/CHECKLIST_PRODUCAO.md` - Itens a varrer antes de abrir cadastro público
+- `docs/banco/MIGRATIONS.md` - Tutorial de comandos `dotnet ef` pra migrations
 - `CLAUDE.md` - Este arquivo, contexto resumido pra Claude (fica na raiz pro Claude Code carregar automaticamente)

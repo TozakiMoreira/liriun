@@ -4,39 +4,39 @@ Documento de acompanhamento do desenvolvimento do Jarvis, do zero até estar pub
 
 ---
 
-## Fase 0 — Descoberta e definição (estamos aqui)
+## Fase 0 — Descoberta e definição
 
-- [ ] Entrevista estruturada (ENTREVISTA.md) — propósito, público, dor, casos de uso
-- [ ] Personas (mesmo sendo single-user, formalizar 1 persona)
-- [ ] Escopo positivo da V1 (tudo que o app FARÁ)
-- [ ] Escopo negativo da V1 (tudo que o app NÃO FARÁ — fica pra V2)
-- [ ] Critérios de "pronto" (Definition of Done da V1)
-- [ ] Métricas de sucesso pessoais (como saber se o Jarvis cumpriu o papel)
-- [ ] Riscos técnicos conhecidos (rate limits, cold starts, free tier, etc)
-- [ ] Glossário de termos do projeto
+- [x] Entrevista estruturada (ENTREVISTA.md) — propósito, público, dor, casos de uso
+- [x] Personas (mesmo sendo single-user, formalizar 1 persona)
+- [x] Escopo positivo da V1 (tudo que o app FARÁ)
+- [x] Escopo negativo da V1 (tudo que o app NÃO FARÁ — fica pra V2)
+- [x] Critérios de "pronto" (Definition of Done da V1)
+- [x] Métricas de sucesso pessoais (como saber se o Jarvis cumpriu o papel)
+- [x] Riscos técnicos conhecidos (rate limits, cold starts, free tier, etc)
+- [x] Glossário de termos do projeto
 - [ ] **Estratégia de internacionalização (i18n)** — decidir agora como estruturar traduções, mesmo que a V1 saia só em pt-BR. Visão de longo prazo: Jarvis publicado globalmente com **suporte a 5+ línguas até o fim de 2026**. Definir: formato dos arquivos de tradução (JSON, XLIFF, PO), fallback de idioma, detecção automática, chave de tradução (camelCase vs dot.notation), handling do tom do Jarvis em outros idiomas
 
 ## Fase 1 — Design e arquitetura
 
-- [ ] Fluxograma completo de navegação (todas as telas e transições)
-- [ ] Fluxograma dos fluxos principais (criação de anotação com IA, fallback manual, etc)
-- [ ] Mockups das telas da V1 (estilo Linear — clean e profissional)
-- [ ] Revisão e aprovação dos mockups
-- [ ] Modelagem do banco de dados (ER das entidades: User, Note, Category, Tag, NoteTag)
-- [ ] Definição dos contratos de API (endpoints, DTOs de request/response)
-- [ ] Arquitetura do backend (Clean Architecture — camadas definidas)
-- [ ] Arquitetura do frontend (estrutura de pastas, state management com Signals)
-- [ ] Estratégia de autenticação (fluxo JWT, expiração, refresh se houver)
+- [x] Fluxograma completo de navegação (todas as telas e transições)
+- [x] Fluxograma dos fluxos principais (criação de anotação com IA, fallback manual, etc)
+- [x] Mockups das telas da V1 (estilo Linear — clean e profissional)
+- [x] Revisão e aprovação dos mockups
+- [x] Modelagem do banco de dados (ER das entidades: Usuario, Tarefa, Categoria, TarefaCategoria — Tag e Prazo unificados/removidos)
+- [x] Definição dos contratos de API (endpoints, DTOs de request/response)
+- [x] Arquitetura do backend (Clean Architecture — camadas definidas em `backend/ARCHITECTURE.md`)
+- [x] Arquitetura do frontend (estrutura de pastas, state management com Signals)
+- [x] Estratégia de autenticação (fluxo JWT, expiração, refresh se houver)
 - [ ] Arquitetura de i18n no código — nenhuma string hardcoded em pt-BR no código. Todas passam por chave de tradução desde o primeiro componente/endpoint da V1
 
 ## Fase 2 — Setup de ambiente
 
 - [x] Criar repositório Git
 - [x] Configurar projeto Supabase (banco PostgreSQL)
-- [ ] Obter chave da Google Gemini API
+- [x] Obter chave da Google Gemini API
 - [x] Criar projeto .NET 10 Web API com Clean Architecture
-- [ ] Criar projeto Angular 17+ com standalone components
-- [ ] Configurar PrimeNG + TailwindCSS no front
+- [x] Criar projeto Angular 17+ com standalone components
+- [x] Configurar PrimeNG + TailwindCSS no front
 - [ ] Configurar ESLint/Prettier (front) e analyzers (back)
 - [x] Configurar variáveis de ambiente (user-secrets pra dev)
 - [x] README inicial com instruções de setup local
@@ -45,45 +45,50 @@ Documento de acompanhamento do desenvolvimento do Jarvis, do zero até estar pub
 
 - [x] Migrations/schema inicial do banco (tabelas das entidades)
 - [x] Camada de Domain (entidades, enums de prioridade/status)
-- [~] Camada de Application (use cases, interfaces) — Auth + Categorias + Prazos + Tarefas prontos; falta IA (adiada)
-- [~] Camada de Infrastructure (repositories, EF Core) — repos e auth prontos; falta cliente Gemini (adiado)
-- [x] Camada de API (controllers, middleware, validação) — Auth/Categorias/Prazos/Tarefas + middleware prontos
+- [x] Camada de Application (use cases, interfaces) — Auth + Categorias + Tarefas + IA prontos
+- [x] Camada de Infrastructure (repositories, EF Core) — repos, auth e `GeminiService` prontos
+- [x] Camada de API (controllers, middleware, validação) — Auth/Categorias/Tarefas/Captura + middleware prontos
 - [ ] Setup de `IStringLocalizer` (ASP.NET) com resource files — mensagens de erro, validação e respostas do Jarvis via chave de tradução (V1 preenche só pt-BR)
-- [x] Endpoints de autenticação (cadastro + login + JWT)
+- [x] Endpoints de autenticação (cadastro + login + JWT + alterar senha + atualizar perfil + atualizar foto)
 - [x] CRUD de categorias
-- [x] CRUD de prazos
-- [x] CRUD de tarefas (com relação N:N com categorias)
-- [ ] Endpoint de análise pela IA (recebe texto, retorna sugestões) — **adiado, V1 manual primeiro**
-- [x] Endpoint de conclusão de tarefas
+- [x] CRUD de tarefas (com relação N:N com categorias) + concluir + reabrir
+- [x] Endpoint de análise pela IA — `POST /captura/conversar` (texto) e `POST /captura/conversar-audio` (multipart)
+- [x] Modos one-shot e interativo do Gemini (`GeminiOptions.ModoInterativo`)
+- [x] Endpoint de conclusão e reabertura de tarefas
 - [x] Filtros no listagem (pendentes, concluídas por período)
-- [x] Tratamento de erros global (ExceptionHandlingMiddleware)
-- [ ] Logs estruturados (Serilog)
+- [x] Tratamento de erros global (ExceptionHandlingMiddleware + ProblemDetails RFC 7807)
+- [ ] Logs estruturados (Serilog) — hoje só `ILogger<T>` padrão do ASP.NET
+- [ ] Health check endpoint (`GET /health`) com verificação de DB
 
 ## Fase 4 — Frontend
 
 - [ ] Configurar `@angular/localize` e estrutura de arquivos de tradução (XLIFF ou JSON) desde o primeiro commit — todas as strings do frontend via chave, V1 preenche só pt-BR
-- [ ] Layout base e shell da aplicação (estilo Linear)
-- [ ] Sistema de rotas com guards de autenticação
-- [ ] Serviços de API (interceptor de JWT, tratamento de erro)
-- [ ] Tela de Login
-- [ ] Tela de Configurações (gerenciar categorias e tags)
-- [ ] Tela de Captura Rápida (input principal + fluxo IA + revisão)
-- [ ] Tela de Dashboard (anotações pendentes com filtros)
-- [ ] Tela de Concluídas (filtros por dia/semana/mês)
-- [ ] Componentes reutilizáveis (cards, chips, inputs, botões)
-- [ ] Tom de voz do Jarvis (mensagens em primeira pessoa)
-- [ ] Responsividade desktop + mobile (navegador)
-- [ ] **Adicionar `data-testid` (IDs de QA) em todos os elementos interativos e estados visíveis** — necessários pros testes automatizados da Fase 5
+- [x] Layout base e shell da aplicação (sidebar colapsável + topbar + bottom nav mobile)
+- [x] Sistema de rotas com guards de autenticação (`authGuard` + `guestGuard`, `/app/*` protegido)
+- [x] Serviços de API (interceptor de JWT, tratamento de erro, parser ProblemDetails)
+- [x] Tela de Login + Cadastro
+- [x] Tela de Onboarding (bloqueante, templates de categorias)
+- [x] Tela de Configurações (perfil + foto + alterar senha + categorias)
+- [x] Tela de Captura Rápida (modo Manual + modo Jarvis com chat conversacional + áudio + áudio com gravação)
+- [x] Tela de Minhas Tarefas (3 views: Lista, Kanban, Semana — filtros por categoria/prioridade/período/atraso)
+- [x] Tela de Concluídas (filtros por dia/semana/mês + reabrir)
+- [x] Tela de Visão Geral (dashboard com saudação, resumo, gráficos por categoria/prioridade, timeline)
+- [x] Landing pública (`/` com hero, CTA login/cadastro)
+- [x] Componentes reutilizáveis (avatar, brand, brand-logo, confirm-modal, foto-perfil-modal, password-input, password-requirements, date-picker, time-picker, theme-toggle)
+- [x] Tom de voz do Jarvis (mensagens em primeira pessoa, brand `<app-brand />` "Liriun")
+- [x] Responsividade desktop + mobile (navegador)
+- [x] Theme toggle dark/light (extra fora do escopo original — V1 era dark-only)
+- [x] **`data-testid` (IDs de QA) em todos os elementos interativos e estados visíveis** — cobertura ampla em shell, formulários, modals, chat, áudio, filtros
 
 ## Fase 5 — Testes
 
 ### Testes unitários (backend)
 
-- [ ] Setup do projeto de testes (xUnit)
-- [ ] Testes de Domain (regras de negócio das entidades)
-- [ ] Testes de Application (use cases com mocks)
+- [x] Setup do projeto de testes (xUnit + Moq + FluentAssertions) — `Jarvis.Core.Tests`, `Jarvis.Application.Tests`, `Jarvis.Api.Tests`
+- [x] Testes de Domain (Usuario, Tarefa, Categoria, TarefaCategoria, Result, Error, ErrorType)
+- [x] Testes de Application (use cases — Auth, Categorias, Tarefas, ConversarCaptura/IA com mocks)
 - [ ] Testes de Infrastructure (repositories com banco em memória ou Testcontainers)
-- [ ] Testes de API (controllers, validações)
+- [x] Testes de API (ExceptionHandlingMiddleware, ResultExtensions, UsuarioLogadoContext)
 - [ ] Meta: cobertura alta das camadas críticas (Domain + Application próximas de 100%)
 
 ### Testes E2E automatizados (frontend) — "bots de qualidade"

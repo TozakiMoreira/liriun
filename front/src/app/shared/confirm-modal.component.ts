@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, Output } from '@angular/core';
 
 @Component({
   selector: 'app-confirm-modal',
@@ -70,5 +70,10 @@ export class ConfirmModalComponent {
   onCancelar(): void {
     if (this.processando) return;
     this.cancelado.emit();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.onCancelar();
   }
 }

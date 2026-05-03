@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, computed } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, Output, computed } from '@angular/core';
 import { Tarefa } from '../../core/api/tarefas.service';
 import { quebrarTextoEmSegmentos } from '../../shared/auto-link';
 
@@ -187,6 +187,11 @@ export class TarefaDetalheModalComponent {
   @Output() reabrir = new EventEmitter<Tarefa>();
   @Output() excluir = new EventEmitter<Tarefa>();
   readonly segmentosObs = computed(() => quebrarTextoEmSegmentos(this.tarefa.observacoes));
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.fechar();
+  }
 
   fechar(): void {
     this.fechado.emit();

@@ -1,10 +1,13 @@
-# Jarvis - Organizador Pessoal de Ideias e Tarefas
+# Jarvis (Liriun) - Organizador Pessoal de Ideias e Tarefas
+
+> **Branding:** o produto vai a mercado como **Liriun**. Identificadores internos (namespace `Jarvis.*`, classe `JarvisDbContext`, prompt da IA com tom "Jarvis") foram mantidos. Nas telas usa-se `<app-brand />` que renderiza "Liriun".
+> **Fonte autoritativa de produto:** `docs/ENTREVISTA.md`.
+> **Plano de execução:** `docs/DESENVOLVIMENTO.md`.
+> **Arquitetura back:** `backend/ARCHITECTURE.md`.
 
 ## Objetivo
 
-Criar um app web responsivo para capturar rapidamente pensamentos, ideias e tarefas do dia a dia, substituindo o habito de salvar tudo no WhatsApp. O sistema organiza e categoriza automaticamente usando IA.
-
-Este projeto serve como preparacao para o Projeto Integrador (PI) da faculdade, praticando a comunicacao entre frontend e backend com deploy em producao.
+Capturar rapidamente pensamentos, ideias e tarefas do dia a dia, substituindo o hábito de salvar tudo no WhatsApp. O sistema organiza e categoriza usando IA (Gemini) com tom de voz "Jarvis" em primeira pessoa.
 
 ---
 
@@ -12,233 +15,254 @@ Este projeto serve como preparacao para o Projeto Integrador (PI) da faculdade, 
 
 | Camada               | Tecnologia                                                |
 |----------------------|-----------------------------------------------------------|
-| **Frontend**         | Angular 17+ (standalone components) + TypeScript          |
+| **Frontend**         | Angular 17+ (standalone components) + TypeScript + Signals |
 | **UI**               | PrimeNG + TailwindCSS                                     |
-| **Backend**          | .NET 8 com ASP.NET Core Web API                           |
-| **Arquitetura back** | Clean Architecture                                        |
+| **Backend**          | .NET 10 (LTS) com ASP.NET Core Web API                    |
+| **Arquitetura back** | Clean Architecture (Core / Application / Infrastructure / Api) |
+| **ORM**              | EF Core 9 + Npgsql                                        |
 | **Banco**            | Supabase (PostgreSQL na nuvem)                            |
-| **IA**               | API do Google Gemini (free tier)                          |
-| **Deploy Frontend**  | Vercel (free tier)                                        |
-| **Deploy Backend**   | Railway (free tier)                                       |
+| **IA**               | Google Gemini (HttpClient direto, free tier)              |
+| **Auth**             | JWT Bearer (HS256) + BCrypt                               |
+| **Validação**        | FluentValidation 11                                       |
+| **Erro**             | `Result<T>` + ProblemDetails RFC 7807                     |
+| **Testes**           | xUnit + Moq + FluentAssertions (back)                     |
+| **Deploy** *(em avaliação)* | Railway+Vercel OU Oracle Free + Docker + domínio próprio |
 
 ---
 
 ## Arquitetura
 
-### Backend - Clean Architecture (.NET 8)
+Camadas e regras detalhadas em `backend/ARCHITECTURE.md`. Resumo:
 
-```
-Jarvis.sln
-├── src/
-│   ├── Jarvis.Domain/            # Entidades, enums, regras de negocio puras
-│   │   ├── Entities/             # Note, Category, Tag
-│   │   ├── Enums/                # Priority, NoteStatus
-│   │   └── Interfaces/           # Contratos de repositorios
-│   │
-│   ├── Jarvis.Application/       # Casos de uso, DTOs, interfaces de servicos
-│   │   ├── UseCases/             # CreateNote, ListNotes, CompleteNote...
-│   │   ├── DTOs/
-│   │   ├── Interfaces/           # IAiCategorizationService, INoteRepository...
-│   │   └── Validators/           # FluentValidation
-│   │
-│   ├── Jarvis.Infrastructure/    # Implementacoes (banco, APIs externas)
-│   │   ├── Persistence/          # EF Core / Supabase client
-│   │   ├── Repositories/
-│   │   └── Services/             # GeminiAiService, AuthService
-│   │
-│   └── Jarvis.Api/               # Controllers, middlewares, DI
-│       ├── Controllers/
-│       ├── Middlewares/
-│       └── Program.cs
-│
-└── tests/                        # (opcional na V1)
-```
-
-**Fluxo de dependencia:** Api -> Application -> Domain | Infrastructure -> Application -> Domain
+- `Api -> Application -> Core`
+- `Infrastructure -> Application -> Core`
+- Use cases via `[FromServices]` no controller (sem MediatR, sem AutoMapper)
+- Write repos só com entidade cheia + verbos de coleção
+- Read repos retornam `ReadModel` via `Select` + `AsNoTracking`
+- EF Core mapeia data models POCO em `Persistence/Models/`, mappers manuais convertem dominio <-> data model
 
 ### Frontend - Estrutura por feature (Angular 17+)
 
 ```
 src/app/
-├── core/                  # Servicos globais (singletons)
-│   ├── services/          # ApiService, AuthService
-│   ├── interceptors/      # AuthInterceptor, ErrorInterceptor
-│   └── guards/            # AuthGuard
+├── core/
+│   ├── api/              # categorias.service, tarefas.service, ia.service
+│   ├── auth/             # auth.service, auth.guard, guestGuard, token.storage, auth.interceptor
+│   ├── http/             # error.interceptor, error-message
+│   ├── layout/           # page-header.service
+│   └── theme/            # theme.service (dark/light)
 │
-├── shared/                # Componentes/pipes/diretivas reutilizaveis
-│   ├── components/
-│   └── pipes/
+├── shared/               # avatar, brand, brand-logo, confirm-modal, foto-perfil-modal,
+│                         # password-input, password-requirements, date-picker, time-picker,
+│                         # theme-toggle, problem-details, image-resize, auto-link, diretivas
 │
 ├── features/
-│   ├── auth/              # Login (so senha)
-│   ├── capture/           # Tela principal de captura rapida
-│   ├── dashboard/         # Visao geral das anotacoes
-│   ├── completed/         # Anotacoes concluidas com filtros
-│   └── settings/          # Gerenciar categorias e tags
+│   ├── auth/             # login, cadastro
+│   ├── landing/          # landing pública
+│   ├── onboarding/       # setup bloqueante de categorias
+│   ├── captura/          # captura rápida (modo Manual/Jarvis com chat + áudio)
+│   ├── visao-geral/      # dashboard
+│   ├── tarefas/          # tarefas (Lista/Kanban/Semana) + form + detalhe-modal
+│   ├── concluidas/       # histórico + reabrir
+│   └── configuracoes/    # perfil + foto + alterar-senha + categorias
 │
-├── layouts/               # Header, sidebar
-└── app.routes.ts          # Lazy loading
+├── layout/               # shell.component (sidebar + topbar + bottom nav mobile)
+└── app.routes.ts         # lazy loading com authGuard / guestGuard
 ```
 
-**Padroes:**
+**Padrões:**
 - Standalone components (sem NgModules)
 - Signals para estado local
 - Reactive Forms
 - HttpInterceptors para auth e tratamento de erros
 - Lazy loading nas rotas
+- `data-testid` em todos elementos interativos
 
 ---
 
 ## Modelo de dados (Supabase / PostgreSQL)
 
-### `categories`
-| Campo       | Tipo      | Notas                         |
-|-------------|-----------|-------------------------------|
-| id          | uuid (PK) |                               |
-| name        | text      | Ex: "Tarefa", "Compra"        |
-| created_at  | timestamp |                               |
+> Schema canônico vive nas migrations EF Core em `backend/src/Jarvis.Infrastructure/Persistence/Migrations/` e na configuração das entidades em `Persistence/Configurations/`. Resumo das tabelas:
 
-### `tags`
-| Campo       | Tipo      | Notas                         |
-|-------------|-----------|-------------------------------|
-| id          | uuid (PK) |                               |
-| name        | text      | Ex: "trabalho", "faculdade"   |
-| created_at  | timestamp |                               |
+### `usuarios`
+| Campo       | Tipo        | Notas                                                |
+|-------------|-------------|------------------------------------------------------|
+| id          | uuid (PK)   |                                                      |
+| nome        | text        | Usado pra personalização do tom Jarvis               |
+| email       | text unique |                                                      |
+| senha_hash  | text        | BCrypt                                               |
+| foto_url    | text?       | Foto de perfil em base64 (`data:image/...`, ≤700KB)  |
+| criado_em   | timestamp   |                                                      |
 
-### `notes`
-| Campo         | Tipo      | Notas                                                 |
-|---------------|-----------|-------------------------------------------------------|
-| id            | uuid (PK) |                                                       |
-| title         | text      | Sugerido pela IA, editavel                            |
-| content       | text      | Texto original da anotacao                            |
-| category_id   | uuid (FK) | -> categories                                         |
-| priority      | enum      | urgente, importante, normal, baixa                    |
-| due_date      | timestamp | Opcional, detectado pela IA ou preenchido manualmente |
-| status        | enum      | pending, completed                                    |
-| created_at    | timestamp |                                                       |
-| completed_at  | timestamp | Preenchido quando concluida                           |
+### `categorias`
+| Campo       | Tipo      | Notas                                                |
+|-------------|-----------|------------------------------------------------------|
+| id          | uuid (PK) |                                                      |
+| usuario_id  | uuid (FK) | -> usuarios                                          |
+| nome        | text      | Unique por usuário                                   |
+| criado_em   | timestamp |                                                      |
 
-### `note_tags` (relacao N:N)
-| Campo    | Tipo      |
-|----------|-----------|
-| note_id  | uuid (FK) |
-| tag_id   | uuid (FK) |
+### `tarefas`
+| Campo           | Tipo           | Notas                                                  |
+|-----------------|----------------|--------------------------------------------------------|
+| id              | uuid (PK)      |                                                        |
+| usuario_id      | uuid (FK)      | -> usuarios                                            |
+| nome            | text           | Obrigatório                                            |
+| observacoes     | text?          | Texto livre opcional                                   |
+| prioridade      | enum           | urgente, importante, normal, baixa                     |
+| status          | enum           | pendente, concluida (atrasada é calculado, não persistido) |
+| data_prazo      | date?          | Opcional                                               |
+| horario_final   | time?          | Opcional, exige `data_prazo`                           |
+| criado_em       | timestamp      |                                                        |
+| concluido_em    | timestamp?     | Preenchido ao concluir                                 |
 
-### `auth_config` (config unica do app)
-| Campo            | Tipo |
-|------------------|------|
-| email            | text |
-| password_hash    | text |
+### `tarefas_categorias` (relação N:N)
+| Campo        | Tipo      |
+|--------------|-----------|
+| tarefa_id    | uuid (FK) |
+| categoria_id | uuid (FK) |
 
----
-
-## Funcionalidades - Versao 1 (MVP)
-
-### Autenticacao
-- Cadastro inicial: usuario define **email + senha** na primeira vez que abre o app
-- Login: pede **apenas a senha** (email so serve para recuperar senha)
-- Token JWT salvo no navegador para manter sessao
-- (Recuperacao de senha por email fica para uma versao futura - por ora, login simples)
-
-### Configuracoes (pre-requisito)
-- CRUD de **categorias** (ex: Tarefa, Compra, Lembrete, Ideia)
-- CRUD de **tags** (ex: trabalho, faculdade, casa)
-- O usuario precisa ter pelo menos 1 categoria criada antes de poder criar anotacoes
-- As categorias e tags definidas aqui sao as **unicas opcoes** que a IA pode escolher
-
-### Captura rapida (tela principal)
-- Campo de texto grande + botao de enviar
-- Apos salvar, **continua na mesma tela** para seguir mandando varias anotacoes
-- Fluxo:
-  1. Usuario digita o conteudo
-  2. Sistema chama a IA passando o texto + lista de categorias e tags disponiveis
-  3. IA retorna: **titulo**, **categoria**, **tags**, **urgencia**, **prazo final** (se detectado)
-  4. Sistema mostra o resultado em uma tela de revisao
-  5. Usuario pode **editar qualquer campo** antes de salvar
-  6. Usuario confirma e a anotacao e salva
-
-### Fallback se a IA falhar
-- Se a API do Gemini estiver fora ou retornar erro, o sistema avisa
-- Usuario preenche os campos manualmente e salva normalmente
-
-### Dashboard
-- Lista das anotacoes pendentes
-- Filtros: por categoria, por tag, por prioridade, por prazo
-- Busca por texto
-- Acoes em cada item: editar, marcar como concluido, deletar
-- IA **nao** re-categoriza ao editar (somente na criacao)
-
-### Concluidas
-- Espaco separado para anotacoes concluidas
-- Filtro por **data de conclusao**: dia, semana ou mes
-- Acoes: deletar (sem arquivar)
+**Decisões importantes:**
+- Tag não é mais entidade — virou Categoria (uma tarefa tem N categorias)
+- Prazo não é mais entidade — `data_prazo` + `horario_final` direto na tarefa
+- Status `atrasada` é calculado no backend ao listar (passou de `data_prazo` + `horario_final`, default 23:59:59)
+- Exclusão de categoria bloqueada se tem tarefa pendente vinculada
 
 ---
 
-## Regras de negocio
+## Funcionalidades - V1 (status real)
 
-- Anotacoes ficam salvas para sempre, ate o usuario deletar
-- Sem arquivamento - so concluir ou deletar
-- IA so e acionada na **criacao** de anotacoes
-- A IA so pode escolher entre as categorias e tags **ja cadastradas** pelo usuario
-- Para criar uma anotacao e obrigatorio existir ao menos 1 categoria
+### Autenticação ✅
+- Cadastro com **email + senha + nome** (multi-user — Pedro, sócio e namorada testam)
+- Login com email + senha
+- Senha com hash BCrypt
+- JWT (HS256, 24h, sem refresh)
+- Alterar senha (exige senha atual)
+- Atualizar perfil (nome / email)
+- Atualizar foto de perfil (base64 ≤700KB)
+- **V1 NÃO tem:** recuperação de senha, confirmação de email, reset de senha, 2FA
+
+### Onboarding ✅
+- Bloqueante no primeiro acesso (sem categorias → redireciona pro onboarding)
+- Templates de categorias: **Trabalho, Faculdade, Casa, Compras, Pessoal**
+- Usuário aceita templates, edita, ou cria do zero
+
+### Configurações ✅
+- Aba Perfil (nome, email, foto)
+- Aba Alterar senha (subpágina)
+- Aba Categorias (CRUD com bloqueio de exclusão se há tarefa pendente)
+
+### Captura rápida ✅
+- Tela principal pós-login
+- Escolhe modo **Manual** ou **Jarvis** antes de digitar
+- **Modo Manual:** form com nome, categorias multi-select, data, hora, prioridade
+- **Modo Jarvis (IA):**
+  - Chat conversacional com Gemini
+  - Aceita texto e **áudio gravado** (multipart, formatos Opus/WebM/MP4/WAV/FLAC, ≤8MB)
+  - Histórico persistido em localStorage (TTL 1h)
+  - Quick-reply chips ("Salva", "Muda a data", "Outra categoria", "Cancela")
+  - Auto-save em confirmações curtas
+  - Sugestão da IA renderizada em card com Ajustar/Salvar
+  - Modo **one-shot** (default) ou **interativo** (reservado pro plano pago)
+- Após salvar, permanece na mesma tela pra criar várias em sequência
+- Fallback IA: erro/timeout/JSON inválido → toast Jarvis + form manual com texto bruto
+
+### Visão Geral ✅
+- Dashboard pós-login (não estava no escopo original — extra V1)
+- Saudação, resumo, gráficos por categoria/prioridade, timeline semanal
+
+### Minhas Tarefas ✅
+- Listagem de pendentes e atrasadas
+- 3 views: **Lista**, **Kanban**, **Semana**
+- Filtros: categorias, prioridades, período, atraso
+- Atrasadas em destaque
+- Ações: editar, concluir, excluir
+- IA NÃO re-categoriza ao editar
+- Ao concluir, permanece na mesma tela (tarefa some, navegação não muda)
+
+### Concluídas ✅
+- Histórico filtrado por dia/semana/mês
+- Ações: **reabrir** (volta pra pendente) e excluir
+- Stats com contagem
+
+### IA (Gemini) ✅
+- `IGeminiService` (Application) + `GeminiService` (Infrastructure)
+- Use case `ConversarCapturaUseCase`
+- Endpoints `/captura/conversar` (texto) e `/captura/conversar-audio` (multipart)
+- Modo controlado por `GeminiOptions.ModoInterativo` (default `false` = one-shot)
+- One-shot: não pergunta, fecha tarefa direto, observações copiam o texto cru
+- Interativo: até 3 perguntas de contexto antes de fechar (código preservado em `GeminiService.MontarInstrucaoInterativo` pra plano pago futuro)
+- Só escolhe categorias existentes do usuário; retorna `null` se não bate
+
+### Theme ✅
+- Toggle dark/light com fallback pra preferência do sistema, persistido em localStorage
+- Mudança vs spec original (V1 era dark-only)
+
+### Landing ✅
+- Página pública em `/` com hero, CTA login/cadastro, theme toggle
 
 ---
 
-## Padroes de UI/UX
+## Endpoints REST (resumo)
+
+Lista canônica em `backend/ARCHITECTURE.md` §15. Resumo: `/auth/*` (5), `/categorias/*` (4), `/tarefas/*` (7 incluindo concluir e reabrir), `/captura/*` (2 — texto e áudio).
+
+---
+
+## Regras de negócio
+
+- Tarefas ficam salvas até o usuário deletar (sem arquivamento)
+- IA só é acionada na **criação** (modo Jarvis)
+- IA só pode escolher entre categorias **já cadastradas** pelo usuário
+- Categoria ad-hoc criada inline durante criação de tarefa vira modelo permanente
+- Pra criar tarefa é obrigatório existir ao menos 1 categoria (garantido pelo onboarding)
+- Multi-user isolado: cada usuário só vê suas próprias tarefas e categorias
+
+---
+
+## Padrões de UI/UX
 
 ### Iconografia
-- **NAO usar emojis no app final.** Eles foram usados apenas nos mockups por simplicidade.
-- Usar **Font Awesome** (Free) para todos os icones do projeto
-- Manter consistencia visual em tamanhos e estilos (preferencia por solid/regular)
+- **NÃO usar emojis no app final** (foram usados só em mockups)
+- **Font Awesome** (Free) para todos os ícones
+- Consistência em tamanhos e estilos (preferência por solid/regular)
 
 ### Tom de voz - "Jarvis em primeira pessoa"
-- Toda comunicacao do sistema com o usuario deve ser feita **como se o Jarvis estivesse falando**, em primeira pessoa
-- Inspiracao: o Jarvis do Homem de Ferro conversando com o Tony Stark
-- **Nao usar:** "A IA analisou seu texto", "O sistema sugere", "Preencha os campos abaixo"
-- **Usar:** "Analisei seu texto", "Organizei desse jeito pra voce", "Identifiquei um prazo no que voce escreveu"
-- Linguagem natural, leve e proxima - sem ser exageradamente informal
-- Mensagens curtas e diretas
+- Toda comunicação como se o Jarvis estivesse falando, em primeira pessoa
+- Inspiração: Jarvis do Homem de Ferro conversando com Tony Stark
+- **Não usar:** "A IA analisou seu texto", "O sistema sugere", "Preencha os campos abaixo"
+- **Usar:** "Anotei isso", "Organizei desse jeito pra você", "Identifiquei um prazo"
+- Seco, discreto, competente, formal com humor sutil
+- Nunca emoji, nunca exclamação dupla, nunca celebração exagerada
+- Nome do usuário com parcimônia (aberturas, erros — não em toda frase)
 
 ---
 
-## Requisitos nao funcionais
+## Requisitos não funcionais
 
-- **Responsivo:** funciona bem no navegador do celular
-- **Performance:** suficiente para uso pessoal (3 a 5 anotacoes/dia)
-- **Disponibilidade:** depende dos free tiers de Vercel e Railway
-- **Seguranca minima:** autenticacao por senha unica (basico, sera melhorado depois)
-- **Sem offline:** exige conexao com internet
+- **Responsivo:** funciona bem no navegador do celular (sidebar colapsa, bottom nav mobile)
+- **Performance:** suficiente para uso pessoal (3 a 5 tarefas/dia)
+- **Disponibilidade:** depende dos free tiers escolhidos (a definir na Fase 6)
+- **Segurança:** JWT + BCrypt + ProblemDetails sem stack trace; checklist pré-prod em `docs/CHECKLIST_PRODUCAO.md`
+- **Sem offline:** exige conexão com internet
 - **Sem export de dados** (V1)
-- **Sem notificacoes push** (V1)
-- **Sem dark mode** (V1)
+- **Sem notificações push** (V1)
 
 ---
 
 ## Funcionalidades futuras
 
-Mapeadas em arquivo separado: ver `FUTURO.md`.
+Mapeadas em `docs/FUTURO.md` (organizado por tier).
 
 ---
 
-## Plano de execucao
+## Status atual e próximos passos
 
-### Dia 1 - Backend e infraestrutura
-1. Setup do Supabase (criar projeto, definir tabelas)
-2. Setup do projeto .NET 8 com Clean Architecture
-3. Implementar entidades e casos de uso (Categories, Tags, Notes)
-4. Endpoints REST do CRUD
-5. Endpoint de autenticacao (registro inicial + login)
-6. Integracao com Gemini API (servico de categorizacao com prompt limitado as categorias/tags do usuario)
-7. Deploy no Railway
+Acompanhamento contínuo em `docs/DESENVOLVIMENTO.md` (plano por fase).
 
-### Dia 2 - Frontend
-1. Setup do projeto Angular 17+ com PrimeNG e Tailwind
-2. Estrutura de pastas por feature
-3. Tela de login/cadastro inicial
-4. Tela de configuracoes (categorias e tags)
-5. Tela de captura rapida com fluxo de revisao da IA
-6. Tela de dashboard com filtros
-7. Tela de concluidas com filtro por data
-8. Responsividade mobile
-9. Deploy na Vercel
+Resumo em 2026-05-02:
+- **Fase 0/1/2/3** — completas (descoberta, design, setup, backend)
+- **Fase 4** (frontend) — praticamente completa; falta i18n
+- **Fase 5** (testes) — back com testes unitários reais; E2E ainda não iniciado
+- **Fase 6** (deploy) — provedor a decidir
+- **Fase 7** (pós-lançamento) — futura

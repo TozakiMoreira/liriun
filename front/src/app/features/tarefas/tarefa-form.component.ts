@@ -3,6 +3,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import {
   Component,
   EventEmitter,
+  HostListener,
   Input,
   OnInit,
   Output,
@@ -372,6 +373,11 @@ export class TarefaFormComponent implements OnInit {
     this.categoriaIds.update((ids) =>
       ids.includes(id) ? ids.filter((i) => i !== id) : [...ids, id],
     );
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.fechar();
   }
 
   fechar(): void {

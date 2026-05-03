@@ -1,12 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, HostListener, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, HostListener, OnDestroy, OnInit, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Tarefa, TarefasService } from '../../core/api/tarefas.service';
 import { ConfirmModalComponent } from '../../shared/confirm-modal.component';
 import { extrairProblemDetails } from '../../shared/problem-details';
 import { TarefaDetalheModalComponent } from './tarefa-detalhe-modal.component';
 import { TarefaFormComponent } from './tarefa-form.component';
+import { PageHeaderService } from '../../core/layout/page-header.service';
 
 interface Grupo {
   chave: string;
@@ -58,23 +59,33 @@ const FILTROS_PADRAO: FiltrosTarefas = {
   standalone: true,
   imports: [CommonModule, TarefaFormComponent, TarefaDetalheModalComponent, ConfirmModalComponent],
   template: `
-    <header class="flex flex-wrap items-center px-4 md:px-8 py-3.5 border-b border-border gap-3">
+    <header class="md:hidden flex flex-wrap items-center px-4 py-3.5 border-b border-border gap-3">
       <div class="flex items-center gap-2 text-[15px] text-text-dim">
         <i class="fa-solid fa-list-check text-accent text-[12px]"></i>
         <strong class="text-text font-medium">Minhas Tarefas</strong>
-        <span
-          class="ml-1.5 text-[11px] px-2 py-0.5 rounded-full bg-bg-elev border border-border"
-          data-testid="task-total-count"
-        >
-          {{ tarefasFiltradas().length }} pendente{{ tarefasFiltradas().length === 1 ? '' : 's' }}
-          @if (filtrosAtivos() > 0) {
-            <span class="text-text-subtle">·</span>
-            <span class="text-accent">{{ filtrosAtivos() }} filtro{{ filtrosAtivos() === 1 ? '' : 's' }}</span>
-          }
-        </span>
+        <ng-container *ngTemplateOutlet="subtituloTpl"></ng-container>
       </div>
 
       <div class="ml-auto flex items-center gap-2">
+        <ng-container *ngTemplateOutlet="acoesTpl"></ng-container>
+      </div>
+    </header>
+
+    <ng-template #subtituloTpl>
+      <span
+        class="ml-1.5 text-[11px] px-2 py-0.5 rounded-full bg-bg-elev border border-border"
+        data-testid="task-total-count"
+      >
+        {{ tarefasFiltradas().length }} pendente{{ tarefasFiltradas().length === 1 ? '' : 's' }}
+        @if (filtrosAtivos() > 0) {
+          <span class="text-text-subtle">·</span>
+          <span class="text-accent">{{ filtrosAtivos() }} filtro{{ filtrosAtivos() === 1 ? '' : 's' }}</span>
+        }
+      </span>
+    </ng-template>
+
+    <ng-template #acoesTpl>
+      <div class="flex items-center gap-2">
         <div
           class="flex items-center bg-bg-elev border border-border rounded p-0.5"
           role="tablist"
@@ -304,7 +315,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
 
           <button
             type="button"
-            class="btn-primary text-[13px] flex items-center gap-1.5"
+            class="text-[12px] flex items-center gap-1.5 px-2.5 py-1.5 rounded bg-accent text-white hover:bg-accent-hover transition-colors font-medium"
             data-testid="new-task-btn"
             (click)="abrirNova()"
           >
@@ -313,7 +324,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
             <span class="sm:hidden">Nova</span>
           </button>
         </div>
-      </header>
+    </ng-template>
 
     <div class="flex-1 px-4 md:px-8 py-6 overflow-auto" data-testid="tarefas-page">
       @if (erroLista()) {
@@ -410,12 +421,11 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                     @for (t of tarefasSemSlotPorDia(d.iso); track t.id) {
                       <button
                         type="button"
-                        class="text-left text-[11px] px-1.5 py-1 rounded border text-text truncate"
-                        [ngClass]="
-                          t.status === 3
-                            ? 'bg-danger/15 border-danger/30 hover:bg-danger/25'
-                            : 'bg-accent/15 border-accent/30 hover:bg-accent/25'
-                        "
+                        class="text-left text-[11px] px-1.5 py-1 rounded border border-l-[3px] text-text truncate transition-colors"
+                        [style.background]="corPrioridade(t.prioridade) + '22'"
+                        [style.borderColor]="corPrioridade(t.prioridade) + '55'"
+                        [style.borderLeftColor]="corPrioridade(t.prioridade)"
+                        [style.boxShadow]="t.status === 3 ? 'inset 0 0 0 1px rgb(var(--c-danger) / 0.7)' : null"
                         [attr.data-testid]="'semana-tarefa-sem-hora-' + t.id"
                         [title]="t.nome"
                         (click)="abrirDetalhe(t)"
@@ -432,7 +442,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
               <div class="flex flex-col">
                 @for (h of horasSemana(); track h) {
                   <div
-                    class="text-[10px] tabular-nums text-text-subtle text-right pr-2 border-b border-border/40"
+                    class="text-[10px] tabular-nums text-text-subtle border-b border-border/40 grid place-items-center"
                     [style.height.px]="alturaSlot()"
                   >
                     {{ formatarHora(h) }}
@@ -483,19 +493,23 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                   @for (t of tarefasComSlotPorDia(d.iso); track t.id) {
                     <button
                       type="button"
-                      class="absolute left-1 right-1 rounded px-1.5 py-1 text-[11px] text-left border text-text hover:z-10 overflow-hidden"
-                      [ngClass]="
-                        t.status === 3
-                          ? 'bg-danger/20 border-danger/40 hover:bg-danger/30'
-                          : 'bg-accent/20 border-accent/40 hover:bg-accent/30'
-                      "
+                      class="absolute left-1 right-1 rounded px-1.5 py-1 text-[11px] text-left border border-l-[3px] text-text hover:z-10 overflow-hidden transition-colors"
                       [style.top.px]="topoTarefa(t)"
                       [style.minHeight.px]="alturaSlot() - 4"
+                      [style.background]="corPrioridade(t.prioridade) + '22'"
+                      [style.borderColor]="corPrioridade(t.prioridade) + '55'"
+                      [style.borderLeftColor]="corPrioridade(t.prioridade)"
+                      [style.boxShadow]="t.status === 3 ? 'inset 0 0 0 1px rgb(var(--c-danger) / 0.7)' : null"
                       [attr.data-testid]="'semana-tarefa-' + t.id"
                       [title]="t.nome + ' — ' + (t.horarioFinal ?? '')"
                       (click)="abrirDetalhe(t)"
                     >
-                      <div class="font-medium truncate">{{ t.nome }}</div>
+                      <div class="flex items-center gap-1">
+                        @if (t.status === 3) {
+                          <i class="fa-solid fa-triangle-exclamation text-danger text-[8px] shrink-0" aria-hidden="true"></i>
+                        }
+                        <div class="font-medium truncate">{{ t.nome }}</div>
+                      </div>
                       @if (t.horarioFinal) {
                         <div class="text-[9px] tabular-nums opacity-80">
                           {{ t.horarioFinal.substring(0, 5) }}
@@ -798,9 +812,28 @@ const FILTROS_PADRAO: FiltrosTarefas = {
     }
   `,
 })
-export class TarefasComponent implements OnInit, OnDestroy {
+export class TarefasComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly tarefasApi = inject(TarefasService);
   private readonly route = inject(ActivatedRoute);
+  private readonly pageHeader = inject(PageHeaderService);
+  private readonly subtituloTplRef = viewChild<TemplateRef<unknown>>('subtituloTpl');
+  private readonly acoesTplRef = viewChild<TemplateRef<unknown>>('acoesTpl');
+
+  constructor() {
+    this.pageHeader.set({
+      titulo: 'Minhas Tarefas',
+      iconeClasse: 'fa-solid fa-list-check text-accent text-[12px]',
+    });
+  }
+
+  private aplicarTemplatesPageHeader(): void {
+    this.pageHeader.set({
+      titulo: 'Minhas Tarefas',
+      iconeClasse: 'fa-solid fa-list-check text-accent text-[12px]',
+      subtituloTpl: this.subtituloTplRef() ?? null,
+      acoesTpl: this.acoesTplRef() ?? null,
+    });
+  }
 
   readonly pendentes = signal<Tarefa[]>([]);
   readonly carregando = signal(true);
@@ -820,7 +853,7 @@ export class TarefasComponent implements OnInit, OnDestroy {
   readonly alturaSlot = signal(40);
   readonly agora = signal(new Date());
   private agoraTimer: number | null = null;
-  private static readonly HORA_MIN = 6;
+  private static readonly HORA_MIN = 0;
   private static readonly HORA_MAX = 23;
 
   readonly categoriasDisponiveis = computed(() => {
@@ -969,6 +1002,10 @@ export class TarefasComponent implements OnInit, OnDestroy {
     grupos.push(...[...porCategoria.values()].sort((a, b) => a.titulo.localeCompare(b.titulo)));
     return grupos;
   });
+
+  ngAfterViewInit(): void {
+    this.aplicarTemplatesPageHeader();
+  }
 
   ngOnInit(): void {
     const qp = this.route.snapshot.queryParamMap;

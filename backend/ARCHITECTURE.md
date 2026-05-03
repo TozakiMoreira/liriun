@@ -2,7 +2,7 @@
 
 Documento de referencia da arquitetura do backend. Define camadas, padroes, convencoes e decisoes tecnicas.
 
-Ultima atualizacao: 2026-04-27.
+Ultima atualizacao: 2026-05-02.
 
 ---
 
@@ -19,7 +19,8 @@ Ultima atualizacao: 2026-04-27.
 | Erros de infra/bugs | `Exception` + middleware global | Excepcional e excepcional |
 | Padrao de resposta de erro | RFC 7807 (`ProblemDetails`) | Formato unico para qualquer origem de erro |
 | Auth | JWT Bearer (HS256) + BCrypt | Stateless, sem refresh token na V1 |
-| Testes | xUnit + Moq + FluentAssertions | Unidade em Application, placeholders em Core e Api |
+| IA | Google Gemini (HttpClient direto) | One-shot por padrao; modo interativo reservado pro plano pago |
+| Testes | xUnit + Moq + FluentAssertions | Unidade em Core, Application e Api (testes reais, nao placeholders) |
 
 **Vedado:**
 - **MediatR** — controllers injetam use cases diretamente via `[FromServices]`.
@@ -82,7 +83,8 @@ Contem:
 - `Validators/` — FluentValidation, um validator por InputModel
 - `ReadModels/` — Records planos retornados pelos read repositories
 - `ReadRepositories/` — Interfaces de read repositories (retornam ReadModel, bool para checagens)
-- `Interfaces/` — Contratos de infra: `IJwtTokenService`, `IPasswordHasher`, `IUsuarioLogado`, `IUnitOfWork`
+- `Models/Ia/` — Records de contexto e analise da IA (`AnaliseTarefa`, `ContextoAnalise`, `ContextoConversa`, `MensagemConversa`)
+- `Interfaces/` — Contratos de infra: `IJwtTokenService`, `IPasswordHasher`, `IUsuarioLogado`, `IUnitOfWork`, `IGeminiService`
 - `IoC/ApplicationModule.cs` — Registro de use cases e validators
 
 Nao contem:
@@ -103,7 +105,8 @@ Contem:
 - `Repositories/` — Implementacoes dos write repositories (usam data models + mappers, retornam entidades)
 - `ReadRepositories/` — Implementacoes dos read repositories (projecao direta para ReadModel via data models, `AsNoTracking`)
 - `Auth/` — JwtTokenService, BCryptPasswordHasher, JwtOptions
-- `IoC/InfrastructureModule.cs` — Registro de repos, read repos, UnitOfWork, auth services
+- `Ia/` — GeminiService (HttpClient pro Gemini), GeminiOptions (config: ApiKey, Modelo, ModoInterativo)
+- `IoC/InfrastructureModule.cs` — Registro de repos, read repos, UnitOfWork, auth services, GeminiService
 
 ### 3.4 Jarvis.Api
 
@@ -134,29 +137,36 @@ backend/
         Repositories/          # IUsuarioRepository, ITarefaRepository, ICategoriaRepository
     Jarvis.Application/
       InputModels/
-        Auth/                  # CadastrarUsuarioInput, LoginInput
+        Auth/                  # CadastrarUsuarioInput, LoginInput, AlterarSenhaInput, AtualizarPerfilInput, AtualizarFotoPerfilInput
         Categorias/            # CriarCategoriaInput, AtualizarCategoriaInput
         Tarefas/               # CriarTarefaInput, AtualizarTarefaInput
+        Ia/                    # ConversarCapturaInput
       ViewModels/
-        Auth/                  # AutenticacaoViewModel
+        Auth/                  # AutenticacaoViewModel, PerfilViewModel
         Categorias/            # CategoriaViewModel
         Tarefas/               # TarefaViewModel, TarefaCategoriaViewModel
+        Ia/                    # ConversaCapturaViewModel
       Validators/
-        Auth/                  # CadastrarUsuarioValidator, LoginValidator
+        Auth/                  # CadastrarUsuarioValidator, LoginValidator, AlterarSenhaValidator, AtualizarPerfilValidator, AtualizarFotoPerfilValidator, SenhaRules
         Categorias/            # CriarCategoriaValidator, AtualizarCategoriaValidator
         Tarefas/               # CriarTarefaValidator, AtualizarTarefaValidator
+        Ia/                    # ConversarCapturaValidator
       ReadModels/              # CategoriaReadModel, TarefaReadModel
       ReadRepositories/        # ICategoriaReadRepository, ITarefaReadRepository, IUsuarioReadRepository
+      Models/Ia/               # AnaliseTarefa, ContextoAnalise, ContextoConversa, MensagemConversa
       UseCases/
-        Auth/                  # CadastrarUsuario, Login
+        Auth/                  # CadastrarUsuario, Login, AlterarSenha, AtualizarPerfil, AtualizarFotoPerfil
         Categorias/            # CriarCategoria, ListarCategorias, AtualizarCategoria, RemoverCategoria
-        Tarefas/               # CriarTarefa, ListarPendentes, ListarConcluidas, Atualizar, Concluir, Remover
+        Tarefas/               # CriarTarefa, ListarPendentes, ListarConcluidas, Atualizar, Concluir, Reabrir, Remover
+        Ia/                    # ConversarCaptura
       Interfaces/
         Auth/                  # IJwtTokenService, IPasswordHasher, IUsuarioLogado
+        Ia/                    # IGeminiService
         IUnitOfWork.cs
       IoC/                     # ApplicationModule.cs
     Jarvis.Infrastructure/
       Auth/                    # JwtTokenService, BCryptPasswordHasher, JwtOptions
+      Ia/                      # GeminiService, GeminiOptions
       Persistence/
         JarvisDbContext.cs
         UnitOfWork.cs
@@ -168,7 +178,7 @@ backend/
       ReadRepositories/        # UsuarioReadRepository, TarefaReadRepository, CategoriaReadRepository
       IoC/                     # InfrastructureModule.cs
     Jarvis.Api/
-      Controllers/             # AuthController, TarefasController, CategoriasController
+      Controllers/             # AuthController, TarefasController, CategoriasController, CapturaController
       Extensions/              # ResultExtensions.cs
       Middlewares/             # ExceptionHandlingMiddleware.cs
       Auth/                    # UsuarioLogadoContext.cs
@@ -349,10 +359,11 @@ Fluxo padrao:
 
 Use cases de leitura usam read repository + ReadModel. Use cases de escrita usam write repository + entidade.
 
-Use cases atuais (14 total):
-- **Auth**: CadastrarUsuario, Login, AlterarSenha, AtualizarPerfil
+Use cases atuais (17 total):
+- **Auth**: CadastrarUsuario, Login, AlterarSenha, AtualizarPerfil, AtualizarFotoPerfil
 - **Categorias**: CriarCategoria, ListarCategorias, AtualizarCategoria, RemoverCategoria
-- **Tarefas**: CriarTarefa, ListarTarefasPendentes, ListarTarefasConcluidas, AtualizarTarefa, ConcluirTarefa, RemoverTarefa
+- **Tarefas**: CriarTarefa, ListarTarefasPendentes, ListarTarefasConcluidas, AtualizarTarefa, ConcluirTarefa, ReabrirTarefa, RemoverTarefa
+- **IA**: ConversarCaptura (texto + audio multipart, suporta one-shot e interativo)
 
 ---
 
@@ -402,9 +413,9 @@ Proibido em controller: regra de negocio, acesso a DbContext/repositorio, try/ca
 
 | Projeto | Escopo | Dependencias |
 |---|---|---|
-| `Application.Tests` | Use cases com interfaces mockadas | xUnit, Moq, FluentAssertions |
-| `Core.Tests` | Invariantes de entidades (placeholder) | xUnit, FluentAssertions |
-| `Api.Tests` | Integracao HTTP (placeholder) | xUnit |
+| `Application.Tests` | Use cases com interfaces mockadas (Auth, Categorias, Tarefas, IA) | xUnit, Moq, FluentAssertions |
+| `Core.Tests` | Invariantes de entidades (Usuario, Tarefa, Categoria, TarefaCategoria, Result, Error) | xUnit, FluentAssertions |
+| `Api.Tests` | ExceptionHandlingMiddleware, ResultExtensions, UsuarioLogadoContext | xUnit |
 
 Padrao dos testes:
 - Use cases retornam `Result<T>`, testes verificam `result.IsSuccess`/`result.IsFailure` + `result.Error.Code`/`.Type`.
@@ -421,6 +432,7 @@ Padrao dos testes:
 | POST | `/auth/login` | Nao | 200 | Login + JWT |
 | POST | `/auth/alterar-senha` | Sim | 204 | Alterar senha (exige senha atual) |
 | PUT | `/auth/perfil` | Sim | 200 | Atualizar nome/email |
+| PUT | `/auth/perfil/foto` | Sim | 200 | Atualizar foto de perfil (base64 data:image, ate 700KB) |
 | GET | `/categorias` | Sim | 200 | Listar categorias do usuario |
 | POST | `/categorias` | Sim | 201 | Criar categoria |
 | PUT | `/categorias/{id}` | Sim | 200 | Renomear categoria |
@@ -430,7 +442,10 @@ Padrao dos testes:
 | POST | `/tarefas` | Sim | 201 | Criar tarefa |
 | PUT | `/tarefas/{id}` | Sim | 200 | Atualizar tarefa |
 | POST | `/tarefas/{id}/concluir` | Sim | 200 | Concluir tarefa |
+| POST | `/tarefas/{id}/reabrir` | Sim | 200 | Reabrir tarefa concluida (volta pra pendente) |
 | DELETE | `/tarefas/{id}` | Sim | 204 | Remover tarefa |
+| POST | `/captura/conversar` | Sim | 200 | Conversar com Jarvis (texto puro) — one-shot ou interativo |
+| POST | `/captura/conversar-audio` | Sim | 200 | Conversar com Jarvis via audio (multipart, ate 8MB, formatos Opus/WebM/MP4/WAV/FLAC) |
 
 ---
 

@@ -10,6 +10,7 @@ import { AvatarComponent } from '../../shared/avatar.component';
 import { ConfirmModalComponent } from '../../shared/confirm-modal.component';
 import { FotoPerfilModalComponent } from '../../shared/foto-perfil-modal.component';
 import { extrairProblemDetails } from '../../shared/problem-details';
+import { PageHeaderService } from '../../core/layout/page-header.service';
 
 interface Confirmacao {
   titulo: string;
@@ -30,7 +31,7 @@ interface Confirmacao {
     FotoPerfilModalComponent,
   ],
   template: `
-    <header class="flex items-center px-4 md:px-8 py-3.5 border-b border-border gap-4">
+    <header class="md:hidden flex items-center px-4 py-3.5 border-b border-border gap-4">
       <div class="flex items-center gap-2 text-[15px] text-text-dim">
         <i class="fa-solid fa-gear text-accent text-[12px]"></i>
         <strong class="text-text font-medium">Configurações</strong>
@@ -332,6 +333,14 @@ export class ConfiguracoesComponent implements OnInit {
   private readonly catsApi = inject(CategoriasService);
   private readonly auth = inject(AuthService);
   private readonly storage = inject(TokenStorage);
+  private readonly pageHeader = inject(PageHeaderService);
+
+  constructor() {
+    this.pageHeader.set({
+      titulo: 'Configurações',
+      iconeClasse: 'fa-solid fa-gear text-accent text-[12px]',
+    });
+  }
 
   readonly usuario = this.storage.usuario;
   readonly categorias = signal<Categoria[]>([]);

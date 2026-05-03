@@ -16,6 +16,7 @@ import { TokenStorage } from '../../core/auth/token.storage';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { StaggerInDirective } from '../../shared/stagger-in.directive';
 import { BrandComponent } from '../../shared/brand.component';
+import { PageHeaderService } from '../../core/layout/page-header.service';
 
 interface CategoriaResumo {
   nome: string;
@@ -45,7 +46,7 @@ interface DiaResumo {
   standalone: true,
   imports: [CommonModule, RouterLink, AvatarComponent, StaggerInDirective, BrandComponent],
   template: `
-    <header class="flex items-center px-4 md:px-8 py-3.5 border-b border-border gap-4">
+    <header class="md:hidden flex items-center px-4 py-3.5 border-b border-border gap-4">
       <div class="flex items-center gap-2 text-[15px] text-text-dim">
         <i class="fa-solid fa-house text-accent text-[12px]"></i>
         <strong class="text-text font-medium">Visão geral</strong>
@@ -159,14 +160,15 @@ interface DiaResumo {
 
           <a
             routerLink="/app/captura"
-            class="card-elev p-4 flex flex-col gap-1.5 hover:border-accent/40 hover:-translate-y-0.5 transition-all duration-300 ease-out"
+            class="relative overflow-hidden border border-accent/40 rounded-lg bg-accent/10 p-4 flex flex-col gap-1.5 hover:border-accent/70 hover:bg-accent/15 hover:-translate-y-0.5 hover:shadow-glow transition-all duration-300 ease-out"
+            style="background-image: radial-gradient(ellipse 90% 70% at 100% 0%, rgba(94, 106, 210, 0.18), transparent);"
             data-testid="card-captura"
           >
             <div class="flex items-center justify-between">
-              <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">Adicionar tarefa</span>
-              <i class="fa-solid fa-bolt text-accent/70 text-[12px]"></i>
+              <span class="text-[10px] uppercase tracking-wider text-accent font-semibold">Adicionar tarefa</span>
+              <i class="fa-solid fa-bolt text-accent text-[12px]"></i>
             </div>
-            <div class="text-base font-semibold mt-1.5">Conversa com <app-brand /></div>
+            <div class="text-base font-semibold mt-1.5 text-text">Conversa com <app-brand /></div>
             <div class="text-[11px] text-text-dim">Texto, voz ou modo manual.</div>
           </a>
         </div>
@@ -224,7 +226,7 @@ interface DiaResumo {
               <div class="flex flex-col">
                 @for (h of horasAgenda(); track h) {
                   <div
-                    class="text-[10px] tabular-nums text-text-subtle text-right pr-2 border-b border-border/40 flex items-start pt-1"
+                    class="text-[10px] tabular-nums text-text-subtle border-b border-border/40 grid place-items-center"
                     [style.height.px]="alturaSlotAgenda()"
                   >
                     {{ formatarHora(h) }}
@@ -450,6 +452,14 @@ interface DiaResumo {
 export class VisaoGeralComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly tarefasApi = inject(TarefasService);
   private readonly storage = inject(TokenStorage);
+  private readonly pageHeader = inject(PageHeaderService);
+
+  constructor() {
+    this.pageHeader.set({
+      titulo: 'Visão geral',
+      iconeClasse: 'fa-solid fa-house text-accent text-[12px]',
+    });
+  }
 
   readonly nomeUsuario = signal(this.storage.usuario()?.nome ?? '');
   readonly fotoUsuario = signal<string | null>(this.storage.usuario()?.fotoUrl ?? null);
@@ -457,7 +467,7 @@ export class VisaoGeralComponent implements OnInit, OnDestroy, AfterViewInit {
   readonly alturaSlotAgenda = signal(40);
   private agoraTimer: number | null = null;
   private readonly agendaScroll = viewChild<ElementRef<HTMLDivElement>>('agendaScroll');
-  private static readonly HORA_MIN = 6;
+  private static readonly HORA_MIN = 0;
   private static readonly HORA_MAX = 23;
   readonly carregando = signal(true);
   readonly erro = signal<string | null>(null);

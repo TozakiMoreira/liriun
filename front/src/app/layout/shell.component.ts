@@ -1,9 +1,11 @@
+import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit, computed, inject, signal } from '@angular/core';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs/operators';
 import { TarefasService } from '../core/api/tarefas.service';
 import { AuthService } from '../core/auth/auth.service';
 import { TokenStorage } from '../core/auth/token.storage';
+import { PageHeaderService } from '../core/layout/page-header.service';
 import { AvatarComponent } from '../shared/avatar.component';
 import { BrandComponent } from '../shared/brand.component';
 import { ThemeToggleComponent } from '../shared/theme-toggle.component';
@@ -11,7 +13,7 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, AvatarComponent, BrandComponent, ThemeToggleComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, AvatarComponent, BrandComponent, ThemeToggleComponent],
   template: `
     <div
       class="flex flex-col min-h-screen bg-bg text-text md:grid"
@@ -236,9 +238,40 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
 
       <main class="flex flex-col min-w-0 flex-1 pb-16 md:pb-0">
         <header
-          class="hidden md:flex items-center justify-end gap-3 h-14 px-4 md:px-8 border-b border-border bg-bg-sidebar/40 backdrop-blur-sm"
+          class="hidden md:flex items-center gap-3 h-14 px-4 md:px-8 border-b border-border bg-bg-sidebar/60 backdrop-blur-sm sticky top-0 z-30"
           data-testid="shell-topbar"
         >
+          <div class="flex items-center gap-2 min-w-0">
+            @if (header.voltar(); as v) {
+              <button
+                type="button"
+                class="group inline-flex items-center justify-center w-8 h-8 rounded-md text-accent bg-accent/10 border border-accent/25 hover:bg-accent/20 hover:border-accent/50 active:scale-95 transition-all mr-1"
+                [attr.data-testid]="v.testid ?? 'header-voltar'"
+                [attr.aria-label]="v.aria ?? 'Voltar'"
+                [attr.title]="v.aria ?? 'Voltar'"
+                (click)="v.acao()"
+              >
+                <i class="fa-solid fa-arrow-left text-[13px] transition-transform group-hover:-translate-x-0.5"></i>
+              </button>
+            }
+            @if (header.iconeClasse(); as ic) {
+              <i [class]="ic" [style.color]="header.iconeCor()"></i>
+            }
+            <strong class="text-[15px] font-semibold text-text truncate">
+              {{ header.titulo() }}
+            </strong>
+            @if (header.subtituloTpl(); as t) {
+              <ng-container *ngTemplateOutlet="t"></ng-container>
+            }
+          </div>
+
+          <div class="flex items-center gap-2 ml-auto min-w-0 flex-wrap justify-end">
+            @if (header.acoesTpl(); as t) {
+              <ng-container *ngTemplateOutlet="t"></ng-container>
+            }
+          </div>
+
+          <div class="flex items-center gap-3 pl-3 ml-1 border-l border-border shrink-0">
           <app-theme-toggle />
 
           <div
@@ -270,7 +303,7 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
 
             @if (userMenuAberto()) {
               <div
-                class="absolute right-0 top-full mt-2 w-[240px] card-elev p-1.5 z-40 flex flex-col gap-px"
+                class="absolute right-0 top-full mt-2 w-[240px] card-elev p-1.5 z-50 flex flex-col gap-px"
                 role="menu"
                 data-testid="user-menu-pop"
               >
@@ -298,6 +331,7 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
                 </button>
               </div>
             }
+          </div>
           </div>
         </header>
 
@@ -450,6 +484,7 @@ export class ShellComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly tarefasApi = inject(TarefasService);
   readonly storage = inject(TokenStorage);
+  readonly header = inject(PageHeaderService);
 
   readonly pendentesCount = signal(0);
   readonly atrasadasCount = signal(0);

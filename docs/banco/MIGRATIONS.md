@@ -51,7 +51,7 @@ dotnet ef database update \
   --startup-project src/Jarvis.Api
 ```
 
-Depois disso, as tabelas existem no Supabase. Valida no dashboard do Supabase: **Table Editor** → devem aparecer `usuarios`, `categorias`, `prazos`, `tarefas`, `tarefas_categorias` e `__EFMigrationsHistory`.
+Depois disso, as tabelas existem no Supabase. Valida no dashboard do Supabase: **Table Editor** → devem aparecer `usuarios`, `categorias`, `tarefas`, `tarefas_categorias` e `__EFMigrationsHistory`.
 
 ## 5. Futuras mudanças no schema
 

@@ -99,13 +99,15 @@ Sócio e namorada do Pedro também vão usar pra testar — cada um com suas tar
 - Atrasada (transição automática pendente → atrasada quando passa prazo)
 
 ### Telas da V1
-1. **Login** (email + senha)
-2. **Cadastro** (primeira vez — email + senha + nome do usuário pra personalização)
-3. **Onboarding** (setup de categorias e prazos, bloqueante no primeiro acesso)
-4. **Captura rápida** (tela principal — escolhe modo Manual ou Jarvis, cria tarefa, volta pra mesma tela após salvar)
-5. **Minhas tarefas** (listagem de pendentes e atrasadas, filtro principal configurável, agrupamento padrão: categoria)
-6. **Concluídas** (histórico de tarefas concluídas, filtro por período — dia/semana/mês)
-7. **Configurações** (gerenciar categorias e prazos)
+1. **Landing** (pública, em `/`, hero + CTA de login/cadastro)
+2. **Login** (email + senha)
+3. **Cadastro** (primeira vez — email + senha + nome do usuário pra personalização)
+4. **Onboarding** (setup de categorias, bloqueante no primeiro acesso — Prazo deixou de existir como entidade)
+5. **Captura rápida** (tela principal — escolhe modo Manual ou Jarvis, cria tarefa, volta pra mesma tela após salvar; modo Jarvis aceita texto e áudio gravado)
+6. **Visão Geral** (dashboard pós-login: saudação, resumo, gráficos por categoria/prioridade, timeline)
+7. **Minhas tarefas** (listagem de pendentes e atrasadas, 3 views: Lista, Kanban, Semana, com filtros por categoria/prioridade/período/atraso)
+8. **Concluídas** (histórico de tarefas concluídas, filtro por período — dia/semana/mês, com reabrir)
+9. **Configurações** (perfil + foto + alterar senha + gerenciar categorias)
 
 ### Identidade visual
 - **Paleta**: clonar Linear na cara dura na V1 — dark mode, cinza-azulado, preto, branco, accent roxo/azul
@@ -195,24 +197,24 @@ Esse cenário é considerado improvável em uso pessoal (3-5 tarefas/dia), mas p
 
 A V1 é considerada pronta quando:
 
-- [ ] Cadastro + login funcionando com hash de senha e JWT
-- [ ] Onboarding bloqueante no primeiro acesso com templates padrão
-- [ ] CRUD completo de categorias e prazos
-- [ ] Criar tarefa em modo Manual (formulário completo)
-- [ ] Criar tarefa em modo Jarvis (IA real, Gemini integrado)
-- [ ] Fallback da IA funcionando (texto vago → null; erro → form manual)
-- [ ] Editar e excluir tarefas
-- [ ] Marcar tarefa como concluída
-- [ ] Status atrasada calculando automaticamente no backend
-- [ ] Tela "Minhas tarefas" com filtro principal configurável e atrasadas em destaque
-- [ ] Tela "Concluídas" com filtros por período
-- [ ] Tela "Configurações" (gerenciar categorias e prazos com bloqueio de exclusão)
-- [ ] Responsivo desktop + mobile browser
-- [ ] `data-testid` em todos os elementos interativos
-- [ ] Testes unitários do backend (camadas Domain e Application)
+- [x] Cadastro + login funcionando com hash de senha e JWT
+- [x] Onboarding bloqueante no primeiro acesso com templates padrão
+- [x] CRUD completo de categorias (Prazo deixou de ser entidade — DataPrazo direto na Tarefa, decisão 2026-04-30)
+- [x] Criar tarefa em modo Manual (formulário completo)
+- [x] Criar tarefa em modo Jarvis (IA real, Gemini integrado, texto + áudio com gravação)
+- [x] Fallback da IA funcionando (texto vago → null; erro → form manual)
+- [x] Editar e excluir tarefas
+- [x] Marcar tarefa como concluída + reabrir tarefa concluída
+- [x] Status atrasada calculando automaticamente no backend
+- [x] Tela "Minhas tarefas" com filtro principal configurável (3 views: Lista/Kanban/Semana) e atrasadas em destaque
+- [x] Tela "Concluídas" com filtros por período
+- [x] Tela "Configurações" (gerenciar categorias com bloqueio de exclusão + perfil + foto + senha)
+- [x] Responsivo desktop + mobile browser
+- [x] `data-testid` em todos os elementos interativos
+- [x] Testes unitários do backend (camadas Domain, Application e Api)
 - [ ] Testes E2E automatizados dos fluxos principais (desktop + mobile)
 - [ ] Deploy em produção funcionando (frontend + backend + banco)
-- [ ] Tom do Jarvis consistente em todas as telas
+- [x] Tom do Jarvis consistente em todas as telas
 
 ---
 

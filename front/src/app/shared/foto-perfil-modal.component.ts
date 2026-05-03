@@ -3,6 +3,7 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  HostListener,
   Input,
   Output,
   inject,
@@ -171,5 +172,10 @@ export class FotoPerfilModalComponent {
   onCancelar(): void {
     if (this.processando()) return;
     this.cancelado.emit();
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.onCancelar();
   }
 }

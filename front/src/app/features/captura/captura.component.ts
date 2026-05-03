@@ -6,6 +6,7 @@ import {
   DestroyRef,
   ElementRef,
   HostListener,
+  TemplateRef,
   computed,
   effect,
   inject,
@@ -30,6 +31,7 @@ import { TokenStorage } from '../../core/auth/token.storage';
 import { extrairProblemDetails } from '../../shared/problem-details';
 import { TarefaFormComponent } from '../tarefas/tarefa-form.component';
 import { BrandComponent } from '../../shared/brand.component';
+import { PageHeaderService } from '../../core/layout/page-header.service';
 
 type Modo = 'manual' | 'jarvis' | null;
 
@@ -39,7 +41,7 @@ type Modo = 'manual' | 'jarvis' | null;
   imports: [CommonModule, FormsModule, TarefaFormComponent, BrandComponent],
   template: `
     <header
-      class="flex items-center px-4 md:px-8 py-3.5 border-b border-border gap-3"
+      class="md:hidden flex items-center px-4 py-3.5 border-b border-border gap-3"
       style="background-image: radial-gradient(ellipse 60% 100% at 0% 50%, rgba(94, 106, 210, 0.08), transparent 60%);"
     >
       @if (modo() === 'jarvis') {
@@ -64,10 +66,10 @@ type Modo = 'manual' | 'jarvis' | null;
           >
             Nova tarefa
           </button>
-          <i class="fa-solid fa-chevron-right text-[9px] text-text-subtle"></i>
+          <i class="fa-solid fa-chevron-right text-[9px] text-accent"></i>
           <span class="text-text font-medium flex items-center gap-1.5">
             <i class="fa-solid fa-wand-magic-sparkles text-accent text-[11px]"></i>
-            <app-brand />
+            <span>Modo&nbsp;<app-brand /></span>
           </span>
         </nav>
       } @else {
@@ -77,6 +79,21 @@ type Modo = 'manual' | 'jarvis' | null;
         </div>
       }
     </header>
+
+    <ng-template #subtituloTpl>
+      @if (modo() !== null) {
+        <i class="fa-solid fa-chevron-right text-[9px] text-accent"></i>
+        <span class="text-text font-medium text-[13px] flex items-center gap-1.5">
+          @if (modo() === 'jarvis') {
+            <i class="fa-solid fa-wand-magic-sparkles text-accent text-[11px]"></i>
+            <span>Modo&nbsp;<app-brand /></span>
+          } @else {
+            <i class="fa-solid fa-pen-to-square text-text-dim text-[11px]"></i>
+            <span>Modo manual</span>
+          }
+        </span>
+      }
+    </ng-template>
 
     <div
       class="flex-1 grid place-items-center px-4 md:px-8 py-8 md:py-12 bg-bg relative overflow-hidden"
@@ -962,6 +979,7 @@ export class CapturaComponent implements AfterViewChecked {
   private readonly tarefasApi = inject(TarefasService);
   private readonly categoriasApi = inject(CategoriasService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly pageHeader = inject(PageHeaderService);
 
   readonly modo = signal<Modo>(null);
   readonly nomeUsuario = signal(this.storage.usuario()?.nome ?? '');
@@ -1070,10 +1088,31 @@ export class CapturaComponent implements AfterViewChecked {
   private rafGravacao: number | null = null;
   private suprimirPersistencia = false;
 
+  private readonly subtituloTplRef = viewChild<TemplateRef<unknown>>('subtituloTpl');
+
   constructor() {
     this.destroyRef.onDestroy(() => {
       this.limparGravacao();
       this.descartarPreviaUrl();
+      this.pageHeader.limpar();
+    });
+
+    effect(() => {
+      const m = this.modo();
+      const subtituloTpl = this.subtituloTplRef();
+      this.pageHeader.set({
+        titulo: 'Nova tarefa',
+        iconeClasse: 'fa-solid fa-bolt text-accent text-[12px]',
+        subtituloTpl: subtituloTpl ?? null,
+        voltar:
+          m !== null
+            ? {
+                acao: () => this.voltarSelecaoModo(),
+                aria: 'Voltar pra escolha de modo',
+                testid: 'captura-voltar-topbar',
+              }
+            : null,
+      });
     });
 
     effect(() => {

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, computed, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
@@ -11,6 +11,7 @@ import {
   senhaAtendeRequisitos,
 } from '../../shared/password-requirements.component';
 import { extrairProblemDetails } from '../../shared/problem-details';
+import { PageHeaderService } from '../../core/layout/page-header.service';
 
 @Component({
   selector: 'app-alterar-senha',
@@ -23,8 +24,13 @@ import { extrairProblemDetails } from '../../shared/problem-details';
     PasswordRequirementsComponent,
   ],
   template: `
+    <ng-template #subtituloTpl>
+      <i class="fa-solid fa-chevron-right text-[9px] text-accent"></i>
+      <span class="text-text font-medium text-[13px]">Trocar senha</span>
+    </ng-template>
+
     <header
-      class="flex items-center px-4 md:px-8 py-3.5 border-b border-border gap-3"
+      class="md:hidden flex items-center px-4 py-3.5 border-b border-border gap-3"
       style="background-image: radial-gradient(ellipse 60% 100% at 0% 50%, rgba(94, 106, 210, 0.08), transparent 60%);"
     >
       <a
@@ -46,7 +52,7 @@ import { extrairProblemDetails } from '../../shared/problem-details';
         >
           Configurações
         </a>
-        <i class="fa-solid fa-chevron-right text-[9px] text-text-subtle"></i>
+        <i class="fa-solid fa-chevron-right text-[9px] text-accent"></i>
         <span class="text-text font-medium flex items-center gap-1.5">
           <i class="fa-solid fa-key text-accent text-[11px]"></i>
           Trocar senha
@@ -174,10 +180,37 @@ import { extrairProblemDetails } from '../../shared/problem-details';
     </div>
   `,
 })
-export class AlterarSenhaComponent {
+export class AlterarSenhaComponent implements AfterViewInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly storage = inject(TokenStorage);
+  private readonly pageHeader = inject(PageHeaderService);
+  private readonly subtituloTplRef = viewChild<TemplateRef<unknown>>('subtituloTpl');
+
+  constructor() {
+    this.pageHeader.set({
+      titulo: 'Configurações',
+      iconeClasse: 'fa-solid fa-gear text-accent text-[12px]',
+      voltar: {
+        acao: () => this.router.navigateByUrl('/app/configuracoes'),
+        aria: 'Voltar para Configurações',
+        testid: 'alterar-senha-voltar-topbar',
+      },
+    });
+  }
+
+  ngAfterViewInit(): void {
+    this.pageHeader.set({
+      titulo: 'Configurações',
+      iconeClasse: 'fa-solid fa-gear text-accent text-[12px]',
+      subtituloTpl: this.subtituloTplRef() ?? null,
+      voltar: {
+        acao: () => this.router.navigateByUrl('/app/configuracoes'),
+        aria: 'Voltar para Configurações',
+        testid: 'alterar-senha-voltar-topbar',
+      },
+    });
+  }
 
   readonly senhaAtual = signal('');
   readonly novaSenha = signal('');

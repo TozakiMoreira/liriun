@@ -54,8 +54,9 @@ Jarvis/
 │   │   └── shared/                  # componentes reusáveis
 │   └── src/environments/            # environment.ts (dev) / environment.prod.ts
 ├── docs/
-│   ├── PROJETO.md / ENTREVISTA.md / DESENVOLVIMENTO.md / FUTURO.md / SEMANA.md
-│   ├── fluxos/  mocks/  reuniões/
+│   ├── PROJETO.md / ENTREVISTA.md / DESENVOLVIMENTO.md / FUTURO.md
+│   ├── CHECKLIST_PRODUCAO.md
+│   └── banco/MIGRATIONS.md
 ├── CLAUDE.md                        # contexto resumido pra Claude Code
 ├── .env.example                     # template de variáveis (copie pra .env.local)
 └── .env.local                       # valores reais (gitignored)
@@ -281,8 +282,8 @@ Tudo em `docs/`:
 - **`ENTREVISTA.md`** — descoberta de produto consolidada (fonte autoritativa de decisões de produto)
 - **`DESENVOLVIMENTO.md`** — plano de desenvolvimento em fases com checklist
 - **`FUTURO.md`** — visão de longo prazo / backlog pós-V1
-- **`SEMANA.md`** — planejamento da semana corrente
-- **`fluxos/`**, **`mocks/`**, **`reuniões/`** — diagramas, protótipos, atas
+- **`CHECKLIST_PRODUCAO.md`** — itens a varrer antes de abrir cadastro público
+- **`banco/MIGRATIONS.md`** — comandos `dotnet ef` pra criar/aplicar/reverter migrations
 
 E **`backend/ARCHITECTURE.md`** detalha a Clean Architecture (Result<T>, ProblemDetails, FluentValidation, padrão Read/Write repos).
 
