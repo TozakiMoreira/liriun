@@ -2,12 +2,13 @@ import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Categoria, CategoriasService } from '../../core/api/categorias.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { TokenStorage } from '../../core/auth/token.storage';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { ConfirmModalComponent } from '../../shared/confirm-modal.component';
+import { ExcluirContaModalComponent } from '../../shared/excluir-conta-modal.component';
 import { FotoPerfilModalComponent } from '../../shared/foto-perfil-modal.component';
 import { extrairProblemDetails } from '../../shared/problem-details';
 import { PageHeaderService } from '../../core/layout/page-header.service';
@@ -28,6 +29,7 @@ interface Confirmacao {
     RouterLink,
     AvatarComponent,
     ConfirmModalComponent,
+    ExcluirContaModalComponent,
     FotoPerfilModalComponent,
   ],
   template: `
@@ -303,6 +305,31 @@ interface Confirmacao {
           }
         </section>
         </section>
+
+        <section class="flex flex-col gap-3" data-testid="section-zona-perigosa-wrap">
+          <h2 class="text-xl font-semibold tracking-tight text-danger">Zona perigosa</h2>
+          <section
+            class="card-elev p-5 flex flex-col gap-4 border-danger/30"
+            data-testid="section-zona-perigosa"
+          >
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div class="flex flex-col gap-0.5">
+                <div class="text-[13px] font-medium text-text">Excluir conta</div>
+                <div class="text-xs text-text-dim leading-relaxed">
+                  Apaga sua conta e todas as tarefas/categorias associadas. Não dá pra desfazer.
+                </div>
+              </div>
+              <button
+                type="button"
+                class="text-[13px] px-4 py-2 rounded font-medium bg-danger/10 text-danger hover:bg-danger/20 border border-danger/30 self-start sm:self-auto"
+                data-testid="excluir-conta-btn"
+                (click)="abrirExcluirContaModal()"
+              >
+                Excluir minha conta
+              </button>
+            </div>
+          </section>
+        </section>
       </div>
     </div>
 
@@ -327,6 +354,15 @@ interface Confirmacao {
         (cancelado)="fotoModalAberto.set(false)"
       ></app-foto-perfil-modal>
     }
+
+    @if (excluirContaModalAberto()) {
+      <app-excluir-conta-modal
+        [processandoExterno]="excluindoConta()"
+        [erroExterno]="erroExcluirConta()"
+        (confirmar)="confirmarExcluirConta($event)"
+        (cancelado)="fecharExcluirContaModal()"
+      ></app-excluir-conta-modal>
+    }
   `,
 })
 export class ConfiguracoesComponent implements OnInit, OnDestroy {
@@ -334,6 +370,7 @@ export class ConfiguracoesComponent implements OnInit, OnDestroy {
   private readonly auth = inject(AuthService);
   private readonly storage = inject(TokenStorage);
   private readonly pageHeader = inject(PageHeaderService);
+  private readonly router = inject(Router);
 
   constructor() {
     this.pageHeader.set({
@@ -370,6 +407,11 @@ export class ConfiguracoesComponent implements OnInit, OnDestroy {
   // Foto de perfil
   readonly fotoModalAberto = signal(false);
   readonly salvandoFoto = signal(false);
+
+  // Excluir conta
+  readonly excluirContaModalAberto = signal(false);
+  readonly excluindoConta = signal(false);
+  readonly erroExcluirConta = signal<string | null>(null);
 
   ngOnInit(): void {
     this.catsApi.listar().subscribe({
@@ -554,5 +596,36 @@ export class ConfiguracoesComponent implements OnInit, OnDestroy {
     if (!c) return;
     this.confirmacao.set(null);
     c.acao();
+  }
+
+  // ===== Excluir conta =====
+  abrirExcluirContaModal(): void {
+    this.erroExcluirConta.set(null);
+    this.excluirContaModalAberto.set(true);
+  }
+
+  fecharExcluirContaModal(): void {
+    if (this.excluindoConta()) return;
+    this.excluirContaModalAberto.set(false);
+    this.erroExcluirConta.set(null);
+  }
+
+  confirmarExcluirConta(senha: string): void {
+    if (this.excluindoConta()) return;
+    this.erroExcluirConta.set(null);
+    this.excluindoConta.set(true);
+    this.auth.excluirConta(senha).subscribe({
+      next: () => {
+        this.excluindoConta.set(false);
+        this.excluirContaModalAberto.set(false);
+        this.router.navigateByUrl('/');
+      },
+      error: (err: HttpErrorResponse) => {
+        this.excluindoConta.set(false);
+        const r = extrairProblemDetails(err, 'Não consegui excluir sua conta. Tenta de novo.');
+        const primeiro = Object.values(r.errosCampo)[0];
+        this.erroExcluirConta.set(primeiro ?? r.mensagemGeral ?? 'Não consegui excluir sua conta.');
+      },
+    });
   }
 }

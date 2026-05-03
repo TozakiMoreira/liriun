@@ -138,7 +138,7 @@ export class LoginComponent {
     this.auth.login(this.email.trim(), this.senha).subscribe({
       next: () => {
         this.carregando.set(false);
-        this.router.navigateByUrl('/app/captura');
+        this.router.navigateByUrl('/app/visao-geral');
       },
       error: (err: HttpErrorResponse) => {
         this.carregando.set(false);

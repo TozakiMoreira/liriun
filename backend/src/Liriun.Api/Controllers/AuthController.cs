@@ -64,4 +64,15 @@ public class AuthController : ControllerBase
         Result<PerfilViewModel> result = await useCase.ExecuteAsync(input, ct);
         return result.ToActionResult(view => Ok(view));
     }
+
+    [HttpDelete("conta")]
+    [Authorize]
+    public async Task<IActionResult> ExcluirConta(
+        [FromBody] ExcluirContaInput input,
+        [FromServices] ExcluirContaUseCase useCase,
+        CancellationToken ct)
+    {
+        Result result = await useCase.ExecuteAsync(input, ct);
+        return result.ToActionResult(() => NoContent());
+    }
 }

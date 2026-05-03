@@ -18,6 +18,7 @@ public static class ApplicationModule
         services.AddScoped<AlterarSenhaUseCase>();
         services.AddScoped<AtualizarPerfilUseCase>();
         services.AddScoped<AtualizarFotoPerfilUseCase>();
+        services.AddScoped<ExcluirContaUseCase>();
 
         services.AddScoped<ListarCategoriasUseCase>();
         services.AddScoped<CriarCategoriaUseCase>();

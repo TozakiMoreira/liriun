@@ -12,9 +12,10 @@ internal static class UsuarioMapper
         Email = entity.Email,
         SenhaHash = entity.SenhaHash,
         FotoUrl = entity.FotoUrl,
-        CriadoEm = entity.CriadoEm
+        CriadoEm = entity.CriadoEm,
+        TermosAceitosEm = entity.TermosAceitosEm
     };
 
     public static Usuario ToEntity(UsuarioModel model)
-        => Usuario.Reconstituir(model.Id, model.Nome, model.Email, model.SenhaHash, model.FotoUrl, model.CriadoEm);
+        => Usuario.Reconstituir(model.Id, model.Nome, model.Email, model.SenhaHash, model.FotoUrl, model.CriadoEm, model.TermosAceitosEm);
 }

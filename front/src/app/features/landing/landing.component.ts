@@ -6,11 +6,12 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { FadeInOnViewDirective } from '../../shared/fade-in-on-view.directive';
 import { BrandComponent } from '../../shared/brand.component';
+import { SiteFooterComponent } from '../../shared/site-footer.component';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [RouterLink, FadeInOnViewDirective, AvatarComponent, BrandComponent, ThemeToggleComponent],
+  imports: [RouterLink, FadeInOnViewDirective, AvatarComponent, BrandComponent, ThemeToggleComponent, SiteFooterComponent],
   template: `
     <div class="relative min-h-screen bg-bg text-text overflow-x-hidden" data-testid="landing-page">
       <div class="absolute inset-0 -z-10 pointer-events-none">
@@ -580,11 +581,12 @@ import { BrandComponent } from '../../shared/brand.component';
           </p>
           @if (autenticado()) {
             <a
-              routerLink="/app/captura"
-              class="btn-primary px-6 py-3 text-sm shadow-accent mt-2"
+              routerLink="/app/visao-geral"
+              class="btn-primary px-6 py-3 text-sm shadow-accent mt-2 flex items-center gap-2"
               data-testid="landing-fim-cta-app"
             >
-              Entrar no app
+              <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
+              Ir pro <app-brand />
             </a>
           } @else {
             <a
@@ -598,11 +600,8 @@ import { BrandComponent } from '../../shared/brand.component';
         </div>
       </section>
 
-      <footer
-        class="border-t border-border/50 py-8 px-6 text-center text-text-subtle text-[11px] tracking-wider"
-      >
-        LIRIUN • v0.1 BETA
-      </footer>
+      <app-site-footer />
+
     </div>
   `,
 })

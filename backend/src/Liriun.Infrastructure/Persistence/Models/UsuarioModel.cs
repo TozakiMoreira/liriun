@@ -8,4 +8,5 @@ public class UsuarioModel
     public string SenhaHash { get; set; } = null!;
     public string? FotoUrl { get; set; }
     public DateTime CriadoEm { get; set; }
+    public DateTime? TermosAceitosEm { get; set; }
 }

@@ -41,7 +41,7 @@ public class CadastrarUsuarioUseCaseTests
         _jwt.Setup(j => j.Gerar(It.IsAny<Usuario>()))
             .Returns(("token-fake", DateTime.UtcNow.AddHours(24)));
 
-        CadastrarUsuarioInput input = new("Pedro", "pedro@ex.com", "senha1234");
+        CadastrarUsuarioInput input = new("Pedro", "pedro@ex.com", "senha1234", true);
         Result<AutenticacaoViewModel> result = await Criar().ExecuteAsync(input, CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
@@ -55,7 +55,7 @@ public class CadastrarUsuarioUseCaseTests
         _usuarioRead.Setup(r => r.ExisteEmailAsync("pedro@ex.com", It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
-        CadastrarUsuarioInput input = new("Pedro", "pedro@ex.com", "senha1234");
+        CadastrarUsuarioInput input = new("Pedro", "pedro@ex.com", "senha1234", true);
         Result<AutenticacaoViewModel> result = await Criar().ExecuteAsync(input, CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
@@ -69,7 +69,7 @@ public class CadastrarUsuarioUseCaseTests
         _validator.Setup(v => v.ValidateAsync(It.IsAny<CadastrarUsuarioInput>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new ValidationResult(new[] { new ValidationFailure("Nome", "Nome e obrigatorio") }));
 
-        CadastrarUsuarioInput input = new("", "pedro@ex.com", "senha1234");
+        CadastrarUsuarioInput input = new("", "pedro@ex.com", "senha1234", true);
         Result<AutenticacaoViewModel> result = await Criar().ExecuteAsync(input, CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();

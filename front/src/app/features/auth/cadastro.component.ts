@@ -108,6 +108,41 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
             }
           </div>
 
+          <div class="flex flex-col gap-1.5 mt-1">
+            <label class="flex items-start gap-2 text-[13px] text-text-dim cursor-pointer select-none">
+              <input
+                type="checkbox"
+                class="mt-0.5 h-4 w-4 cursor-pointer accent-[var(--accent)]"
+                name="aceitouTermos"
+                data-testid="signup-aceite-checkbox"
+                [(ngModel)]="aceitouTermos"
+              />
+              <span>
+                Li e aceito os
+                <a
+                  routerLink="/termos-uso"
+                  target="_blank"
+                  rel="noopener"
+                  class="text-text font-medium border-b border-border-strong hover:border-accent pb-px"
+                  data-testid="signup-termos-link"
+                  >Termos de Uso</a
+                >
+                e a
+                <a
+                  routerLink="/politica-privacidade"
+                  target="_blank"
+                  rel="noopener"
+                  class="text-text font-medium border-b border-border-strong hover:border-accent pb-px"
+                  data-testid="signup-privacidade-link"
+                  >Política de Privacidade</a
+                >.
+              </span>
+            </label>
+            @if (erroAceite()) {
+              <p class="text-danger text-xs" data-testid="signup-erro-aceite">{{ erroAceite() }}</p>
+            }
+          </div>
+
           @if (erroGeral()) {
             <p class="text-danger text-xs" data-testid="signup-erro">{{ erroGeral() }}</p>
           }
@@ -154,6 +189,7 @@ export class CadastroComponent {
   nome = '';
   email = '';
   senha = signal('');
+  aceitouTermos = false;
   carregando = signal(false);
   erroGeral = signal<string | null>(null);
   errosCampo = signal<Record<string, string>>({});
@@ -161,6 +197,7 @@ export class CadastroComponent {
   erroNome = computed(() => this.errosCampo()['nome'] ?? null);
   erroEmail = computed(() => this.errosCampo()['email'] ?? null);
   erroSenha = computed(() => this.errosCampo()['senha'] ?? null);
+  erroAceite = computed(() => this.errosCampo()['aceitouTermos'] ?? null);
 
   enviar(): void {
     if (this.carregando()) return;
@@ -174,7 +211,7 @@ export class CadastroComponent {
     this.errosCampo.set({});
 
     this.carregando.set(true);
-    this.auth.cadastrar(this.nome.trim(), this.email.trim(), this.senha()).subscribe({
+    this.auth.cadastrar(this.nome.trim(), this.email.trim(), this.senha(), this.aceitouTermos).subscribe({
       next: () => {
         this.carregando.set(false);
         this.router.navigateByUrl('/onboarding');
@@ -202,6 +239,9 @@ export class CadastroComponent {
       erros['senha'] = 'Senha é obrigatória.';
     } else if (!senhaAtendeRequisitos(senha)) {
       erros['senha'] = 'A senha não atende todos os requisitos.';
+    }
+    if (!this.aceitouTermos) {
+      erros['aceitouTermos'] = 'Você precisa aceitar os Termos de Uso e a Política de Privacidade.';
     }
     return erros;
   }

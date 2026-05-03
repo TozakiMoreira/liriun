@@ -24,7 +24,12 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
         class="md:hidden flex items-center justify-between h-12 px-4 border-b border-border bg-bg-sidebar"
         data-testid="mobile-topbar"
       >
-        <div class="flex items-center gap-2">
+        <a
+          routerLink="/"
+          class="flex items-center gap-2 hover:opacity-80 transition-opacity"
+          data-testid="mobile-logo-home"
+          aria-label="Ir pra página inicial"
+        >
           <img
             src="/logo.png"
             alt="Liriun"
@@ -32,7 +37,7 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
             aria-hidden="true"
           />
           <div class="text-[13px] font-semibold tracking-tight"><app-brand /></div>
-        </div>
+        </a>
         <div class="flex items-center gap-2">
           <app-theme-toggle [mostrarLabel]="false" />
           <button
@@ -311,6 +316,25 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
                   <span class="text-[12.5px] font-medium truncate">{{ storage.usuario()?.nome }}</span>
                   <span class="text-[11px] text-text-subtle truncate">{{ storage.usuario()?.email }}</span>
                 </div>
+                <a
+                  routerLink="/"
+                  class="flex items-center gap-2.5 px-2.5 py-2 rounded text-[13px] text-text-dim hover:text-text hover:bg-bg-elev"
+                  data-testid="user-menu-home"
+                  (click)="fecharUserMenu()"
+                >
+                  <i class="fa-solid fa-house text-[12px] w-4 text-center"></i>
+                  Página inicial
+                </a>
+                <a
+                  routerLink="/sobre"
+                  class="flex items-center gap-2.5 px-2.5 py-2 rounded text-[13px] text-text-dim hover:text-text hover:bg-bg-elev"
+                  data-testid="user-menu-sobre"
+                  (click)="fecharUserMenu()"
+                >
+                  <i class="fa-solid fa-circle-info text-[12px] w-4 text-center"></i>
+                  Sobre o Liriun
+                </a>
+                <div class="h-px bg-border my-1"></div>
                 <a
                   routerLink="/app/configuracoes"
                   class="flex items-center gap-2.5 px-2.5 py-2 rounded text-[13px] text-text-dim hover:text-text hover:bg-bg-elev"

@@ -150,7 +150,7 @@ export class OnboardingComponent implements OnInit {
     this.categoriasApi.listar().subscribe({
       next: (cats) => {
         if (cats.length > 0) {
-          this.router.navigateByUrl('/app/captura');
+          this.router.navigateByUrl('/app/visao-geral');
         }
       },
       error: () => of(null),
@@ -190,7 +190,7 @@ export class OnboardingComponent implements OnInit {
     forkJoin(cats$).subscribe({
       next: () => {
         this.salvando.set(false);
-        this.router.navigateByUrl('/app/captura');
+        this.router.navigateByUrl('/app/visao-geral');
       },
       error: (err: HttpErrorResponse) => {
         this.salvando.set(false);

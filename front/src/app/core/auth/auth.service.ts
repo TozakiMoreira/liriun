@@ -32,10 +32,21 @@ export class AuthService {
       .pipe(tap((res) => this.persistir(res)));
   }
 
-  cadastrar(nome: string, email: string, senha: string): Observable<AutenticacaoResposta> {
+  cadastrar(
+    nome: string,
+    email: string,
+    senha: string,
+    aceitouTermos: boolean,
+  ): Observable<AutenticacaoResposta> {
     return this.http
-      .post<AutenticacaoResposta>(`${this.api}/cadastro`, { nome, email, senha })
+      .post<AutenticacaoResposta>(`${this.api}/cadastro`, { nome, email, senha, aceitouTermos })
       .pipe(tap((res) => this.persistir(res)));
+  }
+
+  excluirConta(senha: string): Observable<void> {
+    return this.http
+      .request<void>('DELETE', `${this.api}/conta`, { body: { senha } })
+      .pipe(tap(() => this.storage.clear()));
   }
 
   alterarSenha(senhaAtual: string, novaSenha: string): Observable<void> {

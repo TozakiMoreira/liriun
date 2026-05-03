@@ -17,5 +17,8 @@ public sealed class CadastrarUsuarioValidator : AbstractValidator<CadastrarUsuar
             .Must(e => e != null && e.Contains('@') && e.Contains('.')).WithMessage("Email em formato invalido");
 
         RuleFor(x => x.Senha).SenhaForte();
+
+        RuleFor(x => x.AceitouTermos)
+            .Equal(true).WithMessage("Voce precisa aceitar os Termos de Uso e a Politica de Privacidade");
     }
 }

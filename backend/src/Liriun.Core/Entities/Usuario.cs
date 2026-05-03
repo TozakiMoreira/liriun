@@ -13,11 +13,12 @@ public class Usuario
     public string SenhaHash { get; private set; } = null!;
     public string? FotoUrl { get; private set; }
     public DateTime CriadoEm { get; private set; }
+    public DateTime? TermosAceitosEm { get; private set; }
 
     private Usuario() { }
 
     internal static Usuario Reconstituir(
-        Guid id, string nome, string email, string senhaHash, string? fotoUrl, DateTime criadoEm)
+        Guid id, string nome, string email, string senhaHash, string? fotoUrl, DateTime criadoEm, DateTime? termosAceitosEm)
         => new()
         {
             Id = id,
@@ -26,10 +27,12 @@ public class Usuario
             SenhaHash = senhaHash,
             FotoUrl = fotoUrl,
             CriadoEm = criadoEm,
+            TermosAceitosEm = termosAceitosEm,
         };
 
-    public static Result<Usuario> Criar(string nome, string email, string senhaHash)
+    public static Result<Usuario> Criar(string nome, string email, string senhaHash, DateTime? termosAceitosEm = null)
     {
+        DateTime agora = DateTime.UtcNow;
         Usuario usuario = new()
         {
             Id = Guid.NewGuid(),
@@ -37,7 +40,8 @@ public class Usuario
             Email = email?.Trim().ToLowerInvariant() ?? string.Empty,
             SenhaHash = senhaHash,
             FotoUrl = null,
-            CriadoEm = DateTime.UtcNow
+            CriadoEm = agora,
+            TermosAceitosEm = termosAceitosEm ?? agora
         };
 
         Result validacao = usuario.Validar();

@@ -46,4 +46,10 @@ public class UsuarioRepository : IUsuarioRepository
         await _db.SaveChangesAsync(ct);
         return usuario;
     }
+
+    public async Task RemoverAsync(Guid usuarioId, CancellationToken ct)
+    {
+        // Cascade FK no banco (tarefas, categorias, tarefas_categorias) cuida do resto.
+        await _db.Usuarios.Where(u => u.Id == usuarioId).ExecuteDeleteAsync(ct);
+    }
 }
