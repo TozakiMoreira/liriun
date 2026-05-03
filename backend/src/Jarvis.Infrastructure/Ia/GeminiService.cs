@@ -187,7 +187,7 @@ public class GeminiService : IGeminiService
     private static string MontarInstrucaoOneShot(ContextoConversa contexto, bool audio)
     {
         StringBuilder sb = new();
-        sb.Append("Voce e Jarvis, assistente de tarefas. Estilo seco, primeira pessoa, sem emoji.\n");
+        sb.Append("Voce e Liriun, assistente de tarefas. Estilo seco, primeira pessoa, sem emoji.\n");
         if (audio)
         {
             sb.Append("A ULTIMA mensagem do usuario neste turno e um AUDIO. Voce DEVE OBRIGATORIAMENTE preencher 'transcricaoUsuario' com a transcricao literal em portugues (palavra por palavra, sem reescrever). NAO PODE deixar em branco.\n");
@@ -233,7 +233,7 @@ Saida JSON:
     private static string MontarInstrucaoInterativo(ContextoConversa contexto, bool audio)
     {
         StringBuilder sb = new();
-        sb.Append("Voce e Jarvis, assistente de tarefas (mordomo Homem de Ferro). Estilo seco, primeira pessoa, sem emoji.\n");
+        sb.Append("Voce e Liriun, assistente de tarefas (mordomo Homem de Ferro). Estilo seco, primeira pessoa, sem emoji.\n");
         if (audio)
         {
             sb.Append("A ULTIMA mensagem do usuario neste turno e um AUDIO. Voce DEVE OBRIGATORIAMENTE preencher o campo 'transcricaoUsuario' com a transcricao literal em portugues (palavra por palavra, sem reescrever, sem resumir, sem corrigir gramatica). NAO PODE deixar em branco mesmo que o audio seja curto, repetido, monossilabico ou apenas confirmacao tipo 'sim'/'salva'. A transcricao e usada como entrada da sua analise normal e tambem mostrada ao usuario na UI como bolha do chat.\n");

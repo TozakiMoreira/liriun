@@ -99,7 +99,7 @@ import { PasswordInputComponent } from '../../shared/password-input.component';
       <div
         class="fixed bottom-6 left-1/2 -translate-x-1/2 text-text-subtle text-[11px] tracking-wider"
       >
-        JARVIS • v0.1 BETA
+        LIRIUN • v0.1 BETA
       </div>
     </main>
   `,

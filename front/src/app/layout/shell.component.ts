@@ -86,23 +86,23 @@ import { ThemeService } from '../core/theme/theme.service';
         } @else {
           <button
             type="button"
-            class="w-8 h-8 rounded-lg shadow-logo shrink-0 mb-3 transition-transform hover:scale-105 overflow-hidden block group/logo relative"
+            class="w-8 h-8 rounded-md grid place-items-center text-text-subtle hover:text-text hover:bg-bg-elev shrink-0 mb-2 transition-colors"
             data-testid="sidebar-toggle"
             title="Expandir barra lateral"
             aria-label="Expandir barra lateral"
             (click)="alternarSidebar()"
           >
-            <img
-              src="/logo.png"
-              alt="Liriun"
-              class="w-full h-full object-contain transition-opacity group-hover/logo:opacity-30"
-            />
-            <span
-              class="absolute inset-0 grid place-items-center text-white opacity-0 group-hover/logo:opacity-100 transition-opacity bg-bg/55 backdrop-blur-[1px]"
-            >
-              <i class="fa-solid fa-angles-right text-[12px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"></i>
-            </span>
+            <i class="fa-solid fa-angles-right text-[12px]"></i>
           </button>
+          <a
+            routerLink="/app/visao-geral"
+            class="w-8 h-8 rounded-lg shadow-logo shrink-0 mb-3 transition-transform hover:scale-105 overflow-hidden block"
+            data-testid="sidebar-logo"
+            aria-label="Ir pra visão geral"
+            title="Visão geral"
+          >
+            <img src="/logo.png" alt="Liriun" class="w-full h-full object-contain" />
+          </a>
         }
 
         @if (!sidebarCollapsed()) {

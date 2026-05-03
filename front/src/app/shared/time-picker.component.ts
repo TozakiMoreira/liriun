@@ -3,12 +3,18 @@ import {
   ChangeDetectionStrategy,
   Component,
   ElementRef,
+  EmbeddedViewRef,
   EventEmitter,
   HostListener,
   Input,
+  OnDestroy,
   Output,
+  TemplateRef,
+  ViewContainerRef,
+  ViewEncapsulation,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 
 @Component({
@@ -18,6 +24,7 @@ import {
   template: `
     <div class="time-picker-wrap" data-testid="time-picker">
       <button
+        #trigger
         type="button"
         class="time-picker-input"
         [class.disabled]="disabled"
@@ -34,67 +41,69 @@ import {
         }
         <i class="fa-solid fa-chevron-down text-text-subtle text-[10px] ml-auto"></i>
       </button>
+    </div>
 
-      @if (aberto()) {
-        <div
-          class="time-picker-pop"
-          role="dialog"
-          aria-label="Selecionar horário"
-          (click)="$event.stopPropagation()"
-        >
-          <div class="time-picker-cols">
-            <div class="time-picker-col" data-testid="hour-col">
-              <div class="time-picker-col-label">Hora</div>
-              <div class="time-picker-list" #horaList>
-                @for (h of horas; track h) {
-                  <button
-                    type="button"
-                    class="time-picker-cell"
-                    [class.active]="h === horaSel()"
-                    [attr.data-hour]="h"
-                    (click)="setHora(h)"
-                  >
-                    {{ h }}
-                  </button>
-                }
-              </div>
-            </div>
-            <div class="time-picker-col" data-testid="min-col">
-              <div class="time-picker-col-label">Minuto</div>
-              <div class="time-picker-list" #minList>
-                @for (m of minutos; track m) {
-                  <button
-                    type="button"
-                    class="time-picker-cell"
-                    [class.active]="m === minSel()"
-                    [attr.data-min]="m"
-                    (click)="setMin(m)"
-                  >
-                    {{ m }}
-                  </button>
-                }
-              </div>
+    <ng-template #popTpl>
+      <div
+        class="time-picker-pop"
+        role="dialog"
+        aria-label="Selecionar horário"
+        [style.top.px]="popTop()"
+        [style.left.px]="popLeft()"
+        (click)="$event.stopPropagation()"
+      >
+        <div class="time-picker-cols">
+          <div class="time-picker-col" data-testid="hour-col">
+            <div class="time-picker-col-label">Hora</div>
+            <div class="time-picker-list" #horaList>
+              @for (h of horas; track h) {
+                <button
+                  type="button"
+                  class="time-picker-cell"
+                  [class.active]="h === horaSel()"
+                  [attr.data-hour]="h"
+                  (click)="setHora(h)"
+                >
+                  {{ h }}
+                </button>
+              }
             </div>
           </div>
-          <div class="time-picker-footer">
-            <button
-              type="button"
-              class="time-picker-action"
-              (click)="limpar()"
-            >
-              Limpar
-            </button>
-            <button
-              type="button"
-              class="time-picker-action accent"
-              (click)="confirmar()"
-            >
-              OK
-            </button>
+          <div class="time-picker-col" data-testid="min-col">
+            <div class="time-picker-col-label">Minuto</div>
+            <div class="time-picker-list" #minList>
+              @for (m of minutos; track m) {
+                <button
+                  type="button"
+                  class="time-picker-cell"
+                  [class.active]="m === minSel()"
+                  [attr.data-min]="m"
+                  (click)="setMin(m)"
+                >
+                  {{ m }}
+                </button>
+              }
+            </div>
           </div>
         </div>
-      }
-    </div>
+        <div class="time-picker-footer">
+          <button
+            type="button"
+            class="time-picker-action"
+            (click)="limpar()"
+          >
+            Limpar
+          </button>
+          <button
+            type="button"
+            class="time-picker-action accent"
+            (click)="confirmar()"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </ng-template>
   `,
   styles: [
     `
@@ -126,21 +135,19 @@ import {
         cursor: not-allowed;
       }
       .time-picker-pop {
-        position: absolute;
-        top: calc(100% + 6px);
-        right: 0;
-        z-index: 60;
+        position: fixed;
+        z-index: 9999;
         background: rgb(var(--c-bg-elev));
         border: 1px solid rgb(var(--c-border-strong));
         border-radius: 10px;
         padding: 12px;
         width: 200px;
         box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.55);
-        animation: pop-in 140ms cubic-bezier(0.22, 1, 0.36, 1);
+        animation: time-picker-pop-in 140ms cubic-bezier(0.22, 1, 0.36, 1);
       }
-      @keyframes pop-in {
-        from { opacity: 0; transform: translateY(-4px) scale(0.98); }
-        to { opacity: 1; transform: translateY(0) scale(1); }
+      @keyframes time-picker-pop-in {
+        from { opacity: 0; transform: translateY(-4px); }
+        to { opacity: 1; transform: translateY(0); }
       }
       .time-picker-cols {
         display: grid;
@@ -227,9 +234,14 @@ import {
     `,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
 })
-export class TimePickerComponent {
+export class TimePickerComponent implements OnDestroy {
   private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly vcr = inject(ViewContainerRef);
+  private readonly trigger = viewChild<ElementRef<HTMLButtonElement>>('trigger');
+  private readonly popTpl = viewChild.required<TemplateRef<unknown>>('popTpl');
+  private viewRef: EmbeddedViewRef<unknown> | null = null;
 
   @Input() valor: string | null = null;
   @Input() placeholder = '--:--';
@@ -240,19 +252,29 @@ export class TimePickerComponent {
   readonly aberto = signal(false);
   readonly horaSel = signal<string>('--');
   readonly minSel = signal<string>('--');
+  readonly popTop = signal(0);
+  readonly popLeft = signal(0);
 
   readonly horas = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
   readonly minutos = Array.from({ length: 12 }, (_, i) => String(i * 5).padStart(2, '0'));
 
+  private static readonly POP_W = 200;
+  private static readonly POP_H = 320;
+  private static readonly OFFSET = 6;
+
   toggle(): void {
     if (this.disabled) return;
-    if (!this.aberto()) {
-      const [h, m] = (this.valor || '--:--').split(':');
-      this.horaSel.set(h);
-      this.minSel.set(m);
-      setTimeout(() => this.scrollToSelected(), 0);
+    if (this.aberto()) {
+      this.fecharPop();
+      return;
     }
-    this.aberto.update((v) => !v);
+    const [h, m] = (this.valor || '--:--').split(':');
+    this.horaSel.set(h);
+    this.minSel.set(m);
+    this.posicionarPop();
+    this.aberto.set(true);
+    this.mountPop();
+    setTimeout(() => this.scrollToSelected(), 0);
   }
 
   setHora(h: string): void {
@@ -268,7 +290,7 @@ export class TimePickerComponent {
   }
 
   confirmar(): void {
-    this.aberto.set(false);
+    this.fecharPop();
   }
 
   limpar(): void {
@@ -276,20 +298,81 @@ export class TimePickerComponent {
     this.horaSel.set('--');
     this.minSel.set('--');
     this.valorChange.emit(null);
+    this.fecharPop();
+  }
+
+  private fecharPop(): void {
     this.aberto.set(false);
+    this.unmountPop();
+  }
+
+  private mountPop(): void {
+    if (this.viewRef) return;
+    this.viewRef = this.vcr.createEmbeddedView(this.popTpl());
+    this.viewRef.detectChanges();
+    for (const node of this.viewRef.rootNodes) {
+      if (node instanceof HTMLElement) document.body.appendChild(node);
+    }
+  }
+
+  private unmountPop(): void {
+    if (!this.viewRef) return;
+    for (const node of this.viewRef.rootNodes) {
+      if (node instanceof HTMLElement) node.remove();
+    }
+    this.viewRef.destroy();
+    this.viewRef = null;
+  }
+
+  private posicionarPop(): void {
+    const btn = this.trigger()?.nativeElement;
+    if (!btn) return;
+    const r = btn.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const margem = 8;
+
+    let top = r.bottom + TimePickerComponent.OFFSET;
+    if (top + TimePickerComponent.POP_H > vh - margem) {
+      const acima = r.top - TimePickerComponent.OFFSET - TimePickerComponent.POP_H;
+      top = acima > margem ? acima : Math.max(margem, vh - TimePickerComponent.POP_H - margem);
+    }
+
+    let left = r.right - TimePickerComponent.POP_W;
+    if (left < margem) left = margem;
+    if (left + TimePickerComponent.POP_W > vw - margem) {
+      left = Math.max(margem, vw - TimePickerComponent.POP_W - margem);
+    }
+
+    this.popTop.set(top);
+    this.popLeft.set(left);
+  }
+
+  @HostListener('window:resize')
+  @HostListener('window:scroll')
+  onViewportMudou(): void {
+    if (this.aberto()) this.posicionarPop();
+  }
+
+  ngOnDestroy(): void {
+    this.unmountPop();
   }
 
   @HostListener('document:click', ['$event'])
   onDocClick(ev: MouseEvent): void {
     if (!this.aberto()) return;
-    if (!this.host.nativeElement.contains(ev.target as Node)) {
-      this.aberto.set(false);
-    }
+    const alvo = ev.target as Node;
+    if (this.host.nativeElement.contains(alvo)) return;
+    const popEl = this.viewRef?.rootNodes.find((n) => n instanceof HTMLElement) as
+      | HTMLElement
+      | undefined;
+    if (popEl?.contains(alvo)) return;
+    this.fecharPop();
   }
 
   @HostListener('document:keydown.escape')
   onEsc(): void {
-    if (this.aberto()) this.aberto.set(false);
+    if (this.aberto()) this.fecharPop();
   }
 
   private emitir(): void {
@@ -300,9 +383,12 @@ export class TimePickerComponent {
   }
 
   private scrollToSelected(): void {
-    const el = this.host.nativeElement;
-    const horaActive = el.querySelector('.time-picker-cell.active[data-hour]') as HTMLElement | null;
-    const minActive = el.querySelector('.time-picker-cell.active[data-min]') as HTMLElement | null;
+    const popEl = this.viewRef?.rootNodes.find((n) => n instanceof HTMLElement) as
+      | HTMLElement
+      | undefined;
+    if (!popEl) return;
+    const horaActive = popEl.querySelector('.time-picker-cell.active[data-hour]') as HTMLElement | null;
+    const minActive = popEl.querySelector('.time-picker-cell.active[data-min]') as HTMLElement | null;
     horaActive?.scrollIntoView({ block: 'center' });
     minActive?.scrollIntoView({ block: 'center' });
   }

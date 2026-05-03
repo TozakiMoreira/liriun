@@ -16,7 +16,7 @@ builder.Services.AddSwaggerGen(opt =>
 {
     opt.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "Jarvis API",
+        Title = "Liriun API",
         Version = "v1",
         Description = "Organizador pessoal de tarefas. Use /auth/cadastro ou /auth/login pra obter um token, depois clique em Authorize e cole o JWT."
     });
@@ -86,9 +86,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(opt =>
     {
-        opt.SwaggerEndpoint("/swagger/v1/swagger.json", "Jarvis API v1");
+        opt.SwaggerEndpoint("/swagger/v1/swagger.json", "Liriun API v1");
         opt.RoutePrefix = "swagger";
-        opt.DocumentTitle = "Jarvis API";
+        opt.DocumentTitle = "Liriun API";
     });
 }
 

@@ -28,7 +28,7 @@ interface GrupoData {
   template: `
     <header class="flex flex-col sm:flex-row sm:items-center px-4 md:px-8 py-3.5 border-b border-border gap-3 sm:gap-4">
       <div class="flex items-center gap-2 text-[15px] text-text-dim">
-        <i class="fa-solid fa-circle-check text-[#22c55e] text-[12px]"></i>
+        <i class="fa-solid fa-circle-check text-emerald-500 text-[12px]"></i>
         <strong class="text-text font-medium">Concluídas</strong>
         <span
           class="ml-1.5 text-[11px] px-2 py-0.5 rounded-full bg-bg-elev border border-border"
@@ -91,7 +91,7 @@ interface GrupoData {
           data-testid="stats-strip"
         >
           <div
-            class="w-10 h-10 rounded-lg bg-[#22c55e]/15 grid place-items-center text-[#22c55e]"
+            class="w-10 h-10 rounded-lg bg-emerald-500/15 grid place-items-center text-emerald-500"
           >
             <i class="fa-solid fa-trophy"></i>
           </div>
@@ -128,7 +128,7 @@ interface GrupoData {
                   <div class="flex items-center gap-3 md:contents">
                     <button
                       type="button"
-                      class="shrink-0 w-[18px] h-[18px] rounded-full bg-[#22c55e]/15 border border-[#22c55e]/30 grid place-items-center text-[#22c55e] hover:bg-[#22c55e]/30 hover:border-[#22c55e]/50 focus:outline-none focus:ring-2 focus:ring-[#22c55e]/40 transition-colors"
+                      class="shrink-0 w-[18px] h-[18px] rounded-full bg-emerald-500/15 border border-emerald-500/30 grid place-items-center text-emerald-500 hover:bg-emerald-500/30 hover:border-emerald-500/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 transition-colors"
                       [attr.data-testid]="'done-' + t.id + '-reabrir'"
                       aria-label="Desmarcar e reabrir como pendente"
                       title="Clique pra desmarcar e voltar pra pendentes"

@@ -211,7 +211,7 @@ type Modo = 'manual' | 'jarvis' | null;
                         <span class="w-1.5 h-1.5 bg-accent rounded-full animate-pulse"></span>
                         pensando...
                       } @else {
-                        <span class="w-1.5 h-1.5 bg-[#10b981] rounded-full"></span>
+                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span>
                         online
                       }
                     </span>
