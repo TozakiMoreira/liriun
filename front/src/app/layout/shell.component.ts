@@ -26,7 +26,7 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
       >
         <div class="flex items-center gap-2">
           <img
-            src="/logo.png"
+            src="/logocorreta.png"
             alt="Liriun"
             class="w-7 h-7 rounded-md object-contain shadow-logo"
             aria-hidden="true"
@@ -68,7 +68,7 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
               title="Visão geral"
             >
               <img
-                src="/logo.png"
+                src="/logocorreta.png"
                 alt="Liriun"
                 class="w-8 h-8 rounded-lg object-contain shadow-logo shrink-0"
                 aria-hidden="true"
@@ -106,7 +106,7 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
             aria-label="Ir pra visão geral"
             title="Visão geral"
           >
-            <img src="/logo.png" alt="Liriun" class="w-full h-full object-contain" />
+            <img src="/logocorreta.png" alt="Liriun" class="w-full h-full object-contain" />
           </a>
         }
 
@@ -245,7 +245,7 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
             @if (header.voltar(); as v) {
               <button
                 type="button"
-                class="group inline-flex items-center justify-center w-8 h-8 rounded-md text-accent bg-accent/10 border border-accent/25 hover:bg-accent/20 hover:border-accent/50 active:scale-95 transition-all mr-1"
+                class="group inline-flex items-center justify-center w-9 h-9 rounded-md text-white bg-accent border border-accent hover:bg-accent-hover active:scale-95 transition-all mr-1 shadow-accent"
                 [attr.data-testid]="v.testid ?? 'header-voltar'"
                 [attr.aria-label]="v.aria ?? 'Voltar'"
                 [attr.title]="v.aria ?? 'Voltar'"
@@ -509,7 +509,7 @@ export class ShellComponent implements OnInit {
     if (this.userMenuAberto()) this.userMenuAberto.set(false);
   }
 
-  private static readonly STORAGE_SIDEBAR = 'jarvis-sidebar-collapsed';
+  private static readonly STORAGE_SIDEBAR = 'liriun-sidebar-collapsed';
 
   ngOnInit(): void {
     this.atualizarContagem();

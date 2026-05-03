@@ -36,7 +36,7 @@ import { BrandComponent } from '../../shared/brand.component';
         <div class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between gap-3">
           <a routerLink="/" class="flex items-center gap-2.5" data-testid="landing-logo">
             <img
-              src="/logo.png"
+              src="/logocorreta.png"
               alt="Liriun"
               class="w-7 h-7 rounded-md object-contain"
               aria-hidden="true"
@@ -365,7 +365,7 @@ import { BrandComponent } from '../../shared/brand.component';
                   >
                     <div class="flex items-center gap-2 mb-3">
                       <img
-                        src="/logo.png"
+                        src="/logocorreta.png"
                         alt="Liriun"
                         class="w-7 h-7 rounded-md object-contain"
                         style="box-shadow: 0 0 12px rgba(94, 106, 210, 0.35);"
@@ -446,7 +446,7 @@ import { BrandComponent } from '../../shared/brand.component';
                     <div class="flex-1 px-3 py-3 flex flex-col gap-2 overflow-hidden">
                       <div class="flex items-center gap-2 px-2 py-1.5 border-b border-border">
                         <img
-                          src="/logo.png"
+                          src="/logocorreta.png"
                           alt="Liriun"
                           class="w-5 h-5 rounded object-contain"
                         />
@@ -470,7 +470,7 @@ import { BrandComponent } from '../../shared/brand.component';
                       <div class="flex items-start gap-1.5 max-w-[95%]">
                         <img
                           class="w-5 h-5 rounded object-contain shrink-0 mt-0.5"
-                          src="/logo.png"
+                          src="/logocorreta.png"
                           alt="Liriun"
                         />
                         <div

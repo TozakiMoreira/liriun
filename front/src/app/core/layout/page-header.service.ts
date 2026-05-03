@@ -41,6 +41,11 @@ export class PageHeaderService {
     this.subtituloTpl.set(tpl);
   }
 
+  setIcone(classe: string | null, cor: string | null = null): void {
+    this.iconeClasse.set(classe);
+    this.iconeCor.set(cor);
+  }
+
   limpar(): void {
     this.titulo.set('');
     this.iconeClasse.set(null);

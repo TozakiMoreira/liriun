@@ -35,7 +35,7 @@ import { TarefaFormComponent } from '../tarefas/tarefa-form.component';
 import { BrandComponent } from '../../shared/brand.component';
 import { PageHeaderService } from '../../core/layout/page-header.service';
 
-type Modo = 'manual' | 'jarvis' | null;
+type Modo = 'manual' | 'liriun' | null;
 
 @Component({
   selector: 'app-captura',
@@ -46,16 +46,16 @@ type Modo = 'manual' | 'jarvis' | null;
       class="md:hidden flex items-center px-4 py-3.5 border-b border-border gap-3"
       style="background-image: radial-gradient(ellipse 60% 100% at 0% 50%, rgba(94, 106, 210, 0.08), transparent 60%);"
     >
-      @if (modo() === 'jarvis') {
+      @if (modo() === 'liriun') {
         <button
           type="button"
-          class="w-8 h-8 grid place-items-center rounded-md text-accent bg-accent/10 border border-accent/25 hover:bg-accent/20 hover:border-accent/50 active:scale-95 transition-all"
+          class="group inline-flex items-center justify-center w-9 h-9 rounded-md text-white bg-accent border border-accent hover:bg-accent-hover active:scale-95 transition-all shadow-accent"
           data-testid="captura-voltar"
           aria-label="Voltar pra escolha de modo"
           title="Voltar pra escolha de modo"
           (click)="voltarSelecaoModo()"
         >
-          <i class="fa-solid fa-arrow-left text-[12px]"></i>
+          <i class="fa-solid fa-arrow-left text-[13px] transition-transform group-hover:-translate-x-0.5"></i>
         </button>
         <nav
           class="flex items-center gap-1.5 text-[13px] text-text-dim"
@@ -86,7 +86,7 @@ type Modo = 'manual' | 'jarvis' | null;
       @if (modo() !== null) {
         <i class="fa-solid fa-chevron-right text-[9px] text-accent"></i>
         <span class="text-text font-medium text-[13px] flex items-center gap-1.5">
-          @if (modo() === 'jarvis') {
+          @if (modo() === 'liriun') {
             <i class="fa-solid fa-wand-magic-sparkles text-accent text-[11px]"></i>
             <span>Modo&nbsp;<app-brand /></span>
           } @else {
@@ -108,13 +108,13 @@ type Modo = 'manual' | 'jarvis' | null;
           <div class="text-center flex flex-col gap-2.5">
             <h1
               class="text-2xl md:text-[28px] font-semibold tracking-tight leading-tight"
-              data-testid="jarvis-greeting"
+              data-testid="liriun-greeting"
             >
               {{ saudacao() }}{{ nomeUsuario() ? ', ' + nomeUsuario() : '' }}
             </h1>
             <div
               class="text-lg font-medium text-text-dim tracking-tight"
-              data-testid="jarvis-prompt"
+              data-testid="liriun-prompt"
             >
               O que você precisa anotar?
             </div>
@@ -157,8 +157,8 @@ type Modo = 'manual' | 'jarvis' | null;
             <button
               type="button"
               class="relative overflow-hidden bg-bg-elev border border-border rounded-lg p-6 cursor-pointer text-left flex flex-col gap-3.5 hover:border-accent hover:bg-bg-surface hover:-translate-y-0.5 hover:shadow-glow transition-all duration-200 group"
-              data-testid="mode-jarvis-btn"
-              (click)="abrirJarvis()"
+              data-testid="mode-liriun-btn"
+              (click)="abrirLiriun()"
               [style.background-image]="
                 'radial-gradient(ellipse 80% 60% at 100% 0%, rgba(94, 106, 210, 0.1), transparent)'
               "
@@ -200,17 +200,31 @@ type Modo = 'manual' | 'jarvis' | null;
         </div>
       }
 
-      @if (modo() === 'jarvis') {
+      @if (modo() === 'liriun') {
         <div
           class="w-full max-w-[680px] flex flex-col gap-5 fade-in"
-          data-testid="jarvis-panel"
+          data-testid="liriun-panel"
         >
           @if (!chatAtivo()) {
-            <div
-              class="text-center text-text-dim text-[14px] tracking-tight fade-down"
-              data-testid="jarvis-prompt-chat"
-            >
-              Me conta o que você quer registrar.
+            <div class="text-center flex flex-col items-center gap-3 fade-down">
+              <img
+                src="/logocorreta.png"
+                alt="Liriun"
+                class="w-14 h-14 rounded-2xl object-contain shadow-glow shrink-0"
+                aria-hidden="true"
+              />
+              <h1
+                class="text-2xl md:text-[26px] font-semibold tracking-tight leading-tight"
+                data-testid="liriun-greeting-liriun"
+              >
+                {{ saudacao() }}{{ nomeUsuario() ? ', ' + nomeUsuario() : '' }}
+              </h1>
+              <div
+                class="text-base text-text-dim tracking-tight"
+                data-testid="liriun-prompt-chat"
+              >
+                Me conta o que você quer registrar.
+              </div>
             </div>
           }
 
@@ -226,7 +240,7 @@ type Modo = 'manual' | 'jarvis' | null;
                 <div class="flex items-center gap-2">
                   <img
                     class="w-7 h-7 rounded-md object-contain shadow-glow-sm"
-                    src="/logo.png"
+                    src="/logocorreta.png"
                     alt="Liriun"
                     aria-hidden="true"
                   />
@@ -247,7 +261,7 @@ type Modo = 'manual' | 'jarvis' | null;
                   <button
                     type="button"
                     class="text-[12px] px-2.5 py-1 rounded-md bg-accent/15 border border-accent/30 text-accent hover:bg-accent/25 hover:border-accent/50 transition-colors flex items-center gap-1.5 font-medium"
-                    data-testid="jarvis-novo-chat"
+                    data-testid="liriun-novo-chat"
                     aria-label="Começar nova conversa"
                     title="Começar do zero"
                     [disabled]="analisando() || salvando() || gravando()"
@@ -259,7 +273,7 @@ type Modo = 'manual' | 'jarvis' | null;
                   <button
                     type="button"
                     class="text-text-subtle hover:text-text text-lg w-7 h-7 grid place-items-center leading-none transition-colors rounded hover:bg-bg"
-                    data-testid="jarvis-fechar"
+                    data-testid="liriun-fechar"
                     aria-label="Fechar conversa"
                     (click)="fecharChat()"
                   >
@@ -278,7 +292,7 @@ type Modo = 'manual' | 'jarvis' | null;
                     <div class="flex items-start gap-2 max-w-[88%] msg-in">
                       <img
                         class="w-7 h-7 rounded-md object-contain shrink-0 mt-0.5 shadow-glow-sm"
-                        src="/logo.png"
+                        src="/logocorreta.png"
                         alt="Liriun"
                         aria-hidden="true"
                       />
@@ -303,7 +317,7 @@ type Modo = 'manual' | 'jarvis' | null;
                   <div class="flex items-start gap-2 max-w-[85%] msg-in">
                     <img
                       class="w-7 h-7 rounded-md object-contain shrink-0 mt-0.5 shadow-glow-sm"
-                      src="/logo.png"
+                      src="/logocorreta.png"
                       alt="Liriun"
                       aria-hidden="true"
                     />
@@ -321,7 +335,7 @@ type Modo = 'manual' | 'jarvis' | null;
                   <div class="flex items-start gap-2 max-w-[95%] msg-in" data-testid="chat-sugestao">
                     <img
                       class="w-7 h-7 rounded-md object-contain shrink-0 mt-0.5 shadow-glow-sm"
-                      src="/logo.png"
+                      src="/logocorreta.png"
                       alt="Liriun"
                       aria-hidden="true"
                     />
@@ -624,7 +638,7 @@ type Modo = 'manual' | 'jarvis' | null;
           @if (!chatAtivo()) {
             <div
               class="flex flex-col gap-3 px-1 fade-in"
-              data-testid="jarvis-exemplos"
+              data-testid="liriun-exemplos"
             >
               <div class="flex items-center gap-2.5 text-[14px] font-medium text-text">
                 <span
@@ -1063,7 +1077,7 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
   private precisaScrollar = false;
 
   private static readonly DURACAO_MAX_SEGUNDOS = 60;
-  private static readonly STORAGE_KEY = 'jarvis-captura-chat';
+  private static readonly STORAGE_KEY = 'liriun-captura-chat';
   private static readonly STORAGE_TTL_MS = 60 * 60 * 1000; // 1h
   private recorder: MediaRecorder | null = null;
   private streamGravacao: MediaStream | null = null;
@@ -1078,6 +1092,7 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
   private readonly subtituloTplRef = viewChild<TemplateRef<unknown>>('subtituloTpl');
 
   constructor() {
+    // Estado inicial: escolha de modo, sem voltar (nao tem pra onde voltar dentro da pagina).
     this.pageHeader.set({
       titulo: 'Nova tarefa',
       iconeClasse: 'fa-solid fa-bolt text-accent text-[12px]',
@@ -1091,33 +1106,36 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
     effect(() => {
       const m = this.modo();
       const ajustando = this.formAjuste() !== null;
-      this.pageHeader.setVoltar({
-        acao: () => {
-          if (this.formAjuste()) {
-            this.formAjuste.set(null);
-          } else if (m !== null) {
-            this.voltarSelecaoModo();
-          } else {
-            this.router.navigateByUrl('/app/visao-geral');
-          }
-        },
-        aria: ajustando
-          ? 'Voltar pra conversa'
-          : m !== null
-            ? 'Voltar pra escolha de modo'
-            : 'Voltar pra Visão geral',
-        testid: 'captura-voltar-topbar',
-      });
+      // Esconde icone quando ja existe seta de voltar com destaque (evita poluir)
+      this.pageHeader.setIcone(
+        m === null ? 'fa-solid fa-bolt text-accent text-[12px]' : null,
+      );
+      // Voltar so faz sentido quando o usuario entrou num modo (chat) ou no ajustar.
+      if (ajustando) {
+        this.pageHeader.setVoltar({
+          acao: () => this.formAjuste.set(null),
+          aria: 'Voltar pra conversa',
+          testid: 'captura-voltar-topbar',
+        });
+      } else if (m !== null) {
+        this.pageHeader.setVoltar({
+          acao: () => this.voltarSelecaoModo(),
+          aria: 'Voltar pra escolha de modo',
+          testid: 'captura-voltar-topbar',
+        });
+      } else {
+        this.pageHeader.setVoltar(null);
+      }
     });
 
     effect(() => {
-      // Auto-persist conversa quando algo muda no modo Jarvis.
+      // Auto-persist conversa quando algo muda no modo Liriun.
       const m = this.modo();
       const rascunho = this.rascunho();
       const mensagens = this.mensagens();
       const sugestao = this.sugestao();
       if (this.suprimirPersistencia) return;
-      if (m !== 'jarvis') return;
+      if (m !== 'liriun') return;
       untracked(() => this.persistirChat(rascunho, mensagens, sugestao));
     });
 
@@ -1155,7 +1173,7 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
     this.modo.set('manual');
   }
 
-  abrirJarvis(): void {
+  abrirLiriun(): void {
     this.suprimirPersistencia = true;
     this.rascunho.set('');
     this.mensagens.set([]);
@@ -1166,7 +1184,7 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
 
     const restaurado = this.restaurarChat();
     this.suprimirPersistencia = false;
-    this.modo.set('jarvis');
+    this.modo.set('liriun');
     if (restaurado && this.mensagens().length > 0) {
       this.chatAtivo.set(true);
       this.precisaScrollar = true;
@@ -1348,8 +1366,8 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
   }
 
   /**
-   * Pos-save: nao fecha modo Jarvis. Reseta a conversa pra Gemini nao misturar
-   * a tarefa anterior na proxima analise, e faz Jarvis perguntar a proxima.
+   * Pos-save: nao fecha modo Liriun. Reseta a conversa pra Gemini nao misturar
+   * a tarefa anterior na proxima analise, e faz o Liriun perguntar a proxima.
    * Persistencia tambem e zerada.
    */
   private continuarAposSalvar(): void {
@@ -1497,17 +1515,17 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
     recorder.start();
 
     // Permitir descartar via cancelar
-    (recorder as MediaRecorder & { __jarvisDescartar?: () => void }).__jarvisDescartar = () => {
+    (recorder as MediaRecorder & { __liriunDescartar?: () => void }).__liriunDescartar = () => {
       descartar = true;
     };
-    (recorder as MediaRecorder & { __jarvisFinalizar?: () => void }).__jarvisFinalizar = () => {
+    (recorder as MediaRecorder & { __liriunFinalizar?: () => void }).__liriunFinalizar = () => {
       segundosFinais = this.segundosGravacao();
     };
   }
 
   pararGravacao(): void {
     if (!this.gravando() || !this.recorder) return;
-    (this.recorder as MediaRecorder & { __jarvisFinalizar?: () => void }).__jarvisFinalizar?.();
+    (this.recorder as MediaRecorder & { __liriunFinalizar?: () => void }).__liriunFinalizar?.();
     if (this.recorder.state !== 'inactive') {
       this.recorder.stop();
     }
@@ -1515,7 +1533,7 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
 
   cancelarGravacao(): void {
     if (!this.gravando() || !this.recorder) return;
-    (this.recorder as MediaRecorder & { __jarvisDescartar?: () => void }).__jarvisDescartar?.();
+    (this.recorder as MediaRecorder & { __liriunDescartar?: () => void }).__liriunDescartar?.();
     if (this.recorder.state !== 'inactive') {
       this.recorder.stop();
     }
@@ -1768,8 +1786,8 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
 
   @HostListener('window:keydown', ['$event'])
   onKey(ev: KeyboardEvent): void {
-    // Atalho global pro mic no modo Jarvis: Ctrl+Espaco / Cmd+Espaco
-    if (this.modo() === 'jarvis' && (ev.ctrlKey || ev.metaKey) && ev.code === 'Space') {
+    // Atalho global pro mic no modo Liriun: Ctrl+Espaco / Cmd+Espaco
+    if (this.modo() === 'liriun' && (ev.ctrlKey || ev.metaKey) && ev.code === 'Space') {
       ev.preventDefault();
       if (this.previaAudio()) {
         this.enviarPrevia();
@@ -1790,7 +1808,7 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
       this.abrirManual();
     } else if (ev.key === 'l' || ev.key === 'L') {
       ev.preventDefault();
-      this.abrirJarvis();
+      this.abrirLiriun();
     }
   }
 }

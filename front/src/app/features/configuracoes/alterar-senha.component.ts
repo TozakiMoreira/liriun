@@ -35,12 +35,12 @@ import { PageHeaderService } from '../../core/layout/page-header.service';
     >
       <a
         routerLink="/app/configuracoes"
-        class="w-8 h-8 grid place-items-center rounded-md text-text-dim hover:text-text hover:bg-bg-elev border border-border hover:border-border-strong transition-colors"
+        class="group inline-flex items-center justify-center w-9 h-9 rounded-md text-white bg-accent border border-accent hover:bg-accent-hover active:scale-95 transition-all shadow-accent"
         data-testid="alterar-senha-voltar"
         aria-label="Voltar para Configurações"
         title="Voltar para Configurações"
       >
-        <i class="fa-solid fa-arrow-left text-[12px]"></i>
+        <i class="fa-solid fa-arrow-left text-[13px] transition-transform group-hover:-translate-x-0.5"></i>
       </a>
       <nav
         class="flex items-center gap-1.5 text-[13px] text-text-dim"
@@ -190,7 +190,6 @@ export class AlterarSenhaComponent implements AfterViewInit {
   constructor() {
     this.pageHeader.set({
       titulo: 'Configurações',
-      iconeClasse: 'fa-solid fa-gear text-accent text-[12px]',
       voltar: {
         acao: () => this.router.navigateByUrl('/app/configuracoes'),
         aria: 'Voltar para Configurações',
@@ -202,7 +201,6 @@ export class AlterarSenhaComponent implements AfterViewInit {
   ngAfterViewInit(): void {
     this.pageHeader.set({
       titulo: 'Configurações',
-      iconeClasse: 'fa-solid fa-gear text-accent text-[12px]',
       subtituloTpl: this.subtituloTplRef() ?? null,
       voltar: {
         acao: () => this.router.navigateByUrl('/app/configuracoes'),

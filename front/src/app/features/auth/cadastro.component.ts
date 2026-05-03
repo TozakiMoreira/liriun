@@ -44,7 +44,7 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
       <div class="w-full max-w-[380px] flex flex-col gap-8">
         <app-brand-logo />
 
-        <p class="text-center text-text-dim leading-relaxed -mt-3" data-testid="jarvis-greeting">
+        <p class="text-center text-text-dim leading-relaxed -mt-3" data-testid="liriun-greeting">
           Prazer em te conhecer. Me conta seu nome que eu começo a organizar as coisas pra você.
         </p>
 

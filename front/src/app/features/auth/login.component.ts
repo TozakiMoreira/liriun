@@ -33,7 +33,7 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
       <div class="w-full max-w-[380px] flex flex-col gap-8">
         <app-brand-logo />
 
-        <p class="text-center text-text-dim leading-relaxed -mt-3" data-testid="jarvis-greeting">
+        <p class="text-center text-text-dim leading-relaxed -mt-3" data-testid="liriun-greeting">
           Bem-vindo de volta. Entra com suas credenciais que eu cuido do resto.
         </p>
 

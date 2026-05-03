@@ -44,8 +44,8 @@ const PERIODOS_VALIDOS: PeriodoFiltro[] = ['todas', 'hoje', 'amanha', 'semana', 
 
 type TarefasView = 'lista' | 'kanban' | 'semana';
 
-const STORAGE_FILTROS = 'jarvis.tarefas.filtros';
-const STORAGE_VIEW = 'jarvis.tarefas.view';
+const STORAGE_FILTROS = 'liriun.tarefas.filtros';
+const STORAGE_VIEW = 'liriun.tarefas.view';
 
 const FILTROS_PADRAO: FiltrosTarefas = {
   categoriaIds: [],
