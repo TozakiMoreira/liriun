@@ -37,6 +37,10 @@ export class PageHeaderService {
     this.voltar.set(v);
   }
 
+  setSubtitulo(tpl: TemplateRef<unknown> | null): void {
+    this.subtituloTpl.set(tpl);
+  }
+
   limpar(): void {
     this.titulo.set('');
     this.iconeClasse.set(null);

@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
 import {
   AfterViewChecked,
+  AfterViewInit,
   Component,
   DestroyRef,
   ElementRef,
@@ -47,7 +49,7 @@ type Modo = 'manual' | 'jarvis' | null;
       @if (modo() === 'jarvis') {
         <button
           type="button"
-          class="w-8 h-8 grid place-items-center rounded-md text-text-dim hover:text-text hover:bg-bg-elev border border-border hover:border-border-strong transition-colors"
+          class="w-8 h-8 grid place-items-center rounded-md text-accent bg-accent/10 border border-accent/25 hover:bg-accent/20 hover:border-accent/50 active:scale-95 transition-all"
           data-testid="captura-voltar"
           aria-label="Voltar pra escolha de modo"
           title="Voltar pra escolha de modo"
@@ -204,24 +206,11 @@ type Modo = 'manual' | 'jarvis' | null;
           data-testid="jarvis-panel"
         >
           @if (!chatAtivo()) {
-            <div class="text-center flex flex-col gap-2 fade-down">
-              <div class="flex items-center justify-center gap-2 mb-1">
-                <img
-                  src="/logo.png"
-                  alt="Liriun"
-                  class="w-9 h-9 rounded-lg object-contain shadow-glow"
-                  aria-hidden="true"
-                />
-              </div>
-              <h1
-                class="text-2xl md:text-[26px] font-semibold tracking-tight leading-tight"
-                data-testid="jarvis-greeting-jarvis"
-              >
-                {{ saudacao() }}{{ nomeUsuario() ? ', ' + nomeUsuario() : '' }}
-              </h1>
-              <div class="text-base text-text-dim tracking-tight">
-                Me conta o que você quer registrar.
-              </div>
+            <div
+              class="text-center text-text-dim text-[14px] tracking-tight fade-down"
+              data-testid="jarvis-prompt-chat"
+            >
+              Me conta o que você quer registrar.
             </div>
           }
 
@@ -924,9 +913,6 @@ type Modo = 'manual' | 'jarvis' | null;
       .shadow-glow-sm {
         box-shadow: 0 0 12px rgba(94, 106, 210, 0.18);
       }
-      .chat-card-compact {
-        max-height: 200px;
-      }
       .chat-card-expanded {
         max-height: min(75vh, 640px);
         height: min(75vh, 640px);
@@ -973,13 +959,14 @@ type Modo = 'manual' | 'jarvis' | null;
     `,
   ],
 })
-export class CapturaComponent implements AfterViewChecked {
+export class CapturaComponent implements AfterViewInit, AfterViewChecked {
   private readonly storage = inject(TokenStorage);
   private readonly ia = inject(IaService);
   private readonly tarefasApi = inject(TarefasService);
   private readonly categoriasApi = inject(CategoriasService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly pageHeader = inject(PageHeaderService);
+  private readonly router = inject(Router);
 
   readonly modo = signal<Modo>(null);
   readonly nomeUsuario = signal(this.storage.usuario()?.nome ?? '');
@@ -1091,6 +1078,10 @@ export class CapturaComponent implements AfterViewChecked {
   private readonly subtituloTplRef = viewChild<TemplateRef<unknown>>('subtituloTpl');
 
   constructor() {
+    this.pageHeader.set({
+      titulo: 'Nova tarefa',
+      iconeClasse: 'fa-solid fa-bolt text-accent text-[12px]',
+    });
     this.destroyRef.onDestroy(() => {
       this.limparGravacao();
       this.descartarPreviaUrl();
@@ -1099,19 +1090,23 @@ export class CapturaComponent implements AfterViewChecked {
 
     effect(() => {
       const m = this.modo();
-      const subtituloTpl = this.subtituloTplRef();
-      this.pageHeader.set({
-        titulo: 'Nova tarefa',
-        iconeClasse: 'fa-solid fa-bolt text-accent text-[12px]',
-        subtituloTpl: subtituloTpl ?? null,
-        voltar:
-          m !== null
-            ? {
-                acao: () => this.voltarSelecaoModo(),
-                aria: 'Voltar pra escolha de modo',
-                testid: 'captura-voltar-topbar',
-              }
-            : null,
+      const ajustando = this.formAjuste() !== null;
+      this.pageHeader.setVoltar({
+        acao: () => {
+          if (this.formAjuste()) {
+            this.formAjuste.set(null);
+          } else if (m !== null) {
+            this.voltarSelecaoModo();
+          } else {
+            this.router.navigateByUrl('/app/visao-geral');
+          }
+        },
+        aria: ajustando
+          ? 'Voltar pra conversa'
+          : m !== null
+            ? 'Voltar pra escolha de modo'
+            : 'Voltar pra Visão geral',
+        testid: 'captura-voltar-topbar',
       });
     });
 
@@ -1134,6 +1129,10 @@ export class CapturaComponent implements AfterViewChecked {
         untracked(() => this.inputExpandido.set(false));
       }
     });
+  }
+
+  ngAfterViewInit(): void {
+    this.pageHeader.setSubtitulo(this.subtituloTplRef() ?? null);
   }
 
   ngAfterViewChecked(): void {
