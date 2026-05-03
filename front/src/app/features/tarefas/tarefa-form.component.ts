@@ -184,14 +184,25 @@ export interface SugestaoTarefa {
           </div>
 
           <div class="flex flex-col gap-1.5">
-            <label class="field-label" for="observacoes">Observações (opcional)</label>
+            <div class="flex items-center justify-between">
+              <label class="field-label" for="observacoes">Observações (opcional)</label>
+              <span
+                class="text-[11px] tabular-nums"
+                [class.text-text-subtle]="observacoes.length < OBS_LIMITE * 0.85"
+                [class.text-text-dim]="observacoes.length >= OBS_LIMITE * 0.85 && observacoes.length < OBS_LIMITE"
+                [class.text-danger]="observacoes.length >= OBS_LIMITE"
+                data-testid="tarefa-form-obs-counter"
+              >
+                {{ observacoes.length }} / {{ OBS_LIMITE }}
+              </span>
+            </div>
             <textarea
               id="observacoes"
               name="observacoes"
               rows="3"
               class="input-base resize-none"
               placeholder="Detalhes, links, lembretes — o que precisar"
-              maxlength="4000"
+              [attr.maxlength]="OBS_LIMITE"
               data-testid="tarefa-form-observacoes"
               [(ngModel)]="observacoes"
             ></textarea>
@@ -262,6 +273,8 @@ export interface SugestaoTarefa {
   ],
 })
 export class TarefaFormComponent implements OnInit {
+  static readonly OBS_LIMITE_VAL = 4000;
+  readonly OBS_LIMITE = TarefaFormComponent.OBS_LIMITE_VAL;
   readonly opcoesPrioridade: { valor: Prioridade; rotulo: string; cor: string }[] = [
     { valor: 1, rotulo: 'Urgente', cor: '#ef4444' },
     { valor: 2, rotulo: 'Importante', cor: '#f59e0b' },
@@ -379,8 +392,8 @@ export class TarefaFormComponent implements OnInit {
     } else if (this.data < this.dataMinima) {
       erros['dataprazo'] = 'A data não pode ser anterior a hoje.';
     }
-    if (this.observacoes.length > 4000) {
-      erros['observacoes'] = 'Observações passam de 4000 caracteres.';
+    if (this.observacoes.length > TarefaFormComponent.OBS_LIMITE_VAL) {
+      erros['observacoes'] = `Observações passam de ${TarefaFormComponent.OBS_LIMITE_VAL} caracteres.`;
     }
     if (Object.keys(erros).length > 0) {
       this.errosCampo.set(erros);

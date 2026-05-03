@@ -161,7 +161,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
 
           @if (filtrosAbertos()) {
             <div
-              class="absolute right-0 top-full mt-1.5 w-[320px] max-w-[calc(100vw-2rem)] z-30 card-elev p-4 flex flex-col gap-3 dropdown-in"
+              class="fixed inset-x-3 bottom-20 z-30 card-elev p-4 flex flex-col gap-3 dropdown-in md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:top-full md:mt-1.5 md:w-[320px] md:max-w-[calc(100vw-2rem)]"
               data-testid="filtros-panel"
               role="dialog"
               aria-label="Filtros"
@@ -773,7 +773,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
 
     @if (toast(); as t) {
       <div
-        class="fixed bottom-6 right-6 z-[60] rounded-lg px-4 py-3 text-[13px] shadow-xl max-w-sm slide-up flex items-center gap-3 border toast-sucesso"
+        class="fixed bottom-24 right-4 left-4 md:bottom-6 md:right-6 md:left-auto z-[60] rounded-lg px-4 py-3 text-[13px] shadow-xl md:max-w-sm slide-up flex items-center gap-3 border toast-sucesso"
         data-testid="tarefas-toast"
         role="status"
       >

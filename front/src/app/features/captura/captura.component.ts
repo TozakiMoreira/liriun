@@ -111,7 +111,7 @@ type Modo = 'manual' | 'jarvis' | null;
                   Criar tarefa
                   <i class="fa-solid fa-arrow-right text-[11px] group-hover:translate-x-0.5 transition-transform"></i>
                 </div>
-                <span class="kbd-pill">M</span>
+                <span class="kbd-pill hidden md:inline-flex">M</span>
               </div>
             </button>
 
@@ -143,13 +143,13 @@ type Modo = 'manual' | 'jarvis' | null;
                   Conversar com <app-brand />
                   <i class="fa-solid fa-arrow-right text-[11px] group-hover:translate-x-0.5 transition-transform"></i>
                 </div>
-                <span class="kbd-pill">J</span>
+                <span class="kbd-pill hidden md:inline-flex">L</span>
               </div>
             </button>
           </div>
 
           <div
-            class="flex items-center gap-2.5 text-text-subtle text-xs"
+            class="hidden md:flex items-center gap-2.5 text-text-subtle text-xs"
             data-testid="keyboard-hint"
           >
             <i class="fa-solid fa-keyboard"></i>
@@ -542,7 +542,7 @@ type Modo = 'manual' | 'jarvis' | null;
                       #inputChat
                       class="chat-textarea"
                       rows="1"
-                      [placeholder]="chatAtivo() ? 'Escreve aqui...' : 'Ex: marcar reunião com Pedro amanhã às 18h'"
+                      [placeholder]="placeholderChat()"
                       maxlength="2000"
                       data-testid="chat-input"
                       [ngModel]="rascunho()"
@@ -652,7 +652,7 @@ type Modo = 'manual' | 'jarvis' | null;
       @if (toast(); as t) {
         <div
           [ngClass]="[
-            'fixed bottom-6 right-6 z-[60] rounded-lg px-4 py-3 text-[13px] shadow-xl max-w-sm slide-up flex items-center gap-3 border',
+            'fixed bottom-24 right-4 left-4 md:bottom-6 md:right-6 md:left-auto z-[60] rounded-lg px-4 py-3 text-[13px] shadow-xl md:max-w-sm slide-up flex items-center gap-3 border',
             t.tipo === 'sucesso' ? 'toast-sucesso' : 'bg-bg-elev border-border text-text-dim'
           ]"
           data-testid="captura-toast"
@@ -729,9 +729,15 @@ type Modo = 'manual' | 'jarvis' | null;
         border-radius: 18px;
         border: 1px solid rgb(var(--c-border-strong));
         background: rgb(var(--c-bg-elev));
-        padding: 10px 92px 10px 16px;
+        padding: 10px 78px 10px 14px;
         transition: border-color 180ms, background-color 180ms;
-        min-height: 52px;
+        min-height: 48px;
+      }
+      @media (min-width: 768px) {
+        .chat-input-wrap {
+          padding: 10px 92px 10px 16px;
+          min-height: 52px;
+        }
       }
       .chat-input-wrap:hover {
         border-color: rgb(var(--c-border-strong));
@@ -742,10 +748,17 @@ type Modo = 'manual' | 'jarvis' | null;
       }
       .chat-actions {
         position: absolute;
-        right: 10px;
-        bottom: 8px;
+        right: 8px;
+        bottom: 7px;
         display: flex;
-        gap: 6px;
+        gap: 4px;
+      }
+      @media (min-width: 768px) {
+        .chat-actions {
+          right: 10px;
+          bottom: 8px;
+          gap: 6px;
+        }
       }
       .chat-textarea {
         display: block;
@@ -786,8 +799,8 @@ type Modo = 'manual' | 'jarvis' | null;
         border-radius: 3px;
       }
       .chat-icon-btn {
-        width: 36px;
-        height: 36px;
+        width: 32px;
+        height: 32px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -795,6 +808,12 @@ type Modo = 'manual' | 'jarvis' | null;
         border: 1px solid rgb(var(--c-border-strong));
         transition: background-color 180ms, border-color 180ms, color 180ms, opacity 180ms;
         flex-shrink: 0;
+      }
+      @media (min-width: 768px) {
+        .chat-icon-btn {
+          width: 36px;
+          height: 36px;
+        }
       }
       .chat-icon-btn:disabled {
         opacity: 0.45;
@@ -946,6 +965,24 @@ export class CapturaComponent implements AfterViewChecked {
   readonly podeEnviar = computed(() => this.rascunho().trim().length > 0);
   readonly mostrarChips = computed(() => this.sugestao() !== null && !this.gravando() && !this.previaAudio());
   readonly inputExpandido = signal(false);
+  readonly isMobile = signal(this.detectarMobile());
+
+  readonly placeholderChat = computed(() => {
+    if (this.chatAtivo()) return 'Escreve aqui...';
+    return this.isMobile()
+      ? 'Digite o que você pensa...'
+      : 'Ex: marcar reunião com Pedro amanhã às 18h';
+  });
+
+  @HostListener('window:resize')
+  onWindowResize(): void {
+    this.isMobile.set(this.detectarMobile());
+  }
+
+  private detectarMobile(): boolean {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < 768;
+  }
 
   onInputChat(ev: Event): void {
     const ta = ev.target as HTMLTextAreaElement;

@@ -149,6 +149,17 @@
     border: 1px solid rgba(16, 185, 129, 0.5);
     color: #6ee7b7;
   }
+  .theme-light .toast-sucesso {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.92));
+    border-color: rgba(5, 150, 105, 0.6);
+    color: #ffffff;
+    box-shadow: 0 12px 28px -8px rgba(5, 150, 105, 0.45), 0 0 0 1px rgba(5, 150, 105, 0.25);
+  }
+  .theme-light .toast-sucesso-icone {
+    background: rgba(255, 255, 255, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #ffffff;
+  }
   .slide-down {
     animation: slide-down 280ms ease-out;
   }

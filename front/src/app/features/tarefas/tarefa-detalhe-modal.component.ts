@@ -35,15 +35,28 @@ import { quebrarTextoEmSegmentos } from '../../shared/auto-link';
               {{ tarefa.nome }}
             </h2>
           </div>
-          <button
-            type="button"
-            class="text-text-subtle hover:text-text text-base p-1 leading-none shrink-0"
-            data-testid="detalhe-close"
-            aria-label="Fechar"
-            (click)="fechar()"
-          >
-            ×
-          </button>
+          <div class="flex items-center gap-1 shrink-0">
+            <button
+              type="button"
+              class="w-8 h-8 grid place-items-center text-text-subtle hover:text-danger hover:bg-danger/10 rounded transition-colors"
+              data-testid="detalhe-excluir"
+              title="Excluir tarefa"
+              aria-label="Excluir tarefa"
+              (click)="onExcluir()"
+            >
+              <i class="fa-solid fa-trash text-[12px]"></i>
+            </button>
+            <button
+              type="button"
+              class="w-8 h-8 grid place-items-center text-text-subtle hover:text-text hover:bg-bg-elev rounded text-base leading-none transition-colors"
+              data-testid="detalhe-close"
+              aria-label="Fechar"
+              title="Fechar"
+              (click)="fechar()"
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         <div class="px-5 py-4 flex flex-col gap-4">
@@ -128,15 +141,7 @@ import { quebrarTextoEmSegmentos } from '../../shared/auto-link';
           </div>
         </div>
 
-        <div class="px-5 py-3 border-t border-border flex flex-wrap justify-between gap-2">
-          <button
-            type="button"
-            class="text-danger text-[13px] px-3 py-2 hover:bg-danger/10 rounded transition-colors"
-            data-testid="detalhe-excluir"
-            (click)="onExcluir()"
-          >
-            Excluir
-          </button>
+        <div class="px-5 py-3 border-t border-border flex flex-wrap justify-end gap-2">
           <div class="flex flex-wrap gap-2 justify-end">
             @if (tarefa.status !== 2) {
               <button

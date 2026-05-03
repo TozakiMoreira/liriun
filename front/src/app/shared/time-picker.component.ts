@@ -4,15 +4,14 @@ import {
   Component,
   ElementRef,
   EmbeddedViewRef,
-  EventEmitter,
   HostListener,
-  Input,
   OnDestroy,
-  Output,
   TemplateRef,
   ViewContainerRef,
   ViewEncapsulation,
   inject,
+  input,
+  output,
   signal,
   viewChild,
 } from '@angular/core';
@@ -27,17 +26,17 @@ import {
         #trigger
         type="button"
         class="time-picker-input"
-        [class.disabled]="disabled"
-        [disabled]="disabled"
+        [class.disabled]="disabled()"
+        [disabled]="disabled()"
         (click)="toggle()"
-        [attr.aria-label]="ariaLabel"
+        [attr.aria-label]="ariaLabel()"
         [attr.aria-expanded]="aberto()"
       >
         <i class="fa-solid fa-clock text-text-dim text-[12px]"></i>
-        @if (valor) {
-          <span class="text-text">{{ valor }}</span>
+        @if (valor()) {
+          <span class="text-text">{{ valor() }}</span>
         } @else {
-          <span class="text-text-subtle">{{ placeholder }}</span>
+          <span class="text-text-subtle">{{ placeholder() }}</span>
         }
         <i class="fa-solid fa-chevron-down text-text-subtle text-[10px] ml-auto"></i>
       </button>
@@ -243,11 +242,11 @@ export class TimePickerComponent implements OnDestroy {
   private readonly popTpl = viewChild.required<TemplateRef<unknown>>('popTpl');
   private viewRef: EmbeddedViewRef<unknown> | null = null;
 
-  @Input() valor: string | null = null;
-  @Input() placeholder = '--:--';
-  @Input() ariaLabel = 'Selecionar horário';
-  @Input() disabled = false;
-  @Output() valorChange = new EventEmitter<string | null>();
+  readonly valor = input<string | null>(null);
+  readonly placeholder = input('--:--');
+  readonly ariaLabel = input('Selecionar horário');
+  readonly disabled = input(false);
+  readonly valorChange = output<string | null>();
 
   readonly aberto = signal(false);
   readonly horaSel = signal<string>('--');
@@ -263,12 +262,12 @@ export class TimePickerComponent implements OnDestroy {
   private static readonly OFFSET = 6;
 
   toggle(): void {
-    if (this.disabled) return;
+    if (this.disabled()) return;
     if (this.aberto()) {
       this.fecharPop();
       return;
     }
-    const [h, m] = (this.valor || '--:--').split(':');
+    const [h, m] = (this.valor() || '--:--').split(':');
     this.horaSel.set(h);
     this.minSel.set(m);
     this.posicionarPop();
@@ -294,7 +293,6 @@ export class TimePickerComponent implements OnDestroy {
   }
 
   limpar(): void {
-    this.valor = null;
     this.horaSel.set('--');
     this.minSel.set('--');
     this.valorChange.emit(null);
@@ -378,7 +376,6 @@ export class TimePickerComponent implements OnDestroy {
   private emitir(): void {
     if (this.horaSel() === '--' || this.minSel() === '--') return;
     const novo = `${this.horaSel()}:${this.minSel()}`;
-    this.valor = novo;
     this.valorChange.emit(novo);
   }
 

@@ -4,16 +4,15 @@ import {
   Component,
   ElementRef,
   EmbeddedViewRef,
-  EventEmitter,
   HostListener,
-  Input,
   OnDestroy,
-  Output,
   TemplateRef,
   ViewContainerRef,
   ViewEncapsulation,
   computed,
   inject,
+  input,
+  output,
   signal,
   viewChild,
 } from '@angular/core';
@@ -38,17 +37,17 @@ interface Dia {
         #trigger
         type="button"
         class="date-picker-input"
-        [class.disabled]="disabled"
-        [disabled]="disabled"
+        [class.disabled]="disabled()"
+        [disabled]="disabled()"
         (click)="toggle()"
-        [attr.aria-label]="ariaLabel"
+        [attr.aria-label]="ariaLabel()"
         [attr.aria-expanded]="aberto()"
       >
         <i class="fa-solid fa-calendar text-text-dim text-[12px]"></i>
-        @if (valor) {
+        @if (valor()) {
           <span class="text-text">{{ formatado() }}</span>
         } @else {
-          <span class="text-text-subtle">{{ placeholder }}</span>
+          <span class="text-text-subtle">{{ placeholder() }}</span>
         }
         <i class="fa-solid fa-chevron-down text-text-subtle text-[10px] ml-auto"></i>
       </button>
@@ -290,12 +289,12 @@ export class DatePickerComponent implements OnDestroy {
   private readonly popTpl = viewChild.required<TemplateRef<unknown>>('popTpl');
   private viewRef: EmbeddedViewRef<unknown> | null = null;
 
-  @Input() valor: string | null = null;
-  @Input() min: string | null = null;
-  @Input() placeholder = 'Selecionar data';
-  @Input() ariaLabel = 'Selecionar data';
-  @Input() disabled = false;
-  @Output() valorChange = new EventEmitter<string | null>();
+  readonly valor = input<string | null>(null);
+  readonly min = input<string | null>(null);
+  readonly placeholder = input('Selecionar data');
+  readonly ariaLabel = input('Selecionar data');
+  readonly disabled = input(false);
+  readonly valorChange = output<string | null>();
 
   readonly aberto = signal(false);
   readonly mesVisivel = signal(new Date().getMonth());
@@ -320,8 +319,8 @@ export class DatePickerComponent implements OnDestroy {
     const ultimoDia = new Date(ano, mes + 1, 0).getDate();
     const diaSemanaInicio = primeiro.getDay();
     const hojeIso = this.toIso(new Date());
-    const minIso = this.min;
-    const selIso = this.valor;
+    const minIso = this.min();
+    const selIso = this.valor();
 
     const cells: Dia[] = [];
     // Dias do mês anterior
@@ -342,18 +341,20 @@ export class DatePickerComponent implements OnDestroy {
   });
 
   formatado(): string {
-    if (!this.valor) return '';
-    const [y, m, d] = this.valor.split('-');
+    const v = this.valor();
+    if (!v) return '';
+    const [y, m, d] = v.split('-');
     return `${d}/${m}/${y}`;
   }
 
   toggle(): void {
-    if (this.disabled) return;
+    if (this.disabled()) return;
     if (this.aberto()) {
       this.fecharPop();
       return;
     }
-    const ref = this.valor ? new Date(this.valor + 'T00:00:00') : new Date();
+    const v = this.valor();
+    const ref = v ? new Date(v + 'T00:00:00') : new Date();
     this.mesVisivel.set(ref.getMonth());
     this.anoVisivel.set(ref.getFullYear());
     this.posicionarPop();
@@ -424,21 +425,19 @@ export class DatePickerComponent implements OnDestroy {
 
   selecionar(d: Dia): void {
     if (d.desabilitado) return;
-    this.valor = d.iso;
     this.valorChange.emit(d.iso);
     this.fecharPop();
   }
 
   limpar(): void {
-    this.valor = null;
     this.valorChange.emit(null);
     this.fecharPop();
   }
 
   hoje(): void {
     const iso = this.toIso(new Date());
-    if (this.min && iso < this.min) return;
-    this.valor = iso;
+    const minIso = this.min();
+    if (minIso && iso < minIso) return;
     this.valorChange.emit(iso);
     this.fecharPop();
   }

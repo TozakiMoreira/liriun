@@ -38,18 +38,12 @@ interface Confirmacao {
     </header>
 
     <div class="flex-1 px-4 md:px-8 py-6 md:py-8 overflow-auto" data-testid="configuracoes-page">
-      <div class="max-w-[760px] mx-auto flex flex-col gap-7">
-        <div class="flex flex-col gap-1">
-          <h1 class="text-xl font-semibold tracking-tight">Configurações</h1>
-          <p class="text-text-dim text-[13px]">
-            Cuide do seu perfil e das categorias que eu uso pra organizar suas tarefas.
-          </p>
-        </div>
-
+      <div class="max-w-[760px] mx-auto flex flex-col gap-8">
+        <section class="flex flex-col gap-3" data-testid="section-perfil-wrap">
+          <h2 class="text-xl font-semibold tracking-tight">Perfil</h2>
         <section class="card-elev p-5 flex flex-col gap-4" data-testid="section-perfil">
           <div class="flex items-start justify-between gap-3">
             <div class="flex flex-col gap-0.5">
-              <div class="text-sm font-semibold">Perfil</div>
               <div class="text-xs text-text-dim">
                 Seu nome e email. Mude quando quiser.
               </div>
@@ -210,10 +204,12 @@ interface Confirmacao {
             </div>
           }
         </section>
+        </section>
 
+        <section class="flex flex-col gap-3" data-testid="section-categorias-wrap">
+          <h2 class="text-xl font-semibold tracking-tight">Categorias</h2>
         <section class="card-elev p-5 flex flex-col gap-3" data-testid="section-categorias">
           <div class="flex flex-col gap-0.5">
-            <div class="text-sm font-semibold">Categorias</div>
             <div class="text-xs text-text-dim">
               Não dá pra excluir uma categoria com tarefas pendentes.
             </div>
@@ -304,6 +300,7 @@ interface Confirmacao {
           @if (erroCat()) {
             <p class="text-danger text-xs" data-testid="cat-erro">{{ erroCat() }}</p>
           }
+        </section>
         </section>
       </div>
     </div>

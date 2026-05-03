@@ -31,20 +31,32 @@ import { ThemeService } from '../core/theme/theme.service';
           />
           <div class="text-[13px] font-semibold tracking-tight"><app-brand /></div>
         </div>
-        <button
-          type="button"
-          class="flex items-center gap-2 text-text-dim hover:text-text text-xs px-2 py-1 transition-colors"
-          data-testid="mobile-logout"
-          (click)="sair()"
-        >
-          <app-avatar
-            [nome]="storage.usuario()?.nome ?? ''"
-            [fotoUrl]="storage.usuario()?.fotoUrl ?? null"
-            [size]="22"
-          />
-          <span>{{ storage.usuario()?.nome }}</span>
-          <i class="fa-solid fa-right-from-bracket text-[11px]"></i>
-        </button>
+        <div class="flex items-center gap-1">
+          <button
+            type="button"
+            class="w-9 h-9 grid place-items-center text-text-dim hover:text-text rounded-md transition-colors"
+            data-testid="mobile-theme-toggle"
+            [title]="theme.theme() === 'dark' ? 'Tema claro' : 'Tema escuro'"
+            [attr.aria-label]="theme.theme() === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'"
+            (click)="theme.alternar()"
+          >
+            <i [class]="theme.theme() === 'dark' ? 'fa-solid fa-sun text-[14px]' : 'fa-solid fa-moon text-[14px]'"></i>
+          </button>
+          <button
+            type="button"
+            class="flex items-center gap-2 text-text-dim hover:text-text text-xs px-2 py-1 transition-colors"
+            data-testid="mobile-logout"
+            (click)="sair()"
+          >
+            <app-avatar
+              [nome]="storage.usuario()?.nome ?? ''"
+              [fotoUrl]="storage.usuario()?.fotoUrl ?? null"
+              [size]="22"
+            />
+            <span class="max-w-[80px] truncate">{{ storage.usuario()?.nome }}</span>
+            <i class="fa-solid fa-right-from-bracket text-[11px]"></i>
+          </button>
+        </div>
       </header>
 
       <aside
