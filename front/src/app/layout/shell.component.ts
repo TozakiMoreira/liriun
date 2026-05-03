@@ -245,7 +245,7 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
             @if (header.voltar(); as v) {
               <button
                 type="button"
-                class="group inline-flex items-center justify-center w-9 h-9 rounded-md text-white bg-accent border border-accent hover:bg-accent-hover active:scale-95 transition-all mr-1 shadow-accent"
+                class="group inline-flex items-center justify-center w-8 h-8 rounded-md text-text-dim bg-bg-elev border border-border hover:text-text hover:border-border-strong active:scale-95 transition-all mr-1"
                 [attr.data-testid]="v.testid ?? 'header-voltar'"
                 [attr.aria-label]="v.aria ?? 'Voltar'"
                 [attr.title]="v.aria ?? 'Voltar'"

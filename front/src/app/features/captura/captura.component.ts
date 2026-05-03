@@ -49,7 +49,7 @@ type Modo = 'manual' | 'liriun' | null;
       @if (modo() === 'liriun') {
         <button
           type="button"
-          class="group inline-flex items-center justify-center w-9 h-9 rounded-md text-white bg-accent border border-accent hover:bg-accent-hover active:scale-95 transition-all shadow-accent"
+          class="group inline-flex items-center justify-center w-8 h-8 rounded-md text-text-dim bg-bg-elev border border-border hover:text-text hover:border-border-strong active:scale-95 transition-all"
           data-testid="captura-voltar"
           aria-label="Voltar pra escolha de modo"
           title="Voltar pra escolha de modo"
@@ -723,7 +723,7 @@ type Modo = 'manual' | 'liriun' | null;
       <app-tarefa-form
         [sugestao]="s"
         (salvo)="aposSalvar()"
-        (cancelado)="formAjuste.set(null)"
+        (cancelado)="fecharAjuste()"
       ></app-tarefa-form>
     }
   `,
@@ -1067,6 +1067,7 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
     this.sugestao.set(null);
     this.erroChat.set(null);
     this.rascunho.set('');
+    this.aplicarHeaderEscolhaModo();
     this.chatAtivo.set(false);
     this.suprimirPersistencia = false;
     this.limparPersistencia();
@@ -1092,40 +1093,11 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
   private readonly subtituloTplRef = viewChild<TemplateRef<unknown>>('subtituloTpl');
 
   constructor() {
-    // Estado inicial: escolha de modo, sem voltar (nao tem pra onde voltar dentro da pagina).
-    this.pageHeader.set({
-      titulo: 'Nova tarefa',
-      iconeClasse: 'fa-solid fa-bolt text-accent text-[12px]',
-    });
+    this.aplicarHeaderEscolhaModo();
     this.destroyRef.onDestroy(() => {
       this.limparGravacao();
       this.descartarPreviaUrl();
       this.pageHeader.limpar();
-    });
-
-    effect(() => {
-      const m = this.modo();
-      const ajustando = this.formAjuste() !== null;
-      // Esconde icone quando ja existe seta de voltar com destaque (evita poluir)
-      this.pageHeader.setIcone(
-        m === null ? 'fa-solid fa-bolt text-accent text-[12px]' : null,
-      );
-      // Voltar so faz sentido quando o usuario entrou num modo (chat) ou no ajustar.
-      if (ajustando) {
-        this.pageHeader.setVoltar({
-          acao: () => this.formAjuste.set(null),
-          aria: 'Voltar pra conversa',
-          testid: 'captura-voltar-topbar',
-        });
-      } else if (m !== null) {
-        this.pageHeader.setVoltar({
-          acao: () => this.voltarSelecaoModo(),
-          aria: 'Voltar pra escolha de modo',
-          testid: 'captura-voltar-topbar',
-        });
-      } else {
-        this.pageHeader.setVoltar(null);
-      }
     });
 
     effect(() => {
@@ -1153,6 +1125,42 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
     this.pageHeader.setSubtitulo(this.subtituloTplRef() ?? null);
   }
 
+  // ===== Header dinamico =====
+  private aplicarHeaderEscolhaModo(): void {
+    this.pageHeader.set({
+      titulo: 'Nova tarefa',
+      iconeClasse: 'fa-solid fa-bolt text-accent text-[12px]',
+      subtituloTpl: this.subtituloTplRef() ?? null,
+      voltar: null,
+    });
+  }
+
+  private aplicarHeaderModoSelecionado(): void {
+    this.pageHeader.set({
+      titulo: 'Nova tarefa',
+      iconeClasse: null,
+      subtituloTpl: this.subtituloTplRef() ?? null,
+      voltar: {
+        acao: () => this.voltarSelecaoModo(),
+        aria: 'Voltar pra escolha de modo',
+        testid: 'captura-voltar-topbar',
+      },
+    });
+  }
+
+  private aplicarHeaderAjustando(): void {
+    this.pageHeader.set({
+      titulo: 'Nova tarefa',
+      iconeClasse: null,
+      subtituloTpl: this.subtituloTplRef() ?? null,
+      voltar: {
+        acao: () => this.fecharAjuste(),
+        aria: 'Voltar pra conversa',
+        testid: 'captura-voltar-topbar',
+      },
+    });
+  }
+
   ngAfterViewChecked(): void {
     if (this.precisaScrollar) {
       this.precisaScrollar = false;
@@ -1171,6 +1179,7 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
 
   abrirManual(): void {
     this.modo.set('manual');
+    this.aplicarHeaderModoSelecionado();
   }
 
   abrirLiriun(): void {
@@ -1185,6 +1194,7 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
     const restaurado = this.restaurarChat();
     this.suprimirPersistencia = false;
     this.modo.set('liriun');
+    this.aplicarHeaderModoSelecionado();
     if (restaurado && this.mensagens().length > 0) {
       this.chatAtivo.set(true);
       this.precisaScrollar = true;
@@ -1324,6 +1334,13 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
     const s = this.sugestao();
     if (!s) return;
     this.formAjuste.set(s);
+    this.aplicarHeaderAjustando();
+  }
+
+  fecharAjuste(): void {
+    this.formAjuste.set(null);
+    if (this.modo() !== null) this.aplicarHeaderModoSelecionado();
+    else this.aplicarHeaderEscolhaModo();
   }
 
   salvarOuAjustar(): void {
