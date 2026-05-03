@@ -12,6 +12,8 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CategoriasService, Categoria } from '../../core/api/categorias.service';
+import { DatePickerComponent } from '../../shared/date-picker.component';
+import { TimePickerComponent } from '../../shared/time-picker.component';
 import {
   Prioridade,
   Tarefa,
@@ -32,7 +34,7 @@ export interface SugestaoTarefa {
 @Component({
   selector: 'app-tarefa-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DatePickerComponent, TimePickerComponent],
   template: `
     <div
       class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 grid place-items-center px-4 py-8 animate-fade-in"
@@ -107,7 +109,7 @@ export interface SugestaoTarefa {
                     [class]="
                       categoriaIds().includes(cat.id)
                         ? 'bg-accent/15 border-accent/40 text-text'
-                        : 'bg-[#16181c] border-border-strong text-text-dim hover:text-text'
+                        : 'bg-bg-surface border-border-strong text-text-dim hover:text-text'
                     "
                     [attr.data-testid]="'tarefa-form-cat-' + cat.id"
                     (click)="toggleCategoria(cat.id)"
@@ -126,7 +128,7 @@ export interface SugestaoTarefa {
           <div class="flex flex-col gap-1.5">
             <label class="field-label">Prioridade</label>
             <div
-              class="grid grid-cols-2 sm:grid-cols-4 gap-1.5"
+              class="flex flex-wrap gap-1.5"
               data-testid="tarefa-form-prioridade"
               role="radiogroup"
               aria-label="Prioridade"
@@ -153,39 +155,31 @@ export interface SugestaoTarefa {
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-[1fr_140px] gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-[1fr_160px] gap-3">
             <div class="flex flex-col gap-1.5">
-              <label class="field-label" for="data">Data</label>
-              <div class="datetime-wrap">
-                <i class="fa-solid fa-calendar datetime-icon" aria-hidden="true"></i>
-                <input
-                  id="data"
-                  name="data"
-                  type="date"
-                  class="input-base datetime-input"
-                  data-testid="tarefa-form-data"
-                  [min]="dataMinima"
-                  [(ngModel)]="data"
-                />
-              </div>
+              <label class="field-label">Data</label>
+              <app-date-picker
+                [valor]="data || null"
+                [min]="dataMinima"
+                placeholder="Selecionar data"
+                ariaLabel="Data da tarefa"
+                (valorChange)="data = $event ?? ''"
+                data-testid="tarefa-form-data-picker"
+              />
               @if (erroData()) {
                 <p class="text-danger text-xs" data-testid="tarefa-form-erro-data">{{ erroData() }}</p>
               }
             </div>
             <div class="flex flex-col gap-1.5">
-              <label class="field-label" for="hora">Hora (opcional)</label>
-              <div class="datetime-wrap">
-                <i class="fa-solid fa-clock datetime-icon" aria-hidden="true"></i>
-                <input
-                  id="hora"
-                  name="hora"
-                  type="time"
-                  class="input-base datetime-input"
-                  data-testid="tarefa-form-hora"
-                  [(ngModel)]="hora"
-                  [disabled]="!data"
-                />
-              </div>
+              <label class="field-label">Hora (opcional)</label>
+              <app-time-picker
+                [valor]="hora || null"
+                [disabled]="!data"
+                placeholder="--:--"
+                ariaLabel="Horário da tarefa"
+                (valorChange)="hora = $event ?? ''"
+                data-testid="tarefa-form-hora-picker"
+              />
             </div>
           </div>
 
@@ -242,57 +236,27 @@ export interface SugestaoTarefa {
         align-items: center;
         justify-content: center;
         gap: 6px;
-        padding: 8px 10px;
-        border-radius: 8px;
-        border: 1px solid #2a2b2f;
-        background: #16181c;
-        color: #8a8f98;
-        font-size: 12.5px;
+        padding: 4px 10px;
+        border-radius: 6px;
+        border: 1px solid rgb(var(--c-border-strong));
+        background: rgb(var(--c-surface));
+        color: rgb(var(--c-text-dim));
+        font-size: 13px;
         font-weight: 500;
         cursor: pointer;
         transition: background-color 160ms, border-color 160ms, color 160ms, transform 120ms;
       }
       .prioridade-chip:hover {
-        color: #e6e6e6;
-        border-color: #3a3b3f;
+        color: rgb(var(--c-text));
+        border-color: rgb(var(--c-border-strong));
       }
       .prioridade-chip-active {
-        background: color-mix(in srgb, var(--chip-color) 14%, #16181c);
+        background: color-mix(in srgb, var(--chip-color) 14%, rgb(var(--c-surface)));
         border-color: color-mix(in srgb, var(--chip-color) 50%, transparent);
-        color: #e6e6e6;
+        color: rgb(var(--c-text));
       }
       .prioridade-chip-active:hover {
         border-color: color-mix(in srgb, var(--chip-color) 70%, transparent);
-      }
-      .datetime-wrap {
-        position: relative;
-        display: flex;
-        align-items: center;
-      }
-      .datetime-icon {
-        position: absolute;
-        left: 12px;
-        font-size: 12px;
-        color: #8a8f98;
-        pointer-events: none;
-        z-index: 1;
-      }
-      .datetime-input {
-        padding-left: 34px !important;
-        color-scheme: dark;
-        width: 100%;
-      }
-      .datetime-input::-webkit-calendar-picker-indicator {
-        filter: invert(0.85) brightness(1.2);
-        opacity: 0.85;
-        cursor: pointer;
-        margin-left: 4px;
-      }
-      .datetime-input::-webkit-calendar-picker-indicator:hover {
-        opacity: 1;
-      }
-      .datetime-input:disabled {
-        opacity: 0.5;
       }
     `,
   ],

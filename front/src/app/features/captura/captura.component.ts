@@ -29,13 +29,14 @@ import {
 import { TokenStorage } from '../../core/auth/token.storage';
 import { extrairProblemDetails } from '../../shared/problem-details';
 import { TarefaFormComponent } from '../tarefas/tarefa-form.component';
+import { BrandComponent } from '../../shared/brand.component';
 
 type Modo = 'manual' | 'jarvis' | null;
 
 @Component({
   selector: 'app-captura',
   standalone: true,
-  imports: [CommonModule, FormsModule, TarefaFormComponent],
+  imports: [CommonModule, FormsModule, TarefaFormComponent, BrandComponent],
   template: `
     <header class="flex items-center px-4 md:px-8 py-3.5 border-b border-border gap-3">
       <div class="flex items-center gap-2 text-[15px] text-text-dim">
@@ -79,7 +80,7 @@ type Modo = 'manual' | 'jarvis' | null;
               O que você precisa anotar?
             </div>
             <p class="text-text-dim max-w-[440px] mx-auto leading-relaxed">
-              Escolha como quer criar a tarefa. Manual pra quando você já sabe tudo, Jarvis pra
+              Escolha como quer criar a tarefa. Manual pra quando você já sabe tudo, <app-brand /> pra
               conversar comigo até a tarefa ficar do jeito certo.
             </p>
           </div>
@@ -87,13 +88,13 @@ type Modo = 'manual' | 'jarvis' | null;
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full" data-testid="mode-picker">
             <button
               type="button"
-              class="bg-bg-elev border border-border rounded-lg p-6 cursor-pointer text-left flex flex-col gap-3.5 hover:border-border-strong hover:bg-[#16181c] hover:-translate-y-0.5 transition-all duration-200 group"
+              class="bg-bg-elev border border-border rounded-lg p-6 cursor-pointer text-left flex flex-col gap-3.5 hover:border-border-strong hover:bg-bg-surface hover:-translate-y-0.5 transition-all duration-200 group"
               data-testid="mode-manual-btn"
               (click)="abrirManual()"
             >
               <div class="flex items-center justify-between gap-3">
                 <div
-                  class="w-9 h-9 rounded-lg bg-[#16181c] border border-border-strong grid place-items-center text-text-dim text-[15px] group-hover:text-text transition-colors"
+                  class="w-9 h-9 rounded-lg bg-bg-surface border border-border-strong grid place-items-center text-text-dim text-[15px] group-hover:text-text transition-colors"
                 >
                   <i class="fa-solid fa-pen-to-square"></i>
                 </div>
@@ -116,7 +117,7 @@ type Modo = 'manual' | 'jarvis' | null;
 
             <button
               type="button"
-              class="relative overflow-hidden bg-bg-elev border border-border rounded-lg p-6 cursor-pointer text-left flex flex-col gap-3.5 hover:border-accent hover:bg-[#16181c] hover:-translate-y-0.5 hover:shadow-glow transition-all duration-200 group"
+              class="relative overflow-hidden bg-bg-elev border border-border rounded-lg p-6 cursor-pointer text-left flex flex-col gap-3.5 hover:border-accent hover:bg-bg-surface hover:-translate-y-0.5 hover:shadow-glow transition-all duration-200 group"
               data-testid="mode-jarvis-btn"
               (click)="abrirJarvis()"
               [style.background-image]="
@@ -130,7 +131,7 @@ type Modo = 'manual' | 'jarvis' | null;
                   <i class="fa-solid fa-wand-magic-sparkles"></i>
                 </div>
               </div>
-              <div class="text-base font-semibold tracking-tight text-accent">Jarvis</div>
+              <div class="text-base font-semibold tracking-tight text-accent"><app-brand /></div>
               <div class="text-[13px] text-text-dim leading-relaxed">
                 Texto livre. Diga o que precisa fazer, quando e onde — eu monto a tarefa direto
                 pra você revisar.
@@ -139,7 +140,7 @@ type Modo = 'manual' | 'jarvis' | null;
                 <div
                   class="text-[13px] font-medium text-text group-hover:text-accent flex items-center gap-1.5 transition-colors"
                 >
-                  Conversar com Jarvis
+                  Conversar com <app-brand />
                   <i class="fa-solid fa-arrow-right text-[11px] group-hover:translate-x-0.5 transition-transform"></i>
                 </div>
                 <span class="kbd-pill">J</span>
@@ -154,7 +155,7 @@ type Modo = 'manual' | 'jarvis' | null;
             <i class="fa-solid fa-keyboard"></i>
             <span>
               <span class="kbd-pill">M</span> manual ·
-              <span class="kbd-pill">J</span> Jarvis
+              <span class="kbd-pill">L</span> <app-brand />
             </span>
           </div>
         </div>
@@ -168,12 +169,12 @@ type Modo = 'manual' | 'jarvis' | null;
           @if (!chatAtivo()) {
             <div class="text-center flex flex-col gap-2 fade-down">
               <div class="flex items-center justify-center gap-2 mb-1">
-                <div
-                  class="w-9 h-9 rounded-lg bg-logo-grad grid place-items-center text-sm font-bold tracking-tight shadow-glow"
+                <img
+                  src="/logo.png"
+                  alt="Liriun"
+                  class="w-9 h-9 rounded-lg object-contain shadow-glow"
                   aria-hidden="true"
-                >
-                  J
-                </div>
+                />
               </div>
               <h1
                 class="text-2xl md:text-[26px] font-semibold tracking-tight leading-tight"
@@ -197,14 +198,14 @@ type Modo = 'manual' | 'jarvis' | null;
                 class="flex items-center justify-between px-4 py-3 border-b border-border slide-down"
               >
                 <div class="flex items-center gap-2">
-                  <div
-                    class="w-7 h-7 rounded-md bg-logo-grad grid place-items-center text-xs font-bold tracking-tight shadow-glow-sm"
+                  <img
+                    class="w-7 h-7 rounded-md object-contain shadow-glow-sm"
+                    src="/logo.png"
+                    alt="Liriun"
                     aria-hidden="true"
-                  >
-                    J
-                  </div>
+                  />
                   <div class="flex flex-col leading-tight">
-                    <strong class="text-text font-medium text-[13px]">Jarvis</strong>
+                    <strong class="text-text font-medium text-[13px]"><app-brand /></strong>
                     <span class="text-text-subtle text-[10px] flex items-center gap-1">
                       @if (analisando()) {
                         <span class="w-1.5 h-1.5 bg-accent rounded-full animate-pulse"></span>
@@ -249,12 +250,12 @@ type Modo = 'manual' | 'jarvis' | null;
                 @for (m of mensagens(); track $index) {
                   @if (m.papel === 'jarvis') {
                     <div class="flex items-start gap-2 max-w-[88%] msg-in">
-                      <div
-                        class="w-7 h-7 rounded-md bg-logo-grad grid place-items-center text-[10px] font-bold shrink-0 mt-0.5 shadow-glow-sm"
+                      <img
+                        class="w-7 h-7 rounded-md object-contain shrink-0 mt-0.5 shadow-glow-sm"
+                        src="/logo.png"
+                        alt="Liriun"
                         aria-hidden="true"
-                      >
-                        J
-                      </div>
+                      />
                       <div
                         class="bg-bg-elev border border-border rounded-lg rounded-tl-sm px-3.5 py-2.5 text-[13px] leading-relaxed whitespace-pre-wrap"
                       >
@@ -274,12 +275,12 @@ type Modo = 'manual' | 'jarvis' | null;
 
                 @if (analisando()) {
                   <div class="flex items-start gap-2 max-w-[85%] msg-in">
-                    <div
-                      class="w-7 h-7 rounded-md bg-logo-grad grid place-items-center text-[10px] font-bold shrink-0 mt-0.5 shadow-glow-sm"
+                    <img
+                      class="w-7 h-7 rounded-md object-contain shrink-0 mt-0.5 shadow-glow-sm"
+                      src="/logo.png"
+                      alt="Liriun"
                       aria-hidden="true"
-                    >
-                      J
-                    </div>
+                    />
                     <div
                       class="bg-bg-elev border border-border rounded-lg rounded-tl-sm px-3.5 py-3 text-text-subtle text-[13px] flex items-center gap-1"
                     >
@@ -292,12 +293,12 @@ type Modo = 'manual' | 'jarvis' | null;
 
                 @if (sugestao(); as s) {
                   <div class="flex items-start gap-2 max-w-[95%] msg-in" data-testid="chat-sugestao">
-                    <div
-                      class="w-7 h-7 rounded-md bg-logo-grad grid place-items-center text-[10px] font-bold shrink-0 mt-0.5 shadow-glow-sm"
+                    <img
+                      class="w-7 h-7 rounded-md object-contain shrink-0 mt-0.5 shadow-glow-sm"
+                      src="/logo.png"
+                      alt="Liriun"
                       aria-hidden="true"
-                    >
-                      J
-                    </div>
+                    />
                     <div
                       class="flex-1 bg-bg-elev border border-accent/40 rounded-lg overflow-hidden shadow-glow-sm"
                     >
@@ -702,7 +703,7 @@ type Modo = 'manual' | 'jarvis' | null;
         border-radius: 9999px;
         border: 1px solid rgba(94, 106, 210, 0.35);
         background: rgba(94, 106, 210, 0.1);
-        color: #c4caf2;
+        color: rgb(var(--c-accent));
         font-size: 12.5px;
         line-height: 1.3;
         cursor: pointer;
@@ -726,18 +727,18 @@ type Modo = 'manual' | 'jarvis' | null;
       .chat-input-wrap {
         position: relative;
         border-radius: 18px;
-        border: 1px solid #2a2b2f;
-        background: rgba(22, 24, 28, 0.55);
+        border: 1px solid rgb(var(--c-border-strong));
+        background: rgb(var(--c-bg-elev));
         padding: 10px 92px 10px 16px;
         transition: border-color 180ms, background-color 180ms;
         min-height: 52px;
       }
       .chat-input-wrap:hover {
-        border-color: #3a3b3f;
+        border-color: rgb(var(--c-border-strong));
       }
       .chat-input-wrap:focus-within {
-        border-color: #3a3b3f;
-        background: rgba(22, 24, 28, 0.75);
+        border-color: rgb(var(--c-accent));
+        background: rgb(var(--c-bg-input));
       }
       .chat-actions {
         position: absolute;
@@ -754,7 +755,7 @@ type Modo = 'manual' | 'jarvis' | null;
         border: 0;
         outline: none !important;
         box-shadow: none !important;
-        color: #e6e6e6;
+        color: rgb(var(--c-text));
         font-size: 13.5px;
         line-height: 1.5;
         padding: 0;
@@ -772,7 +773,7 @@ type Modo = 'manual' | 'jarvis' | null;
         border: 0 !important;
       }
       .chat-textarea::placeholder {
-        color: #6e7178;
+        color: rgb(var(--c-text-subtle));
       }
       .chat-textarea:disabled {
         opacity: 0.5;
@@ -781,7 +782,7 @@ type Modo = 'manual' | 'jarvis' | null;
         width: 6px;
       }
       .chat-textarea::-webkit-scrollbar-thumb {
-        background: #2a2b2f;
+        background: rgb(var(--c-border-strong));
         border-radius: 3px;
       }
       .chat-icon-btn {
@@ -791,7 +792,7 @@ type Modo = 'manual' | 'jarvis' | null;
         align-items: center;
         justify-content: center;
         border-radius: 9999px;
-        border: 1px solid #2a2b2f;
+        border: 1px solid rgb(var(--c-border-strong));
         transition: background-color 180ms, border-color 180ms, color 180ms, opacity 180ms;
         flex-shrink: 0;
       }
@@ -800,12 +801,12 @@ type Modo = 'manual' | 'jarvis' | null;
         cursor: not-allowed;
       }
       .chat-icon-secondary {
-        background: #16181c;
-        color: #8a8f98;
+        background: rgb(var(--c-surface));
+        color: rgb(var(--c-text-dim));
       }
       .chat-icon-secondary:hover:not(:disabled) {
-        color: #e6e6e6;
-        border-color: #3a3b3f;
+        color: rgb(var(--c-text));
+        border-color: rgb(var(--c-border-strong));
       }
       .chat-icon-primary {
         background: #5e6ad2;
@@ -823,17 +824,17 @@ type Modo = 'manual' | 'jarvis' | null;
         min-width: 20px;
         height: 20px;
         padding: 0 5px;
-        border: 1px solid #2a2b2f;
+        border: 1px solid rgb(var(--c-border-strong));
         border-radius: 4px;
-        background: #16181c;
+        background: rgb(var(--c-surface));
         font-family: 'SF Mono', ui-monospace, monospace;
         font-size: 11px;
-        color: #8a8f98;
+        color: rgb(var(--c-text-dim));
       }
       .dot-pulse {
         width: 6px;
         height: 6px;
-        background: #8a8f98;
+        background: rgb(var(--c-text-dim));
         border-radius: 50%;
         display: inline-block;
         animation: dot-pulse 1s infinite ease-in-out;
@@ -1692,7 +1693,7 @@ export class CapturaComponent implements AfterViewChecked {
     if (ev.key === 'm' || ev.key === 'M') {
       ev.preventDefault();
       this.abrirManual();
-    } else if (ev.key === 'j' || ev.key === 'J') {
+    } else if (ev.key === 'l' || ev.key === 'L') {
       ev.preventDefault();
       this.abrirJarvis();
     }

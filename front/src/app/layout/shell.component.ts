@@ -5,11 +5,13 @@ import { TarefasService } from '../core/api/tarefas.service';
 import { AuthService } from '../core/auth/auth.service';
 import { TokenStorage } from '../core/auth/token.storage';
 import { AvatarComponent } from '../shared/avatar.component';
+import { BrandComponent } from '../shared/brand.component';
+import { ThemeService } from '../core/theme/theme.service';
 
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, AvatarComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, AvatarComponent, BrandComponent],
   template: `
     <div
       class="flex flex-col min-h-screen bg-bg text-text md:grid"
@@ -17,17 +19,17 @@ import { AvatarComponent } from '../shared/avatar.component';
       [class.md:grid-cols-[56px_1fr]]="sidebarCollapsed()"
     >
       <header
-        class="md:hidden flex items-center justify-between h-12 px-4 border-b border-border bg-[#0b0c0e]"
+        class="md:hidden flex items-center justify-between h-12 px-4 border-b border-border bg-bg-sidebar"
         data-testid="mobile-topbar"
       >
         <div class="flex items-center gap-2">
-          <div
-            class="w-7 h-7 rounded-md bg-logo-grad grid place-items-center text-xs font-bold tracking-tight shadow-logo"
+          <img
+            src="/logo.png"
+            alt="Liriun"
+            class="w-7 h-7 rounded-md object-contain shadow-logo"
             aria-hidden="true"
-          >
-            J
-          </div>
-          <div class="text-[13px] font-semibold tracking-tight">Jarvis</div>
+          />
+          <div class="text-[13px] font-semibold tracking-tight"><app-brand /></div>
         </div>
         <button
           type="button"
@@ -46,7 +48,7 @@ import { AvatarComponent } from '../shared/avatar.component';
       </header>
 
       <aside
-        class="hidden md:flex bg-[#0b0c0e] border-r border-border flex-col p-3 relative transition-[width] duration-200"
+        class="hidden md:flex bg-bg-sidebar border-r border-border flex-col p-3 relative transition-[width] duration-200"
         [class.items-center]="sidebarCollapsed()"
         data-testid="sidebar"
         style="background-image: radial-gradient(ellipse 70% 30% at 50% 0%, rgba(94, 106, 210, 0.08), transparent);"
@@ -60,14 +62,14 @@ import { AvatarComponent } from '../shared/avatar.component';
               aria-label="Ir pra visão geral"
               title="Visão geral"
             >
-              <div
-                class="w-8 h-8 rounded-lg bg-logo-grad grid place-items-center text-sm font-bold tracking-tight shadow-logo shrink-0"
+              <img
+                src="/logo.png"
+                alt="Liriun"
+                class="w-8 h-8 rounded-lg object-contain shadow-logo shrink-0"
                 aria-hidden="true"
-              >
-                J
-              </div>
+              />
               <div class="flex flex-col leading-tight">
-                <div class="text-[14px] font-semibold tracking-tight">Jarvis</div>
+                <div class="text-[14px] font-semibold tracking-tight"><app-brand /></div>
               </div>
             </a>
             <button
@@ -82,24 +84,24 @@ import { AvatarComponent } from '../shared/avatar.component';
             </button>
           </div>
         } @else {
-          <a
-            routerLink="/app/visao-geral"
-            class="w-8 h-8 rounded-lg bg-logo-grad grid place-items-center text-sm font-bold tracking-tight text-white shadow-logo shrink-0 mb-2 transition-transform hover:scale-105"
-            data-testid="sidebar-logo"
-            aria-label="Ir pra visão geral"
-            title="Visão geral"
-          >
-            J
-          </a>
           <button
             type="button"
-            class="w-8 h-8 rounded-md grid place-items-center text-text-subtle hover:text-text hover:bg-bg-elev shrink-0 mb-3 transition-colors"
+            class="w-8 h-8 rounded-lg shadow-logo shrink-0 mb-3 transition-transform hover:scale-105 overflow-hidden block group/logo relative"
             data-testid="sidebar-toggle"
             title="Expandir barra lateral"
             aria-label="Expandir barra lateral"
             (click)="alternarSidebar()"
           >
-            <i class="fa-solid fa-angles-right text-[12px]"></i>
+            <img
+              src="/logo.png"
+              alt="Liriun"
+              class="w-full h-full object-contain transition-opacity group-hover/logo:opacity-30"
+            />
+            <span
+              class="absolute inset-0 grid place-items-center text-white opacity-0 group-hover/logo:opacity-100 transition-opacity bg-bg/55 backdrop-blur-[1px]"
+            >
+              <i class="fa-solid fa-angles-right text-[12px] drop-shadow-[0_1px_2px_rgba(0,0,0,0.6)]"></i>
+            </span>
           </button>
         }
 
@@ -220,6 +222,17 @@ import { AvatarComponent } from '../shared/avatar.component';
 
         <div class="mt-auto pt-3 w-full">
           @if (!sidebarCollapsed()) {
+            <button
+              type="button"
+              class="w-full flex items-center justify-center gap-2 px-3 py-1.5 mb-2 rounded-md text-[12px] text-text-dim hover:text-text border border-border hover:border-border-strong bg-bg-elev/30 hover:bg-bg-elev transition-colors"
+              data-testid="theme-toggle"
+              [title]="theme.theme() === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'"
+              [attr.aria-label]="theme.theme() === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro'"
+              (click)="theme.alternar()"
+            >
+              <i [class]="theme.theme() === 'dark' ? 'fa-solid fa-sun text-[11px]' : 'fa-solid fa-moon text-[11px]'"></i>
+              <span>{{ theme.theme() === 'dark' ? 'Tema claro' : 'Tema escuro' }}</span>
+            </button>
             <div
               class="border border-border rounded-lg bg-bg-elev/50 hover:bg-bg-elev transition-colors group overflow-hidden"
               data-testid="user-menu"
@@ -259,10 +272,20 @@ import { AvatarComponent } from '../shared/avatar.component';
             <div
               class="text-[9.5px] text-text-subtle text-center mt-2 tracking-wider uppercase font-medium"
             >
-              v1 · Jarvis
+              v1 · <app-brand />
             </div>
           } @else {
             <div class="flex flex-col items-center gap-2">
+              <button
+                type="button"
+                class="p-1.5 text-text-subtle hover:text-text rounded transition-colors"
+                data-testid="theme-toggle"
+                [title]="theme.theme() === 'dark' ? 'Tema claro' : 'Tema escuro'"
+                [attr.aria-label]="theme.theme() === 'dark' ? 'Tema claro' : 'Tema escuro'"
+                (click)="theme.alternar()"
+              >
+                <i [class]="theme.theme() === 'dark' ? 'fa-solid fa-sun text-[12px]' : 'fa-solid fa-moon text-[12px]'"></i>
+              </button>
               <app-avatar
                 [nome]="storage.usuario()?.nome ?? ''"
                 [fotoUrl]="storage.usuario()?.fotoUrl ?? null"
@@ -288,7 +311,7 @@ import { AvatarComponent } from '../shared/avatar.component';
       </main>
 
       <nav
-        class="md:hidden fixed bottom-0 inset-x-0 grid grid-cols-5 h-16 bg-[#0b0c0e] border-t border-border z-40"
+        class="md:hidden fixed bottom-0 inset-x-0 grid grid-cols-5 h-16 bg-bg-sidebar border-t border-border z-40"
         data-testid="mobile-bottom-nav"
       >
         <a
@@ -362,7 +385,7 @@ import { AvatarComponent } from '../shared/avatar.component';
         gap: 10px;
         padding: 7px 10px;
         border-radius: 6px;
-        color: #8a8f98;
+        color: rgb(var(--c-text-dim));
         font-size: 13px;
         font-weight: 500;
         cursor: pointer;
@@ -373,18 +396,18 @@ import { AvatarComponent } from '../shared/avatar.component';
         position: relative;
       }
       :host ::ng-deep .nav-link:hover {
-        background: #16181c;
-        color: #e6e6e6;
+        background: rgb(var(--c-surface));
+        color: rgb(var(--c-text));
         transform: translateX(2px);
       }
       :host ::ng-deep .nav-link:hover .nav-icon {
-        color: #e6e6e6;
+        color: rgb(var(--c-text));
       }
       :host ::ng-deep .nav-icon {
         width: 14px;
         font-size: 12px;
         text-align: center;
-        color: #8a8f98;
+        color: rgb(var(--c-text-dim));
         transition: color 220ms cubic-bezier(0.22, 1, 0.36, 1), transform 220ms cubic-bezier(0.22, 1, 0.36, 1);
       }
       :host ::ng-deep .nav-link:hover .nav-icon {
@@ -396,7 +419,7 @@ import { AvatarComponent } from '../shared/avatar.component';
           rgba(94, 106, 210, 0.14) 0%,
           rgba(94, 106, 210, 0.04) 100%
         );
-        color: #e6e6e6;
+        color: rgb(var(--c-text));
       }
       :host ::ng-deep .nav-link-active .nav-icon {
         color: #5e6ad2;
@@ -433,6 +456,7 @@ export class ShellComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly tarefasApi = inject(TarefasService);
   readonly storage = inject(TokenStorage);
+  readonly theme = inject(ThemeService);
 
   readonly pendentesCount = signal(0);
   readonly atrasadasCount = signal(0);

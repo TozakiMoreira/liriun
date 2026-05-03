@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap");
 @import "primeicons/primeicons.css";
 @import "@fortawesome/fontawesome-free/css/all.min.css";
 
@@ -7,6 +7,46 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --c-bg: 8 9 10;
+    --c-bg-elev: 16 17 19;
+    --c-bg-input: 19 20 26;
+    --c-surface: 22 24 28;
+    --c-sidebar: 11 12 14;
+    --c-border: 31 32 35;
+    --c-border-strong: 42 43 47;
+    --c-text: 247 248 248;
+    --c-text-dim: 138 143 152;
+    --c-text-subtle: 98 102 109;
+    --c-accent: 94 106 210;
+    --c-accent-hover: 113 121 216;
+    --c-accent-violet: 139 92 246;
+    --c-danger: 235 87 87;
+    --brand-base: rgb(247 248 248);
+    --brand-accent: rgb(139 92 246);
+    color-scheme: dark;
+  }
+
+  .theme-light {
+    --c-bg: 247 248 250;
+    --c-bg-elev: 255 255 255;
+    --c-bg-input: 244 245 247;
+    --c-surface: 240 242 245;
+    --c-sidebar: 250 251 253;
+    --c-border: 226 228 232;
+    --c-border-strong: 200 203 208;
+    --c-text: 16 17 19;
+    --c-text-dim: 78 82 88;
+    --c-text-subtle: 130 134 140;
+    --c-accent: 79 91 196;
+    --c-accent-hover: 94 106 210;
+    --c-accent-violet: 124 58 237;
+    --c-danger: 220 38 38;
+    --brand-base: rgb(16 17 19);
+    --brand-accent: rgb(124 58 237);
+    color-scheme: light;
+  }
+
   *,
   *::before,
   *::after {
@@ -18,8 +58,8 @@
     height: 100%;
     margin: 0;
     padding: 0;
-    background: theme("colors.bg.DEFAULT");
-    color: theme("colors.text.DEFAULT");
+    background: rgb(var(--c-bg));
+    color: rgb(var(--c-text));
     font-family: theme("fontFamily.sans");
     font-size: 14px;
     line-height: 1.5;

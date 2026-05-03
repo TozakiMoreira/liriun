@@ -184,7 +184,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                 [class]="
                   filtros().statusAtraso === opt.v
                     ? 'bg-accent/15 border-accent/40 text-text'
-                    : 'bg-[#16181c] border-border-strong text-text-dim hover:text-text'
+                    : 'bg-bg-surface border-border-strong text-text-dim hover:text-text'
                 "
                 [attr.data-testid]="'filtro-status-' + opt.v"
                 (click)="setFiltroStatus(opt.v)"
@@ -212,7 +212,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                 [class]="
                   filtros().prioridades.includes(p.v)
                     ? 'bg-accent/15 border-accent/40 text-text'
-                    : 'bg-[#16181c] border-border-strong text-text-dim hover:text-text'
+                    : 'bg-bg-surface border-border-strong text-text-dim hover:text-text'
                 "
                 [attr.aria-pressed]="filtros().prioridades.includes(p.v)"
                 [attr.data-testid]="'filtro-prio-' + p.v"
@@ -249,7 +249,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                 [class]="
                   filtros().periodo === opt.v
                     ? 'bg-accent/15 border-accent/40 text-text'
-                    : 'bg-[#16181c] border-border-strong text-text-dim hover:text-text'
+                    : 'bg-bg-surface border-border-strong text-text-dim hover:text-text'
                 "
                 [attr.data-testid]="'filtro-periodo-' + opt.v"
                 (click)="setFiltroPeriodo($any(opt.v))"
@@ -273,7 +273,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                   [class]="
                     filtros().categoriaIds.includes(c.id)
                       ? 'bg-accent/15 border-accent/40 text-text'
-                      : 'bg-[#16181c] border-border-strong text-text-dim hover:text-text'
+                      : 'bg-bg-surface border-border-strong text-text-dim hover:text-text'
                   "
                   [attr.aria-pressed]="filtros().categoriaIds.includes(c.id)"
                   [attr.data-testid]="'filtro-cat-' + c.id"
@@ -378,7 +378,8 @@ const FILTROS_PADRAO: FiltrosTarefas = {
           </div>
 
           <div class="card-elev overflow-hidden">
-            <div class="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border">
+            <div class="overflow-y-auto" style="max-height: 70vh; scrollbar-gutter: stable">
+            <div class="sticky top-0 z-20 bg-bg-elev grid grid-cols-[60px_repeat(7,1fr)] border-b border-border">
               <div></div>
               @for (d of diasSemana(); track d.iso) {
                 <div
@@ -400,7 +401,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
             </div>
 
             @if (tarefasSemSlotDaSemana().length > 0) {
-              <div class="grid grid-cols-[60px_repeat(7,1fr)] border-b border-border bg-bg-elev/30">
+              <div class="sticky top-[52px] z-10 grid grid-cols-[60px_repeat(7,1fr)] border-b border-border bg-bg-elev">
                 <div class="text-[10px] uppercase tracking-wider text-text-subtle font-medium px-2 py-2">
                   Sem hora
                 </div>
@@ -427,7 +428,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
               </div>
             }
 
-            <div class="relative grid grid-cols-[60px_repeat(7,1fr)] overflow-y-auto" style="max-height: 70vh">
+            <div class="relative grid grid-cols-[60px_repeat(7,1fr)]">
               <div class="flex flex-col">
                 @for (h of horasSemana(); track h) {
                   <div
@@ -505,6 +506,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                 </div>
               }
             </div>
+            </div>
           </div>
         </div>
       } @else if (view() === 'kanban') {
@@ -568,7 +570,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                           <div class="flex gap-1 flex-wrap">
                             @for (c of t.categorias; track c.id) {
                               <span
-                                class="text-[10px] px-1.5 py-px bg-[#16181c] border border-border rounded-full text-text-dim"
+                                class="text-[10px] px-1.5 py-px bg-bg-surface border border-border rounded-full text-text-dim"
                                 >{{ c.nome }}</span
                               >
                             }
@@ -665,7 +667,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                     <div class="flex md:hidden gap-0.5 shrink-0">
                       <button
                         type="button"
-                        class="w-[28px] h-[28px] rounded grid place-items-center text-text-subtle active:bg-[#16181c] focus:outline-none focus:text-text"
+                        class="w-[28px] h-[28px] rounded grid place-items-center text-text-subtle active:bg-bg-surface focus:outline-none focus:text-text"
                         aria-label="Editar tarefa"
                         title="Editar"
                         [attr.data-testid]="'task-' + t.id + '-edit-mobile'"
@@ -690,7 +692,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                     <div class="flex gap-1 flex-wrap md:flex-nowrap">
                       @for (c of t.categorias; track c.id) {
                         <span
-                          class="text-[11px] px-2 py-0.5 bg-[#16181c] border border-border rounded-full text-text-dim whitespace-nowrap"
+                          class="text-[11px] px-2 py-0.5 bg-bg-surface border border-border rounded-full text-text-dim whitespace-nowrap"
                           >{{ c.nome }}</span
                         >
                       }
@@ -723,7 +725,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                   <div class="hidden md:flex gap-0.5 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
                     <button
                       type="button"
-                      class="w-[26px] h-[26px] rounded grid place-items-center text-text-subtle hover:bg-[#16181c] hover:text-text focus:outline-none focus:text-text focus:bg-[#16181c]"
+                      class="w-[26px] h-[26px] rounded grid place-items-center text-text-subtle hover:bg-bg-surface hover:text-text focus:outline-none focus:text-text focus:bg-bg-surface"
                       aria-label="Editar tarefa"
                       title="Editar"
                       [attr.data-testid]="'task-' + t.id + '-edit'"

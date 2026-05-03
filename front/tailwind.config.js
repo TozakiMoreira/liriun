@@ -5,28 +5,30 @@ module.exports = {
     extend: {
       colors: {
         bg: {
-          DEFAULT: "#08090a",
-          elev: "#101113",
-          input: "#13141a",
+          DEFAULT: "rgb(var(--c-bg) / <alpha-value>)",
+          elev: "rgb(var(--c-bg-elev) / <alpha-value>)",
+          input: "rgb(var(--c-bg-input) / <alpha-value>)",
+          surface: "rgb(var(--c-surface) / <alpha-value>)",
+          sidebar: "rgb(var(--c-sidebar) / <alpha-value>)",
         },
         border: {
-          DEFAULT: "#1f2023",
-          strong: "#2a2b2f",
+          DEFAULT: "rgb(var(--c-border) / <alpha-value>)",
+          strong: "rgb(var(--c-border-strong) / <alpha-value>)",
         },
         text: {
-          DEFAULT: "#f7f8f8",
-          dim: "#8a8f98",
-          subtle: "#62666d",
+          DEFAULT: "rgb(var(--c-text) / <alpha-value>)",
+          dim: "rgb(var(--c-text-dim) / <alpha-value>)",
+          subtle: "rgb(var(--c-text-subtle) / <alpha-value>)",
         },
         accent: {
-          DEFAULT: "#5e6ad2",
-          hover: "#7179d8",
-          violet: "#8b5cf6",
+          DEFAULT: "rgb(var(--c-accent) / <alpha-value>)",
+          hover: "rgb(var(--c-accent-hover) / <alpha-value>)",
+          violet: "rgb(var(--c-accent-violet) / <alpha-value>)",
         },
-        danger: "#eb5757",
+        danger: "rgb(var(--c-danger) / <alpha-value>)",
       },
       fontFamily: {
-        sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
+        sans: ["Sora", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
       },
       fontSize: {
         base: ["14px", "1.5"],

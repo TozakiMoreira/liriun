@@ -6,13 +6,14 @@ import { forkJoin, of } from 'rxjs';
 import { CategoriasService } from '../../core/api/categorias.service';
 import { TokenStorage } from '../../core/auth/token.storage';
 import { extrairProblemDetails } from '../../shared/problem-details';
+import { BrandComponent } from '../../shared/brand.component';
 
 const CATEGORIAS_PADRAO = ['Trabalho', 'Faculdade', 'Casa', 'Compras', 'Pessoal'];
 
 @Component({
   selector: 'app-onboarding',
   standalone: true,
-  imports: [FormsModule],
+  imports: [FormsModule, BrandComponent],
   template: `
     <main
       class="min-h-screen px-4 sm:px-6 pt-10 sm:pt-16 pb-24 sm:pb-32 bg-bg bg-accent-glow"
@@ -20,12 +21,12 @@ const CATEGORIAS_PADRAO = ['Trabalho', 'Faculdade', 'Casa', 'Compras', 'Pessoal'
     >
       <div class="max-w-[560px] mx-auto flex flex-col gap-8">
         <div class="flex items-center gap-2.5">
-          <div
-            class="w-7 h-7 rounded-[7px] bg-logo-grad grid place-items-center text-sm font-bold"
-          >
-            J
-          </div>
-          <div class="text-sm font-semibold tracking-tight">Jarvis</div>
+          <img
+            src="/logo.png"
+            alt="Liriun"
+            class="w-7 h-7 rounded-[7px] object-contain"
+          />
+          <div class="text-sm font-semibold tracking-tight"><app-brand /></div>
           <div
             class="ml-auto text-[11px] text-text-dim border border-border rounded-full px-2 py-0.5 tracking-wider"
             data-testid="onboarding-step"
@@ -62,7 +63,7 @@ const CATEGORIAS_PADRAO = ['Trabalho', 'Faculdade', 'Casa', 'Compras', 'Pessoal'
           <div class="flex flex-wrap gap-2" data-testid="onboarding-categories-list">
             @for (cat of categorias(); track cat) {
               <div
-                class="inline-flex items-center gap-1.5 pl-3 pr-2.5 py-1 bg-[#16181c] border border-border-strong rounded text-[13px]"
+                class="inline-flex items-center gap-1.5 pl-3 pr-2.5 py-1 bg-bg-surface border border-border-strong rounded text-[13px]"
               >
                 {{ cat }}
                 <button
@@ -80,7 +81,7 @@ const CATEGORIAS_PADRAO = ['Trabalho', 'Faculdade', 'Casa', 'Compras', 'Pessoal'
           <div class="flex gap-2">
             <input
               type="text"
-              class="flex-1 bg-[#16181c] border border-border text-text rounded px-3 py-2 text-[13px] focus:outline-none focus:border-accent"
+              class="flex-1 bg-bg-surface border border-border text-text rounded px-3 py-2 text-[13px] focus:outline-none focus:border-accent"
               placeholder="Nova categoria (ex: Academia, Projetos, Leitura)"
               data-testid="onboarding-category-input"
               [(ngModel)]="novaCategoria"

@@ -143,7 +143,7 @@ interface GrupoData {
                     <div class="flex gap-1 flex-wrap md:flex-nowrap">
                       @for (c of t.categorias; track c.id) {
                         <span
-                          class="text-[11px] px-2 py-0.5 bg-[#16181c] border border-border rounded-full text-text-dim whitespace-nowrap"
+                          class="text-[11px] px-2 py-0.5 bg-bg-surface border border-border rounded-full text-text-dim whitespace-nowrap"
                           >{{ c.nome }}</span
                         >
                       }

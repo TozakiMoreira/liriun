@@ -88,7 +88,7 @@ import { quebrarTextoEmSegmentos } from '../../shared/auto-link';
               <div class="flex flex-wrap gap-1.5">
                 @for (c of tarefa.categorias; track c.id) {
                   <span
-                    class="text-[11px] px-2 py-0.5 bg-[#16181c] border border-border rounded-full text-text-dim whitespace-nowrap"
+                    class="text-[11px] px-2 py-0.5 bg-bg-surface border border-border rounded-full text-text-dim whitespace-nowrap"
                     >{{ c.nome }}</span
                   >
                 }
@@ -103,7 +103,7 @@ import { quebrarTextoEmSegmentos } from '../../shared/auto-link';
 
             @if (tarefa.observacoes) {
               <div
-                class="text-[13px] text-text leading-relaxed whitespace-pre-wrap break-words bg-[#16181c] border border-border rounded p-3"
+                class="text-[13px] text-text leading-relaxed whitespace-pre-wrap break-words bg-bg-surface border border-border rounded p-3"
                 data-testid="detalhe-obs-conteudo"
               >
                 @for (seg of segmentosObs(); track $index) {

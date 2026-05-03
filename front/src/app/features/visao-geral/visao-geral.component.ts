@@ -15,6 +15,7 @@ import { Tarefa, TarefasService } from '../../core/api/tarefas.service';
 import { TokenStorage } from '../../core/auth/token.storage';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { StaggerInDirective } from '../../shared/stagger-in.directive';
+import { BrandComponent } from '../../shared/brand.component';
 
 interface CategoriaResumo {
   nome: string;
@@ -42,7 +43,7 @@ interface DiaResumo {
 @Component({
   selector: 'app-visao-geral',
   standalone: true,
-  imports: [CommonModule, RouterLink, AvatarComponent, StaggerInDirective],
+  imports: [CommonModule, RouterLink, AvatarComponent, StaggerInDirective, BrandComponent],
   template: `
     <header class="flex items-center px-4 md:px-8 py-3.5 border-b border-border gap-4">
       <div class="flex items-center gap-2 text-[15px] text-text-dim">
@@ -165,7 +166,7 @@ interface DiaResumo {
               <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">Adicionar tarefa</span>
               <i class="fa-solid fa-bolt text-accent/70 text-[12px]"></i>
             </div>
-            <div class="text-base font-semibold mt-1.5">Conversa com Jarvis</div>
+            <div class="text-base font-semibold mt-1.5">Conversa com <app-brand /></div>
             <div class="text-[11px] text-text-dim">Texto, voz ou modo manual.</div>
           </a>
         </div>

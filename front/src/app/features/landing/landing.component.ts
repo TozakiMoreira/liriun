@@ -4,11 +4,12 @@ import { AuthService } from '../../core/auth/auth.service';
 import { TokenStorage } from '../../core/auth/token.storage';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { FadeInOnViewDirective } from '../../shared/fade-in-on-view.directive';
+import { BrandComponent } from '../../shared/brand.component';
 
 @Component({
   selector: 'app-landing',
   standalone: true,
-  imports: [RouterLink, FadeInOnViewDirective, AvatarComponent],
+  imports: [RouterLink, FadeInOnViewDirective, AvatarComponent, BrandComponent],
   template: `
     <div class="relative min-h-screen bg-bg text-text overflow-x-hidden" data-testid="landing-page">
       <div class="absolute inset-0 -z-10 pointer-events-none">
@@ -33,13 +34,13 @@ import { FadeInOnViewDirective } from '../../shared/fade-in-on-view.directive';
       >
         <div class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <a routerLink="/" class="flex items-center gap-2.5" data-testid="landing-logo">
-            <div
-              class="w-7 h-7 rounded-md bg-logo-grad grid place-items-center text-sm font-bold tracking-tight"
+            <img
+              src="/logo.png"
+              alt="Liriun"
+              class="w-7 h-7 rounded-md object-contain"
               aria-hidden="true"
-            >
-              J
-            </div>
-            <div class="text-[15px] font-semibold tracking-tight">Jarvis</div>
+            />
+            <div class="text-[15px] font-semibold tracking-tight"><app-brand /></div>
           </a>
 
           @if (autenticado()) {
@@ -155,7 +156,7 @@ import { FadeInOnViewDirective } from '../../shared/fade-in-on-view.directive';
             >
               Futuro.
             </span>
-            <span class="block text-text mt-2">O Jarvis chegou.</span>
+            <span class="block text-text mt-2">O <app-brand /> chegou.</span>
           </h1>
 
           <p class="text-text-dim text-lg md:text-xl max-w-2xl leading-relaxed">
@@ -185,7 +186,7 @@ import { FadeInOnViewDirective } from '../../shared/fade-in-on-view.directive';
                 data-testid="landing-hero-cta-app"
               >
                 <i class="fa-solid fa-arrow-right-to-bracket text-xs"></i>
-                Ir pro Jarvis
+                Ir pro <app-brand />
               </a>
             }
           </div>
@@ -230,10 +231,10 @@ import { FadeInOnViewDirective } from '../../shared/fade-in-on-view.directive';
             class="text-4xl md:text-5xl font-bold tracking-tight leading-tight mb-6"
             data-testid="landing-sobre-title"
           >
-            O que é o Jarvis?
+            O que é o <app-brand />?
           </h2>
           <p class="text-text-dim text-lg leading-relaxed max-w-3xl mb-12">
-            O Jarvis é um organizador pessoal de ideias e tarefas com IA conversacional.
+            O <app-brand /> é um organizador pessoal de ideias e tarefas com IA conversacional.
             Você fala como falaria com um assistente — ele entende o contexto, pergunta o
             que falta e devolve a tarefa pronta. Sem formulário robotizado, sem ruído, sem
             celebração exagerada. Só o trabalho feito.
@@ -246,7 +247,7 @@ import { FadeInOnViewDirective } from '../../shared/fade-in-on-view.directive';
               >
                 <i class="fa-solid fa-comments"></i>
               </div>
-              <h3 class="text-base font-semibold">Conversa com o Jarvis</h3>
+              <h3 class="text-base font-semibold">Conversa com o <app-brand /></h3>
               <p class="text-text-dim text-sm leading-relaxed">
                 Escreve em texto livre como se estivesse falando com um assistente.
                 O chat expande, ele te pergunta o que faltar, e fecha a tarefa quando
@@ -263,7 +264,7 @@ import { FadeInOnViewDirective } from '../../shared/fade-in-on-view.directive';
               <h3 class="text-base font-semibold">Inteligência de contexto</h3>
               <p class="text-text-dim text-sm leading-relaxed">
                 Mencionou viagem? Ele pergunta de passagem e hospedagem. Reunião?
-                Lugar e pauta. Prova? Matéria e material. O Jarvis sabe o que costuma
+                Lugar e pauta. Prova? Matéria e material. O <app-brand /> sabe o que costuma
                 envolver cada tipo de tarefa e te ajuda a não esquecer nada.
               </p>
             </div>
@@ -290,7 +291,7 @@ import { FadeInOnViewDirective } from '../../shared/fade-in-on-view.directive';
               </div>
               <h3 class="text-base font-semibold">Tom de mordomo</h3>
               <p class="text-text-dim text-sm leading-relaxed">
-                Inspirado no Jarvis do Homem de Ferro: primeira pessoa, seco, discreto,
+                Inspirado no Jarvis do Homem de Ferro (mas com personalidade própria): primeira pessoa, seco, discreto,
                 com humor sutil. Sem emoji, sem grito, sem firula. Ele cuida, você
                 executa.
               </p>
@@ -328,7 +329,7 @@ import { FadeInOnViewDirective } from '../../shared/fade-in-on-view.directive';
               class="text-3xl md:text-4xl font-bold tracking-tight max-w-2xl"
               data-testid="landing-preview-title"
             >
-              Conversa com o Jarvis. Sai com a tarefa pronta.
+              Conversa com o <app-brand />. Sai com a tarefa pronta.
             </h2>
             <p class="text-text-dim text-base md:text-lg leading-relaxed max-w-2xl">
               Você escreve. Ele entende o contexto, pergunta o que falta, e devolve uma
@@ -342,30 +343,30 @@ import { FadeInOnViewDirective } from '../../shared/fade-in-on-view.directive';
           >
               @if (!previewQuebrou()) {
                 <img
-                  src="/jarvis-preview.png"
-                  alt="Interface do Jarvis em uso"
+                  src="/liriun-preview.png"
+                  alt="Interface do Liriun em uso"
                   class="w-full block"
                   (error)="previewQuebrou.set(true)"
                 />
               } @else {
-                <!-- Mockup CSS-art do chat com Jarvis (fallback quando jarvis-preview.png não existe) -->
+                <!-- Mockup CSS-art do chat com Liriun (fallback quando liriun-preview.png não existe) -->
                 <div
                   class="aspect-[16/10] flex text-left bg-bg"
                   data-testid="landing-preview-mockup"
                   aria-hidden="true"
                 >
                   <div
-                    class="hidden sm:flex w-[180px] border-r border-border bg-[#0b0c0e] flex-col gap-0.5 p-3"
+                    class="hidden sm:flex w-[180px] border-r border-border bg-bg-sidebar flex-col gap-0.5 p-3"
                   >
                     <div class="flex items-center gap-2 mb-3">
-                      <div
-                        class="w-7 h-7 rounded-md bg-logo-grad grid place-items-center text-[11px] font-bold"
+                      <img
+                        src="/logo.png"
+                        alt="Liriun"
+                        class="w-7 h-7 rounded-md object-contain"
                         style="box-shadow: 0 0 12px rgba(94, 106, 210, 0.35);"
-                      >
-                        J
-                      </div>
+                      />
                       <div class="flex flex-col leading-tight">
-                        <div class="text-[12px] font-semibold tracking-tight">Jarvis</div>
+                        <div class="text-[12px] font-semibold tracking-tight"><app-brand /></div>
                         <div class="text-[8px] text-text-subtle uppercase tracking-wider">
                           Organizador
                         </div>
@@ -417,13 +418,13 @@ import { FadeInOnViewDirective } from '../../shared/fade-in-on-view.directive';
                     <div
                       class="flex items-center gap-2 px-3 py-2 border-b border-border text-[10px] text-text-dim"
                     >
-                      <div
-                        class="w-5 h-5 rounded bg-logo-grad grid place-items-center text-[8px] font-bold"
-                      >
-                        J
-                      </div>
+                      <img
+                        src="/logo.png"
+                        alt="Liriun"
+                        class="w-5 h-5 rounded object-contain"
+                      />
                       <div class="flex flex-col leading-tight">
-                        <strong class="text-text font-medium text-[10px]">Jarvis</strong>
+                        <strong class="text-text font-medium text-[10px]"><app-brand /></strong>
                         <span class="text-[8px] text-text-subtle flex items-center gap-1">
                           <span class="w-1 h-1 bg-[#10b981] rounded-full"></span>
                           online
@@ -441,11 +442,11 @@ import { FadeInOnViewDirective } from '../../shared/fade-in-on-view.directive';
                       </div>
 
                       <div class="flex items-start gap-1.5 max-w-[85%]">
-                        <div
-                          class="w-5 h-5 rounded bg-logo-grad grid place-items-center text-[8px] font-bold shrink-0 mt-0.5"
-                        >
-                          J
-                        </div>
+                        <img
+                          class="w-5 h-5 rounded object-contain shrink-0 mt-0.5"
+                          src="/logo.png"
+                          alt="Liriun"
+                        />
                         <div
                           class="bg-bg-elev border border-border rounded-lg rounded-tl-sm px-2.5 py-1.5 text-[11px] leading-snug"
                         >
@@ -463,11 +464,11 @@ import { FadeInOnViewDirective } from '../../shared/fade-in-on-view.directive';
                       </div>
 
                       <div class="flex items-start gap-1.5 max-w-[95%]">
-                        <div
-                          class="w-5 h-5 rounded bg-logo-grad grid place-items-center text-[8px] font-bold shrink-0 mt-0.5"
-                        >
-                          J
-                        </div>
+                        <img
+                          class="w-5 h-5 rounded object-contain shrink-0 mt-0.5"
+                          src="/logo.png"
+                          alt="Liriun"
+                        />
                         <div
                           class="flex-1 bg-bg-elev border border-accent/40 rounded-lg overflow-hidden"
                         >

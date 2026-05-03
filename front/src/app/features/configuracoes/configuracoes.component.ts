@@ -169,7 +169,7 @@ interface Confirmacao {
                     Nome
                   </div>
                   <div
-                    class="text-[13px] px-3 py-2 bg-[#16181c] border border-border rounded"
+                    class="text-[13px] px-3 py-2 bg-bg-surface border border-border rounded"
                     data-testid="perfil-nome"
                   >
                     {{ usuario()?.nome }}
@@ -180,7 +180,7 @@ interface Confirmacao {
                     Email
                   </div>
                   <div
-                    class="text-[13px] px-3 py-2 bg-[#16181c] border border-border rounded"
+                    class="text-[13px] px-3 py-2 bg-bg-surface border border-border rounded"
                     data-testid="perfil-email"
                   >
                     {{ usuario()?.email }}
@@ -222,7 +222,7 @@ interface Confirmacao {
           <div class="flex flex-col" data-testid="categorias-list">
             @for (c of categorias(); track c.id) {
               <div
-                class="grid grid-cols-[1fr_auto] items-center gap-3 py-2.5 px-3 border-b border-border last:border-b-0 hover:bg-[#16181c] group focus-within:bg-[#16181c]"
+                class="grid grid-cols-[1fr_auto] items-center gap-3 py-2.5 px-3 border-b border-border last:border-b-0 hover:bg-bg-surface group focus-within:bg-bg-surface"
                 [attr.data-testid]="'cat-' + c.id"
               >
                 @if (editandoCat() === c.id) {
@@ -256,7 +256,7 @@ interface Confirmacao {
                   <div class="flex gap-0.5 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
                     <button
                       type="button"
-                      class="w-[26px] h-[26px] rounded grid place-items-center text-text-subtle hover:bg-[#16181c] hover:text-text focus:outline-none focus:text-text focus:bg-[#16181c]"
+                      class="w-[26px] h-[26px] rounded grid place-items-center text-text-subtle hover:bg-bg-surface hover:text-text focus:outline-none focus:text-text focus:bg-bg-surface"
                       aria-label="Renomear categoria"
                       title="Renomear"
                       (click)="iniciarRenomearCategoria(c)"
