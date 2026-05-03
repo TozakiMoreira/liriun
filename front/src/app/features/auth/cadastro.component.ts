@@ -3,6 +3,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { BrandComponent } from '../../shared/brand.component';
 import { BrandLogoComponent } from '../../shared/brand-logo.component';
 import { PasswordInputComponent } from '../../shared/password-input.component';
 import {
@@ -18,6 +19,7 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
   imports: [
     FormsModule,
     RouterLink,
+    BrandComponent,
     BrandLogoComponent,
     PasswordInputComponent,
     PasswordRequirementsComponent,
@@ -25,23 +27,31 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
   ],
   template: `
     <main
-      class="relative min-h-screen grid place-items-center px-6 py-12 bg-bg bg-accent-glow"
+      class="min-h-screen flex flex-col bg-bg bg-accent-glow"
       data-testid="cadastro-page"
     >
-      <a
-        routerLink="/"
-        class="absolute top-5 left-5 inline-flex items-center gap-2 px-3.5 py-2 text-[13px] font-medium text-text bg-bg-elev border border-border-strong rounded-lg hover:border-accent hover:bg-bg-input hover:text-accent transition-colors shadow-sm"
-        data-testid="signup-home-link"
-        aria-label="Voltar pra página inicial"
+      <header
+        class="sticky top-0 z-30 backdrop-blur-md bg-bg/70 border-b border-border/50"
       >
-        <i class="fa-solid fa-arrow-left text-xs"></i>
-        Início
-      </a>
+        <div class="max-w-6xl mx-auto px-4 sm:px-8 h-14 flex items-center justify-between gap-3">
+          <a
+            routerLink="/"
+            class="inline-flex items-center gap-2 text-[13px] font-medium text-text-dim hover:text-accent transition-colors"
+            data-testid="signup-home-link"
+            aria-label="Voltar pra página inicial"
+          >
+            <i class="fa-solid fa-arrow-left text-xs"></i>
+            Início
+          </a>
+          <a routerLink="/" class="flex items-center gap-2.5" aria-label="Liriun — início">
+            <img src="/logo.png" alt="" class="w-8 h-8 object-contain" aria-hidden="true" />
+            <span class="text-[15px] font-semibold tracking-tight"><app-brand /></span>
+          </a>
+          <app-theme-toggle />
+        </div>
+      </header>
 
-      <div class="absolute top-5 right-5">
-        <app-theme-toggle />
-      </div>
-
+      <div class="flex-1 grid place-items-center px-6 py-12">
       <div class="w-full max-w-[380px] flex flex-col gap-8">
         <app-brand-logo />
 
@@ -173,9 +183,10 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
           >
         </p>
       </div>
+      </div>
 
       <div
-        class="fixed bottom-6 left-1/2 -translate-x-1/2 text-text-subtle text-[11px] tracking-wider"
+        class="text-center pb-6 text-text-subtle text-[11px] tracking-wider"
       >
         LIRIUN • v0.1 BETA
       </div>
