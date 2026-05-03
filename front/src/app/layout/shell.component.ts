@@ -40,20 +40,81 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
         </a>
         <div class="flex items-center gap-2">
           <app-theme-toggle [mostrarLabel]="false" />
-          <button
-            type="button"
-            class="flex items-center gap-2 text-text-dim hover:text-text text-xs px-2 py-1 transition-colors"
-            data-testid="mobile-logout"
-            (click)="sair()"
+          <div
+            class="relative"
+            data-testid="mobile-user-menu"
+            (click)="$event.stopPropagation()"
           >
-            <app-avatar
-              [nome]="storage.usuario()?.nome ?? ''"
-              [fotoUrl]="storage.usuario()?.fotoUrl ?? null"
-              [size]="22"
-            />
-            <span class="max-w-[80px] truncate">{{ storage.usuario()?.nome }}</span>
-            <i class="fa-solid fa-right-from-bracket text-[11px]"></i>
-          </button>
+            <button
+              type="button"
+              class="flex items-center gap-1.5 text-text-dim hover:text-text text-xs px-1 py-1 transition-colors"
+              data-testid="mobile-user-trigger"
+              [attr.aria-expanded]="userMenuAberto()"
+              aria-haspopup="true"
+              aria-label="Menu da conta"
+              (click)="alternarUserMenu()"
+            >
+              <app-avatar
+                [nome]="storage.usuario()?.nome ?? ''"
+                [fotoUrl]="storage.usuario()?.fotoUrl ?? null"
+                [size]="26"
+              />
+              <i
+                class="fa-solid fa-chevron-down text-[9px] text-text-subtle transition-transform"
+                [class.rotate-180]="userMenuAberto()"
+              ></i>
+            </button>
+
+            @if (userMenuAberto()) {
+              <div
+                class="absolute right-0 top-full mt-2 w-[240px] card-elev p-1.5 z-50 flex flex-col gap-px"
+                role="menu"
+                data-testid="mobile-user-menu-pop"
+              >
+                <div class="px-2.5 py-2 border-b border-border mb-1 flex flex-col leading-tight">
+                  <span class="text-[12.5px] font-medium truncate">{{ storage.usuario()?.nome }}</span>
+                  <span class="text-[11px] text-text-subtle truncate">{{ storage.usuario()?.email }}</span>
+                </div>
+                <a
+                  routerLink="/"
+                  class="flex items-center gap-2.5 px-2.5 py-2 rounded text-[13px] text-text-dim hover:text-text hover:bg-bg-elev"
+                  data-testid="mobile-menu-home"
+                  (click)="fecharUserMenu()"
+                >
+                  <i class="fa-solid fa-house text-[12px] w-4 text-center"></i>
+                  Página inicial
+                </a>
+                <a
+                  routerLink="/sobre"
+                  class="flex items-center gap-2.5 px-2.5 py-2 rounded text-[13px] text-text-dim hover:text-text hover:bg-bg-elev"
+                  data-testid="mobile-menu-sobre"
+                  (click)="fecharUserMenu()"
+                >
+                  <i class="fa-solid fa-circle-info text-[12px] w-4 text-center"></i>
+                  Sobre o Liriun
+                </a>
+                <div class="h-px bg-border my-1"></div>
+                <a
+                  routerLink="/app/configuracoes"
+                  class="flex items-center gap-2.5 px-2.5 py-2 rounded text-[13px] text-text-dim hover:text-text hover:bg-bg-elev"
+                  data-testid="mobile-menu-configs"
+                  (click)="fecharUserMenu()"
+                >
+                  <i class="fa-solid fa-gear text-[12px] w-4 text-center"></i>
+                  Configurações
+                </a>
+                <button
+                  type="button"
+                  class="flex items-center gap-2.5 px-2.5 py-2 rounded text-[13px] text-text-dim hover:text-danger hover:bg-danger/10 text-left"
+                  data-testid="mobile-menu-sair"
+                  (click)="sair(); fecharUserMenu()"
+                >
+                  <i class="fa-solid fa-right-from-bracket text-[12px] w-4 text-center"></i>
+                  Sair
+                </button>
+              </div>
+            }
+          </div>
         </div>
       </header>
 
