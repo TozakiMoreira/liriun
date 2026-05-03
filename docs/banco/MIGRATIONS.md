@@ -24,31 +24,31 @@ Host=aws-0-sa-east-1.pooler.supabase.com;Port=5432;Database=postgres;Username=po
 
 Aplicar via user-secrets no projeto Api:
 ```bash
-cd src/Jarvis.Api
+cd src/Liriun.Api
 dotnet user-secrets init
-dotnet user-secrets set "ConnectionStrings:Jarvis" "Host=...;Port=5432;..."
+dotnet user-secrets set "ConnectionStrings:Liriun" "Host=...;Port=5432;..."
 cd ../..
 ```
 
 ## 3. Gerar a primeira migration
 
-O projeto de **startup** é `Jarvis.Api` (onde o DI está). O projeto do **DbContext** é `Jarvis.Infra`.
+O projeto de **startup** é `Liriun.Api` (onde o DI está). O projeto do **DbContext** é `Liriun.Infrastructure`.
 
 ```bash
 dotnet ef migrations add InitialCreate \
-  --project src/Jarvis.Infra \
-  --startup-project src/Jarvis.Api \
+  --project src/Liriun.Infrastructure \
+  --startup-project src/Liriun.Api \
   --output-dir Data/Migrations
 ```
 
-Vai criar os arquivos em `src/Jarvis.Infra/Data/Migrations/`. Commita junto.
+Vai criar os arquivos em `src/Liriun.Infrastructure/Data/Migrations/`. Commita junto.
 
 ## 4. Aplicar no Supabase
 
 ```bash
 dotnet ef database update \
-  --project src/Jarvis.Infra \
-  --startup-project src/Jarvis.Api
+  --project src/Liriun.Infrastructure \
+  --startup-project src/Liriun.Api
 ```
 
 Depois disso, as tabelas existem no Supabase. Valida no dashboard do Supabase: **Table Editor** → devem aparecer `usuarios`, `categorias`, `tarefas`, `tarefas_categorias` e `__EFMigrationsHistory`.
@@ -60,12 +60,12 @@ Sempre que mudar uma entidade / configuration:
 ```bash
 # gera nova migration
 dotnet ef migrations add NomeDescritivoDaMudanca \
-  --project src/Jarvis.Infra --startup-project src/Jarvis.Api \
+  --project src/Liriun.Infrastructure --startup-project src/Liriun.Api \
   --output-dir Data/Migrations
 
 # aplica
 dotnet ef database update \
-  --project src/Jarvis.Infra --startup-project src/Jarvis.Api
+  --project src/Liriun.Infrastructure --startup-project src/Liriun.Api
 ```
 
 ## Desfazer migration (antes de aplicar em prod)
@@ -73,9 +73,9 @@ dotnet ef database update \
 ```bash
 # volta o banco pra migration anterior
 dotnet ef database update NomeDaMigrationAnterior \
-  --project src/Jarvis.Infra --startup-project src/Jarvis.Api
+  --project src/Liriun.Infrastructure --startup-project src/Liriun.Api
 
 # remove o arquivo da última migration
 dotnet ef migrations remove \
-  --project src/Jarvis.Infra --startup-project src/Jarvis.Api
+  --project src/Liriun.Infrastructure --startup-project src/Liriun.Api
 ```

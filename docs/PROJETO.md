@@ -1,13 +1,13 @@
-# Jarvis (Liriun) - Organizador Pessoal de Ideias e Tarefas
+# Liriun (Liriun) - Organizador Pessoal de Ideias e Tarefas
 
-> **Branding:** o produto vai a mercado como **Liriun**. Identificadores internos (namespace `Jarvis.*`, classe `JarvisDbContext`, prompt da IA com tom "Jarvis") foram mantidos. Nas telas usa-se `<app-brand />` que renderiza "Liriun".
+> **Branding:** o produto vai a mercado como **Liriun**. Identificadores internos (namespace `Liriun.*`, classe `LiriunDbContext`, prompt da IA com tom "Liriun") foram mantidos. Nas telas usa-se `<app-brand />` que renderiza "Liriun".
 > **Fonte autoritativa de produto:** `docs/ENTREVISTA.md`.
 > **Plano de execução:** `docs/DESENVOLVIMENTO.md`.
 > **Arquitetura back:** `backend/ARCHITECTURE.md`.
 
 ## Objetivo
 
-Capturar rapidamente pensamentos, ideias e tarefas do dia a dia, substituindo o hábito de salvar tudo no WhatsApp. O sistema organiza e categoriza usando IA (Gemini) com tom de voz "Jarvis" em primeira pessoa.
+Capturar rapidamente pensamentos, ideias e tarefas do dia a dia, substituindo o hábito de salvar tudo no WhatsApp. O sistema organiza e categoriza usando IA (Gemini) com tom de voz "Liriun" em primeira pessoa.
 
 ---
 
@@ -60,7 +60,7 @@ src/app/
 │   ├── auth/             # login, cadastro
 │   ├── landing/          # landing pública
 │   ├── onboarding/       # setup bloqueante de categorias
-│   ├── captura/          # captura rápida (modo Manual/Jarvis com chat + áudio)
+│   ├── captura/          # captura rápida (modo Manual/Liriun com chat + áudio)
 │   ├── visao-geral/      # dashboard
 │   ├── tarefas/          # tarefas (Lista/Kanban/Semana) + form + detalhe-modal
 │   ├── concluidas/       # histórico + reabrir
@@ -82,13 +82,13 @@ src/app/
 
 ## Modelo de dados (Supabase / PostgreSQL)
 
-> Schema canônico vive nas migrations EF Core em `backend/src/Jarvis.Infrastructure/Persistence/Migrations/` e na configuração das entidades em `Persistence/Configurations/`. Resumo das tabelas:
+> Schema canônico vive nas migrations EF Core em `backend/src/Liriun.Infrastructure/Persistence/Migrations/` e na configuração das entidades em `Persistence/Configurations/`. Resumo das tabelas:
 
 ### `usuarios`
 | Campo       | Tipo        | Notas                                                |
 |-------------|-------------|------------------------------------------------------|
 | id          | uuid (PK)   |                                                      |
-| nome        | text        | Usado pra personalização do tom Jarvis               |
+| nome        | text        | Usado pra personalização do tom Liriun               |
 | email       | text unique |                                                      |
 | senha_hash  | text        | BCrypt                                               |
 | foto_url    | text?       | Foto de perfil em base64 (`data:image/...`, ≤700KB)  |
@@ -154,9 +154,9 @@ src/app/
 
 ### Captura rápida ✅
 - Tela principal pós-login
-- Escolhe modo **Manual** ou **Jarvis** antes de digitar
+- Escolhe modo **Manual** ou **Liriun** antes de digitar
 - **Modo Manual:** form com nome, categorias multi-select, data, hora, prioridade
-- **Modo Jarvis (IA):**
+- **Modo Liriun (IA):**
   - Chat conversacional com Gemini
   - Aceita texto e **áudio gravado** (multipart, formatos Opus/WebM/MP4/WAV/FLAC, ≤8MB)
   - Histórico persistido em localStorage (TTL 1h)
@@ -165,7 +165,7 @@ src/app/
   - Sugestão da IA renderizada em card com Ajustar/Salvar
   - Modo **one-shot** (default) ou **interativo** (reservado pro plano pago)
 - Após salvar, permanece na mesma tela pra criar várias em sequência
-- Fallback IA: erro/timeout/JSON inválido → toast Jarvis + form manual com texto bruto
+- Fallback IA: erro/timeout/JSON inválido → toast Liriun + form manual com texto bruto
 
 ### Visão Geral ✅
 - Dashboard pós-login (não estava no escopo original — extra V1)
@@ -212,7 +212,7 @@ Lista canônica em `backend/ARCHITECTURE.md` §15. Resumo: `/auth/*` (5), `/cate
 ## Regras de negócio
 
 - Tarefas ficam salvas até o usuário deletar (sem arquivamento)
-- IA só é acionada na **criação** (modo Jarvis)
+- IA só é acionada na **criação** (modo Liriun)
 - IA só pode escolher entre categorias **já cadastradas** pelo usuário
 - Categoria ad-hoc criada inline durante criação de tarefa vira modelo permanente
 - Pra criar tarefa é obrigatório existir ao menos 1 categoria (garantido pelo onboarding)
@@ -227,9 +227,9 @@ Lista canônica em `backend/ARCHITECTURE.md` §15. Resumo: `/auth/*` (5), `/cate
 - **Font Awesome** (Free) para todos os ícones
 - Consistência em tamanhos e estilos (preferência por solid/regular)
 
-### Tom de voz - "Jarvis em primeira pessoa"
-- Toda comunicação como se o Jarvis estivesse falando, em primeira pessoa
-- Inspiração: Jarvis do Homem de Ferro conversando com Tony Stark
+### Tom de voz - "Liriun em primeira pessoa"
+- Toda comunicação como se o Liriun estivesse falando, em primeira pessoa
+- Inspiração: Liriun do Homem de Ferro conversando com Tony Stark
 - **Não usar:** "A IA analisou seu texto", "O sistema sugere", "Preencha os campos abaixo"
 - **Usar:** "Anotei isso", "Organizei desse jeito pra você", "Identifiquei um prazo"
 - Seco, discreto, competente, formal com humor sutil

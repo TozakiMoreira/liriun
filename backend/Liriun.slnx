@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Liriun.Api/Liriun.Api.csproj" />
+    <Project Path="src/Liriun.Application/Liriun.Application.csproj" />
+    <Project Path="src/Liriun.Core/Liriun.Core.csproj" />
+    <Project Path="src/Liriun.Infrastructure/Liriun.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Liriun.Api.Tests/Liriun.Api.Tests.csproj" />
+    <Project Path="tests/Liriun.Application.Tests/Liriun.Application.Tests.csproj" />
+    <Project Path="tests/Liriun.Core.Tests/Liriun.Core.Tests.csproj" />
+  </Folder>
+</Solution>

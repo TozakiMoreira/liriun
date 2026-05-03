@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.jarvis.app',
+  apiUrl: 'https://api.liriun.app',
 };

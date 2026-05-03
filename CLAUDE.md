@@ -8,7 +8,7 @@
 - Projeto pessoal de preparacao para o PI (Projeto Integrador) da faculdade
 - Objetivo: praticar comunicacao frontend/backend com deploy em producao
 - Nome: **Liriun** — Organizador Pessoal de Ideias e Tarefas
-- Renomeado de "Jarvis" → "Liriun" em 2026-05-03. Namespaces .NET (`Jarvis.Core`, `Jarvis.Api`, etc) e localStorage keys de sessao (`jarvis.token`, `jarvis.user`) MANTIDOS por custo de migracao. Backend ainda valida `papel: 'jarvis'` no JSON de conversa — trocar exige migration de validator + use case. Marcado pra V2.
+- Renomeado de "Jarvis" → "Liriun" em 2026-05-03. Rebrand completo: namespaces .NET (`Liriun.Core`, `Liriun.Api`, etc), `LiriunDbContext`, `ConnectionStrings:Liriun`, JWT issuer `liriun-api`/audience `liriun-app`, contract `papel: 'liriun'` (enum + validator + use case + tests), localStorage `liriun.token`/`liriun.user`. Pasta raiz movida pra `c:\Workspace\Liriun\Liriun`.
 
 ## Decisoes tomadas
 
@@ -175,25 +175,22 @@ Motivacao: economizar tokens. One-shot fecha em 1 turno com prompt ~75% menor.
 - ✅ Migrations EF Core aplicadas no Supabase
 - ✅ Rate limit 429 do Gemini tratado com mensagem especifica
 
+**Rebrand Jarvis → Liriun (2026-05-03)**
+- ✅ Namespaces `Liriun.{Core,Application,Infrastructure,Api}` + assemblies/csproj renomeados
+- ✅ `LiriunDbContext`, `ConnectionStrings:Liriun`
+- ✅ JWT issuer `liriun-api` / audience `liriun-app` (appsettings + user-secrets)
+- ✅ Contract `papel: 'liriun'` (`PapelConversa.Liriun`, validator, use case, mensagens)
+- ✅ ProblemDetails Type `https://liriun-api/erros/...`
+- ✅ Frontend: `liriun.token`/`liriun.user` localStorage, `PapelMensagem = 'liriun'`, `environment.prod.apiUrl`
+- ✅ Solution renomeada `Liriun.slnx`, http file `Liriun.Api.http`
+
 ---
 
 ## V2 — Pendente / Backlog 📋
 
 **Pre-V1 (deve entrar antes do demo PI):**
-- 🔴 Atualizar `environment.prod.ts` apiUrl (atual aponta `api.jarvis.app` que nao existe)
 - 🔴 Mover CORS allowed origins pra config (atualmente hardcoded `localhost:4200`)
-- 🔴 Trocar ProblemDetails Type strings `"https://jarvis-api/erros/..."` → `"https://liriun-api/..."`
-- 🔴 Onboarding guard: bloquear `/app/*` se categorias.length === 0
-- 🔴 5 componentes Angular precisam `OnDestroy.limpar()` no PageHeader (visao-geral, tarefas, concluidas, configuracoes, alterar-senha)
-- 🔴 Login/Cadastro: refatorar `aplicarErroBackend` pra usar `extrairProblemDetails` (DRY)
-- 🟡 Mensagens de validacao expoem "jarvis" pro user (`ConversarCapturaValidator`, useCase)
-
-**Backend rebrand completo (V2):**
-- Renomear assemblies/namespaces `Jarvis.*` → `Liriun.*`
-- Trocar `papel: 'jarvis'` no JSON contract → `papel: 'liriun'` (validator, use case, enum)
-- JWT issuer/audience `jarvis-api`/`jarvis-app` → `liriun-*`
-- localStorage keys `jarvis.token`/`jarvis.user` (forca relogin de todos users)
-- data-testid `jarvis-*` restantes
+- 🔴 `environment.prod.ts` apiUrl ainda placeholder (`api.liriun.app` nao existe — apontar pro deploy real antes de ir pra producao)
 
 **Features V2:**
 - App mobile nativo (Expo lab existe em `/front2`)

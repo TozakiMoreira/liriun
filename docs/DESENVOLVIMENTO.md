@@ -1,6 +1,6 @@
-# Plano de Desenvolvimento — Jarvis
+# Plano de Desenvolvimento — Liriun
 
-Documento de acompanhamento do desenvolvimento do Jarvis, do zero até estar publicado e funcional. Cada fase tem um checklist. Marque `[x]` conforme concluir.
+Documento de acompanhamento do desenvolvimento do Liriun, do zero até estar publicado e funcional. Cada fase tem um checklist. Marque `[x]` conforme concluir.
 
 ---
 
@@ -11,10 +11,10 @@ Documento de acompanhamento do desenvolvimento do Jarvis, do zero até estar pub
 - [x] Escopo positivo da V1 (tudo que o app FARÁ)
 - [x] Escopo negativo da V1 (tudo que o app NÃO FARÁ — fica pra V2)
 - [x] Critérios de "pronto" (Definition of Done da V1)
-- [x] Métricas de sucesso pessoais (como saber se o Jarvis cumpriu o papel)
+- [x] Métricas de sucesso pessoais (como saber se o Liriun cumpriu o papel)
 - [x] Riscos técnicos conhecidos (rate limits, cold starts, free tier, etc)
 - [x] Glossário de termos do projeto
-- [ ] **Estratégia de internacionalização (i18n)** — decidir agora como estruturar traduções, mesmo que a V1 saia só em pt-BR. Visão de longo prazo: Jarvis publicado globalmente com **suporte a 5+ línguas até o fim de 2026**. Definir: formato dos arquivos de tradução (JSON, XLIFF, PO), fallback de idioma, detecção automática, chave de tradução (camelCase vs dot.notation), handling do tom do Jarvis em outros idiomas
+- [ ] **Estratégia de internacionalização (i18n)** — decidir agora como estruturar traduções, mesmo que a V1 saia só em pt-BR. Visão de longo prazo: Liriun publicado globalmente com **suporte a 5+ línguas até o fim de 2026**. Definir: formato dos arquivos de tradução (JSON, XLIFF, PO), fallback de idioma, detecção automática, chave de tradução (camelCase vs dot.notation), handling do tom do Liriun em outros idiomas
 
 ## Fase 1 — Design e arquitetura
 
@@ -48,7 +48,7 @@ Documento de acompanhamento do desenvolvimento do Jarvis, do zero até estar pub
 - [x] Camada de Application (use cases, interfaces) — Auth + Categorias + Tarefas + IA prontos
 - [x] Camada de Infrastructure (repositories, EF Core) — repos, auth e `GeminiService` prontos
 - [x] Camada de API (controllers, middleware, validação) — Auth/Categorias/Tarefas/Captura + middleware prontos
-- [ ] Setup de `IStringLocalizer` (ASP.NET) com resource files — mensagens de erro, validação e respostas do Jarvis via chave de tradução (V1 preenche só pt-BR)
+- [ ] Setup de `IStringLocalizer` (ASP.NET) com resource files — mensagens de erro, validação e respostas do Liriun via chave de tradução (V1 preenche só pt-BR)
 - [x] Endpoints de autenticação (cadastro + login + JWT + alterar senha + atualizar perfil + atualizar foto)
 - [x] CRUD de categorias
 - [x] CRUD de tarefas (com relação N:N com categorias) + concluir + reabrir
@@ -69,13 +69,13 @@ Documento de acompanhamento do desenvolvimento do Jarvis, do zero até estar pub
 - [x] Tela de Login + Cadastro
 - [x] Tela de Onboarding (bloqueante, templates de categorias)
 - [x] Tela de Configurações (perfil + foto + alterar senha + categorias)
-- [x] Tela de Captura Rápida (modo Manual + modo Jarvis com chat conversacional + áudio + áudio com gravação)
+- [x] Tela de Captura Rápida (modo Manual + modo Liriun com chat conversacional + áudio + áudio com gravação)
 - [x] Tela de Minhas Tarefas (3 views: Lista, Kanban, Semana — filtros por categoria/prioridade/período/atraso)
 - [x] Tela de Concluídas (filtros por dia/semana/mês + reabrir)
 - [x] Tela de Visão Geral (dashboard com saudação, resumo, gráficos por categoria/prioridade, timeline)
 - [x] Landing pública (`/` com hero, CTA login/cadastro)
 - [x] Componentes reutilizáveis (avatar, brand, brand-logo, confirm-modal, foto-perfil-modal, password-input, password-requirements, date-picker, time-picker, theme-toggle)
-- [x] Tom de voz do Jarvis (mensagens em primeira pessoa, brand `<app-brand />` "Liriun")
+- [x] Tom de voz do Liriun (mensagens em primeira pessoa, brand `<app-brand />` "Liriun")
 - [x] Responsividade desktop + mobile (navegador)
 - [x] Theme toggle dark/light (extra fora do escopo original — V1 era dark-only)
 - [x] **`data-testid` (IDs de QA) em todos os elementos interativos e estados visíveis** — cobertura ampla em shell, formulários, modals, chat, áudio, filtros
@@ -84,7 +84,7 @@ Documento de acompanhamento do desenvolvimento do Jarvis, do zero até estar pub
 
 ### Testes unitários (backend)
 
-- [x] Setup do projeto de testes (xUnit + Moq + FluentAssertions) — `Jarvis.Core.Tests`, `Jarvis.Application.Tests`, `Jarvis.Api.Tests`
+- [x] Setup do projeto de testes (xUnit + Moq + FluentAssertions) — `Liriun.Core.Tests`, `Liriun.Application.Tests`, `Liriun.Api.Tests`
 - [x] Testes de Domain (Usuario, Tarefa, Categoria, TarefaCategoria, Result, Error, ErrorType)
 - [x] Testes de Application (use cases — Auth, Categorias, Tarefas, ConversarCaptura/IA com mocks)
 - [ ] Testes de Infrastructure (repositories com banco em memória ou Testcontainers)
@@ -111,7 +111,7 @@ Documento de acompanhamento do desenvolvimento do Jarvis, do zero até estar pub
 ### Testes manuais de aceitação
 
 - [ ] Passar manualmente por cada critério de "pronto" da Fase 0
-- [ ] Validar tom de voz do Jarvis em todas as telas
+- [ ] Validar tom de voz do Liriun em todas as telas
 - [ ] Validar responsividade real em celular (não só emulação)
 
 ## Fase 6 — Deploy
@@ -129,7 +129,7 @@ Documento de acompanhamento do desenvolvimento do Jarvis, do zero até estar pub
 
 ## Fase 7 — Pós-lançamento
 
-- [ ] Usar o Jarvis no dia a dia por 1-2 semanas
+- [ ] Usar o Liriun no dia a dia por 1-2 semanas
 - [ ] Anotar fricções e bugs encontrados
 - [ ] Priorizar backlog da V2 com base no uso real
 - [ ] Revisar métricas de sucesso definidas na Fase 0

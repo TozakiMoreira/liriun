@@ -1,6 +1,6 @@
-# Checklist pré-produção — Jarvis
+# Checklist pré-produção — Liriun
 
-Itens a resolver **antes** de publicar o Jarvis pra uso real (usuários além de Pedro/sócio/namorada em dev).
+Itens a resolver **antes** de publicar o Liriun pra uso real (usuários além de Pedro/sócio/namorada em dev).
 
 ## Segurança / Secrets
 

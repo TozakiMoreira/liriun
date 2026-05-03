@@ -1,6 +1,6 @@
-# Entrevista de Descoberta — Jarvis V1
+# Entrevista de Descoberta — Liriun V1
 
-Documento consolidado da entrevista de descoberta do projeto Jarvis, realizada entre Pedro e Claude. Serve como fonte autoritativa das decisões de produto da V1. Mudanças posteriores devem atualizar este arquivo.
+Documento consolidado da entrevista de descoberta do projeto Liriun, realizada entre Pedro e Claude. Serve como fonte autoritativa das decisões de produto da V1. Mudanças posteriores devem atualizar este arquivo.
 
 **Data:** 2026-04-19
 **Status:** Fase 0 (Descoberta) — concluída
@@ -10,13 +10,13 @@ Documento consolidado da entrevista de descoberta do projeto Jarvis, realizada e
 ## 1. Visão e propósito
 
 ### Em uma frase
-O Jarvis permite anotar de forma rápida ideias, lembretes e afazeres, transformando texto genérico em tarefas organizadas e acionáveis. É uma memória efetiva que não deixa passar nada do que o usuário pensa ao longo do dia — uma vez inseridos, os itens são processados e acompanhados até serem concluídos.
+O Liriun permite anotar de forma rápida ideias, lembretes e afazeres, transformando texto genérico em tarefas organizadas e acionáveis. É uma memória efetiva que não deixa passar nada do que o usuário pensa ao longo do dia — uma vez inseridos, os itens são processados e acompanhados até serem concluídos.
 
 ### Visão de longo prazo (fora do escopo da V1)
-O Jarvis será um app mobile com comando de voz personalizado. O usuário desbloqueia o app, fala o que precisa fazer, e o Jarvis transcreve, categoriza, cria prazo e notifica. No horizonte ainda mais distante, o Jarvis **executa** as tarefas pelo usuário. Hoje é memória; amanhã é execução.
+O Liriun será um app mobile com comando de voz personalizado. O usuário desbloqueia o app, fala o que precisa fazer, e o Liriun transcreve, categoriza, cria prazo e notifica. No horizonte ainda mais distante, o Liriun **executa** as tarefas pelo usuário. Hoje é memória; amanhã é execução.
 
 ### Dor que motiva o projeto
-Apps de notas tradicionais (Notion, Todoist, Apple Notes) exigem input manual estruturado — escolher categoria, definir prazo, marcar prioridade. O Jarvis automatiza essa organização com IA, reduzindo o atrito da captura. O usuário só fala/escreve o que quer lembrar, o Jarvis organiza.
+Apps de notas tradicionais (Notion, Todoist, Apple Notes) exigem input manual estruturado — escolher categoria, definir prazo, marcar prioridade. O Liriun automatiza essa organização com IA, reduzindo o atrito da captura. O usuário só fala/escreve o que quer lembrar, o Liriun organiza.
 
 ### V1 deliberadamente simples
 A V1 é um **site web responsivo** (desktop + mobile browser), com input **por texto escrito** (sem voz), **sem notificações**. É o piloto mínimo pra validar o fluxo com IA funcionando.
@@ -39,8 +39,8 @@ Sócio e namorada do Pedro também vão usar pra testar — cada um com suas tar
 
 ## 3. Cenas concretas de uso
 
-1. **Na faculdade**: professor passa dever de casa. Pedro abre o Jarvis no celular, digita rapidamente o que precisa fazer, Jarvis categoriza como "Faculdade" com prazo. Depois, em casa, Pedro abre no PC e vê tudo que anotou.
-2. **Comprando algo**: "preciso comprar uma fita métrica". Anota rápido, Jarvis categoriza em "Compras".
+1. **Na faculdade**: professor passa dever de casa. Pedro abre o Liriun no celular, digita rapidamente o que precisa fazer, Liriun categoriza como "Faculdade" com prazo. Depois, em casa, Pedro abre no PC e vê tudo que anotou.
+2. **Comprando algo**: "preciso comprar uma fita métrica". Anota rápido, Liriun categoriza em "Compras".
 3. **Revisão diária/semanal**: Pedro abre "Minhas tarefas" e vê tudo que precisa fazer, agrupado por categoria, atrasadas em destaque.
 
 ---
@@ -63,7 +63,7 @@ Sócio e namorada do Pedro também vão usar pra testar — cada um com suas tar
 - **Onboarding forçado** no primeiro acesso: usuário configura categorias e prazos (ou aceita os templates padrão, ou edita, ou cria do zero)
 - **Criar tarefa em 2 modos**:
   - **Manual**: form com nome (obrigatório), categorias (multi-select com opção de criar categoria nova inline), prazo (escolha de lista OU prazo custom só pra essa tarefa), horário final (opcional, default 23:59), prioridade
-  - **Jarvis (com IA)**: textarea livre → usuário escreve texto livre → Jarvis chama Gemini passando texto + lista de categorias e prazos do usuário → retorna sugestões → tela de revisão com campos editáveis → usuário salva ou edita antes de salvar
+  - **Liriun (com IA)**: textarea livre → usuário escreve texto livre → Liriun chama Gemini passando texto + lista de categorias e prazos do usuário → retorna sugestões → tela de revisão com campos editáveis → usuário salva ou edita antes de salvar
 - **Editar tarefa**: categoria, prioridade, prazo (não re-chamar IA ao editar)
 - **Excluir tarefa**
 - **Concluir tarefa** (marcar como concluída) — ao concluir, o usuário **permanece na tela Minhas Tarefas** (a tarefa desaparece da lista mas a navegação não muda). Isso permite concluir várias em sequência sem fricção.
@@ -103,7 +103,7 @@ Sócio e namorada do Pedro também vão usar pra testar — cada um com suas tar
 2. **Login** (email + senha)
 3. **Cadastro** (primeira vez — email + senha + nome do usuário pra personalização)
 4. **Onboarding** (setup de categorias, bloqueante no primeiro acesso — Prazo deixou de existir como entidade)
-5. **Captura rápida** (tela principal — escolhe modo Manual ou Jarvis, cria tarefa, volta pra mesma tela após salvar; modo Jarvis aceita texto e áudio gravado)
+5. **Captura rápida** (tela principal — escolhe modo Manual ou Liriun, cria tarefa, volta pra mesma tela após salvar; modo Liriun aceita texto e áudio gravado)
 6. **Visão Geral** (dashboard pós-login: saudação, resumo, gráficos por categoria/prioridade, timeline)
 7. **Minhas tarefas** (listagem de pendentes e atrasadas, 3 views: Lista, Kanban, Semana, com filtros por categoria/prioridade/período/atraso)
 8. **Concluídas** (histórico de tarefas concluídas, filtro por período — dia/semana/mês, com reabrir)
@@ -115,9 +115,9 @@ Sócio e namorada do Pedro também vão usar pra testar — cada um com suas tar
 - **Fonte, espaçamento, menus**: copiar Linear como referência
 - Isso é provisório — Pedro vai refinar depois
 
-### Tom de voz do Jarvis
-- Primeira pessoa, sempre — o Jarvis fala com o usuário
-- Arquétipo: Jarvis do Homem de Ferro (não Duolingo)
+### Tom de voz do Liriun
+- Primeira pessoa, sempre — o Liriun fala com o usuário
+- Arquétipo: Liriun do Homem de Ferro (não Duolingo)
 - Seco, discreto, competente, formal com humor sutil
 - Nunca emoji, nunca exclamação dupla, nunca celebração exagerada
 - Usa o nome do usuário (capturado no cadastro) com parcimônia — em aberturas e erros, não em toda frase
@@ -159,7 +159,7 @@ Funcionalidades intencionalmente **fora** da V1. Ficam como backlog pós-V1:
 ## 6. Comportamento da IA (Gemini)
 
 ### Estratégia do prompt
-Quando o usuário aciona o modo Jarvis:
+Quando o usuário aciona o modo Liriun:
 1. Frontend envia o texto livre do usuário pro backend
 2. Backend monta prompt pro Gemini incluindo:
    - Texto do usuário
@@ -175,7 +175,7 @@ Quando o usuário aciona o modo Jarvis:
 
 ### Tratamento de erros da IA
 Se Gemini falha (timeout > 10s, erro HTTP, rate limit, JSON malformado):
-- Mostra toast com mensagem do Jarvis: *"Não consegui dessa vez. Preenche manual que eu salvo."*
+- Mostra toast com mensagem do Liriun: *"Não consegui dessa vez. Preenche manual que eu salvo."*
 - Abre o form manual pré-preenchido com o texto bruto no campo nome
 - Usuário completa manualmente
 
@@ -201,7 +201,7 @@ A V1 é considerada pronta quando:
 - [x] Onboarding bloqueante no primeiro acesso com templates padrão
 - [x] CRUD completo de categorias (Prazo deixou de ser entidade — DataPrazo direto na Tarefa, decisão 2026-04-30)
 - [x] Criar tarefa em modo Manual (formulário completo)
-- [x] Criar tarefa em modo Jarvis (IA real, Gemini integrado, texto + áudio com gravação)
+- [x] Criar tarefa em modo Liriun (IA real, Gemini integrado, texto + áudio com gravação)
 - [x] Fallback da IA funcionando (texto vago → null; erro → form manual)
 - [x] Editar e excluir tarefas
 - [x] Marcar tarefa como concluída + reabrir tarefa concluída
@@ -214,7 +214,7 @@ A V1 é considerada pronta quando:
 - [x] Testes unitários do backend (camadas Domain, Application e Api)
 - [ ] Testes E2E automatizados dos fluxos principais (desktop + mobile)
 - [ ] Deploy em produção funcionando (frontend + backend + banco)
-- [x] Tom do Jarvis consistente em todas as telas
+- [x] Tom do Liriun consistente em todas as telas
 
 ---
 
@@ -222,7 +222,7 @@ A V1 é considerada pronta quando:
 
 Por ser uso pessoal e V1 piloto, **não há métricas formais embutidas no app**. Pedro vai avaliar empiricamente pelo uso.
 
-Ideia futura (pós-V1): sistema de **metas pessoais** — o usuário define metas com data-alvo (ex: "ter Jarvis em produção até Julho", "passar no semestre da facu") e vincula tarefas a metas pra acompanhar progresso. Não entra na V1.
+Ideia futura (pós-V1): sistema de **metas pessoais** — o usuário define metas com data-alvo (ex: "ter Liriun em produção até Julho", "passar no semestre da facu") e vincula tarefas a metas pra acompanhar progresso. Não entra na V1.
 
 ---
 
@@ -247,7 +247,7 @@ Pedro considera **Oracle Cloud Free Tier always-free** (2 VMs ARM + 200GB storag
 - **Prazo** / **Prazo final** — duração ou data limite até quando a tarefa deve ser feita
 - **Horário final** — hora dentro do dia do prazo (default 23:59)
 - **Minhas tarefas** (não "Dashboard") — tela principal de listagem
-- **Modo Manual** / **Modo Jarvis** — os dois modos de criação
+- **Modo Manual** / **Modo Liriun** — os dois modos de criação
 
 ---
 

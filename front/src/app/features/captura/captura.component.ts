@@ -288,7 +288,7 @@ type Modo = 'manual' | 'liriun' | null;
                 data-testid="chat-mensagens"
               >
                 @for (m of mensagens(); track $index) {
-                  @if (m.papel === 'jarvis') {
+                  @if (m.papel === 'liriun') {
                     <div class="flex items-start gap-2 max-w-[88%] msg-in">
                       <img
                         class="w-9 h-9 object-contain shrink-0 mt-0.5"
@@ -1314,7 +1314,7 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
     this.ia.conversar(novas).subscribe({
       next: (resposta: RespostaConversa) => {
         this.analisando.set(false);
-        this.mensagens.update((m) => [...m, { papel: 'jarvis', texto: resposta.mensagem }]);
+        this.mensagens.update((m) => [...m, { papel: 'liriun', texto: resposta.mensagem }]);
         this.sugestao.set(resposta.tarefa);
         this.precisaScrollar = true;
         if (this.deveAutoSalvar(sugestaoAnterior, resposta, texto)) {
@@ -1397,7 +1397,7 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
     const proxPrompt = nome
       ? `Anotado, ${nome}. Tem mais alguma pra eu registrar?`
       : 'Anotado. Tem mais alguma pra eu registrar?';
-    this.mensagens.set([{ papel: 'jarvis', texto: proxPrompt }]);
+    this.mensagens.set([{ papel: 'liriun', texto: proxPrompt }]);
     this.chatAtivo.set(true);
     this.suprimirPersistencia = false;
     this.limparPersistencia();
@@ -1598,7 +1598,7 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
         this.mensagens.update((m) => [
           ...m,
           { papel: 'usuario', texto: transcricao || '(áudio sem transcrição)' },
-          { papel: 'jarvis', texto: resposta.mensagem },
+          { papel: 'liriun', texto: resposta.mensagem },
         ]);
         this.sugestao.set(resposta.tarefa);
         this.precisaScrollar = true;

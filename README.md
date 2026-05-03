@@ -1,6 +1,6 @@
-# Jarvis
+# Liriun
 
-Organizador pessoal de tarefas com IA. Modo Manual (preenche o form) ou Modo Jarvis (texto livre / áudio → Gemini extrai a tarefa).
+Organizador pessoal de tarefas com IA. Modo Manual (preenche o form) ou Modo Liriun (texto livre / áudio → Gemini extrai a tarefa).
 
 ## Sumário
 
@@ -34,18 +34,18 @@ Organizador pessoal de tarefas com IA. Modo Manual (preenche o form) ou Modo Jar
 ## Estrutura do repositório
 
 ```
-Jarvis/
+Liriun/
 ├── backend/
 │   ├── ARCHITECTURE.md
 │   ├── src/
-│   │   ├── Jarvis.Core/             # Entidades, Enums, Errors, Result<T>, interfaces de repo
-│   │   ├── Jarvis.Application/      # UseCases, InputModels, ViewModels, Validators, IoC
-│   │   ├── Jarvis.Infrastructure/   # EF Core, Repos, Auth (JWT/BCrypt), GeminiService, Migrations
-│   │   └── Jarvis.Api/              # Controllers, Program.cs, Middlewares, appsettings
+│   │   ├── Liriun.Core/             # Entidades, Enums, Errors, Result<T>, interfaces de repo
+│   │   ├── Liriun.Application/      # UseCases, InputModels, ViewModels, Validators, IoC
+│   │   ├── Liriun.Infrastructure/   # EF Core, Repos, Auth (JWT/BCrypt), GeminiService, Migrations
+│   │   └── Liriun.Api/              # Controllers, Program.cs, Middlewares, appsettings
 │   └── tests/
-│       ├── Jarvis.Core.Tests/
-│       ├── Jarvis.Application.Tests/
-│       └── Jarvis.Api.Tests/
+│       ├── Liriun.Core.Tests/
+│       ├── Liriun.Application.Tests/
+│       └── Liriun.Api.Tests/
 ├── front/                           # Angular 18
 │   ├── src/app/
 │   │   ├── core/                    # auth, http, api services
@@ -80,10 +80,10 @@ A API lê três blocos de configuração obrigatórios:
 
 | Chave | Origem | Obrigatório | Default |
 |-------|--------|-------------|---------|
-| `ConnectionStrings:Jarvis` | user-secrets / env | Sim | — |
+| `ConnectionStrings:Liriun` | user-secrets / env | Sim | — |
 | `Jwt:Secret` | user-secrets / env | Sim | — |
-| `Jwt:Issuer` | `appsettings.json` | Não | `jarvis-api` |
-| `Jwt:Audience` | `appsettings.json` | Não | `jarvis-app` |
+| `Jwt:Issuer` | `appsettings.json` | Não | `liriun-api` |
+| `Jwt:Audience` | `appsettings.json` | Não | `liriun-app` |
 | `Jwt:ExpirationHours` | `appsettings.json` | Não | `24` |
 | `Gemini:ApiKey` | user-secrets / env | Sim (pra usar IA) | — |
 | `Gemini:Model` | user-secrets / env | Não | `gemini-2.0-flash` |
@@ -93,12 +93,12 @@ A API lê três blocos de configuração obrigatórios:
 
 ### Opção A — `dotnet user-secrets` (recomendado em dev)
 
-`Jarvis.Api.csproj` já tem `UserSecretsId` configurado. Roda da raiz do repo:
+`Liriun.Api.csproj` já tem `UserSecretsId` configurado. Roda da raiz do repo:
 
 ```powershell
-cd backend/src/Jarvis.Api
+cd backend/src/Liriun.Api
 
-dotnet user-secrets set "ConnectionStrings:Jarvis" "Host=db.SEU-PROJETO.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=SUA-SENHA;SSL Mode=Require;Trust Server Certificate=true"
+dotnet user-secrets set "ConnectionStrings:Liriun" "Host=db.SEU-PROJETO.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=SUA-SENHA;SSL Mode=Require;Trust Server Certificate=true"
 dotnet user-secrets set "Jwt:Secret" "SECRET_BASE64_FORTE_DE_512_BITS"
 dotnet user-secrets set "Gemini:ApiKey" "AIzaSy..."
 ```
@@ -115,7 +115,7 @@ Pra gerar `Jwt:Secret` aleatório:
 Use o `.env.example` como referência. ASP.NET Core lê variáveis com `__` no lugar de `:`:
 
 ```powershell
-$env:ConnectionStrings__Jarvis = "Host=...;Port=5432;..."
+$env:ConnectionStrings__Liriun = "Host=...;Port=5432;..."
 $env:Jwt__Secret = "..."
 $env:Gemini__ApiKey = "..."
 ```
@@ -150,7 +150,7 @@ Pra build de produção, ajusta `front/src/environments/environment.prod.ts` com
 ```ts
 export const environment = {
   production: true,
-  apiUrl: 'https://api.jarvis.app',
+  apiUrl: 'https://api.liriun.app',
 };
 ```
 
@@ -161,8 +161,8 @@ CORS no backend libera só `http://localhost:4200` em dev (`Program.cs`). Se mud
 ### 1. Clone e instale dependências
 
 ```powershell
-git clone <repo> Jarvis
-cd Jarvis
+git clone <repo> Liriun
+cd Liriun
 
 # Backend: restore
 dotnet restore backend
@@ -180,15 +180,15 @@ Veja [Opção A](#opção-a--dotnet-user-secrets-recomendado-em-dev) acima.
 ### 3. Aplica migrations
 
 ```powershell
-cd backend/src/Jarvis.Infrastructure
+cd backend/src/Liriun.Infrastructure
 
-dotnet ef database update --startup-project ../Jarvis.Api
+dotnet ef database update --startup-project ../Liriun.Api
 ```
 
 ### 4. Sobe backend
 
 ```powershell
-cd backend/src/Jarvis.Api
+cd backend/src/Liriun.Api
 dotnet run
 ```
 
@@ -208,20 +208,20 @@ Acessa http://localhost:4200.
 
 ## Migrations
 
-Migrations vivem em `backend/src/Jarvis.Infrastructure/Persistence/Migrations`. Comandos sempre da pasta `backend/src/Jarvis.Infrastructure` com `--startup-project ../Jarvis.Api`:
+Migrations vivem em `backend/src/Liriun.Infrastructure/Persistence/Migrations`. Comandos sempre da pasta `backend/src/Liriun.Infrastructure` com `--startup-project ../Liriun.Api`:
 
 ```powershell
 # Criar nova migration
-dotnet ef migrations add <NomeDaMigration> --startup-project ../Jarvis.Api
+dotnet ef migrations add <NomeDaMigration> --startup-project ../Liriun.Api
 
 # Aplicar
-dotnet ef database update --startup-project ../Jarvis.Api
+dotnet ef database update --startup-project ../Liriun.Api
 
 # Reverter pra uma migration anterior
-dotnet ef database update <MigrationAnterior> --startup-project ../Jarvis.Api
+dotnet ef database update <MigrationAnterior> --startup-project ../Liriun.Api
 
 # Remover a última (só funciona se ainda não foi aplicada)
-dotnet ef migrations remove --startup-project ../Jarvis.Api
+dotnet ef migrations remove --startup-project ../Liriun.Api
 ```
 
 Migrations existentes:
@@ -238,9 +238,9 @@ Migrations existentes:
 dotnet test backend
 
 # Por projeto
-dotnet test backend/tests/Jarvis.Core.Tests
-dotnet test backend/tests/Jarvis.Application.Tests
-dotnet test backend/tests/Jarvis.Api.Tests
+dotnet test backend/tests/Liriun.Core.Tests
+dotnet test backend/tests/Liriun.Application.Tests
+dotnet test backend/tests/Liriun.Api.Tests
 ```
 
 Testes da `Application` mockam `IGeminiService` e repos via Moq, não precisam de banco nem API key.
@@ -262,13 +262,13 @@ Controlado por `Gemini:ModoInterativo` em config. Default: `false`.
 
 | Modo | Comportamento | Custo de tokens |
 |------|---------------|------------------|
-| **One-shot** (default) | Jarvis NÃO faz perguntas. Sempre retorna `completo=true` com a tarefa preenchida. Campos faltantes ficam `null` pro usuário completar na UI de revisão. Observações copiam o "onde/como" cru do texto, sem reescrever. | ~75% menos tokens por tarefa |
-| **Interativo** (reservado pro plano pago futuro) | Jarvis pode fazer até 3 perguntas de contexto antes de fechar. Enriquece observações com checklist. Código preservado em `GeminiService.MontarInstrucaoInterativo`. | 2-4× mais tokens por tarefa |
+| **One-shot** (default) | Liriun NÃO faz perguntas. Sempre retorna `completo=true` com a tarefa preenchida. Campos faltantes ficam `null` pro usuário completar na UI de revisão. Observações copiam o "onde/como" cru do texto, sem reescrever. | ~75% menos tokens por tarefa |
+| **Interativo** (reservado pro plano pago futuro) | Liriun pode fazer até 3 perguntas de contexto antes de fechar. Enriquece observações com checklist. Código preservado em `GeminiService.MontarInstrucaoInterativo`. | 2-4× mais tokens por tarefa |
 
 Pra ligar o modo interativo em dev:
 
 ```powershell
-cd backend/src/Jarvis.Api
+cd backend/src/Liriun.Api
 dotnet user-secrets set "Gemini:ModoInterativo" "true"
 ```
 
@@ -291,7 +291,7 @@ E **`backend/ARCHITECTURE.md`** detalha a Clean Architecture (Result<T>, Problem
 
 | Erro | Causa provável | Solução |
 |------|----------------|---------|
-| `InvalidOperationException: ConnectionStrings:Jarvis nao configurada` | Connection string não setada | `dotnet user-secrets set "ConnectionStrings:Jarvis" "..."` |
+| `InvalidOperationException: ConnectionStrings:Liriun nao configurada` | Connection string não setada | `dotnet user-secrets set "ConnectionStrings:Liriun" "..."` |
 | `InvalidOperationException: Jwt:Secret nao configurada` | JWT secret não setada | Idem acima pra `Jwt:Secret` |
 | `IaErrors.NaoConfigurada` na rota de captura | `Gemini:ApiKey` vazia | Setar via user-secrets |
 | `IaErrors.LimiteExcedido` (429) | Rate limit do free tier do Gemini | Esperar o `retryAfterSeconds` da resposta |

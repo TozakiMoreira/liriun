@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { Prioridade } from './tarefas.service';
 
-export type PapelMensagem = 'usuario' | 'jarvis';
+export type PapelMensagem = 'usuario' | 'liriun';
 
 export interface MensagemConversa {
   papel: PapelMensagem;

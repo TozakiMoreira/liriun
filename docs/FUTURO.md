@@ -1,4 +1,4 @@
-# Jarvis - Funcionalidades Futuras
+# Liriun - Funcionalidades Futuras
 
 Lista de funcionalidades e melhorias que NAO serao implementadas na V1.
 Organizado por prioridade: as ideias mais impactantes (que transformariam o app) primeiro.
@@ -79,46 +79,46 @@ Ideias que mudam completamente a usabilidade do app. Devem vir primeiro nas prox
   - "Agrupa minhas ideias por tema"
 - A IA tem acesso ao banco do usuario e responde com base nele
 
-## Perguntas faladas pro Jarvis sobre tarefas (voice query)
+## Perguntas faladas pro Liriun sobre tarefas (voice query)
 - Extensao do "Chat conversacional" mas via voz no celular
 - Usuario aciona um comando rapido (atalho de voz, widget, long-press do app) e fala uma pergunta
 - Exemplos:
-  - "Jarvis, me fala quais tarefas eu tenho da FATEC pra essa semana"
-  - "Jarvis, o que eu tenho pendente pra hoje?"
-  - "Jarvis, quantas tarefas urgentes eu tenho?"
+  - "Liriun, me fala quais tarefas eu tenho da FATEC pra essa semana"
+  - "Liriun, o que eu tenho pendente pra hoje?"
+  - "Liriun, quantas tarefas urgentes eu tenho?"
 - Resposta em duas modalidades (usuario escolhe nas preferencias):
-  - **Voz (TTS)**: Jarvis fala de volta com a voz escolhida
+  - **Voz (TTS)**: Liriun fala de volta com a voz escolhida
   - **Tela**: abre uma tela de visualizacao dedicada filtrada pela pergunta
 - Dependencias: reconhecimento de voz, LLM pra interpretar a pergunta como filtro, TTS opcional, microfone acessivel (app mobile ou PWA com HTTPS)
-- Casa com a visao de longo prazo do Jarvis como assistente estilo JARVIS do Homem de Ferro
+- Casa com a visao de longo prazo do Liriun como assistente estilo JARVIS do Homem de Ferro
 
 ## API publica para integracao com outros sistemas
-- API externa documentada para outros apps se conectarem ao Jarvis
+- API externa documentada para outros apps se conectarem ao Liriun
 - Casos de uso:
   - Google Agenda: sincronizar tarefas com prazo como eventos
   - ClickUp / Trello / Notion: importar tarefas
   - Automacoes (Zapier, n8n, Make): fluxos personalizados
 - Cada usuario gera sua chave de API
 - Documentacao Swagger/OpenAPI publica
-- O Jarvis vira a fonte central de tarefas/ideias do usuario
+- O Liriun vira a fonte central de tarefas/ideias do usuario
 
 ## Webhooks
-- Notificar sistemas externos quando algo acontece no Jarvis
+- Notificar sistemas externos quando algo acontece no Liriun
 - Eventos: nova anotacao criada, anotacao concluida, prazo se aproximando
 - Permite automacoes complexas com ferramentas externas
 
 ## Setor de financas (contas a pagar e notificacao de boletos)
 
-- Nova area dentro do Jarvis dedicada a contas e pagamentos — complementa tarefas comuns
+- Nova area dentro do Liriun dedicada a contas e pagamentos — complementa tarefas comuns
 - **Contas recorrentes**: usuario cadastra contas que se repetem todo mes (aluguel, luz, internet, assinaturas)
-  - Jarvis gera tarefa automatica proxima do vencimento
+  - Liriun gera tarefa automatica proxima do vencimento
   - Configuravel: dia do mes, valor (opcional), categoria (ex: Casa), prioridade
   - Marca como paga no mes → proxima tarefa gera no mes seguinte
 - **Notificacao automatica de boletos gerados no CPF do usuario**:
   - Nubank e Itau ja fazem isso hoje — avisam o usuario quando um boleto novo e emitido no nome dele
   - Provavelmente usa API de consulta ao Registro de Boletos (Febraban) ou servicos similares
   - Investigar: APIs publicas/privadas disponiveis, custo, exigencias de compliance (open finance, dados financeiros sensiveis)
-  - Quando boleto e detectado, Jarvis cria tarefa automatica: "Pagar boleto de R$X vencendo em Y"
+  - Quando boleto e detectado, Liriun cria tarefa automatica: "Pagar boleto de R$X vencendo em Y"
 - Dashboard financeiro: soma de contas do mes, pendencias, pagos
 - **Plano**: provavelmente nao-free pelo custo de API de boletos e seguranca envolvida — candidato a Plus ou Premium
 - Risco alto de compliance: dados financeiros exigem LGPD rigorosa, criptografia, auditoria; nao comecar sem pesquisa juridica primeiro
@@ -214,7 +214,7 @@ Ideias que mudam completamente a usabilidade do app. Devem vir primeiro nas prox
 
 ## Lancamento global com 5+ linguas (meta: fim de 2026)
 
-- **Meta ambiciosa**: Jarvis publicado globalmente com suporte a pelo menos 5 idiomas ate o final de 2026
+- **Meta ambiciosa**: Liriun publicado globalmente com suporte a pelo menos 5 idiomas ate o final de 2026
 - **Idiomas candidatos (por ordem de facilidade + alcance)**:
   1. Portugues BR (pt-BR) — nativo, base da V1
   2. Ingles (en-US) — alcance global, maior base de usuarios potencial
@@ -228,16 +228,16 @@ Ideias que mudam completamente a usabilidade do app. Devem vir primeiro nas prox
   - `IStringLocalizer` + resource files configurado no back
   - Estrutura de arquivo de traducao escolhida (JSON, XLIFF ou PO)
   - Fallback de idioma definido (ex: se falta chave em fr, cai pra en)
-- **Desafios especificos do Jarvis**:
-  - **Tom de voz em outros idiomas** — o tom "Jarvis seco e discreto" precisa ser traduzido com cuidado, nao literal. Pode exigir revisao humana nativa por idioma
-  - **Nome do mascote / do produto** — manter "Jarvis" globalmente ou localizar?
+- **Desafios especificos do Liriun**:
+  - **Tom de voz em outros idiomas** — o tom "Liriun seco e discreto" precisa ser traduzido com cuidado, nao literal. Pode exigir revisao humana nativa por idioma
+  - **Nome do mascote / do produto** — manter "Liriun" globalmente ou localizar?
   - **Prompt da IA Gemini** — enviar prompt no idioma do usuario? Ou sempre em ingles e traduzir resposta? Testar as duas abordagens
   - **Categorias padrao e prazos padrao** — traducao dos templates ("Trabalho" → "Work" / "Trabajo" / "Arbeit")
   - **Formatos de data/hora/moeda** — usar `Intl` API no front e `CultureInfo` no back
 - **Fluxo de adicao de idioma novo**:
   1. Copiar pt-BR.xlf como base
   2. Enviar pra traducao (servico profissional ou IA + revisao humana)
-  3. Revisar tom do Jarvis com nativo daquele idioma
+  3. Revisar tom do Liriun com nativo daquele idioma
   4. Deploy e smoke test
 - **Estrategia de rollout**:
   - V1: so pt-BR, mas com infraestrutura pronta
@@ -269,7 +269,7 @@ Ideias que mudam completamente a usabilidade do app. Devem vir primeiro nas prox
 ## Tema de cores personalizavel pelo usuario
 - Usuario escolhe a paleta do app (accent color, fundo)
 - Niveis de implementacao:
-  - **Basico**: seletor entre 4-5 accent colors predefinidos ("Jarvis Purple", "Mono Cinza", "Ember Laranja", etc)
+  - **Basico**: seletor entre 4-5 accent colors predefinidos ("Liriun Purple", "Mono Cinza", "Ember Laranja", etc)
   - **Intermediario**: temas nomeados completos (cada um com accent + fundo + bordas)
   - **Avancado**: editor de tokens CSS abertos pro usuario mexer a vontade
 - V1 e dark-only clonando Linear — essa ideia e pra quando o app tiver base de usuarios com gostos diferentes
@@ -315,14 +315,14 @@ Ideias que mudam completamente a usabilidade do app. Devem vir primeiro nas prox
 
 ---
 
-# TIER 7 - Planos premium e experiencia estendida do Jarvis
+# TIER 7 - Planos premium e experiencia estendida do Liriun
 
-Ideias que formam uma camada "premium" / plano pago, transformando o Jarvis de ferramenta de produtividade em **companheiro digital personalizavel**. Fazem sentido apenas quando houver base de usuarios — tem custo de design e desenvolvimento altos, mas podem virar diferencial de mercado.
+Ideias que formam uma camada "premium" / plano pago, transformando o Liriun de ferramenta de produtividade em **companheiro digital personalizavel**. Fazem sentido apenas quando houver base de usuarios — tem custo de design e desenvolvimento altos, mas podem virar diferencial de mercado.
 
-## Mascote do Jarvis (forma fisica visual)
+## Mascote do Liriun (forma fisica visual)
 
-- Jarvis deixa de ser apenas "voz em texto" e ganha uma **representacao visual** — um mascote em pixel art que aparece nas telas
-- O mascote seria a cara/corpo do Jarvis: cada usuario ve o Jarvis assumir forma fisica
+- Liriun deixa de ser apenas "voz em texto" e ganha uma **representacao visual** — um mascote em pixel art que aparece nas telas
+- O mascote seria a cara/corpo do Liriun: cada usuario ve o Liriun assumir forma fisica
 - Interacoes acontecem via balao de fala (speech bubble) vindo do mascote em vez de textos genericos na tela
 - Aplicavel em:
   - Confirmacoes ("Anotado, Pedro!" sai do balao do mascote)
@@ -335,10 +335,10 @@ Ideias que formam uma camada "premium" / plano pago, transformando o Jarvis de f
 
 ## Metodo Pomodoro integrado
 
-- Timer Pomodoro dentro do Jarvis pra sessoes de foco
+- Timer Pomodoro dentro do Liriun pra sessoes de foco
 - Configuravel: duracao de foco, duracao de pausa, numero de ciclos
 - Durante o foco: tela minimalista, mascote em modo "silencio/foco"
-- **No intervalo, o Jarvis (via mascote) sugere atividades saudaveis:**
+- **No intervalo, o Liriun (via mascote) sugere atividades saudaveis:**
   - "Bebe um copo de agua, Pedro"
   - "Faz um alongamento de pescoco rapido"
   - "Levanta e caminha um pouco"
@@ -360,18 +360,18 @@ Ideias que formam uma camada "premium" / plano pago, transformando o Jarvis de f
 - Depende de: design de jogo, arte, sistema de progresso, persistencia no banco
 - Vinculado ao mesmo plano do mascote
 
-## Jarvis como companheiro / amigo para desabafar
+## Liriun como companheiro / amigo para desabafar
 
 - Modo "conversa" onde o usuario digita ou fala coisas do dia dele (nao tarefas — sentimentos, pensamentos, frustracoes)
-- Jarvis responde com tom de amigo proximo (nao terapeuta, nao psicologo — amigo)
+- Liriun responde com tom de amigo proximo (nao terapeuta, nao psicologo — amigo)
 - Escuta, valida, faz perguntas, sugere micro-acoes saudaveis baseadas no contexto:
-  - Usuario diz que esta estressado com prova → Jarvis sugere pausa, ativacao fisica, respiracao
-  - Usuario diz que nao esta conseguindo dormir → Jarvis pergunta sobre cafe, tela, horarios, sugere rotina
-  - Usuario esta animado com algo bom → Jarvis celebra junto
+  - Usuario diz que esta estressado com prova → Liriun sugere pausa, ativacao fisica, respiracao
+  - Usuario diz que nao esta conseguindo dormir → Liriun pergunta sobre cafe, tela, horarios, sugere rotina
+  - Usuario esta animado com algo bom → Liriun celebra junto
 - **IMPORTANTE**: deixar claro que nao substitui profissional de saude mental. Se detectar sinais de crise (ideacao suicida, violencia, etc.), direcionar pra CVV/CAPS imediatamente
 - Depende de: LLM com prompt cuidadoso (pode ser Gemini + system prompt especifico), salvaguardas de seguranca, moderation layer
 - Plano pago separado ou parte do plano premium com mascote — funcionalidade complexa de desenvolver e operar com responsabilidade
-- Alinhado com visao de longo prazo do Jarvis ser um "companheiro" digital (nao so organizador)
+- Alinhado com visao de longo prazo do Liriun ser um "companheiro" digital (nao so organizador)
 
 ## Modelo de monetizacao sugerido
 
@@ -385,7 +385,7 @@ Ideias que formam uma camada "premium" / plano pago, transformando o Jarvis de f
 
 # Outros projetos (ideias soltas do brainstorm inicial)
 
-Estas eram ideias do brainstorm inicial que podem virar projetos separados ou serem incorporadas no Jarvis a longo prazo.
+Estas eram ideias do brainstorm inicial que podem virar projetos separados ou serem incorporadas no Liriun a longo prazo.
 
 ## Assistente pessoal por voz
 - Comando de voz para criar anotacoes, pedir musicas no Spotify, listar tarefas

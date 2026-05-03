@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 
-const KEY = 'jarvis.token';
-const USER_KEY = 'jarvis.user';
+const KEY = 'liriun.token';
+const USER_KEY = 'liriun.user';
 
 export interface UsuarioLocal {
   id: string;

@@ -1,4 +1,4 @@
-# Arquitetura do Backend — Jarvis
+# Arquitetura do Backend — Liriun
 
 Documento de referencia da arquitetura do backend. Define camadas, padroes, convencoes e decisoes tecnicas.
 
@@ -52,7 +52,7 @@ Api ---------> Application ---------> Core
   +---> Infrastructure ---+---------> Core
 ```
 
-### 3.1 Jarvis.Core
+### 3.1 Liriun.Core
 
 Coracao do sistema. **Zero dependencia externa** (so BCL).
 
@@ -70,9 +70,9 @@ Nao contem:
 - Interfaces de read repositories (vivem em Application)
 - Exceptions (substituidas por Result/Error)
 
-`InternalsVisibleTo`: `Jarvis.Infrastructure` e `Jarvis.Core.Tests` tem acesso aos metodos `internal` (como `Reconstituir()`).
+`InternalsVisibleTo`: `Liriun.Infrastructure` e `Liriun.Core.Tests` tem acesso aos metodos `internal` (como `Reconstituir()`).
 
-### 3.2 Jarvis.Application
+### 3.2 Liriun.Application
 
 Orquestracao. Depende so de Core.
 
@@ -91,12 +91,12 @@ Nao contem:
 - Implementacao concreta de persistencia
 - Referencia a `HttpContext`, `IActionResult`
 
-### 3.3 Jarvis.Infrastructure
+### 3.3 Liriun.Infrastructure
 
 Detalhes tecnicos. Depende de Core e Application.
 
 Contem:
-- `Persistence/JarvisDbContext.cs` — DbContext configurado com Npgsql, usa data models
+- `Persistence/LiriunDbContext.cs` — DbContext configurado com Npgsql, usa data models
 - `Persistence/Models/` — POCOs planos para EF Core (UsuarioModel, TarefaModel, CategoriaModel, TarefaCategoriaModel)
 - `Persistence/Mappers/` — Mappers manuais dominio <-> data model (UsuarioMapper, TarefaMapper, CategoriaMapper)
 - `Persistence/Configurations/` — `IEntityTypeConfiguration<TModel>` por data model
@@ -108,7 +108,7 @@ Contem:
 - `Ia/` — GeminiService (HttpClient pro Gemini), GeminiOptions (config: ApiKey, Modelo, ModoInterativo)
 - `IoC/InfrastructureModule.cs` — Registro de repos, read repos, UnitOfWork, auth services, GeminiService
 
-### 3.4 Jarvis.Api
+### 3.4 Liriun.Api
 
 Composition root e fronteira HTTP. Depende de Application e Infrastructure.
 
@@ -125,17 +125,17 @@ Contem:
 
 ```
 backend/
-  Jarvis.slnx
+  Liriun.slnx
   ARCHITECTURE.md
   src/
-    Jarvis.Core/
+    Liriun.Core/
       Common/                  # Result, Result<T>, Error, ErrorType
       Entities/                # Usuario, Tarefa, Categoria, TarefaCategoria
       Enums/                   # Prioridade, StatusTarefa
       Errors/                  # TarefaErrors, CategoriaErrors, UsuarioErrors
       Interfaces/
         Repositories/          # IUsuarioRepository, ITarefaRepository, ICategoriaRepository
-    Jarvis.Application/
+    Liriun.Application/
       InputModels/
         Auth/                  # CadastrarUsuarioInput, LoginInput, AlterarSenhaInput, AtualizarPerfilInput, AtualizarFotoPerfilInput
         Categorias/            # CriarCategoriaInput, AtualizarCategoriaInput
@@ -164,11 +164,11 @@ backend/
         Ia/                    # IGeminiService
         IUnitOfWork.cs
       IoC/                     # ApplicationModule.cs
-    Jarvis.Infrastructure/
+    Liriun.Infrastructure/
       Auth/                    # JwtTokenService, BCryptPasswordHasher, JwtOptions
       Ia/                      # GeminiService, GeminiOptions
       Persistence/
-        JarvisDbContext.cs
+        LiriunDbContext.cs
         UnitOfWork.cs
         Models/                # UsuarioModel, TarefaModel, CategoriaModel, TarefaCategoriaModel
         Mappers/               # UsuarioMapper, TarefaMapper, CategoriaMapper
@@ -177,7 +177,7 @@ backend/
       Repositories/            # UsuarioRepository, TarefaRepository, CategoriaRepository
       ReadRepositories/        # UsuarioReadRepository, TarefaReadRepository, CategoriaReadRepository
       IoC/                     # InfrastructureModule.cs
-    Jarvis.Api/
+    Liriun.Api/
       Controllers/             # AuthController, TarefasController, CategoriasController, CapturaController
       Extensions/              # ResultExtensions.cs
       Middlewares/             # ExceptionHandlingMiddleware.cs
@@ -185,9 +185,9 @@ backend/
       Program.cs
       appsettings.json
   tests/
-    Jarvis.Core.Tests/
-    Jarvis.Application.Tests/
-    Jarvis.Api.Tests/
+    Liriun.Core.Tests/
+    Liriun.Application.Tests/
+    Liriun.Api.Tests/
 ```
 
 ---
@@ -240,7 +240,7 @@ Convencoes:
 
 ```json
 {
-  "type": "https://jarvis-api/erros/tarefa.nome-obrigatorio",
+  "type": "https://liriun-api/erros/tarefa.nome-obrigatorio",
   "title": "tarefa.nome-obrigatorio",
   "status": 400,
   "detail": "Nome da tarefa e obrigatorio",
@@ -250,7 +250,7 @@ Convencoes:
 
 Origens:
 - **`Result.Failure`** -> controller chama `result.ToActionResult(...)` que gera `ProblemDetails` a partir de `Error.Code`, `Error.Type` e `Error.Details`.
-- **Exception nao tratada** -> `ExceptionHandlingMiddleware` captura, loga, retorna `ProblemDetails` com `status: 500`, `type: https://jarvis-api/erros/interno` e `traceId`. Stack trace nunca vaza.
+- **Exception nao tratada** -> `ExceptionHandlingMiddleware` captura, loga, retorna `ProblemDetails` com `status: 500`, `type: https://liriun-api/erros/interno` e `traceId`. Stack trace nunca vaza.
 - **Validacao FluentValidation** -> mapeada pelo use case para `Result.Failure` com `Details` preenchido por campo.
 
 ---
@@ -340,7 +340,7 @@ Interface `IUnitOfWork` em `Application/Interfaces/`, implementada por `Persiste
 
 ### 9.5 EF Core
 
-- `JarvisDbContext` em `Infrastructure/Persistence/` com `DbSet<TModel>` para cada data model.
+- `LiriunDbContext` em `Infrastructure/Persistence/` com `DbSet<TModel>` para cada data model.
 - Configurations via `IEntityTypeConfiguration<TModel>` em `Persistence/Configurations/`.
 - Tabelas: `usuarios`, `tarefas`, `categorias`, `tarefas_categorias`.
 - Indices: `(usuario_id, status)`, `(usuario_id, data_prazo)` em tarefas; `(usuario_id, nome)` unique em categorias.
@@ -444,8 +444,8 @@ Padrao dos testes:
 | POST | `/tarefas/{id}/concluir` | Sim | 200 | Concluir tarefa |
 | POST | `/tarefas/{id}/reabrir` | Sim | 200 | Reabrir tarefa concluida (volta pra pendente) |
 | DELETE | `/tarefas/{id}` | Sim | 204 | Remover tarefa |
-| POST | `/captura/conversar` | Sim | 200 | Conversar com Jarvis (texto puro) — one-shot ou interativo |
-| POST | `/captura/conversar-audio` | Sim | 200 | Conversar com Jarvis via audio (multipart, ate 8MB, formatos Opus/WebM/MP4/WAV/FLAC) |
+| POST | `/captura/conversar` | Sim | 200 | Conversar com Liriun (texto puro) — one-shot ou interativo |
+| POST | `/captura/conversar-audio` | Sim | 200 | Conversar com Liriun via audio (multipart, ate 8MB, formatos Opus/WebM/MP4/WAV/FLAC) |
 
 ---
 
