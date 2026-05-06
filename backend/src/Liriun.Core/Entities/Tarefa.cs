@@ -20,6 +20,8 @@ public class Tarefa
     public Prioridade Prioridade { get; private set; }
     public StatusTarefa Status { get; private set; }
 
+    public TipoRecorrencia Recorrencia { get; private set; }
+
     public DateTime CriadaEm { get; private set; }
     public DateTime? ConcluidaEm { get; private set; }
 
@@ -31,6 +33,7 @@ public class Tarefa
         Guid id, Guid usuarioId, string nome,
         DateTime dataPrazo, TimeSpan? horarioFinal, string? observacoes,
         Prioridade prioridade, StatusTarefa status,
+        TipoRecorrencia recorrencia,
         DateTime criadaEm, DateTime? concluidaEm,
         ICollection<TarefaCategoria>? categorias = null)
         => new()
@@ -38,6 +41,7 @@ public class Tarefa
             Id = id, UsuarioId = usuarioId, Nome = nome,
             DataPrazo = dataPrazo, HorarioFinal = horarioFinal, Observacoes = observacoes,
             Prioridade = prioridade, Status = status,
+            Recorrencia = recorrencia,
             CriadaEm = criadaEm, ConcluidaEm = concluidaEm,
             Categorias = categorias ?? new List<TarefaCategoria>()
         };
@@ -48,7 +52,8 @@ public class Tarefa
         Prioridade prioridade,
         DateTime dataPrazo,
         TimeSpan? horarioFinal = null,
-        string? observacoes = null)
+        string? observacoes = null,
+        TipoRecorrencia recorrencia = TipoRecorrencia.Nenhuma)
     {
         Tarefa tarefa = new()
         {
@@ -60,6 +65,7 @@ public class Tarefa
             HorarioFinal = horarioFinal,
             Observacoes = NormalizarObservacoes(observacoes),
             Status = StatusTarefa.Pendente,
+            Recorrencia = recorrencia,
             CriadaEm = DateTime.UtcNow
         };
 
@@ -95,7 +101,8 @@ public class Tarefa
         Prioridade prioridade,
         DateTime dataPrazo,
         TimeSpan? horarioFinal,
-        string? observacoes)
+        string? observacoes,
+        TipoRecorrencia recorrencia = TipoRecorrencia.Nenhuma)
     {
         if (Status == StatusTarefa.Concluida)
             return Result.Failure(TarefaErrors.NaoEditavelConcluida());
@@ -105,7 +112,40 @@ public class Tarefa
         DataPrazo = dataPrazo.Date;
         HorarioFinal = horarioFinal;
         Observacoes = NormalizarObservacoes(observacoes);
+        Recorrencia = recorrencia;
         return Validar();
+    }
+
+    /// <summary>
+    /// Cria a próxima ocorrência de uma tarefa recorrente, com data avançada conforme o tipo.
+    /// Retorna null se a tarefa não for recorrente.
+    /// </summary>
+    public Tarefa? GerarProximaOcorrencia()
+    {
+        if (Recorrencia == TipoRecorrencia.Nenhuma)
+            return null;
+
+        DateTime proximaData = Recorrencia switch
+        {
+            TipoRecorrencia.Semanal => DataPrazo.AddDays(7),
+            TipoRecorrencia.Mensal => DataPrazo.AddMonths(1),
+            _ => DataPrazo
+        };
+
+        Tarefa proxima = new()
+        {
+            Id = Guid.NewGuid(),
+            UsuarioId = UsuarioId,
+            Nome = Nome,
+            Prioridade = Prioridade,
+            DataPrazo = proximaData.Date,
+            HorarioFinal = HorarioFinal,
+            Observacoes = Observacoes,
+            Status = StatusTarefa.Pendente,
+            Recorrencia = Recorrencia,
+            CriadaEm = DateTime.UtcNow
+        };
+        return proxima;
     }
 
     public StatusTarefa StatusComputado(DateTime agoraUtc)

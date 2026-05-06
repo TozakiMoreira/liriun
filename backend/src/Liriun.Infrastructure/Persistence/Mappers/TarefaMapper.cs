@@ -15,6 +15,7 @@ internal static class TarefaMapper
         Observacoes = entity.Observacoes,
         Prioridade = entity.Prioridade,
         Status = entity.Status,
+        Recorrencia = entity.Recorrencia,
         CriadaEm = entity.CriadaEm,
         ConcluidaEm = entity.ConcluidaEm
     };
@@ -39,6 +40,7 @@ internal static class TarefaMapper
             model.Observacoes,
             model.Prioridade,
             model.Status,
+            model.Recorrencia,
             model.CriadaEm,
             model.ConcluidaEm,
             categorias);

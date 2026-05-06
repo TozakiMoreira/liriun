@@ -29,6 +29,7 @@ public class TarefaReadRepository : ITarefaReadRepository
                 t.DataPrazo,
                 t.HorarioFinal,
                 t.Observacoes,
+                t.Recorrencia,
                 t.CriadaEm,
                 t.ConcluidaEm,
                 t.Categorias
@@ -58,6 +59,7 @@ public class TarefaReadRepository : ITarefaReadRepository
                 t.DataPrazo,
                 t.HorarioFinal,
                 t.Observacoes,
+                t.Recorrencia,
                 t.CriadaEm,
                 t.ConcluidaEm,
                 t.Categorias

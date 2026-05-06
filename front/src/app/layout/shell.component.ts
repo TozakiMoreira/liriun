@@ -266,6 +266,19 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
               <span class="flex-1">Concluídas</span>
             }
           </a>
+          <a
+            routerLink="/app/financas"
+            routerLinkActive="nav-link-active"
+            class="nav-link"
+            [class.nav-link-collapsed]="sidebarCollapsed()"
+            data-testid="nav-financas"
+            [title]="sidebarCollapsed() ? 'Finanças' : null"
+          >
+            <i class="fa-solid fa-wallet nav-icon"></i>
+            @if (!sidebarCollapsed()) {
+              <span class="flex-1">Finanças</span>
+            }
+          </a>
         </nav>
 
         <div class="mt-auto pt-3 w-full" [class.flex]="sidebarCollapsed()" [class.flex-col]="sidebarCollapsed()" [class.items-center]="sidebarCollapsed()">
@@ -424,7 +437,7 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
       </main>
 
       <nav
-        class="md:hidden fixed bottom-0 inset-x-0 grid grid-cols-5 h-16 bg-bg-sidebar border-t border-border z-40"
+        class="md:hidden fixed bottom-0 inset-x-0 grid grid-cols-6 h-16 bg-bg-sidebar border-t border-border z-40"
         data-testid="mobile-bottom-nav"
       >
         <a
@@ -477,6 +490,15 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
         >
           <i class="fa-solid fa-circle-check text-base"></i>
           <span class="text-[10px] font-medium">Concluídas</span>
+        </a>
+        <a
+          routerLink="/app/financas"
+          routerLinkActive="text-accent [&>i]:text-accent"
+          class="flex flex-col items-center justify-center gap-0.5 text-text-dim active:bg-bg-elev"
+          data-testid="nav-mobile-financas"
+        >
+          <i class="fa-solid fa-wallet text-base"></i>
+          <span class="text-[10px] font-medium">Finanças</span>
         </a>
         <a
           routerLink="/app/configuracoes"

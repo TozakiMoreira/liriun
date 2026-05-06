@@ -20,6 +20,7 @@ import {
   Tarefa,
   TarefaPayload,
   TarefasService,
+  TipoRecorrencia,
 } from '../../core/api/tarefas.service';
 import { extrairProblemDetails } from '../../shared/problem-details';
 
@@ -185,6 +186,32 @@ export interface SugestaoTarefa {
           </div>
 
           <div class="flex flex-col gap-1.5">
+            <label class="field-label">Recorrência</label>
+            <div class="flex flex-wrap gap-1.5" data-testid="tarefa-form-recorrencia" role="radiogroup" aria-label="Recorrência">
+              @for (r of opcoesRecorrencia; track r.valor) {
+                <button
+                  type="button"
+                  role="radio"
+                  [attr.aria-checked]="recorrencia === r.valor"
+                  [attr.data-testid]="'tarefa-form-recorrencia-' + r.valor"
+                  class="px-2.5 py-1 rounded text-[13px] border transition-colors flex items-center gap-1.5"
+                  [class]="
+                    recorrencia === r.valor
+                      ? 'bg-accent/15 border-accent/40 text-text'
+                      : 'bg-bg-surface border-border-strong text-text-dim hover:text-text'
+                  "
+                  (click)="recorrencia = r.valor"
+                >
+                  @if (r.valor !== 0) {
+                    <i class="fa-solid fa-repeat text-[10px]" aria-hidden="true"></i>
+                  }
+                  {{ r.rotulo }}
+                </button>
+              }
+            </div>
+          </div>
+
+          <div class="flex flex-col gap-1.5">
             <div class="flex items-center justify-between">
               <label class="field-label" for="observacoes">Observações (opcional)</label>
               <span
@@ -282,6 +309,11 @@ export class TarefaFormComponent implements OnInit {
     { valor: 3, rotulo: 'Normal', cor: '#5e6ad2' },
     { valor: 4, rotulo: 'Baixa', cor: '#6b7280' },
   ];
+  readonly opcoesRecorrencia: { valor: TipoRecorrencia; rotulo: string }[] = [
+    { valor: 0, rotulo: 'Sem repetir' },
+    { valor: 1, rotulo: 'Toda semana' },
+    { valor: 2, rotulo: 'Todo mês' },
+  ];
 
   private readonly categoriasApi = inject(CategoriasService);
   private readonly tarefasApi = inject(TarefasService);
@@ -311,6 +343,7 @@ export class TarefaFormComponent implements OnInit {
   data = '';
   hora = '';
   observacoes = '';
+  recorrencia: TipoRecorrencia = 0;
 
   ngOnInit(): void {
     this.carregarCategorias();
@@ -326,6 +359,7 @@ export class TarefaFormComponent implements OnInit {
         this.hora = this.tarefa.horarioFinal.substring(0, 5);
       }
       this.observacoes = this.tarefa.observacoes ?? '';
+      this.recorrencia = this.tarefa.recorrencia ?? 0;
     } else if (this.sugestao) {
       this.nome = this.sugestao.titulo;
       this.categoriaIds.set([...this.sugestao.categoriaIds]);
@@ -414,6 +448,7 @@ export class TarefaFormComponent implements OnInit {
       dataPrazo: new Date(this.data + 'T00:00:00').toISOString(),
       horarioFinal: this.hora ? this.formatarHoraParaApi(this.hora) : null,
       observacoes: this.observacoes.trim() ? this.observacoes.trim() : null,
+      recorrencia: this.recorrencia,
     };
 
     this.salvando.set(true);

@@ -56,7 +56,8 @@ public class CriarTarefaUseCase
             input.Prioridade,
             input.DataPrazo,
             input.HorarioFinal,
-            input.Observacoes);
+            input.Observacoes,
+            input.Recorrencia);
 
         if (criacaoResult.IsFailure)
             return Result<TarefaViewModel>.Failure(criacaoResult.Error!);

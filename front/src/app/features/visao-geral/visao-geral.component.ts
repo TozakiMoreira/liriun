@@ -10,13 +10,16 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Tarefa, TarefasService } from '../../core/api/tarefas.service';
+import { Balanco, FinancasService } from '../../core/api/financas.service';
 import { TokenStorage } from '../../core/auth/token.storage';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { StaggerInDirective } from '../../shared/stagger-in.directive';
 import { BrandComponent } from '../../shared/brand.component';
 import { PageHeaderService } from '../../core/layout/page-header.service';
+import { ItemAgendaPosicionado, calcularLayoutAgenda } from '../../shared/agenda-layout';
+import { TarefaDetalheModalComponent } from '../tarefas/tarefa-detalhe-modal.component';
 
 interface CategoriaResumo {
   nome: string;
@@ -44,7 +47,7 @@ interface DiaResumo {
 @Component({
   selector: 'app-visao-geral',
   standalone: true,
-  imports: [CommonModule, RouterLink, AvatarComponent, StaggerInDirective, BrandComponent],
+  imports: [CommonModule, RouterLink, AvatarComponent, StaggerInDirective, BrandComponent, TarefaDetalheModalComponent],
   template: `
     <header class="md:hidden flex items-center px-4 py-3.5 border-b border-border gap-4">
       <div class="flex items-center gap-2 text-[15px] text-text-dim">
@@ -242,18 +245,23 @@ interface DiaResumo {
                   ></div>
                 }
 
-                @for (t of tarefasComHoraHoje(); track t.id) {
-                  <div
-                    class="absolute left-2 right-2 rounded px-2 py-1.5 text-[12px] border flex items-center gap-2 overflow-hidden"
+                @for (p of tarefasLayoutHoje(); track p.item.id) {
+                  @let t = p.item.tarefa;
+                  <button
+                    type="button"
+                    class="absolute rounded px-2 py-1.5 text-[12px] text-left border flex items-center gap-2 overflow-hidden cursor-pointer hover:brightness-110 hover:z-10 transition-[filter]"
                     [ngClass]="
                       t.status === 3
                         ? 'bg-danger/20 border-danger/40 text-text'
                         : 'bg-accent/20 border-accent/40 text-text'
                     "
-                    [style.top.px]="topoTarefaHoje(t)"
+                    [style.top.px]="p.item.top"
+                    [style.left]="estiloPosicaoTarefa(p).left"
+                    [style.width]="estiloPosicaoTarefa(p).width"
                     [style.minHeight.px]="alturaSlotAgenda() - 4"
                     [attr.data-testid]="'agenda-tarefa-' + t.id"
                     [title]="t.nome + ' — ' + (t.horarioFinal ?? '')"
+                    (click)="abrirDetalheTarefa(t)"
                   >
                     <span
                       class="w-1.5 h-1.5 rounded-full shrink-0"
@@ -265,7 +273,7 @@ interface DiaResumo {
                         {{ t.horarioFinal.substring(0, 5) }}
                       </span>
                     }
-                  </div>
+                  </button>
                 }
 
                 @if (topoLinhaAgora() !== null) {
@@ -293,40 +301,100 @@ interface DiaResumo {
 
         <div class="flex flex-col gap-3 min-w-0">
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-3">
-          <section class="card-elev p-4 xl:col-span-2 flex flex-col gap-4" data-testid="grafico-semana">
-            <div class="flex items-center justify-between">
-              <h2 class="text-[13px] font-semibold tracking-tight">Atividade da semana</h2>
-              <span class="text-[10px] text-text-subtle uppercase tracking-wider">Últimos 7 dias</span>
-            </div>
-            @if (erroConcluidas()) {
-              <div class="text-[11px] text-danger px-2 py-1.5 rounded border border-danger/30 bg-danger/10">
-                {{ erroConcluidas() }} As concluídas não estão entrando no gráfico.
+          <a
+            routerLink="/app/financas"
+            class="card-elev relative overflow-hidden xl:col-span-2 flex flex-col gap-3 p-5 cursor-pointer hover:border-border-strong transition-colors group"
+            data-testid="widget-financas"
+          >
+            <div
+              class="absolute inset-0 pointer-events-none opacity-90"
+              [style.background]="financasBg()"
+            ></div>
+            <div
+              class="absolute -right-12 -top-12 w-48 h-48 rounded-full opacity-30 blur-3xl pointer-events-none"
+              [style.background]="financasGlow()"
+            ></div>
+
+            <div class="relative flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-full bg-accent-violet/15 grid place-items-center">
+                  <i class="fa-solid fa-wallet text-accent-violet text-[12px]"></i>
+                </div>
+                <h2 class="text-[13px] font-semibold tracking-tight">Finanças do mês</h2>
               </div>
-            }
-            <div class="flex items-stretch justify-between gap-2 h-40">
-              @for (d of diasSemana(); track d.iso) {
-                <div class="flex-1 flex flex-col items-center gap-1.5 h-full min-w-0">
-                  <div class="flex items-end gap-1 flex-1 min-h-0 w-full justify-center">
+              <span class="text-[10px] text-text-subtle uppercase tracking-wider flex items-center gap-1.5 group-hover:text-text transition-colors">
+                {{ rotuloMesAtual() }}
+                <i class="fa-solid fa-arrow-right text-[9px]"></i>
+              </span>
+            </div>
+
+            @if (balancoMes(); as b) {
+              <div class="relative flex items-end gap-4 mt-1">
+                <div class="flex flex-col gap-0.5">
+                  <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">Saldo</span>
+                  <span
+                    class="text-[28px] font-semibold tabular-nums leading-none"
+                    [class]="b.saldo >= 0 ? 'text-text' : 'text-rose-400'"
+                  >
+                    {{ formatarMoeda(b.saldo) }}
+                  </span>
+                  @if (b.totalReceitas > 0) {
+                    <span class="text-[11px] text-text-dim mt-0.5">
+                      {{ percentualEconomiaMes() }}% do que recebeu
+                    </span>
+                  }
+                </div>
+
+                <div class="flex-1 flex flex-col gap-2 min-w-0">
+                  <div class="flex items-center justify-between text-[11px]">
+                    <span class="flex items-center gap-1.5 text-text-dim">
+                      <i class="fa-solid fa-arrow-up text-emerald-500 text-[9px]"></i>
+                      Recebido
+                    </span>
+                    <span class="text-emerald-400 tabular-nums font-medium">{{ formatarMoeda(b.totalReceitas) }}</span>
+                  </div>
+                  <div class="h-1.5 bg-bg-surface rounded overflow-hidden">
                     <div
-                      class="w-3 bg-accent/70 rounded-t transition-all"
-                      [style.height.%]="alturaBarra(d.pendentes)"
-                      [title]="d.pendentes + ' pendente(s)'"
-                    ></div>
-                    <div
-                      class="w-3 bg-emerald-500/70 rounded-t transition-all"
-                      [style.height.%]="alturaBarra(d.concluidas)"
-                      [title]="d.concluidas + ' concluída(s)'"
+                      class="h-full bg-emerald-400 rounded transition-all"
+                      [style.width.%]="barraReceita()"
                     ></div>
                   </div>
-                  <span class="text-[10px] text-text-subtle leading-none">{{ d.diaCurto }}</span>
+
+                  <div class="flex items-center justify-between text-[11px] mt-1">
+                    <span class="flex items-center gap-1.5 text-text-dim">
+                      <i class="fa-solid fa-arrow-down text-rose-500 text-[9px]"></i>
+                      Despesas
+                    </span>
+                    <span class="text-rose-400 tabular-nums font-medium">{{ formatarMoeda(b.totalDespesasPagas + b.totalDespesasPendentes) }}</span>
+                  </div>
+                  <div class="h-1.5 bg-bg-surface rounded overflow-hidden flex">
+                    <div
+                      class="h-full bg-rose-400 transition-all"
+                      [style.width.%]="barraDespesaPaga()"
+                    ></div>
+                    <div
+                      class="h-full bg-amber-400/70 transition-all"
+                      [style.width.%]="barraDespesaPendente()"
+                    ></div>
+                  </div>
+                  @if (b.totalDespesasPendentes > 0) {
+                    <div class="flex items-center gap-1.5 text-[10px] text-amber-400 mt-1">
+                      <i class="fa-solid fa-circle-exclamation text-[9px]"></i>
+                      <span class="tabular-nums">{{ formatarMoeda(b.totalDespesasPendentes) }} a pagar</span>
+                    </div>
+                  }
                 </div>
-              }
-            </div>
-            <div class="flex items-center gap-4 text-[11px] text-text-dim">
-              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-sm bg-accent/70"></span> Pendentes com prazo</span>
-              <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-sm bg-emerald-500/70"></span> Concluídas</span>
-            </div>
-          </section>
+              </div>
+            } @else {
+              <div class="relative flex flex-col items-start gap-2 py-3">
+                <span class="text-[20px] font-semibold text-text-dim">Nada lançado por aqui</span>
+                <span class="text-[12px] text-text-subtle">Comece registrando seus recebimentos e contas a pagar.</span>
+                <span class="text-[11px] text-accent group-hover:underline mt-1 flex items-center gap-1.5">
+                  Abrir Finanças <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                </span>
+              </div>
+            }
+          </a>
 
           <section class="card-elev p-4 flex flex-col gap-3" data-testid="grafico-categorias">
             <h2 class="text-[13px] font-semibold tracking-tight">Pendentes por categoria</h2>
@@ -447,12 +515,138 @@ interface DiaResumo {
         </div>
       }
     </div>
+
+    @if (tarefaDetalhe(); as t) {
+      <app-tarefa-detalhe-modal
+        [tarefa]="t"
+        (fechado)="fecharDetalhe()"
+        (concluir)="concluirDetalhe($event)"
+        (reabrir)="reabrirDetalhe($event)"
+        (editarTudo)="editarDetalhe($event)"
+        (excluir)="excluirDetalhe($event)"
+      ></app-tarefa-detalhe-modal>
+    }
   `,
 })
 export class VisaoGeralComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly tarefasApi = inject(TarefasService);
+  private readonly financasApi = inject(FinancasService);
   private readonly storage = inject(TokenStorage);
   private readonly pageHeader = inject(PageHeaderService);
+  private readonly router = inject(Router);
+
+  readonly balancoMes = signal<Balanco | null>(null);
+
+  readonly tarefaDetalhe = signal<Tarefa | null>(null);
+  readonly processandoDetalhe = signal(false);
+
+  abrirDetalheTarefa(t: Tarefa): void {
+    this.tarefaDetalhe.set(t);
+  }
+
+  // ===== Widget Finanças =====
+  formatarMoeda(v: number): string {
+    return v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  rotuloMesAtual(): string {
+    const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+    const d = new Date();
+    return `${meses[d.getMonth()]} ${d.getFullYear()}`;
+  }
+
+  percentualEconomiaMes(): number {
+    const b = this.balancoMes();
+    if (!b || b.totalReceitas <= 0) return 0;
+    return Math.round((b.saldo / b.totalReceitas) * 100);
+  }
+
+  private maiorValorFinancas(): number {
+    const b = this.balancoMes();
+    if (!b) return 1;
+    return Math.max(b.totalReceitas, b.totalDespesasPagas + b.totalDespesasPendentes, 1);
+  }
+
+  barraReceita(): number {
+    const b = this.balancoMes();
+    if (!b) return 0;
+    return Math.min(100, (b.totalReceitas / this.maiorValorFinancas()) * 100);
+  }
+
+  barraDespesaPaga(): number {
+    const b = this.balancoMes();
+    if (!b) return 0;
+    return Math.min(100, (b.totalDespesasPagas / this.maiorValorFinancas()) * 100);
+  }
+
+  barraDespesaPendente(): number {
+    const b = this.balancoMes();
+    if (!b) return 0;
+    return Math.min(100, (b.totalDespesasPendentes / this.maiorValorFinancas()) * 100);
+  }
+
+  financasBg(): string {
+    const b = this.balancoMes();
+    if (!b) return 'transparent';
+    if (b.saldo >= 0) {
+      return 'radial-gradient(ellipse 70% 90% at 100% 0%, rgba(16,185,129,0.10), transparent 65%), radial-gradient(ellipse 50% 70% at 0% 100%, rgba(139,92,246,0.08), transparent 65%)';
+    }
+    return 'radial-gradient(ellipse 70% 90% at 100% 0%, rgba(235,87,87,0.14), transparent 60%)';
+  }
+
+  financasGlow(): string {
+    const b = this.balancoMes();
+    if (!b) return 'rgba(94,106,210,0.4)';
+    return b.saldo >= 0 ? 'rgba(16,185,129,0.5)' : 'rgba(235,87,87,0.5)';
+  }
+
+  fecharDetalhe(): void {
+    this.tarefaDetalhe.set(null);
+  }
+
+  concluirDetalhe(t: Tarefa): void {
+    if (this.processandoDetalhe()) return;
+    this.processandoDetalhe.set(true);
+    this.tarefasApi.concluir(t.id).subscribe({
+      next: () => {
+        this.processandoDetalhe.set(false);
+        this.tarefaDetalhe.set(null);
+        this.recarregarPendentes();
+      },
+      error: () => {
+        this.processandoDetalhe.set(false);
+      },
+    });
+  }
+
+  reabrirDetalhe(t: Tarefa): void {
+    if (this.processandoDetalhe()) return;
+    this.processandoDetalhe.set(true);
+    this.tarefasApi.reabrir(t.id).subscribe({
+      next: () => {
+        this.processandoDetalhe.set(false);
+        this.tarefaDetalhe.set(null);
+        this.recarregarPendentes();
+      },
+      error: () => {
+        this.processandoDetalhe.set(false);
+      },
+    });
+  }
+
+  editarDetalhe(t: Tarefa): void {
+    this.router.navigate(['/app/tarefas'], { queryParams: { detalhe: t.id } });
+  }
+
+  excluirDetalhe(t: Tarefa): void {
+    this.router.navigate(['/app/tarefas'], { queryParams: { detalhe: t.id } });
+  }
+
+  private recarregarPendentes(): void {
+    this.tarefasApi.listarPendentes().subscribe({
+      next: (lista) => this.pendentes.set(lista),
+    });
+  }
 
   constructor() {
     this.pageHeader.set({
@@ -599,6 +793,12 @@ export class VisaoGeralComponent implements OnInit, OnDestroy, AfterViewInit {
       },
     });
 
+    const hoje = new Date();
+    this.financasApi.obterBalanco(hoje.getFullYear(), hoje.getMonth() + 1).subscribe({
+      next: (b) => this.balancoMes.set(b),
+      error: () => {},
+    });
+
     this.agoraTimer = window.setInterval(() => this.agora.set(new Date()), 60000);
   }
 
@@ -684,6 +884,25 @@ export class VisaoGeralComponent implements OnInit, OnDestroy, AfterViewInit {
       .filter((t) => t.dataPrazo?.substring(0, 10) === hoje && !!t.horarioFinal)
       .sort((a, b) => (a.horarioFinal ?? '').localeCompare(b.horarioFinal ?? ''));
   });
+
+  readonly tarefasLayoutHoje = computed(() => {
+    const altura = this.alturaSlotAgenda();
+    const items = this.tarefasComHoraHoje().map((t) => ({
+      id: String(t.id),
+      top: this.topoTarefaHoje(t),
+      alturaPx: altura - 4,
+      tarefa: t,
+    }));
+    return calcularLayoutAgenda(items);
+  });
+
+  estiloPosicaoTarefa(p: ItemAgendaPosicionado<{ id: string; top: number; alturaPx: number }>): { left: string; width: string } {
+    const w = 100 / p.totalCols;
+    return {
+      left: `calc(${p.col * w}% + 2px)`,
+      width: `calc(${w}% - 4px)`,
+    };
+  }
 
   readonly tarefasSemHoraHoje = computed(() => {
     const hoje = this.isoDataLocal(this.agora());

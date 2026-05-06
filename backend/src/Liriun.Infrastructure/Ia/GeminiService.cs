@@ -119,15 +119,26 @@ public class GeminiService : IGeminiService
                 if (!resp.IsSuccessStatusCode)
                 {
                     _logger.LogError(
-                        "Gemini retornou {StatusCode} (tentativa {Tentativa}, audio={Audio}): {Body}",
+                        "Gemini retornou {StatusCode} (tentativa {Tentativa}, audio={Audio}, modelo={Modelo}): {Body}",
                         (int)resp.StatusCode,
                         tentativa,
                         audio,
-                        Truncar(corpo, 500));
+                        _options.Model,
+                        Truncar(corpo, 1500));
                     if ((int)resp.StatusCode == 429)
                     {
-                        // Rate limit do free tier. Nao adianta tentar de novo em 100ms.
+                        // Rate limit do free tier OU quota diaria zerada OU billing issue.
+                        // Body do Google traz "RESOURCE_EXHAUSTED" + razao real.
                         return Result<RespostaConversa>.Failure(IaErrors.LimiteExcedido(ExtrairRetryEmSegundos(corpo)));
+                    }
+                    if ((int)resp.StatusCode == 400 || (int)resp.StatusCode == 404)
+                    {
+                        // Modelo nao existe/deprecated, ou key invalida pra esse modelo.
+                        return Result<RespostaConversa>.Failure(IaErrors.NaoConfigurada());
+                    }
+                    if ((int)resp.StatusCode == 401 || (int)resp.StatusCode == 403)
+                    {
+                        return Result<RespostaConversa>.Failure(IaErrors.NaoConfigurada());
                     }
                     if (tentativa == 2) return Result<RespostaConversa>.Failure(IaErrors.FalhaNaAnalise());
                     continue;
@@ -208,18 +219,83 @@ public class GeminiService : IGeminiService
         }
 
         sb.Append(@"
-Modo ONE-SHOT. NAO faca perguntas. SEMPRE retorne completo=true e tarefa preenchida.
-Extraia o que o usuario disse. Campos sem informacao = null (NAO chute, NAO invente).
+Modo ONE-SHOT. NAO faca perguntas pra coletar campos de tarefa.
 
-Saida JSON:
-- titulo: imperativo curto, sem ponto final, max 200ch. Use o 'o que' do usuario. Se faltar acao clara, use as primeiras 6-8 palavras do texto. NAO inclua data/hora no titulo.
-- data: YYYY-MM-DD apenas se houver pista temporal explicita ('hoje', 'amanha', 'sexta', '15/08', 'semana que vem'=+7d, 'mes que vem'=+1mes). null caso contrario.
-- hora: HH:MM 24h apenas se mencionada ('19h'=19:00, '18h30'=18:30, 'manha'=09:00, 'tarde'=14:00, 'noite'=19:00). null caso contrario.
-- categoriaIds: ids quando obvio do texto, [] em caso de duvida.
-- prioridade: 1=Urgente 2=Importante 3=Normal 4=Baixa. Default 3.
-- observacoes: COPIE CRU o 'onde/como' que o usuario falou, sem reescrever, sem enriquecer, sem checklist. NAO repita dados ja em titulo/data/hora. null se nao houver onde/como.
-- mensagem: 1 frase curta. Se algum dos 3 (o que/quando/onde) faltou, liste o que faltou de forma seca. Ex: 'Anotado. Faltou hora e local — ajusta se quiser.' ou 'Anotado.' se tudo veio.
-- completo: SEMPRE true.
+CLASSIFICACAO DO TURNO (SEMPRE faca isso primeiro):
+1. NOVA TAREFA: usuario descreveu uma coisa pra fazer/lembrar. -> Cria tarefa nova preenchendo campos. completo=true.
+2. AJUSTE: usuario quer mudar algo da tarefa anterior ('muda data pra sexta', 'sem categoria', 'na verdade e amanha'). -> Reaproveita campos da tarefa anterior, ajusta o que mudou. completo=true.
+3. CONFIRMACAO: usuario disse 'salva', 'ok', 'pode salvar', 'sim', 'manda ver'. -> Mantem tarefa anterior intacta. completo=true. mensagem: 'Salvando.' ou 'Anotado.'.
+4. PERGUNTA/CONVERSA: usuario pergunta algo, pede recomendacao, faz papo, pede ajuda externa. -> tarefa=null. completo=true. mensagem responde curto e seco em primeira pessoa.
+
+REGRA PRA PERGUNTA/CONVERSA (caso 4):
+- Responda na 'mensagem' em ate 2 frases curtas, primeira pessoa, sem emoji.
+- Pode citar NOMES de sites/apps/servicos conhecidos quando seguro ('Booking, Decolar, Trivago pra hospedagem'; 'Uber/99 pra carro'; 'iFood pra comida').
+- NUNCA invente URLs ou links — so cite nomes.
+- Se nao souber ou for fora do seu escopo (financeiro pessoal, medico especifico, juridico): seja honesto seco ('Nao posso indicar com seguranca, da uma busca rapida').
+- NAO modifique nem crie tarefa por causa da pergunta. tarefa=null.
+
+Extraia o que o usuario DISSE NESTE TURNO. Campos sem informacao = null (NAO chute, NAO invente).
+
+REGRAS DE TITULO (importante — preencha SEMPRE com algo util):
+1. Foque APENAS no turno atual do usuario. NAO reaproveite titulos/palavras de turnos anteriores a menos que o novo turno seja ajuste do mesmo (ex: 'muda data pra sexta').
+2. Se o usuario fala um SUBSTANTIVO com prazo ('tenho psi amanha', 'consulta dia 15', 'reuniao quinta'), INFIRA o verbo imperativo natural:
+   - 'tenho psi/psicologo/terapia X' -> 'Sessao de psicologia' (ou 'Consulta com psicologo')
+   - 'tenho medico/dr./dentista X' -> 'Consulta com medico' (ajuste especialidade se citada)
+   - 'tenho reuniao/call/meet X' -> 'Reuniao' (+ tema se citado)
+   - 'tenho aula/prova/curso X' -> 'Aula de X' / 'Prova de X'
+   - 'tenho academia/treino X' -> 'Treino na academia'
+   - 'tenho viagem/voo X' -> 'Viajar pra Y' / 'Embarcar voo X'
+   - 'comprar/pagar/levar/buscar/ligar/enviar' = ja tem verbo, use direto
+3. Se o usuario diz so um lembrete tipo 'aniversario do joao quarta' -> 'Aniversario do Joao'.
+4. NUNCA use 'salvar', 'anotar', 'tarefa', 'nova', 'ok' como titulo — sao acoes de sistema, nao tarefas.
+5. Sem ponto final. Max 200ch. NAO inclua data/hora no titulo.
+6. So se MESMO assim nao houver substantivo claro ou acao implicita, copie as primeiras 6-8 palavras crus.
+
+REGRAS DE DATA:
+- YYYY-MM-DD apenas com pista explicita ('hoje', 'amanha', 'sexta', '15/08', 'dia 5', 'semana que vem'=+7d, 'mes que vem'=+1mes, 'sexta da semana que vem'). null caso contrario.
+
+REGRAS DE HORA:
+- HH:MM 24h apenas se mencionada ('19h'=19:00, '18h30'=18:30, 'manha'=09:00, 'tarde'=14:00, 'noite'=19:00, 'meio-dia'=12:00). null caso contrario.
+
+REGRAS DE CATEGORIA:
+- Use ids OBVIOS do texto (ex: 'comprar pao' + categoria 'Compras' existe -> use). [] em duvida.
+
+REGRAS DE PRIORIDADE:
+- 1=Urgente (palavras 'urgente', 'agora', 'asap', 'emergencia')
+- 2=Importante ('importante', prazo no mesmo dia critico)
+- 3=Normal (default)
+- 4=Baixa ('quando der', 'sem pressa')
+
+OBSERVACOES:
+- COPIE CRU o 'onde/como' que o usuario falou, sem reescrever, sem enriquecer, sem checklist.
+- NAO repita dados ja em titulo/data/hora. null se nao houver onde/como.
+
+MENSAGEM:
+- 1 frase curta, primeira pessoa, sem emoji.
+- Se faltou data, hora, categoria ou local relevante, mencione SECO o que faltou pra ajustar.
+- Exemplos: 'Anotado.' / 'Anotado. Faltou hora.' / 'Anotado. Sem data, ajusta se quiser.'
+- NUNCA 'Faltou o que fazer' se voce conseguiu inferir um titulo. So diga isso se titulo realmente ficou impossivel.
+
+EXEMPLOS:
+Input: 'tenho psi amanha'
+-> tarefa: { titulo: 'Sessao de psicologia', data: '<amanha>', hora: null, observacoes: null }, mensagem: 'Anotado. Sem hora, ajusta se quiser.'
+
+Input: 'comprar pao'
+-> tarefa: { titulo: 'Comprar pao', data: null }, mensagem: 'Anotado. Sem prazo definido.'
+
+Input: 'reuniao com cliente sexta 14h sobre proposta'
+-> tarefa: { titulo: 'Reuniao com cliente', data: '<sexta>', hora: '14:00', observacoes: 'sobre proposta' }, mensagem: 'Anotado.'
+
+Input (turno seguinte a 'comprar hospedagem pra madrid amanha'): 'pode me indicar sites pra isso?'
+-> tarefa: null, mensagem: 'Booking, Decolar e Trivago costumam funcionar pra hospedagem. Pra Madrid tambem da pra olhar Airbnb.'
+
+Input (turno seguinte a uma tarefa): 'salva'
+-> tarefa: <mantem campos do turno anterior>, mensagem: 'Salvando.'
+
+Input: 'qual a previsao do tempo amanha?'
+-> tarefa: null, mensagem: 'Nao tenho acesso a clima. Olha no Google ou Climatempo.'
+
+completo: SEMPRE true.
 ");
 
         return sb.ToString();

@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 
 export type Prioridade = 1 | 2 | 3 | 4;
 export type StatusTarefa = 1 | 2 | 3;
+export type TipoRecorrencia = 0 | 1 | 2;
 
 export interface TarefaCategoriaRef {
   id: string;
@@ -19,6 +20,7 @@ export interface Tarefa {
   dataPrazo: string;
   horarioFinal: string | null;
   observacoes: string | null;
+  recorrencia: TipoRecorrencia;
   criadaEm: string;
   concluidaEm: string | null;
   categorias: TarefaCategoriaRef[];
@@ -31,6 +33,7 @@ export interface TarefaPayload {
   categoriaIds?: string[];
   horarioFinal?: string | null;
   observacoes?: string | null;
+  recorrencia?: TipoRecorrencia;
 }
 
 @Injectable({ providedIn: 'root' })

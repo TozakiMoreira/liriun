@@ -14,6 +14,7 @@ public sealed record TarefaViewModel(
     DateTime DataPrazo,
     TimeSpan? HorarioFinal,
     string? Observacoes,
+    TipoRecorrencia Recorrencia,
     DateTime CriadaEm,
     DateTime? ConcluidaEm,
     IReadOnlyList<TarefaCategoriaViewModel> Categorias)
@@ -29,6 +30,7 @@ public sealed record TarefaViewModel(
             tarefa.DataPrazo,
             tarefa.HorarioFinal,
             tarefa.Observacoes,
+            tarefa.Recorrencia,
             tarefa.CriadaEm,
             tarefa.ConcluidaEm,
             tarefa.Categorias
@@ -55,6 +57,7 @@ public sealed record TarefaViewModel(
             readModel.DataPrazo,
             readModel.HorarioFinal,
             readModel.Observacoes,
+            readModel.Recorrencia,
             readModel.CriadaEm,
             readModel.ConcluidaEm,
             readModel.Categorias

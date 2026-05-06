@@ -91,6 +91,17 @@ import { quebrarTextoEmSegmentos } from '../../shared/auto-link';
               </span>
               <div class="text-text capitalize">{{ rotuloStatus(tarefa.status) }}</div>
             </div>
+            @if (tarefa.recorrencia) {
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">
+                  Recorrência
+                </span>
+                <div class="flex items-center gap-1.5 text-text">
+                  <i class="fa-solid fa-repeat text-accent text-[10px]" aria-hidden="true"></i>
+                  {{ rotuloRecorrencia(tarefa.recorrencia) }}
+                </div>
+              </div>
+            }
           </div>
 
           @if (tarefa.categorias.length > 0) {
@@ -221,6 +232,12 @@ export class TarefaDetalheModalComponent {
     if (s === 2) return 'Concluída';
     if (s === 3) return 'Atrasada';
     return 'Pendente';
+  }
+
+  rotuloRecorrencia(r: number): string {
+    if (r === 1) return 'Toda semana';
+    if (r === 2) return 'Todo mês';
+    return '';
   }
 
   corPrioridade(p: number): string {

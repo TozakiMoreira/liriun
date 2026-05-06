@@ -8,6 +8,7 @@ import { extrairProblemDetails } from '../../shared/problem-details';
 import { TarefaDetalheModalComponent } from './tarefa-detalhe-modal.component';
 import { TarefaFormComponent } from './tarefa-form.component';
 import { PageHeaderService } from '../../core/layout/page-header.service';
+import { ItemAgendaPosicionado, calcularLayoutAgenda } from '../../shared/agenda-layout';
 
 interface Grupo {
   chave: string;
@@ -86,6 +87,10 @@ const FILTROS_PADRAO: FiltrosTarefas = {
 
     <ng-template #acoesTpl>
       <div class="flex items-center gap-2">
+        <span
+          class="text-[10px] uppercase tracking-wider text-text-subtle font-medium sm:hidden"
+          aria-hidden="true"
+        >Modo</span>
         <div
           class="flex items-center bg-bg-elev border border-border rounded p-0.5"
           role="tablist"
@@ -490,11 +495,14 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                       [style.height.px]="alturaSlot()"
                     ></div>
                   }
-                  @for (t of tarefasComSlotPorDia(d.iso); track t.id) {
+                  @for (p of tarefasLayoutSemanaPorDia(d.iso); track p.item.id) {
+                    @let t = p.item.tarefa;
                     <button
                       type="button"
-                      class="absolute left-1 right-1 rounded px-1.5 py-1 text-[11px] text-left border border-l-[3px] text-text hover:z-10 overflow-hidden transition-colors"
-                      [style.top.px]="topoTarefa(t)"
+                      class="absolute rounded px-1.5 py-1 text-[11px] text-left border border-l-[3px] text-text hover:z-10 overflow-hidden transition-colors"
+                      [style.top.px]="p.item.top"
+                      [style.left]="estiloPosicaoTarefaSemana(p).left"
+                      [style.width]="estiloPosicaoTarefaSemana(p).width"
                       [style.minHeight.px]="alturaSlot() - 4"
                       [style.background]="corPrioridade(t.prioridade) + '22'"
                       [style.borderColor]="corPrioridade(t.prioridade) + '55'"
@@ -1024,7 +1032,8 @@ export class TarefasComponent implements OnInit, AfterViewInit, OnDestroy {
     if (status === 'atrasadas' || status === 'noprazo' || status === 'todas') {
       this.setFiltroStatus(status);
     }
-    this.carregar();
+    const detalheId = qp.get('detalhe');
+    this.carregar(detalheId ?? undefined);
     this.agoraTimer = window.setInterval(() => this.agora.set(new Date()), 60000);
   }
 
@@ -1040,13 +1049,17 @@ export class TarefasComponent implements OnInit, AfterViewInit, OnDestroy {
     this.pageHeader.limpar();
   }
 
-  carregar(): void {
+  carregar(abrirDetalheId?: string): void {
     this.carregando.set(true);
     this.erroLista.set(null);
     this.tarefasApi.listarPendentes().subscribe({
       next: (lista) => {
         this.pendentes.set(lista);
         this.carregando.set(false);
+        if (abrirDetalheId) {
+          const t = lista.find((x) => x.id === abrirDetalheId);
+          if (t) this.abrirDetalhe(t);
+        }
       },
       error: (err: HttpErrorResponse) => {
         this.carregando.set(false);
@@ -1219,6 +1232,25 @@ export class TarefasComponent implements OnInit, AfterViewInit, OnDestroy {
     return this.tarefasComSlotDaSemana()
       .filter((t) => t.dataPrazo?.substring(0, 10) === iso)
       .sort((a, b) => (a.horarioFinal ?? '').localeCompare(b.horarioFinal ?? ''));
+  }
+
+  tarefasLayoutSemanaPorDia(iso: string): ItemAgendaPosicionado<{ id: string; top: number; alturaPx: number; tarefa: Tarefa }>[] {
+    const altura = this.alturaSlot();
+    const items = this.tarefasComSlotPorDia(iso).map((t) => ({
+      id: String(t.id),
+      top: this.topoTarefa(t),
+      alturaPx: altura - 4,
+      tarefa: t,
+    }));
+    return calcularLayoutAgenda(items);
+  }
+
+  estiloPosicaoTarefaSemana(p: ItemAgendaPosicionado<{ id: string; top: number; alturaPx: number }>): { left: string; width: string } {
+    const w = 100 / p.totalCols;
+    return {
+      left: `calc(${p.col * w}% + 2px)`,
+      width: `calc(${w}% - 4px)`,
+    };
   }
 
   tarefasSemSlotPorDia(iso: string): Tarefa[] {

@@ -8,4 +8,5 @@ public sealed record AtualizarTarefaInput(
     DateTime DataPrazo,
     IReadOnlyList<Guid>? CategoriaIds = null,
     TimeSpan? HorarioFinal = null,
-    string? Observacoes = null);
+    string? Observacoes = null,
+    TipoRecorrencia Recorrencia = TipoRecorrencia.Nenhuma);

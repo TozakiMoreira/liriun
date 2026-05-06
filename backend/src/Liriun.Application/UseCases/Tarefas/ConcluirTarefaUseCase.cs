@@ -24,11 +24,18 @@ public class ConcluirTarefaUseCase
         if (tarefa is null)
             return Result<TarefaViewModel>.Failure(TarefaErrors.NaoEncontrada());
 
+        IReadOnlyList<Guid> categoriaIds = tarefa.Categorias.Select(c => c.CategoriaId).ToList();
+
+        Tarefa? proxima = tarefa.GerarProximaOcorrencia();
+
         Result concluirResult = tarefa.Concluir();
         if (concluirResult.IsFailure)
             return Result<TarefaViewModel>.Failure(concluirResult.Error!);
 
-        await _tarefas.AtualizarAsync(tarefa, tarefa.Categorias.Select(c => c.CategoriaId), ct);
+        await _tarefas.AtualizarAsync(tarefa, categoriaIds, ct);
+
+        if (proxima is not null)
+            await _tarefas.AdicionarAsync(proxima, categoriaIds, ct);
 
         return Result<TarefaViewModel>.Success(TarefaViewModel.FromEntity(tarefa, DateTime.UtcNow));
     }

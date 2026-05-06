@@ -89,6 +89,12 @@ export const routes: Routes = [
           import('./features/concluidas/concluidas.component').then((m) => m.ConcluidasComponent),
       },
       {
+        path: 'financas',
+        data: { titulo: 'Finanças' },
+        loadComponent: () =>
+          import('./features/financas/financas.component').then((m) => m.FinancasComponent),
+      },
+      {
         path: 'configuracoes',
         data: { titulo: 'Configurações' },
         loadComponent: () =>

@@ -12,6 +12,7 @@ public class TarefaModel
     public string? Observacoes { get; set; }
     public Prioridade Prioridade { get; set; }
     public StatusTarefa Status { get; set; }
+    public TipoRecorrencia Recorrencia { get; set; }
     public DateTime CriadaEm { get; set; }
     public DateTime? ConcluidaEm { get; set; }
 
