@@ -1,7 +1,8 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, effect, inject, signal } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { LocaleService } from './core/locale/locale.service';
 import { LoadingBarComponent } from './shared/loading-bar.component';
 
 @Component({
@@ -15,30 +16,40 @@ export class AppComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly titleService = inject(Title);
+  private readonly locale = inject(LocaleService);
 
   private readonly brand = 'Liriun';
+  private readonly tituloKey = signal<string | null>(null);
 
   title = 'front';
+
+  constructor() {
+    effect(() => {
+      const key = this.tituloKey();
+      const _ = this.locale.locale();
+      const titulo = key ? this.locale.t(key) : null;
+      this.titleService.setTitle(titulo ? `${this.brand} — ${titulo}` : this.brand);
+    });
+  }
 
   ngOnInit(): void {
     this.router.events
       .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
       .subscribe(() => {
-        const titulo = this.coletarTituloMaisProfundo(this.activatedRoute);
-        this.titleService.setTitle(titulo ? `${this.brand} — ${titulo}` : this.brand);
+        this.tituloKey.set(this.coletarTituloKeyMaisProfundo(this.activatedRoute));
       });
   }
 
-  private coletarTituloMaisProfundo(route: ActivatedRoute): string | null {
+  private coletarTituloKeyMaisProfundo(route: ActivatedRoute): string | null {
     let atual: ActivatedRoute | null = route;
-    let titulo: string | null = null;
+    let key: string | null = null;
     while (atual) {
-      const t = atual.snapshot.data?.['titulo'];
-      if (typeof t === 'string' && t.length > 0) {
-        titulo = t;
+      const k = atual.snapshot.data?.['tituloKey'];
+      if (typeof k === 'string' && k.length > 0) {
+        key = k;
       }
       atual = atual.firstChild;
     }
-    return titulo;
+    return key;
   }
 }

@@ -3,11 +3,12 @@ import { RouterLink } from '@angular/router';
 import { BrandComponent } from '../../shared/brand.component';
 import { SiteFooterComponent } from '../../shared/site-footer.component';
 import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
+import { UserMenuComponent } from '../../shared/user-menu.component';
 
 @Component({
   selector: 'app-politica-privacidade',
   standalone: true,
-  imports: [RouterLink, BrandComponent, SiteFooterComponent, ThemeToggleComponent],
+  imports: [RouterLink, BrandComponent, SiteFooterComponent, ThemeToggleComponent, UserMenuComponent],
   template: `
     <main class="min-h-screen bg-bg text-text" data-testid="politica-page">
       <header
@@ -26,7 +27,10 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
             <img src="/logo.png" alt="" class="w-8 h-8 object-contain" aria-hidden="true" />
             <span class="text-[15px] font-semibold tracking-tight"><app-brand /></span>
           </a>
-          <app-theme-toggle />
+          <div class="flex items-center gap-2">
+            <span class="hidden sm:inline-flex"><app-theme-toggle /></span>
+            <app-user-menu />
+          </div>
         </div>
       </header>
 

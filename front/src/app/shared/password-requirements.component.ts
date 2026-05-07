@@ -1,4 +1,5 @@
-import { Component, Input, computed, signal } from '@angular/core';
+import { Component, Input, computed, inject, signal } from '@angular/core';
+import { LocaleService } from '../core/locale/locale.service';
 
 export interface RequisitosSenha {
   tamanho: boolean;
@@ -26,7 +27,7 @@ export function senhaAtendeRequisitos(senha: string): boolean {
     <ul
       class="flex flex-col gap-1 text-[11px]"
       [attr.data-testid]="testid"
-      aria-label="Requisitos da senha"
+      [attr.aria-label]="locale.t('password_req.aria')"
     >
       <li
         class="flex items-center gap-2 transition-colors"
@@ -40,7 +41,7 @@ export function senhaAtendeRequisitos(senha: string): boolean {
         } @else {
           <i class="fa-solid fa-circle text-[5px] w-3 text-center"></i>
         }
-        Mínimo de 8 caracteres
+        {{ locale.t('password_req.length') }}
       </li>
       <li
         class="flex items-center gap-2 transition-colors"
@@ -54,7 +55,7 @@ export function senhaAtendeRequisitos(senha: string): boolean {
         } @else {
           <i class="fa-solid fa-circle text-[5px] w-3 text-center"></i>
         }
-        Pelo menos 1 letra maiúscula
+        {{ locale.t('password_req.uppercase') }}
       </li>
       <li
         class="flex items-center gap-2 transition-colors"
@@ -68,12 +69,13 @@ export function senhaAtendeRequisitos(senha: string): boolean {
         } @else {
           <i class="fa-solid fa-circle text-[5px] w-3 text-center"></i>
         }
-        Pelo menos 1 caractere especial
+        {{ locale.t('password_req.special') }}
       </li>
     </ul>
   `,
 })
 export class PasswordRequirementsComponent {
+  readonly locale = inject(LocaleService);
   private readonly senhaSignal = signal('');
 
   @Input() set senha(v: string) {

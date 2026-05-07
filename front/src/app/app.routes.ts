@@ -5,27 +5,27 @@ export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    data: { titulo: 'Início' },
+    data: { tituloKey: 'page_title.home' },
     loadComponent: () =>
       import('./features/landing/landing.component').then((m) => m.LandingComponent),
   },
   {
     path: 'login',
     canActivate: [guestGuard],
-    data: { titulo: 'Entrar' },
+    data: { tituloKey: 'page_title.signin' },
     loadComponent: () =>
       import('./features/auth/login.component').then((m) => m.LoginComponent),
   },
   {
     path: 'cadastro',
     canActivate: [guestGuard],
-    data: { titulo: 'Criar conta' },
+    data: { tituloKey: 'page_title.signup' },
     loadComponent: () =>
       import('./features/auth/cadastro.component').then((m) => m.CadastroComponent),
   },
   {
     path: 'politica-privacidade',
-    data: { titulo: 'Política de Privacidade' },
+    data: { tituloKey: 'page_title.privacy' },
     loadComponent: () =>
       import('./features/legal/politica-privacidade.component').then(
         (m) => m.PoliticaPrivacidadeComponent,
@@ -33,26 +33,26 @@ export const routes: Routes = [
   },
   {
     path: 'termos-uso',
-    data: { titulo: 'Termos de Uso' },
+    data: { tituloKey: 'page_title.terms' },
     loadComponent: () =>
       import('./features/legal/termos-uso.component').then((m) => m.TermosUsoComponent),
   },
   {
     path: 'sobre',
-    data: { titulo: 'Sobre o Liriun' },
+    data: { tituloKey: 'page_title.about' },
     loadComponent: () =>
       import('./features/sobre/sobre.component').then((m) => m.SobreComponent),
   },
   {
     path: 'empresa',
-    data: { titulo: 'A ToMore' },
+    data: { tituloKey: 'page_title.company' },
     loadComponent: () =>
       import('./features/empresa/empresa.component').then((m) => m.EmpresaComponent),
   },
   {
     path: 'onboarding',
     canActivate: [authGuard],
-    data: { titulo: 'Bem-vindo' },
+    data: { tituloKey: 'page_title.welcome' },
     loadComponent: () =>
       import('./features/onboarding/onboarding.component').then((m) => m.OnboardingComponent),
   },
@@ -64,7 +64,7 @@ export const routes: Routes = [
     children: [
       {
         path: 'visao-geral',
-        data: { titulo: 'Visão geral' },
+        data: { tituloKey: 'page_title.overview' },
         loadComponent: () =>
           import('./features/visao-geral/visao-geral.component').then(
             (m) => m.VisaoGeralComponent,
@@ -72,31 +72,31 @@ export const routes: Routes = [
       },
       {
         path: 'captura',
-        data: { titulo: 'Nova tarefa' },
+        data: { tituloKey: 'page_title.new_task' },
         loadComponent: () =>
           import('./features/captura/captura.component').then((m) => m.CapturaComponent),
       },
       {
         path: 'tarefas',
-        data: { titulo: 'Tarefas' },
+        data: { tituloKey: 'page_title.tasks' },
         loadComponent: () =>
           import('./features/tarefas/tarefas.component').then((m) => m.TarefasComponent),
       },
       {
         path: 'concluidas',
-        data: { titulo: 'Concluídas' },
+        data: { tituloKey: 'page_title.completed' },
         loadComponent: () =>
           import('./features/concluidas/concluidas.component').then((m) => m.ConcluidasComponent),
       },
       {
         path: 'financas',
-        data: { titulo: 'Finanças' },
+        data: { tituloKey: 'page_title.finances' },
         loadComponent: () =>
           import('./features/financas/financas.component').then((m) => m.FinancasComponent),
       },
       {
         path: 'configuracoes',
-        data: { titulo: 'Configurações' },
+        data: { tituloKey: 'page_title.settings' },
         loadComponent: () =>
           import('./features/configuracoes/configuracoes.component').then(
             (m) => m.ConfiguracoesComponent,
@@ -104,7 +104,7 @@ export const routes: Routes = [
       },
       {
         path: 'configuracoes/alterar-senha',
-        data: { titulo: 'Alterar senha' },
+        data: { tituloKey: 'page_title.change_password' },
         loadComponent: () =>
           import('./features/configuracoes/alterar-senha.component').then(
             (m) => m.AlterarSenhaComponent,

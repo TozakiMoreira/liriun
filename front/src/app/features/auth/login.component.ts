@@ -3,16 +3,18 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { LocaleService } from '../../core/locale/locale.service';
 import { BrandComponent } from '../../shared/brand.component';
 import { BrandLogoComponent } from '../../shared/brand-logo.component';
 import { PasswordInputComponent } from '../../shared/password-input.component';
 import { extrairProblemDetails } from '../../shared/problem-details';
 import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
+import { LocaleSwitcherComponent } from '../../shared/locale-switcher.component';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule, RouterLink, BrandComponent, BrandLogoComponent, PasswordInputComponent, ThemeToggleComponent],
+  imports: [FormsModule, RouterLink, BrandComponent, BrandLogoComponent, PasswordInputComponent, ThemeToggleComponent, LocaleSwitcherComponent],
   template: `
     <main
       class="min-h-screen flex flex-col bg-bg bg-accent-glow"
@@ -29,13 +31,16 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
             aria-label="Voltar pra página inicial"
           >
             <i class="fa-solid fa-arrow-left text-xs"></i>
-            Início
+            @if (locale.locale() === 'pt') { Início } @else { Home }
           </a>
-          <a routerLink="/" class="flex items-center gap-2.5" aria-label="Liriun — início">
+          <a routerLink="/" class="flex items-center gap-2.5" aria-label="Liriun — home">
             <img src="/logo.png" alt="" class="w-8 h-8 object-contain" aria-hidden="true" />
             <span class="text-[15px] font-semibold tracking-tight"><app-brand /></span>
           </a>
-          <app-theme-toggle />
+          <div class="flex items-center gap-2">
+            <app-locale-switcher />
+            <span class="hidden sm:inline-flex"><app-theme-toggle /></span>
+          </div>
         </div>
       </header>
 
@@ -44,12 +49,12 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
         <app-brand-logo />
 
         <p class="text-center text-text-dim leading-relaxed -mt-3" data-testid="liriun-greeting">
-          Bem-vindo de volta. Entra com suas credenciais que eu cuido do resto.
+          {{ locale.t('auth.login.greeting') }}
         </p>
 
         <form class="flex flex-col gap-3.5" data-testid="login-form" (ngSubmit)="enviar()" novalidate>
           <div class="flex flex-col gap-1.5">
-            <label class="field-label" for="email">Email</label>
+            <label class="field-label" for="email">{{ locale.t('auth.login.email') }}</label>
             <input
               id="email"
               name="email"
@@ -66,7 +71,7 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
           </div>
 
           <div class="flex flex-col gap-1.5">
-            <label class="field-label" for="senha">Senha</label>
+            <label class="field-label" for="senha">{{ locale.t('auth.login.password') }}</label>
             <app-password-input
               inputId="senha"
               placeholder="••••••••"
@@ -90,23 +95,23 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
             data-testid="login-submit-btn"
             [disabled]="carregando()"
           >
-            {{ carregando() ? 'Entrando...' : 'Entrar' }}
+            {{ carregando() ? locale.t('auth.login.submitting') : locale.t('auth.login.submit') }}
           </button>
         </form>
 
         <div class="flex items-center gap-3 text-text-subtle text-xs">
           <span class="flex-1 h-px bg-border"></span>
-          ou
+          {{ locale.t('auth.login.divider') }}
           <span class="flex-1 h-px bg-border"></span>
         </div>
 
         <p class="text-center text-[13px] text-text-dim">
-          Primeira vez por aqui?
+          {{ locale.t('auth.login.signup_q') }}
           <a
             routerLink="/cadastro"
             class="text-text font-medium border-b border-border-strong hover:border-accent pb-px"
             data-testid="login-signup-link"
-            >Criar conta</a
+            >{{ locale.t('auth.login.signup_link') }}</a
           >
         </p>
       </div>
@@ -123,6 +128,7 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
 export class LoginComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  readonly locale = inject(LocaleService);
 
   email = '';
   senha = '';

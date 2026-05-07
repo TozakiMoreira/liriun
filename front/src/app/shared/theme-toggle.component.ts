@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, Input, inject } from '@angular/core';
+import { LocaleService } from '../core/locale/locale.service';
 import { ThemeService } from '../core/theme/theme.service';
 
 /**
@@ -13,7 +14,7 @@ import { ThemeService } from '../core/theme/theme.service';
   template: `
     <div class="flex items-center gap-2">
       @if (mostrarLabel) {
-        <span class="text-[12px] font-medium text-text-dim hidden sm:inline">Tema</span>
+        <span class="text-[12px] font-medium text-text-dim hidden sm:inline">{{ locale.t('theme.label') }}</span>
       }
       <button
         type="button"
@@ -21,9 +22,9 @@ import { ThemeService } from '../core/theme/theme.service';
         role="switch"
         [attr.aria-checked]="tema() === 'light'"
         [attr.aria-label]="
-          tema() === 'dark' ? 'Mudar pra tema claro' : 'Mudar pra tema escuro'
+          tema() === 'dark' ? locale.t('theme.aria_to_light') : locale.t('theme.aria_to_dark')
         "
-        [title]="tema() === 'dark' ? 'Mudar pra claro' : 'Mudar pra escuro'"
+        [title]="tema() === 'dark' ? locale.t('theme.title_to_light') : locale.t('theme.title_to_dark')"
         [class.is-light]="tema() === 'light'"
         data-testid="theme-toggle"
         (click)="alternar()"
@@ -110,6 +111,7 @@ import { ThemeService } from '../core/theme/theme.service';
 })
 export class ThemeToggleComponent {
   private readonly themeService = inject(ThemeService);
+  readonly locale = inject(LocaleService);
   readonly tema = this.themeService.theme;
 
   @Input() mostrarLabel = true;

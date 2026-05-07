@@ -412,6 +412,111 @@
 
 ---
 
+### 20. Sidebar desktop sticky
+
+**Problema:** sidebar acompanhava scroll do main content, indo pra baixo.
+
+**Solução:** `md:sticky md:top-0 md:h-screen md:overflow-y-auto` no `<aside>`. Fica fixa no viewport durante scroll do conteúdo. Scroll interno próprio se itens passarem da altura.
+
+**Arquivo:** `front/src/app/layout/shell.component.ts`
+
+---
+
+### 21. UserMenu nas páginas públicas (logado vs deslogado)
+
+**Pedido:** páginas públicas (sobre, empresa, termos, política) sem mostrar avatar/dropdown ou CTAs cadastro/login.
+
+**Solução:** componente `<app-user-menu>` reutilizável:
+- **Logado**: avatar 26px + nome + dropdown (Voltar pro app / Configurações / Sair)
+- **Deslogado**: 2 botões pill — `Entrar` (border) + `Cadastrar` (accent)
+- Click fora fecha (HostListener document:click)
+
+Aplicado em landing, sobre, empresa, termos, política.
+
+**Arquivos novos:**
+- `front/src/app/shared/user-menu.component.ts`
+
+**Arquivos editados:**
+- `front/src/app/features/empresa/empresa.component.ts`
+- `front/src/app/features/sobre/sobre.component.ts`
+- `front/src/app/features/legal/politica-privacidade.component.ts`
+- `front/src/app/features/legal/termos-uso.component.ts`
+
+---
+
+### 22. Revisão completa de copy — landing, sobre, empresa
+
+**Pedido:** tom maduro, alinhado com missão saúde mental + tecnologia. Sem coloquial ("a gente", "tá rolando", "puxa orelha", "carregar tudo na cabeça"), sem termos técnicos ("Kanban", "Modo Liriun (texto)", "Ctrl+Espaço") em copy de marketing.
+
+**Decisões de tom global:**
+- Maduro, institucional mas não frio
+- Foco saúde mental + bem-estar (alinhado missão ToMore)
+- Outcome > feature
+- Português brasileiro neutro, sem regionalismo
+- Tom mantido em copy de venda; admin/feedback do app pode ser mais direto
+
+**Landing (`/`):**
+- Hero subtítulo: "A vida cabe na sua cabeça, mas não precisa morar lá."
+- "Sobre o Liriun" parágrafo refatorado (sem "ele conversa com você" repetitivo)
+- 6 cards de features + 1 Plus em grid simétrico 3+3+full-row:
+  - 💬 Converse via chat (roxo)
+  - 🎤 Envie mensagens de voz (rosa)
+  - 🏷 Categorias feitas por você (amarelo)
+  - 🎯 Atinja seus objetivos (verde)
+  - 📅 Organize seu dia (ciano)
+  - ✓ Concluídas (laranja)
+  - 🪷 PLUS Tenha mais tempo pra você (gradient violeta + descrição "Menos peso na cabeça, mais leveza no dia. Recursos exclusivos pra cuidar de você.")
+- Cards: ícone bg colorido por feature, hover juicy (lift 5px + border colorida + shadow accent + ícone scale 1.1 rotate -4°), stagger entrada (delay 0/80/160/240/320/400/500ms), background glow radial blur 40px atrás
+- Mini-tagline 1 linha por card (ex: "fala como pensa")
+- Plus mobile span-2 (full row), desktop span-6 com layout horizontal (ícone gigante 64px)
+- "Como funciona" → eyebrow "CONVERSE COM O LIRIUN", H2 "Você fala, ele organiza.", parágrafo institucional
+- Mockup do chat reformulado: card centralizado max-w 600px desktop, sem shell/sidebar/topbar, conteúdo do chat ocupa o frame inteiro
+- Mockup tem 4 mensagens (saudação Liriun + user + resposta Liriun + tarefa pronta) — chat alto e cheio
+- Card "Tarefa pronta" mostra "Online via Teams\nCom: Lucas" como observações
+- Quote abaixo do preview: "Conversa real com o Liriun. Você fala como falaria com um amigo."
+- CTA final mantido: "Pronto pra organizar suas ideias?"
+
+**Sobre (`/sobre`):**
+- H1: "A vida cabe na sua cabeça, mas não precisa morar lá." (alinhado com landing)
+- Parágrafo 1 institucional sobre IA conversacional
+- Parágrafo 2 sobre "espaço pra mente respirar"
+- Removido tom jovial: "puxa orelha", "planilha boba", "você dorme"
+- 4 cards de público (era 3, simetria 2x2): Profissional / Estudante / Casa e família / Criativo — eyebrow "FEITO PRA VOCÊ" + H3 "Quem usa o Liriun no dia a dia"
+- "Como funciona" — H2 "Sua agenda, do jeito que você prefere." + 3 cards (Por escrito / Por voz / Manual) sem termos internos do produto
+- Quote final: "Não importa como você prefere se comunicar. Liriun entrega tudo no mesmo lugar, organizado e fácil de encontrar."
+- "Fala com a gente" → H2 "Estamos aqui pra te ouvir." + parágrafo institucional + 3 cards email com `target="_blank"` (não redireciona página)
+- Removido aviso "E-mails são fictícios na V1 beta..."
+- CTA final: "Recupere seu tempo. Recupere sua mente." (deslogado) / "Onde paramos? Sua agenda está pronta." (logado)
+
+**Empresa (`/empresa`):**
+- Hero: "A ToMore nasceu em 2026 com uma missão: provar que tecnologia bem desenhada pode cuidar da mente das pessoas — e não o contrário." (foco empresa, não produto)
+- Fundadores: H2 "A história começa com dois nomes." + Co-founder em inglês
+- **Animação ToMore criativa**: cards com **To**zaki + **More**ira destacados (accent + bold + underline gradient no hover) + bloco abaixo `[To]zaki + [More]ira = ToMore` com pulse loop 4s + glow violeta no nome final + tagline "Dois nomes. Uma marca."
+- "Por que existimos" — história pessoal: "Criamos a ToMore porque já fomos os jovens trabalhando e indo pra faculdade sem tempo pra ler um livro... esquecíamos datas importantes em meio a uma rotina cheia de compromissos. E não queremos que isso continue."
+- + Promessa: "esperamos que alguma criação nossa faça você ter ganhado pelo menos 20% de tempo a mais com quem você ama."
+- "Hoje: o Liriun" parágrafo institucional
+- "No que acreditamos" — 4 cards: Software leve, vida leve / Conversa antes de comando / Privacidade é direito / Pessoa antes do produto
+- "Contato" — H2 "Quer conversar com a gente?" + botão grande Enviar e-mail destacado + footer pequeno "ToMore. Fundada em 2026 por Lucas Moreira e Pedro Tozaki."
+
+**Outros copy:**
+- `/login` greeting: "Bem-vindo de volta. Sua rotina está te esperando."
+- `/cadastro` greeting: "Crie sua conta e comece a viver com a mente mais leve."
+- Onboarding: "Vamos personalizar sua experiência" + texto institucional sobre categorias
+- Footer site: "Tecnologia que cuida da sua mente. Para uma rotina mais leve."
+- SEO meta tags atualizadas com nova mensagem hero
+
+**Arquivos editados:**
+- `front/src/app/features/landing/landing.component.ts`
+- `front/src/app/features/sobre/sobre.component.ts`
+- `front/src/app/features/empresa/empresa.component.ts`
+- `front/src/app/features/auth/login.component.ts`
+- `front/src/app/features/auth/cadastro.component.ts`
+- `front/src/app/features/onboarding/onboarding.component.ts`
+- `front/src/app/shared/site-footer.component.ts`
+- `front/src/index.html`
+
+---
+
 ### 19. FAB mobile com pop-in + collapse suave
 
 **Pedido:** efeito de POP no botão ao entrar, depois recolher virando bolinha.
@@ -439,5 +544,62 @@ Solução:
 
 **Arquivos editados:**
 - `backend/src/Liriun.Infrastructure/Ia/GeminiService.cs`
+
+---
+
+## 2026-05-07
+
+### 20. i18n PT-BR + EN nas páginas públicas
+
+**Pedido:** "podemos criar uma seleção pra deixar o site em ingles?" → seletor visual primeiro, depois tradução completa das páginas públicas.
+
+**Arquitetura:**
+- `LocaleService` (signal-based, `core/locale/locale.service.ts`) — `locale()` reactive signal, `setLocale(code)`, `t(key, vars?)` com interpolação `{{var}}`
+- Persistência: `localStorage` chave `liriun.locale`, default `pt`
+- Atualiza `document.documentElement.lang` ao trocar
+- Dicionários PT + EN em `core/locale/translations.ts` (~150+ chaves)
+
+**LocaleSwitcherComponent** (`shared/locale-switcher.component.ts`):
+- Estilo Stripe: ícone globo + badge "PT-BR"/"US" + chevron → dropdown com bandeiras textuais
+- Mobile-friendly: `left-0 sm:left-auto sm:right-0` evita clip de borda
+- Click-outside fecha via `@HostListener('document:click')`
+
+**Páginas públicas traduzidas (PT + EN):**
+- Landing (hero, sobre, 6 cards features, Plus card, como funciona, mockup chat, hotkeys, CTA final)
+- Sobre (4 audience cards, 3 steps how-it-works, 3 contact cards, CTA final)
+- Empresa (todas seções, animação Founders To+More=ToMore preservada)
+- Login (header, greeting, labels, botões, divider, signup link)
+- Cadastro (todos labels do form, hints, termos prefix/and/links, submit)
+- Onboarding (step badge, título com `{{name}}`, body, your_categories, hint, placeholder, add btn, reset, finish, footer note, error fallback)
+- Footer (todas seções, conditional logged-in shortcuts)
+- User menu (dropdown completo: home, sobre, configs, sair)
+
+**App interno autenticado:** mantido em PT-only por decisão. Quando usuário tem `locale=en`, banner discreto no topo do shell informa: "The app interface is currently in Portuguese only. Public pages and onboarding are translated." — dispensável via `sessionStorage` (`liriun-aviso-en-dispensado`).
+
+**Mobile UX:**
+- Theme toggle escondido no auth/landing mobile (`hidden sm:inline-flex`)
+- Botão "Criar conta" virou ícone-only circular `+` no mobile pra evitar quebra de linha
+- Locale switcher dropdown alinha à esquerda no mobile
+
+**Não escopo (próxima sessão):**
+- Mensagens de erro/validação dos forms
+- Termos de Uso / Política de Privacidade (conteúdo legal)
+- Strings dentro do app interno autenticado
+
+**Arquivos novos:**
+- `front/src/app/core/locale/locale.service.ts`
+- `front/src/app/core/locale/translations.ts`
+- `front/src/app/shared/locale-switcher.component.ts`
+
+**Arquivos editados:**
+- `front/src/app/features/landing/landing.component.ts`
+- `front/src/app/features/sobre/sobre.component.ts`
+- `front/src/app/features/empresa/empresa.component.ts`
+- `front/src/app/features/auth/login.component.ts`
+- `front/src/app/features/auth/cadastro.component.ts`
+- `front/src/app/features/onboarding/onboarding.component.ts`
+- `front/src/app/shared/site-footer.component.ts`
+- `front/src/app/shared/user-menu.component.ts`
+- `front/src/app/layout/shell.component.ts` (banner EN)
 
 ---

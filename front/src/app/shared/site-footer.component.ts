@@ -2,6 +2,7 @@ import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../core/auth/auth.service';
 import { TokenStorage } from '../core/auth/token.storage';
+import { LocaleService } from '../core/locale/locale.service';
 import { BrandComponent } from './brand.component';
 
 @Component({
@@ -27,7 +28,7 @@ import { BrandComponent } from './brand.component';
               <span class="text-[16px] font-semibold tracking-tight"><app-brand /></span>
             </a>
             <p class="text-text-dim text-[13px] leading-relaxed max-w-sm">
-              Feito pra você, que não tem 25h por dia.
+              {{ locale.t('footer.tagline') }}
             </p>
             <div class="text-[11px] text-text-subtle tracking-wider mt-1">
               LIRIUN • V1
@@ -35,86 +36,86 @@ import { BrandComponent } from './brand.component';
           </div>
 
           <nav class="flex flex-col gap-2.5" data-testid="footer-nav-empresa">
-            <h3 class="text-[13px] font-semibold text-text">Empresa</h3>
+            <h3 class="text-[13px] font-semibold text-text">{{ locale.t('footer.company') }}</h3>
             <a
               routerLink="/empresa"
               class="text-[13px] text-text-dim hover:text-accent transition-colors"
               data-testid="footer-link-empresa"
-              >Sobre a ToMore</a
+              >{{ locale.t('footer.about_tomore') }}</a
             >
             <a
               routerLink="/termos-uso"
               class="text-[13px] text-text-dim hover:text-accent transition-colors"
               data-testid="footer-link-termos"
-              >Termos de Uso</a
+              >{{ locale.t('footer.terms') }}</a
             >
             <a
               routerLink="/politica-privacidade"
               class="text-[13px] text-text-dim hover:text-accent transition-colors"
               data-testid="footer-link-privacidade"
-              >Política de Privacidade</a
+              >{{ locale.t('footer.privacy') }}</a
             >
           </nav>
 
           <nav class="flex flex-col gap-2.5" data-testid="footer-nav-recursos">
             @if (autenticado()) {
-              <h3 class="text-[13px] font-semibold text-text">Atalhos</h3>
+              <h3 class="text-[13px] font-semibold text-text">{{ locale.t('footer.shortcuts') }}</h3>
               <a
                 routerLink="/app/visao-geral"
                 class="text-[13px] text-text-dim hover:text-accent transition-colors"
                 data-testid="footer-link-visao-geral"
-                >Visão geral</a
+                >@if (locale.locale() === 'pt') { Visão geral } @else { Overview }</a
               >
               <a
                 routerLink="/app/captura"
                 class="text-[13px] text-text-dim hover:text-accent transition-colors"
                 data-testid="footer-link-nova"
-                >Nova tarefa</a
+                >@if (locale.locale() === 'pt') { Nova tarefa } @else { New task }</a
               >
               <a
                 routerLink="/app/tarefas"
                 class="text-[13px] text-text-dim hover:text-accent transition-colors"
                 data-testid="footer-link-tarefas"
-                >Tarefas</a
+                >@if (locale.locale() === 'pt') { Tarefas } @else { Tasks }</a
               >
               <a
                 routerLink="/app/concluidas"
                 class="text-[13px] text-text-dim hover:text-accent transition-colors"
                 data-testid="footer-link-concluidas"
-                >Concluídas</a
+                >@if (locale.locale() === 'pt') { Concluídas } @else { Completed }</a
               >
             } @else {
-              <h3 class="text-[13px] font-semibold text-text">Produto</h3>
+              <h3 class="text-[13px] font-semibold text-text">{{ locale.t('footer.product') }}</h3>
               <a
                 routerLink="/sobre"
                 class="text-[13px] text-text-dim hover:text-accent transition-colors"
                 data-testid="footer-link-sobre-liriun"
-                >Sobre o Liriun</a
+                >@if (locale.locale() === 'pt') { Sobre o <app-brand /> } @else { About <app-brand /> }</a
               >
               <a
                 routerLink="/sobre"
                 fragment="contato"
                 class="text-[13px] text-text-dim hover:text-accent transition-colors"
                 data-testid="footer-link-contato"
-                >Contato</a
+                >{{ locale.t('footer.contact') }}</a
               >
             }
           </nav>
 
           <nav class="flex flex-col gap-2.5" data-testid="footer-nav-acessar">
             @if (autenticado()) {
-              <h3 class="text-[13px] font-semibold text-text">Conta</h3>
+              <h3 class="text-[13px] font-semibold text-text">{{ locale.t('footer.account') }}</h3>
               <a
                 routerLink="/app/configuracoes"
                 class="text-[13px] text-text-dim hover:text-accent transition-colors"
                 data-testid="footer-link-conta-config"
-                >Perfil</a
+                >{{ locale.t('footer.profile') }}</a
               >
               <a
                 routerLink="/app/configuracoes/alterar-senha"
                 class="text-[13px] text-text-dim hover:text-accent transition-colors"
                 data-testid="footer-link-conta-senha"
-                >Alterar senha</a
+                >{{ locale.t('footer.change_password') }}</a
               >
               <button
                 type="button"
@@ -122,21 +123,23 @@ import { BrandComponent } from './brand.component';
                 data-testid="footer-link-sair"
                 (click)="sair()"
               >
-                Sair
+                {{ locale.t('footer.signout') }}
               </button>
             } @else {
-              <h3 class="text-[13px] font-semibold text-text">Liriun pra você</h3>
+              <h3 class="text-[13px] font-semibold text-text">
+                @if (locale.locale() === 'pt') { <app-brand /> pra você } @else { <app-brand /> for you }
+              </h3>
               <a
                 routerLink="/cadastro"
                 class="text-[13px] text-text-dim hover:text-accent transition-colors"
                 data-testid="footer-link-cadastro"
-                >Criar conta</a
+                >{{ locale.t('footer.create_account') }}</a
               >
               <a
                 routerLink="/login"
                 class="text-[13px] text-text-dim hover:text-accent transition-colors"
                 data-testid="footer-link-login"
-                >Entrar</a
+                >{{ locale.t('footer.signin') }}</a
               >
             }
           </nav>
@@ -146,16 +149,15 @@ import { BrandComponent } from './brand.component';
           class="mt-10 pt-6 border-t border-border/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 text-text-subtle text-[12px]"
         >
           <div class="flex flex-col gap-0.5">
-            <span data-testid="footer-copyright">© 2026 ToMore. Todos os direitos reservados.</span>
+            <span data-testid="footer-copyright">{{ locale.t('footer.copyright') }}</span>
             <span class="text-[11px]">
-              Criado por Lucas Moreira e Pedro Tozaki em 2026 — pra simplificar o dia a dia de quem
-              tem mil coisas pra lembrar.
+              {{ locale.t('footer.credits') }}
             </span>
           </div>
           <div class="flex items-center gap-4 text-[11px]">
             <span class="inline-flex items-center gap-1.5">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              Português (Brasil)
+              {{ locale.t('footer.locale_label') }}
             </span>
           </div>
         </div>
@@ -166,6 +168,7 @@ import { BrandComponent } from './brand.component';
 export class SiteFooterComponent {
   private readonly storage = inject(TokenStorage);
   private readonly auth = inject(AuthService);
+  readonly locale = inject(LocaleService);
 
   autenticado = computed(() => this.storage.estaAutenticado());
 

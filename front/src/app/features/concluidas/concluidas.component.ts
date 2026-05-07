@@ -6,6 +6,7 @@ import { ConfirmModalComponent } from '../../shared/confirm-modal.component';
 import { extrairProblemDetails } from '../../shared/problem-details';
 import { TarefaDetalheModalComponent } from '../tarefas/tarefa-detalhe-modal.component';
 import { PageHeaderService } from '../../core/layout/page-header.service';
+import { GamificacaoPainelComponent } from './gamificacao-painel.component';
 
 interface Confirmacao {
   titulo: string;
@@ -25,7 +26,7 @@ interface GrupoData {
 @Component({
   selector: 'app-concluidas',
   standalone: true,
-  imports: [CommonModule, TarefaDetalheModalComponent, ConfirmModalComponent],
+  imports: [CommonModule, TarefaDetalheModalComponent, ConfirmModalComponent, GamificacaoPainelComponent],
   template: `
     <header class="md:hidden flex flex-col sm:flex-row sm:items-center px-4 py-3.5 border-b border-border gap-3 sm:gap-4">
       <div class="flex items-center gap-2 text-[15px] text-text-dim">
@@ -45,38 +46,68 @@ interface GrupoData {
     </header>
 
     <ng-template #acoesTpl>
-      <div class="flex items-center gap-1 bg-bg-elev border border-border rounded p-0.5" data-testid="period-switcher">
-        <button
-          type="button"
-          class="px-3 py-1 text-xs rounded transition-colors"
-          [class]="periodo() === 'hoje' ? 'bg-bg text-text' : 'text-text-dim hover:text-text'"
-          data-testid="period-hoje"
-          (click)="setPeriodo('hoje')"
-        >
-          Hoje
-        </button>
-        <button
-          type="button"
-          class="px-3 py-1 text-xs rounded transition-colors"
-          [class]="periodo() === 'semana' ? 'bg-bg text-text' : 'text-text-dim hover:text-text'"
-          data-testid="period-semana"
-          (click)="setPeriodo('semana')"
-        >
-          Semana
-        </button>
-        <button
-          type="button"
-          class="px-3 py-1 text-xs rounded transition-colors"
-          [class]="periodo() === 'mes' ? 'bg-bg text-text' : 'text-text-dim hover:text-text'"
-          data-testid="period-mes"
-          (click)="setPeriodo('mes')"
-        >
-          Mês
-        </button>
+      <div class="flex items-center gap-2 flex-wrap">
+        <div class="flex items-center gap-1 bg-bg-elev border border-border rounded p-0.5" data-testid="aba-switcher">
+          <button
+            type="button"
+            class="px-3 py-1 text-xs rounded transition-colors flex items-center gap-1.5"
+            [class]="aba() === 'resumo' ? 'bg-bg text-text' : 'text-text-dim hover:text-text'"
+            data-testid="aba-resumo"
+            (click)="aba.set('resumo')"
+          >
+            <i class="fa-solid fa-trophy text-[10px]"></i>
+            Resumo
+          </button>
+          <button
+            type="button"
+            class="px-3 py-1 text-xs rounded transition-colors flex items-center gap-1.5"
+            [class]="aba() === 'historico' ? 'bg-bg text-text' : 'text-text-dim hover:text-text'"
+            data-testid="aba-historico"
+            (click)="aba.set('historico')"
+          >
+            <i class="fa-solid fa-list text-[10px]"></i>
+            Histórico
+          </button>
+        </div>
+
+        @if (aba() === 'historico') {
+          <div class="flex items-center gap-1 bg-bg-elev border border-border rounded p-0.5" data-testid="period-switcher">
+            <button
+              type="button"
+              class="px-3 py-1 text-xs rounded transition-colors"
+              [class]="periodo() === 'hoje' ? 'bg-bg text-text' : 'text-text-dim hover:text-text'"
+              data-testid="period-hoje"
+              (click)="setPeriodo('hoje')"
+            >
+              Hoje
+            </button>
+            <button
+              type="button"
+              class="px-3 py-1 text-xs rounded transition-colors"
+              [class]="periodo() === 'semana' ? 'bg-bg text-text' : 'text-text-dim hover:text-text'"
+              data-testid="period-semana"
+              (click)="setPeriodo('semana')"
+            >
+              Semana
+            </button>
+            <button
+              type="button"
+              class="px-3 py-1 text-xs rounded transition-colors"
+              [class]="periodo() === 'mes' ? 'bg-bg text-text' : 'text-text-dim hover:text-text'"
+              data-testid="period-mes"
+              (click)="setPeriodo('mes')"
+            >
+              Mês
+            </button>
+          </div>
+        }
       </div>
     </ng-template>
 
     <div class="flex-1 px-4 md:px-8 py-6 overflow-auto" data-testid="concluidas-page">
+      @if (aba() === 'resumo') {
+        <app-gamificacao-painel />
+      } @else {
       @if (erroReabrir()) {
         <div
           class="mb-4 px-3 py-2.5 rounded border border-danger/30 bg-danger/10 text-danger text-xs"
@@ -166,6 +197,7 @@ interface GrupoData {
           </section>
         }
       }
+      }
     </div>
 
     @if (tarefaDetalhe(); as t) {
@@ -214,6 +246,7 @@ export class ConcluidasComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private readonly tarefasApi = inject(TarefasService);
 
+  readonly aba = signal<'resumo' | 'historico'>('resumo');
   readonly periodo = signal<Periodo>('semana');
   readonly concluidas = signal<Tarefa[]>([]);
   readonly carregando = signal(true);

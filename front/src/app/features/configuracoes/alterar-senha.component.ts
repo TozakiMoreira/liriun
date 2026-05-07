@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { TokenStorage } from '../../core/auth/token.storage';
+import { LocaleService } from '../../core/locale/locale.service';
 import { PasswordInputComponent } from '../../shared/password-input.component';
 import {
   PasswordRequirementsComponent,
@@ -26,7 +27,7 @@ import { PageHeaderService } from '../../core/layout/page-header.service';
   template: `
     <ng-template #subtituloTpl>
       <i class="fa-solid fa-chevron-right text-[9px] text-accent"></i>
-      <span class="text-text font-medium text-[13px]">Trocar senha</span>
+      <span class="text-text font-medium text-[13px]">{{ locale.t('change_pw.crumb_current') }}</span>
     </ng-template>
 
     <header
@@ -37,25 +38,25 @@ import { PageHeaderService } from '../../core/layout/page-header.service';
         routerLink="/app/configuracoes"
         class="group inline-flex items-center justify-center w-8 h-8 rounded-md text-text-dim bg-bg-elev border border-border hover:text-text hover:border-border-strong active:scale-95 transition-all"
         data-testid="alterar-senha-voltar"
-        aria-label="Voltar para Configurações"
-        title="Voltar para Configurações"
+        [attr.aria-label]="locale.t('change_pw.back_aria')"
+        [attr.title]="locale.t('change_pw.back_aria')"
       >
         <i class="fa-solid fa-arrow-left text-[13px] transition-transform group-hover:-translate-x-0.5"></i>
       </a>
       <nav
         class="flex items-center gap-1.5 text-[13px] text-text-dim"
-        aria-label="Trilha"
+        aria-label="Breadcrumb"
       >
         <a
           routerLink="/app/configuracoes"
           class="hover:text-text transition-colors"
         >
-          Configurações
+          {{ locale.t('change_pw.crumb_settings') }}
         </a>
         <i class="fa-solid fa-chevron-right text-[9px] text-accent"></i>
         <span class="text-text font-medium flex items-center gap-1.5">
           <i class="fa-solid fa-key text-accent text-[11px]"></i>
-          Trocar senha
+          {{ locale.t('change_pw.crumb_current') }}
         </span>
       </nav>
     </header>
@@ -73,9 +74,9 @@ import { PageHeaderService } from '../../core/layout/page-header.service';
             <i class="fa-solid fa-key text-[20px]"></i>
           </div>
           <div class="flex flex-col gap-1">
-            <h1 class="text-2xl font-semibold tracking-tight">Trocar senha</h1>
+            <h1 class="text-2xl font-semibold tracking-tight">{{ locale.t('change_pw.title') }}</h1>
             <p class="text-text-dim text-[13px] leading-relaxed max-w-[340px]">
-              Confirma a senha de hoje pra eu garantir que é você. Depois escolhe a nova.
+              {{ locale.t('change_pw.subtitle') }}
             </p>
           </div>
         </div>
@@ -84,10 +85,10 @@ import { PageHeaderService } from '../../core/layout/page-header.service';
 
           <form class="flex flex-col gap-4" (ngSubmit)="trocar()" novalidate>
             <div class="flex flex-col gap-1.5">
-              <label class="field-label" for="senha-atual">Senha atual</label>
+              <label class="field-label" for="senha-atual">{{ locale.t('change_pw.current_label') }}</label>
               <app-password-input
                 inputId="senha-atual"
-                placeholder="Sua senha de hoje"
+                [placeholder]="locale.t('change_pw.current_placeholder')"
                 autocomplete="current-password"
                 testid="senha-atual-input"
                 [value]="senhaAtual()"
@@ -101,10 +102,10 @@ import { PageHeaderService } from '../../core/layout/page-header.service';
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <label class="field-label" for="nova-senha">Nova senha</label>
+              <label class="field-label" for="nova-senha">{{ locale.t('change_pw.new_label') }}</label>
               <app-password-input
                 inputId="nova-senha"
-                placeholder="A nova"
+                [placeholder]="locale.t('change_pw.new_placeholder')"
                 autocomplete="new-password"
                 testid="nova-senha-input"
                 [value]="novaSenha()"
@@ -123,10 +124,10 @@ import { PageHeaderService } from '../../core/layout/page-header.service';
             </div>
 
             <div class="flex flex-col gap-1.5">
-              <label class="field-label" for="confirmar-senha">Confirmar nova senha</label>
+              <label class="field-label" for="confirmar-senha">{{ locale.t('change_pw.confirm_label') }}</label>
               <app-password-input
                 inputId="confirmar-senha"
-                placeholder="Repete a nova"
+                [placeholder]="locale.t('change_pw.confirm_placeholder')"
                 autocomplete="new-password"
                 testid="confirmar-senha-input"
                 [value]="confirmarSenha()"
@@ -141,10 +142,10 @@ import { PageHeaderService } from '../../core/layout/page-header.service';
                 >
                   @if (senhasBatem()) {
                     <i class="fa-solid fa-check w-3 text-center"></i>
-                    As senhas batem
+                    {{ locale.t('change_pw.match_ok') }}
                   } @else {
                     <i class="fa-solid fa-xmark w-3 text-center"></i>
-                    As senhas não batem
+                    {{ locale.t('change_pw.match_fail') }}
                   }
                 </p>
               }
@@ -163,7 +164,7 @@ import { PageHeaderService } from '../../core/layout/page-header.service';
                 class="btn-secondary text-[13px] px-4 py-2"
                 data-testid="alterar-senha-cancelar"
               >
-                Cancelar
+                {{ locale.t('change_pw.cancel') }}
               </a>
               <button
                 type="submit"
@@ -171,7 +172,7 @@ import { PageHeaderService } from '../../core/layout/page-header.service';
                 data-testid="trocar-senha-btn"
                 [disabled]="trocando() || !podeTrocar()"
               >
-                {{ trocando() ? 'Trocando...' : 'Trocar senha' }}
+                {{ trocando() ? locale.t('change_pw.submitting') : locale.t('change_pw.submit') }}
               </button>
             </div>
           </form>
@@ -185,14 +186,15 @@ export class AlterarSenhaComponent implements AfterViewInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly storage = inject(TokenStorage);
   private readonly pageHeader = inject(PageHeaderService);
+  readonly locale = inject(LocaleService);
   private readonly subtituloTplRef = viewChild<TemplateRef<unknown>>('subtituloTpl');
 
   constructor() {
     this.pageHeader.set({
-      titulo: 'Configurações',
+      titulo: this.locale.t('change_pw.crumb_settings'),
       voltar: {
         acao: () => this.router.navigateByUrl('/app/configuracoes'),
-        aria: 'Voltar para Configurações',
+        aria: this.locale.t('change_pw.back_aria'),
         testid: 'alterar-senha-voltar-topbar',
       },
     });
@@ -200,11 +202,11 @@ export class AlterarSenhaComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.pageHeader.set({
-      titulo: 'Configurações',
+      titulo: this.locale.t('change_pw.crumb_settings'),
       subtituloTpl: this.subtituloTplRef() ?? null,
       voltar: {
         acao: () => this.router.navigateByUrl('/app/configuracoes'),
-        aria: 'Voltar para Configurações',
+        aria: this.locale.t('change_pw.back_aria'),
         testid: 'alterar-senha-voltar-topbar',
       },
     });
@@ -245,17 +247,17 @@ export class AlterarSenhaComponent implements AfterViewInit, OnDestroy {
 
     const erros: Record<string, string> = {};
     if (!this.senhaAtual()) {
-      erros['senhaatual'] = 'Informa sua senha atual.';
+      erros['senhaatual'] = this.locale.t('change_pw.err_current_required');
     }
     if (!this.novaSenha()) {
-      erros['novasenha'] = 'Escolhe uma nova senha.';
+      erros['novasenha'] = this.locale.t('change_pw.err_new_required');
     } else if (!senhaAtendeRequisitos(this.novaSenha())) {
-      erros['novasenha'] = 'A nova senha não atende todos os requisitos.';
+      erros['novasenha'] = this.locale.t('change_pw.err_new_requirements');
     } else if (this.senhaAtual() === this.novaSenha()) {
-      erros['novasenha'] = 'A nova senha precisa ser diferente da atual.';
+      erros['novasenha'] = this.locale.t('change_pw.err_new_same');
     }
     if (!this.senhasBatem()) {
-      erros['confirmarsenha'] = 'A confirmação não bate com a nova senha.';
+      erros['confirmarsenha'] = this.locale.t('change_pw.err_confirm_mismatch');
     }
     if (Object.keys(erros).length > 0) {
       this.errosCampo.set(erros);
@@ -268,16 +270,21 @@ export class AlterarSenhaComponent implements AfterViewInit, OnDestroy {
       next: () => {
         this.trocando.set(false);
         const nome = this.storage.usuario()?.nome;
-        this.sucesso.set(nome ? `Senha trocada, ${nome}.` : 'Senha trocada.');
+        this.sucesso.set(
+          nome
+            ? this.locale.t('change_pw.success_with_name', { name: nome })
+            : this.locale.t('change_pw.success'),
+        );
         setTimeout(() => this.router.navigateByUrl('/app/configuracoes'), 1200);
       },
       error: (err: HttpErrorResponse) => {
         this.trocando.set(false);
-        const r = extrairProblemDetails(err, 'Não consegui trocar sua senha.');
+        const fallback = this.locale.t('change_pw.err_fallback');
+        const r = extrairProblemDetails(err, fallback);
         if (Object.keys(r.errosCampo).length > 0) {
           this.errosCampo.set(r.errosCampo);
         } else {
-          this.erroGeral.set(r.mensagemGeral ?? 'Não consegui trocar sua senha.');
+          this.erroGeral.set(r.mensagemGeral ?? fallback);
         }
       },
     });

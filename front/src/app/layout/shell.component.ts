@@ -6,6 +6,7 @@ import { TarefasService } from '../core/api/tarefas.service';
 import { AuthService } from '../core/auth/auth.service';
 import { TokenStorage } from '../core/auth/token.storage';
 import { PageHeaderService } from '../core/layout/page-header.service';
+import { LocaleService } from '../core/locale/locale.service';
 import { AvatarComponent } from '../shared/avatar.component';
 import { BrandComponent } from '../shared/brand.component';
 import { ThemeToggleComponent } from '../shared/theme-toggle.component';
@@ -119,7 +120,7 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
       </header>
 
       <aside
-        class="hidden md:flex bg-bg-sidebar border-r border-border flex-col p-3 relative transition-[width] duration-200"
+        class="hidden md:flex bg-bg-sidebar border-r border-border flex-col p-3 relative transition-[width] duration-200 md:sticky md:top-0 md:h-screen md:overflow-y-auto"
         [class.items-center]="sidebarCollapsed()"
         data-testid="sidebar"
         style="background-image: radial-gradient(ellipse 70% 30% at 50% 0%, rgba(94, 106, 210, 0.08), transparent);"
@@ -316,6 +317,27 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
       </aside>
 
       <main class="flex flex-col min-w-0 flex-1 pb-16 md:pb-0">
+        @if (mostrarAvisoEn()) {
+          <div
+            class="flex items-start sm:items-center gap-2 px-4 md:px-8 py-2 bg-accent/10 border-b border-accent/20 text-[12px] text-text"
+            data-testid="shell-locale-warning-en"
+            role="status"
+          >
+            <i class="fa-solid fa-circle-info text-accent text-[12px] mt-0.5 sm:mt-0" aria-hidden="true"></i>
+            <span class="flex-1">
+              The app interface is currently in Portuguese only. Public pages and onboarding are translated.
+            </span>
+            <button
+              type="button"
+              class="text-text-dim hover:text-text px-1.5 py-0.5 rounded hover:bg-bg-elev text-[11px] font-medium"
+              data-testid="shell-locale-warning-dismiss"
+              (click)="dispensarAvisoEn()"
+              aria-label="Dismiss notice"
+            >
+              <i class="fa-solid fa-xmark text-[11px]"></i>
+            </button>
+          </div>
+        }
         <header
           class="hidden md:flex items-center gap-3 h-14 px-4 md:px-8 border-b border-border bg-bg-sidebar/60 backdrop-blur-sm sticky top-0 z-30"
           data-testid="shell-topbar"
@@ -592,11 +614,34 @@ export class ShellComponent implements OnInit {
   private readonly tarefasApi = inject(TarefasService);
   readonly storage = inject(TokenStorage);
   readonly header = inject(PageHeaderService);
+  readonly locale = inject(LocaleService);
 
   readonly pendentesCount = signal(0);
   readonly atrasadasCount = signal(0);
   readonly sidebarCollapsed = signal(this.lerEstadoSidebar());
   readonly userMenuAberto = signal(false);
+  readonly avisoEnDispensado = signal(this.lerAvisoEnDispensado());
+
+  readonly mostrarAvisoEn = computed(
+    () => this.locale.locale() === 'en' && !this.avisoEnDispensado(),
+  );
+
+  dispensarAvisoEn(): void {
+    this.avisoEnDispensado.set(true);
+    try {
+      sessionStorage.setItem(ShellComponent.STORAGE_AVISO_EN, '1');
+    } catch {
+      /* storage indisponível */
+    }
+  }
+
+  private lerAvisoEnDispensado(): boolean {
+    try {
+      return sessionStorage.getItem(ShellComponent.STORAGE_AVISO_EN) === '1';
+    } catch {
+      return false;
+    }
+  }
 
   alternarUserMenu(): void {
     this.userMenuAberto.update((v) => !v);
@@ -617,6 +662,7 @@ export class ShellComponent implements OnInit {
   }
 
   private static readonly STORAGE_SIDEBAR = 'liriun-sidebar-collapsed';
+  private static readonly STORAGE_AVISO_EN = 'liriun-aviso-en-dispensado';
 
   ngOnInit(): void {
     this.atualizarContagem();

@@ -4,11 +4,14 @@ import { TokenStorage } from '../../core/auth/token.storage';
 import { BrandComponent } from '../../shared/brand.component';
 import { SiteFooterComponent } from '../../shared/site-footer.component';
 import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
+import { UserMenuComponent } from '../../shared/user-menu.component';
+import { LocaleSwitcherComponent } from '../../shared/locale-switcher.component';
+import { LocaleService } from '../../core/locale/locale.service';
 
 @Component({
   selector: 'app-sobre',
   standalone: true,
-  imports: [RouterLink, BrandComponent, SiteFooterComponent, ThemeToggleComponent],
+  imports: [RouterLink, BrandComponent, SiteFooterComponent, ThemeToggleComponent, UserMenuComponent, LocaleSwitcherComponent],
   template: `
     <main class="min-h-screen bg-bg text-text" data-testid="sobre-page">
       <header
@@ -27,28 +30,41 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
             <img src="/logo.png" alt="" class="w-8 h-8 object-contain" aria-hidden="true" />
             <span class="text-[15px] font-semibold tracking-tight"><app-brand /></span>
           </a>
-          <app-theme-toggle />
+          <div class="flex items-center gap-2">
+            <app-locale-switcher />
+            <span class="hidden sm:inline-flex"><app-theme-toggle /></span>
+            <app-user-menu />
+          </div>
         </div>
       </header>
 
       <article class="max-w-3xl mx-auto px-4 sm:px-8 py-12 md:py-16 flex flex-col gap-14">
         <section class="flex flex-col gap-5 scroll-mt-20" id="o-que-e" data-testid="sobre-secao-o-que-e">
           <div class="text-[11px] font-medium tracking-wider uppercase text-accent">
-            O que é o Liriun
+            @if (locale.locale() === 'pt') { O que é o <app-brand /> } @else { About <app-brand /> }
           </div>
           <h1 class="text-4xl md:text-5xl font-bold tracking-tight leading-[1.1]">
-            Seu assistente pessoal pra parar de carregar tudo na cabeça.
+            {{ locale.t('sobre.about.title') }}
           </h1>
           <p class="text-text-dim text-lg leading-relaxed">
-            O <app-brand /> é um organizador de tarefas e ideias com inteligência artificial — feito
-            pra quem vive correndo entre faculdade, trabalho, contas e a vida que ainda sobra. Em vez
-            de te entregar mais um formulário pra preencher, ele
-            <strong class="text-text">conversa com você</strong>: você fala como falaria com um
-            amigo, e ele anota, organiza e devolve a tarefa pronta.
+            @if (locale.locale() === 'pt') {
+              <app-brand /> é um organizador pessoal de ideias e tarefas com IA conversacional.
+              Você fala ou escreve, ele entende o contexto e cria sua tarefa ou lembrete.
+              Sem formulário robotizado, sem ruído, sem esforço. Tudo para facilitar seu dia.
+            } @else {
+              <app-brand /> is a personal organizer for ideas and tasks powered by conversational AI.
+              You speak or write, it understands the context and creates your task or reminder.
+              No robotic forms, no noise, no effort. Everything to make your day easier.
+            }
           </p>
           <p class="text-text-dim text-base leading-relaxed">
-            Ele não chega gritando, não te enche de notificação, não pede que você aprenda método
-            novo. É só você dizer o que precisa fazer. Ele cuida do resto.
+            @if (locale.locale() === 'pt') {
+              Mais do que uma agenda, <app-brand /> é um espaço pra sua mente respirar. Tudo
+              que importa, organizado num lugar só — pra você ter foco no que realmente importa.
+            } @else {
+              More than an agenda, <app-brand /> is a space for your mind to breathe. Everything
+              that matters, organized in one place — so you can focus on what truly counts.
+            }
           </p>
 
           <div
@@ -183,29 +199,54 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
             </div>
           </div>
           <p class="text-text-subtle text-[11px] text-center italic">
-            Conversa real com o Liriun. Você fala como falaria com um amigo.
+            @if (locale.locale() === 'pt') {
+              Conversa real com o <app-brand />. Você fala como falaria com um amigo.
+            } @else {
+              A real conversation with <app-brand />. You talk to it like you would with a friend.
+            }
           </p>
 
-          <div class="grid sm:grid-cols-3 gap-3 mt-2">
+          <div class="flex flex-col gap-3 mt-6">
+            <div class="text-[11px] font-medium tracking-wider uppercase text-accent">
+              {{ locale.t('sobre.audience.eyebrow') }}
+            </div>
+            <h3 class="text-[20px] md:text-[22px] font-semibold tracking-tight">
+              @if (locale.locale() === 'pt') { Quem usa o <app-brand /> no dia a dia. }
+              @else { Who uses <app-brand /> every day. }
+            </h3>
+          </div>
+
+          <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-2">
             <div class="card-elev p-4 flex flex-col gap-1.5" data-testid="sobre-publico-1">
               <i class="fa-solid fa-briefcase text-accent text-base"></i>
-              <h3 class="text-[14px] font-semibold">Autônomo</h3>
+              <h3 class="text-[14px] font-semibold">{{ locale.t('sobre.audience.pro.title') }}</h3>
               <p class="text-text-dim text-[12px] leading-relaxed">
-                Reuniões, propostas, prazos de cliente. Tudo num lugar só, sem planilha boba.
+                {{ locale.t('sobre.audience.pro.body') }}
               </p>
             </div>
             <div class="card-elev p-4 flex flex-col gap-1.5" data-testid="sobre-publico-2">
               <i class="fa-solid fa-graduation-cap text-accent text-base"></i>
-              <h3 class="text-[14px] font-semibold">Estudante</h3>
+              <h3 class="text-[14px] font-semibold">{{ locale.t('sobre.audience.student.title') }}</h3>
               <p class="text-text-dim text-[12px] leading-relaxed">
-                Provas, trabalhos, leitura, monitoria. O Liriun lembra. Você dorme.
+                @if (locale.locale() === 'pt') {
+                  Provas, trabalhos, leituras. <app-brand /> guarda os prazos pra você focar em estudar.
+                } @else {
+                  Exams, papers, readings. <app-brand /> keeps the deadlines so you can focus on studying.
+                }
               </p>
             </div>
             <div class="card-elev p-4 flex flex-col gap-1.5" data-testid="sobre-publico-3">
               <i class="fa-solid fa-house text-accent text-base"></i>
-              <h3 class="text-[14px] font-semibold">Casa e família</h3>
+              <h3 class="text-[14px] font-semibold">{{ locale.t('sobre.audience.home.title') }}</h3>
               <p class="text-text-dim text-[12px] leading-relaxed">
-                Feira, médico, conta vencendo, aniversário esquecido. Ele puxa orelha por você.
+                {{ locale.t('sobre.audience.home.body') }}
+              </p>
+            </div>
+            <div class="card-elev p-4 flex flex-col gap-1.5" data-testid="sobre-publico-4">
+              <i class="fa-solid fa-lightbulb text-accent text-base"></i>
+              <h3 class="text-[14px] font-semibold">{{ locale.t('sobre.audience.creative.title') }}</h3>
+              <p class="text-text-dim text-[12px] leading-relaxed">
+                {{ locale.t('sobre.audience.creative.body') }}
               </p>
             </div>
           </div>
@@ -213,90 +254,91 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
 
         <section class="flex flex-col gap-6 scroll-mt-20" id="como-funciona" data-testid="sobre-secao-como-funciona">
           <div class="text-[11px] font-medium tracking-wider uppercase text-accent">
-            Como funciona
+            {{ locale.t('sobre.how.eyebrow') }}
           </div>
           <h2 class="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
-            Três jeitos. O mesmo destino: sua tarefa salva.
+            {{ locale.t('sobre.how.title') }}
           </h2>
 
           <div class="flex flex-col gap-4 mt-2">
             <div class="card-elev p-5 flex gap-4 items-start" data-testid="sobre-passo-1">
-              <div
-                class="w-9 h-9 shrink-0 rounded-full bg-accent/15 text-accent grid place-items-center font-bold"
-              >
-                1
-              </div>
+              <div class="w-9 h-9 shrink-0 rounded-full bg-accent/15 text-accent grid place-items-center font-bold">1</div>
               <div class="flex flex-col gap-1.5">
                 <h3 class="text-base font-semibold flex items-center gap-2">
-                  <i class="fa-solid fa-comments text-accent text-sm"></i>
-                  Modo Liriun (texto)
+                  <i class="fa-solid fa-pencil text-accent text-sm"></i>
+                  {{ locale.t('sobre.how.write.title') }}
                 </h3>
                 <p class="text-text-dim text-[13px] leading-relaxed">
-                  Você abre o chat e escreve do jeito que falaria. "Reunião amanhã às 14h com o
-                  Lucas, online via Teams". Ele lê, entende contexto, e devolve a tarefa pronta com
-                  data, hora, categoria e até observações. Você confirma e pronto.
+                  @if (locale.locale() === 'pt') {
+                    Escreva como se estivesse mandando uma mensagem. <app-brand /> entende o contexto,
+                    identifica datas e detalhes, e organiza tudo pra você.
+                  } @else {
+                    Write as if you were sending a message. <app-brand /> understands the context,
+                    identifies dates and details, and organizes everything for you.
+                  }
                 </p>
               </div>
             </div>
 
             <div class="card-elev p-5 flex gap-4 items-start" data-testid="sobre-passo-2">
-              <div
-                class="w-9 h-9 shrink-0 rounded-full bg-accent/15 text-accent grid place-items-center font-bold"
-              >
-                2
-              </div>
+              <div class="w-9 h-9 shrink-0 rounded-full bg-accent/15 text-accent grid place-items-center font-bold">2</div>
               <div class="flex flex-col gap-1.5">
                 <h3 class="text-base font-semibold flex items-center gap-2">
                   <i class="fa-solid fa-microphone text-accent text-sm"></i>
-                  Modo Liriun (áudio)
+                  {{ locale.t('sobre.how.voice.title') }}
                 </h3>
                 <p class="text-text-dim text-[13px] leading-relaxed">
-                  Tá no carro, andando, ou simplesmente cansado de digitar? Aperta o microfone (ou
-                  <kbd class="px-1.5 py-0.5 bg-bg-elev border border-border rounded text-[11px]"
-                    >Ctrl+Espaço</kbd
-                  >) e fala. Ele transcreve, interpreta e propõe a tarefa do mesmo jeito. Tudo num
-                  fluxo só.
+                  @if (locale.locale() === 'pt') {
+                    Sem tempo pra digitar? Mande um áudio. <app-brand /> transcreve, interpreta e
+                    devolve sua tarefa pronta — em segundos.
+                  } @else {
+                    No time to type? Send a voice message. <app-brand /> transcribes, interprets and
+                    returns your task ready — in seconds.
+                  }
                 </p>
               </div>
             </div>
 
             <div class="card-elev p-5 flex gap-4 items-start" data-testid="sobre-passo-3">
-              <div
-                class="w-9 h-9 shrink-0 rounded-full bg-accent/15 text-accent grid place-items-center font-bold"
-              >
-                3
-              </div>
+              <div class="w-9 h-9 shrink-0 rounded-full bg-accent/15 text-accent grid place-items-center font-bold">3</div>
               <div class="flex flex-col gap-1.5">
                 <h3 class="text-base font-semibold flex items-center gap-2">
                   <i class="fa-solid fa-pen-to-square text-accent text-sm"></i>
-                  Modo Manual
+                  {{ locale.t('sobre.how.manual.title') }}
                 </h3>
                 <p class="text-text-dim text-[13px] leading-relaxed">
-                  Prefere o velho formulário? Sem problema. Nome, prazo, hora, prioridade,
-                  categoria. Salva. Sem firula. Tá ali pra quando você sabe exatamente o que
-                  quer.
+                  {{ locale.t('sobre.how.manual.body') }}
                 </p>
               </div>
             </div>
           </div>
 
           <p class="text-text-dim text-[13px] italic leading-relaxed mt-2">
-            Em qualquer modo, a tarefa cai na mesma lista, com os mesmos filtros, no mesmo Kanban.
-            O Liriun só decide como você prefere falar com ele — o resto ele resolve.
+            @if (locale.locale() === 'pt') {
+              Não importa como você prefere se comunicar. <app-brand /> entrega tudo no mesmo lugar,
+              organizado e fácil de encontrar.
+            } @else {
+              No matter how you prefer to communicate. <app-brand /> delivers everything in the same place,
+              organized and easy to find.
+            }
           </p>
         </section>
 
         <section class="flex flex-col gap-5 scroll-mt-20" id="contato" data-testid="sobre-secao-contato">
           <div class="text-[11px] font-medium tracking-wider uppercase text-accent">
-            Fala com a gente
+            {{ locale.t('sobre.contact.eyebrow') }}
           </div>
           <h2 class="text-3xl md:text-4xl font-bold tracking-tight leading-tight">
-            Travou? Sumiu? Tem ideia maluca? <br />
-            A gente lê tudo.
+            {{ locale.t('sobre.contact.title') }}
           </h2>
           <p class="text-text-dim text-base leading-relaxed">
-            Nada de formulário com 12 campos nem fila de atendimento. Manda e-mail, conta o que tá
-            rolando, a gente responde rápido. Promessa de gente que também usa o app todo dia.
+            @if (locale.locale() === 'pt') {
+              Sem formulários extensos, sem fila de atendimento. Mande um e-mail e respondemos
+              rápido — somos pessoas que usam o <app-brand /> todos os dias.
+            } @else {
+              No long forms, no waiting line. Send an email and we reply quickly — we’re people
+              who use <app-brand /> every day.
+            }
           </p>
 
           <div class="grid sm:grid-cols-3 gap-3 mt-2">
@@ -304,15 +346,17 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
               href="mailto:suporte@liriun.com"
               class="card-elev p-5 flex flex-col gap-2 hover:border-accent transition-colors"
               data-testid="contato-card-suporte"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <div
                 class="w-9 h-9 rounded-lg bg-accent/15 text-accent grid place-items-center"
               >
                 <i class="fa-solid fa-life-ring"></i>
               </div>
-              <h3 class="text-[14px] font-semibold">Suporte</h3>
+              <h3 class="text-[14px] font-semibold">{{ locale.t('sobre.contact.support.title') }}</h3>
               <p class="text-text-dim text-[12px] leading-relaxed">
-                Algo quebrou? Conta acidentada? Senha embolou? Manda mensagem.
+                {{ locale.t('sobre.contact.support.body') }}
               </p>
               <span class="text-[12px] text-accent font-medium mt-1 break-all">
                 suporte&#64;liriun.com
@@ -323,15 +367,17 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
               href="mailto:contato@liriun.com"
               class="card-elev p-5 flex flex-col gap-2 hover:border-accent transition-colors"
               data-testid="contato-card-ideias"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <div
                 class="w-9 h-9 rounded-lg bg-accent/15 text-accent grid place-items-center"
               >
                 <i class="fa-solid fa-lightbulb"></i>
               </div>
-              <h3 class="text-[14px] font-semibold">Sugestões</h3>
+              <h3 class="text-[14px] font-semibold">{{ locale.t('sobre.contact.suggestions.title') }}</h3>
               <p class="text-text-dim text-[12px] leading-relaxed">
-                Sentiu falta de algo? Tem ideia que melhoraria seu dia? Conta a real.
+                {{ locale.t('sobre.contact.suggestions.body') }}
               </p>
               <span class="text-[12px] text-accent font-medium mt-1 break-all">
                 contato&#64;liriun.com
@@ -342,15 +388,17 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
               href="mailto:contato@liriun.com"
               class="card-elev p-5 flex flex-col gap-2 hover:border-accent transition-colors"
               data-testid="contato-card-empresa"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               <div
                 class="w-9 h-9 rounded-lg bg-accent/15 text-accent grid place-items-center"
               >
                 <i class="fa-solid fa-handshake"></i>
               </div>
-              <h3 class="text-[14px] font-semibold">Imprensa &amp; parcerias</h3>
+              <h3 class="text-[14px] font-semibold">{{ locale.t('sobre.contact.press.title') }}</h3>
               <p class="text-text-dim text-[12px] leading-relaxed">
-                É da imprensa, quer falar de parceria ou só conhecer a ToMore?
+                {{ locale.t('sobre.contact.press.body') }}
               </p>
               <span class="text-[12px] text-accent font-medium mt-1 break-all">
                 contato&#64;liriun.com
@@ -358,10 +406,6 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
             </a>
           </div>
 
-          <p class="text-text-subtle text-[12px] italic leading-relaxed mt-1">
-            E-mails são fictícios na V1 beta. Em breve estarão pra valer — enquanto isso, qualquer
-            coisa, abre uma issue, fala em rede social, ou grita pela janela. A gente improvisa.
-          </p>
         </section>
 
         <section
@@ -370,17 +414,16 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
         >
           <h2 class="text-2xl md:text-3xl font-bold tracking-tight">
             @if (autenticado()) {
-              Já tá tudo aí. Bora?
+              {{ locale.t('sobre.cta.title_logged') }}
             } @else {
-              Bora tirar essa lista mental da cabeça?
+              {{ locale.t('sobre.cta.title_anon') }}
             }
           </h2>
           <p class="text-text-dim text-[14px] max-w-xl">
             @if (autenticado()) {
-              Tua conta tá pronta. Abre a visão geral e começa o dia já organizado.
+              {{ locale.t('sobre.cta.body_logged') }}
             } @else {
-              Conta criada em menos de um minuto. Grátis na V1. Cancela quando quiser, sem letra
-              miúda.
+              {{ locale.t('sobre.cta.body_anon') }}
             }
           </p>
           @if (autenticado()) {
@@ -420,6 +463,7 @@ import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
 })
 export class SobreComponent {
   private readonly storage = inject(TokenStorage);
+  readonly locale = inject(LocaleService);
 
   autenticado = computed(() => this.storage.estaAutenticado());
 }
