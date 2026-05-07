@@ -46,32 +46,41 @@ export interface SugestaoTarefa {
       aria-labelledby="tarefa-form-title"
     >
       <div
-        class="card-elev w-full max-w-[520px] max-h-[90vh] overflow-y-auto animate-scale-in"
+        class="card-elev w-full max-w-[560px] max-h-[92vh] overflow-y-auto animate-scale-in"
         (click)="$event.stopPropagation()"
       >
-        <div class="flex items-center justify-between border-b border-border px-5 py-3.5">
-          <div id="tarefa-form-title" class="text-sm font-semibold">
-            {{ tarefa ? 'Editar tarefa' : 'Nova tarefa' }}
+        <!-- Header -->
+        <div class="flex items-center gap-3 border-b border-border px-5 py-4 sticky top-0 bg-bg-elev z-10">
+          <div class="w-9 h-9 rounded-lg bg-accent/15 grid place-items-center shrink-0">
+            <i class="fa-solid" [class]="tarefa ? 'fa-pen text-accent text-[14px]' : 'fa-plus text-accent text-[16px]'"></i>
+          </div>
+          <div class="flex-1 min-w-0">
+            <div id="tarefa-form-title" class="text-[15px] font-semibold leading-tight">
+              {{ tarefa ? 'Editar tarefa' : 'Nova tarefa' }}
+            </div>
+            <div class="text-[11px] text-text-subtle">
+              {{ tarefa ? 'Ajuste os campos abaixo.' : 'Preencha o que importa. Campos opcionais ficam pra depois.' }}
+            </div>
           </div>
           <button
             type="button"
-            class="text-text-subtle hover:text-text text-base p-1 leading-none"
+            class="w-8 h-8 grid place-items-center text-text-subtle hover:text-text hover:bg-bg-input rounded transition-colors"
             data-testid="tarefa-form-close"
             aria-label="Fechar"
             (click)="fechar()"
           >
-            ×
+            <i class="fa-solid fa-xmark text-[14px]"></i>
           </button>
         </div>
 
-        <form class="p-5 flex flex-col gap-4" (ngSubmit)="enviar()" novalidate>
+        <form class="p-5 flex flex-col gap-5" (ngSubmit)="enviar()" novalidate>
+          <!-- Nome (input grande hero) -->
           <div class="flex flex-col gap-1.5">
-            <label class="field-label" for="nome">Nome</label>
             <input
               id="nome"
               name="nome"
               type="text"
-              class="input-base"
+              class="input-base !text-[16px] !py-3 !font-medium"
               placeholder="O que precisa ser feito"
               data-testid="tarefa-form-nome"
               maxlength="200"
@@ -82,111 +91,122 @@ export interface SugestaoTarefa {
             }
           </div>
 
-          <div class="flex flex-col gap-1.5">
-            <label class="field-label">Categorias</label>
-            @if (carregandoCategorias()) {
-              <span class="text-xs text-text-subtle" data-testid="tarefa-form-cat-loading">
-                Carregando categorias...
+          <!-- Bloco: Prioridade + Categorias -->
+          <section class="flex flex-col gap-3 bg-bg-surface/30 border border-border rounded-lg p-3.5">
+            <div class="flex flex-col gap-2">
+              <span class="text-[10px] uppercase tracking-wider text-text-subtle font-semibold flex items-center gap-1.5">
+                <i class="fa-solid fa-flag text-[9px]"></i>
+                Prioridade
               </span>
-            } @else if (erroCarregarCategorias()) {
               <div
-                class="flex items-center justify-between gap-2 text-xs text-danger"
-                data-testid="tarefa-form-cat-erro"
+                class="flex flex-wrap gap-1.5"
+                data-testid="tarefa-form-prioridade"
+                role="radiogroup"
+                aria-label="Prioridade"
               >
-                <span>Não consegui carregar suas categorias.</span>
-                <button
-                  type="button"
-                  class="text-text-dim hover:text-text underline underline-offset-2"
-                  (click)="carregarCategorias()"
-                >
-                  Tentar de novo
-                </button>
-              </div>
-            } @else {
-              <div class="flex flex-wrap gap-1.5" data-testid="tarefa-form-categorias">
-                @for (cat of categorias(); track cat.id) {
+                @for (p of opcoesPrioridade; track p.valor) {
                   <button
                     type="button"
-                    class="px-2.5 py-1 rounded text-[13px] border transition-colors"
-                    [class]="
-                      categoriaIds().includes(cat.id)
-                        ? 'bg-accent/15 border-accent/40 text-text'
-                        : 'bg-bg-surface border-border-strong text-text-dim hover:text-text'
-                    "
-                    [attr.data-testid]="'tarefa-form-cat-' + cat.id"
-                    (click)="toggleCategoria(cat.id)"
+                    role="radio"
+                    [attr.aria-checked]="prioridade === p.valor"
+                    [attr.data-testid]="'tarefa-form-prioridade-' + p.valor"
+                    class="prioridade-chip"
+                    [class.prioridade-chip-active]="prioridade === p.valor"
+                    [style.--chip-color]="p.cor"
+                    (click)="prioridade = p.valor"
                   >
-                    {{ cat.nome }}
+                    <span
+                      class="w-1.5 h-1.5 rounded-full"
+                      [style.background-color]="p.cor"
+                      aria-hidden="true"
+                    ></span>
+                    {{ p.rotulo }}
                   </button>
-                } @empty {
-                  <span class="text-xs text-text-subtle"
-                    >Nenhuma categoria cadastrada. Crie em Configurações.</span
-                  >
                 }
               </div>
-            }
-          </div>
+            </div>
 
-          <div class="flex flex-col gap-1.5">
-            <label class="field-label">Prioridade</label>
-            <div
-              class="flex flex-wrap gap-1.5"
-              data-testid="tarefa-form-prioridade"
-              role="radiogroup"
-              aria-label="Prioridade"
-            >
-              @for (p of opcoesPrioridade; track p.valor) {
-                <button
-                  type="button"
-                  role="radio"
-                  [attr.aria-checked]="prioridade === p.valor"
-                  [attr.data-testid]="'tarefa-form-prioridade-' + p.valor"
-                  class="prioridade-chip"
-                  [class.prioridade-chip-active]="prioridade === p.valor"
-                  [style.--chip-color]="p.cor"
-                  (click)="prioridade = p.valor"
-                >
-                  <span
-                    class="w-1.5 h-1.5 rounded-full"
-                    [style.background-color]="p.cor"
-                    aria-hidden="true"
-                  ></span>
-                  {{ p.rotulo }}
-                </button>
+            <div class="flex flex-col gap-2 pt-3 border-t border-border/60">
+              <span class="text-[10px] uppercase tracking-wider text-text-subtle font-semibold flex items-center gap-1.5">
+                <i class="fa-solid fa-tag text-[9px]"></i>
+                Categorias
+              </span>
+              @if (carregandoCategorias()) {
+                <span class="text-xs text-text-subtle" data-testid="tarefa-form-cat-loading">
+                  Carregando categorias...
+                </span>
+              } @else if (erroCarregarCategorias()) {
+                <div class="flex items-center justify-between gap-2 text-xs text-danger" data-testid="tarefa-form-cat-erro">
+                  <span>Não consegui carregar suas categorias.</span>
+                  <button
+                    type="button"
+                    class="text-text-dim hover:text-text underline underline-offset-2"
+                    (click)="carregarCategorias()"
+                  >Tentar de novo</button>
+                </div>
+              } @else {
+                <div class="flex flex-wrap gap-1.5" data-testid="tarefa-form-categorias">
+                  @for (cat of categorias(); track cat.id) {
+                    <button
+                      type="button"
+                      class="px-2.5 py-1 rounded-full text-[12px] border transition-colors"
+                      [class]="
+                        categoriaIds().includes(cat.id)
+                          ? 'bg-accent/20 border-accent text-text'
+                          : 'bg-bg-elev border-border-strong text-text-dim hover:text-text hover:border-border-strong'
+                      "
+                      [attr.data-testid]="'tarefa-form-cat-' + cat.id"
+                      (click)="toggleCategoria(cat.id)"
+                    >{{ cat.nome }}</button>
+                  } @empty {
+                    <span class="text-xs text-text-subtle italic">Nenhuma categoria cadastrada. Crie em Configurações.</span>
+                  }
+                </div>
               }
             </div>
-          </div>
+          </section>
 
-          <div class="grid grid-cols-1 sm:grid-cols-[1fr_160px] gap-3">
-            <div class="flex flex-col gap-1.5">
-              <label class="field-label">Data</label>
-              <app-date-picker
-                [valor]="data || null"
-                [min]="dataMinima"
-                placeholder="Selecionar data"
-                ariaLabel="Data da tarefa"
-                (valorChange)="data = $event ?? ''"
-                data-testid="tarefa-form-data-picker"
-              />
-              @if (erroData()) {
-                <p class="text-danger text-xs" data-testid="tarefa-form-erro-data">{{ erroData() }}</p>
-              }
+          <!-- Bloco: Quando -->
+          <section class="flex flex-col gap-2 bg-bg-surface/30 border border-border rounded-lg p-3.5">
+            <span class="text-[10px] uppercase tracking-wider text-text-subtle font-semibold flex items-center gap-1.5">
+              <i class="fa-regular fa-calendar text-[9px]"></i>
+              Quando
+            </span>
+            <div class="grid grid-cols-1 sm:grid-cols-[1fr_140px] gap-2.5">
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] text-text-subtle">Data</span>
+                <app-date-picker
+                  [valor]="data || null"
+                  [min]="dataMinima"
+                  placeholder="Selecionar data"
+                  ariaLabel="Data da tarefa"
+                  (valorChange)="data = $event ?? ''"
+                  data-testid="tarefa-form-data-picker"
+                />
+                @if (erroData()) {
+                  <p class="text-danger text-xs" data-testid="tarefa-form-erro-data">{{ erroData() }}</p>
+                }
+              </div>
+              <div class="flex flex-col gap-1">
+                <span class="text-[10px] text-text-subtle">Hora <span class="opacity-70">(opcional)</span></span>
+                <app-time-picker
+                  [valor]="hora || null"
+                  [disabled]="!data"
+                  placeholder="--:--"
+                  ariaLabel="Horário da tarefa"
+                  (valorChange)="hora = $event ?? ''"
+                  data-testid="tarefa-form-hora-picker"
+                />
+              </div>
             </div>
-            <div class="flex flex-col gap-1.5">
-              <label class="field-label">Hora (opcional)</label>
-              <app-time-picker
-                [valor]="hora || null"
-                [disabled]="!data"
-                placeholder="--:--"
-                ariaLabel="Horário da tarefa"
-                (valorChange)="hora = $event ?? ''"
-                data-testid="tarefa-form-hora-picker"
-              />
-            </div>
-          </div>
+          </section>
 
-          <div class="flex flex-col gap-1.5">
-            <label class="field-label">Recorrência</label>
+          <!-- Bloco: Recorrência -->
+          <section class="flex flex-col gap-2 bg-bg-surface/30 border border-border rounded-lg p-3.5">
+            <span class="text-[10px] uppercase tracking-wider text-text-subtle font-semibold flex items-center gap-1.5">
+              <i class="fa-solid fa-repeat text-[9px]"></i>
+              Recorrência
+            </span>
             <div class="flex flex-wrap gap-1.5" data-testid="tarefa-form-recorrencia" role="radiogroup" aria-label="Recorrência">
               @for (r of opcoesRecorrencia; track r.valor) {
                 <button
@@ -194,74 +214,108 @@ export interface SugestaoTarefa {
                   role="radio"
                   [attr.aria-checked]="recorrencia === r.valor"
                   [attr.data-testid]="'tarefa-form-recorrencia-' + r.valor"
-                  class="px-2.5 py-1 rounded text-[13px] border transition-colors flex items-center gap-1.5"
+                  class="px-3 py-1.5 rounded-full text-[12px] font-medium border transition-colors flex items-center gap-1.5"
                   [class]="
                     recorrencia === r.valor
-                      ? 'bg-accent/15 border-accent/40 text-text'
-                      : 'bg-bg-surface border-border-strong text-text-dim hover:text-text'
+                      ? 'bg-accent/20 border-accent text-text'
+                      : 'bg-bg-elev border-border-strong text-text-dim hover:text-text'
                   "
                   (click)="recorrencia = r.valor"
                 >
                   @if (r.valor !== 0) {
-                    <i class="fa-solid fa-repeat text-[10px]" aria-hidden="true"></i>
+                    <i class="fa-solid fa-repeat text-[9px]" aria-hidden="true"></i>
                   }
                   {{ r.rotulo }}
                 </button>
               }
             </div>
-          </div>
 
-          <div class="flex flex-col gap-1.5">
+            @if (recorrencia !== 0) {
+              <div class="flex flex-col gap-2 mt-1 pt-3 border-t border-border/60">
+                <span class="text-[11px] text-text-dim">
+                  Por quantas {{ recorrencia === 1 ? 'semanas' : 'meses' }}?
+                </span>
+                <div class="flex gap-1.5" role="radiogroup">
+                  @for (q of [1, 2, 3, 4]; track q) {
+                    <button
+                      type="button"
+                      role="radio"
+                      [attr.aria-checked]="recorrenciaQuantidade === q"
+                      [attr.data-testid]="'tarefa-form-recorrencia-qtd-' + q"
+                      class="flex-1 px-3 py-2 rounded-md text-[13px] font-semibold border transition-colors"
+                      [class]="
+                        recorrenciaQuantidade === q
+                          ? 'bg-accent text-white border-accent'
+                          : 'bg-bg-elev border-border-strong text-text-dim hover:text-text'
+                      "
+                      (click)="recorrenciaQuantidade = q"
+                    >{{ q }}x</button>
+                  }
+                </div>
+                <span class="text-[11px] text-text-subtle italic">
+                  Crio {{ recorrenciaQuantidade }} {{ recorrenciaQuantidade === 1 ? 'tarefa' : 'tarefas' }} repetindo a cada {{ recorrencia === 1 ? 'semana' : 'mês' }}.
+                </span>
+              </div>
+            }
+          </section>
+
+          <!-- Bloco: Detalhes -->
+          <section class="flex flex-col gap-2 bg-bg-surface/30 border border-border rounded-lg p-3.5">
             <div class="flex items-center justify-between">
-              <label class="field-label" for="observacoes">Observações (opcional)</label>
+              <span class="text-[10px] uppercase tracking-wider text-text-subtle font-semibold flex items-center gap-1.5">
+                <i class="fa-solid fa-align-left text-[9px]"></i>
+                Detalhes
+                <span class="text-text-subtle/70 normal-case font-normal">(opcional)</span>
+              </span>
               <span
-                class="text-[11px] tabular-nums"
+                class="text-[10px] tabular-nums"
                 [class.text-text-subtle]="observacoes.length < OBS_LIMITE * 0.85"
                 [class.text-text-dim]="observacoes.length >= OBS_LIMITE * 0.85 && observacoes.length < OBS_LIMITE"
                 [class.text-danger]="observacoes.length >= OBS_LIMITE"
                 data-testid="tarefa-form-obs-counter"
-              >
-                {{ observacoes.length }} / {{ OBS_LIMITE }}
-              </span>
+              >{{ observacoes.length }} / {{ OBS_LIMITE }}</span>
             </div>
             <textarea
               id="observacoes"
               name="observacoes"
               rows="3"
-              class="input-base resize-none"
+              class="input-base resize-none !text-[13px]"
               placeholder="Detalhes, links, lembretes — o que precisar"
               [attr.maxlength]="OBS_LIMITE"
               data-testid="tarefa-form-observacoes"
               [(ngModel)]="observacoes"
             ></textarea>
             @if (erroObservacoes()) {
-              <p class="text-danger text-xs" data-testid="tarefa-form-erro-observacoes">
-                {{ erroObservacoes() }}
-              </p>
+              <p class="text-danger text-xs" data-testid="tarefa-form-erro-observacoes">{{ erroObservacoes() }}</p>
             }
-          </div>
+          </section>
 
           @if (erroGeral()) {
             <p class="text-danger text-xs" data-testid="tarefa-form-erro">{{ erroGeral() }}</p>
           }
 
-          <div class="flex justify-end gap-2 pt-2">
+          <!-- Footer sticky -->
+          <div class="flex justify-end gap-2 pt-2 border-t border-border -mx-5 px-5 pb-1 sticky bottom-0 bg-bg-elev">
             <button
               type="button"
               class="btn-secondary"
               data-testid="tarefa-form-cancelar"
               (click)="fechar()"
               [disabled]="salvando()"
-            >
-              Cancelar
-            </button>
+            >Cancelar</button>
             <button
               type="submit"
-              class="btn-primary"
+              class="btn-primary flex items-center gap-1.5"
               data-testid="tarefa-form-salvar"
               [disabled]="salvando()"
             >
-              {{ salvando() ? 'Salvando...' : tarefa ? 'Salvar' : 'Criar tarefa' }}
+              @if (salvando()) {
+                <i class="fa-solid fa-circle-notch fa-spin text-[10px]"></i>
+                Salvando...
+              } @else {
+                <i class="fa-solid fa-check text-[10px]"></i>
+                {{ tarefa ? 'Salvar' : 'Criar tarefa' }}
+              }
             </button>
           </div>
         </form>
@@ -344,6 +398,7 @@ export class TarefaFormComponent implements OnInit {
   hora = '';
   observacoes = '';
   recorrencia: TipoRecorrencia = 0;
+  recorrenciaQuantidade = 4;
 
   ngOnInit(): void {
     this.carregarCategorias();
@@ -360,6 +415,7 @@ export class TarefaFormComponent implements OnInit {
       }
       this.observacoes = this.tarefa.observacoes ?? '';
       this.recorrencia = this.tarefa.recorrencia ?? 0;
+      this.recorrenciaQuantidade = this.tarefa.recorrenciaQuantidade ?? 1;
     } else if (this.sugestao) {
       this.nome = this.sugestao.titulo;
       this.categoriaIds.set([...this.sugestao.categoriaIds]);
@@ -449,6 +505,7 @@ export class TarefaFormComponent implements OnInit {
       horarioFinal: this.hora ? this.formatarHoraParaApi(this.hora) : null,
       observacoes: this.observacoes.trim() ? this.observacoes.trim() : null,
       recorrencia: this.recorrencia,
+      recorrenciaQuantidade: this.recorrencia === 0 ? 1 : this.recorrenciaQuantidade,
     };
 
     this.salvando.set(true);

@@ -54,7 +54,7 @@ public class AtualizarTarefaUseCase
             return Result<TarefaViewModel>.Failure(TarefaErrors.CategoriasInvalidas());
         }
 
-        Result atualizarResult = tarefa.Atualizar(input.Nome, input.Prioridade, input.DataPrazo, input.HorarioFinal, input.Observacoes, input.Recorrencia);
+        Result atualizarResult = tarefa.Atualizar(input.Nome, input.Prioridade, input.DataPrazo, input.HorarioFinal, input.Observacoes, input.Recorrencia, input.RecorrenciaQuantidade);
         if (atualizarResult.IsFailure)
             return Result<TarefaViewModel>.Failure(atualizarResult.Error!);
 

@@ -21,6 +21,7 @@ public class Tarefa
     public StatusTarefa Status { get; private set; }
 
     public TipoRecorrencia Recorrencia { get; private set; }
+    public int RecorrenciaQuantidade { get; private set; }
 
     public DateTime CriadaEm { get; private set; }
     public DateTime? ConcluidaEm { get; private set; }
@@ -33,7 +34,7 @@ public class Tarefa
         Guid id, Guid usuarioId, string nome,
         DateTime dataPrazo, TimeSpan? horarioFinal, string? observacoes,
         Prioridade prioridade, StatusTarefa status,
-        TipoRecorrencia recorrencia,
+        TipoRecorrencia recorrencia, int recorrenciaQuantidade,
         DateTime criadaEm, DateTime? concluidaEm,
         ICollection<TarefaCategoria>? categorias = null)
         => new()
@@ -41,7 +42,7 @@ public class Tarefa
             Id = id, UsuarioId = usuarioId, Nome = nome,
             DataPrazo = dataPrazo, HorarioFinal = horarioFinal, Observacoes = observacoes,
             Prioridade = prioridade, Status = status,
-            Recorrencia = recorrencia,
+            Recorrencia = recorrencia, RecorrenciaQuantidade = recorrenciaQuantidade,
             CriadaEm = criadaEm, ConcluidaEm = concluidaEm,
             Categorias = categorias ?? new List<TarefaCategoria>()
         };
@@ -53,7 +54,8 @@ public class Tarefa
         DateTime dataPrazo,
         TimeSpan? horarioFinal = null,
         string? observacoes = null,
-        TipoRecorrencia recorrencia = TipoRecorrencia.Nenhuma)
+        TipoRecorrencia recorrencia = TipoRecorrencia.Nenhuma,
+        int recorrenciaQuantidade = 1)
     {
         Tarefa tarefa = new()
         {
@@ -66,6 +68,7 @@ public class Tarefa
             Observacoes = NormalizarObservacoes(observacoes),
             Status = StatusTarefa.Pendente,
             Recorrencia = recorrencia,
+            RecorrenciaQuantidade = NormalizarQuantidade(recorrencia, recorrenciaQuantidade),
             CriadaEm = DateTime.UtcNow
         };
 
@@ -102,7 +105,8 @@ public class Tarefa
         DateTime dataPrazo,
         TimeSpan? horarioFinal,
         string? observacoes,
-        TipoRecorrencia recorrencia = TipoRecorrencia.Nenhuma)
+        TipoRecorrencia recorrencia = TipoRecorrencia.Nenhuma,
+        int recorrenciaQuantidade = 1)
     {
         if (Status == StatusTarefa.Concluida)
             return Result.Failure(TarefaErrors.NaoEditavelConcluida());
@@ -113,39 +117,54 @@ public class Tarefa
         HorarioFinal = horarioFinal;
         Observacoes = NormalizarObservacoes(observacoes);
         Recorrencia = recorrencia;
+        RecorrenciaQuantidade = NormalizarQuantidade(recorrencia, recorrenciaQuantidade);
         return Validar();
     }
 
-    /// <summary>
-    /// Cria a próxima ocorrência de uma tarefa recorrente, com data avançada conforme o tipo.
-    /// Retorna null se a tarefa não for recorrente.
-    /// </summary>
-    public Tarefa? GerarProximaOcorrencia()
+    private static int NormalizarQuantidade(TipoRecorrencia recorrencia, int quantidade)
     {
-        if (Recorrencia == TipoRecorrencia.Nenhuma)
-            return null;
+        if (recorrencia == TipoRecorrencia.Nenhuma) return 1;
+        if (quantidade < 1) return 1;
+        if (quantidade > 4) return 4;
+        return quantidade;
+    }
 
-        DateTime proximaData = Recorrencia switch
-        {
-            TipoRecorrencia.Semanal => DataPrazo.AddDays(7),
-            TipoRecorrencia.Mensal => DataPrazo.AddMonths(1),
-            _ => DataPrazo
-        };
+    /// <summary>
+    /// Gera N-1 ocorrências futuras adicionais (a tarefa atual conta como 1).
+    /// Datas avançadas: +7d (semanal) ou +1 mês (mensal). Categorias copiadas externamente.
+    /// </summary>
+    public IReadOnlyList<Tarefa> GerarOcorrenciasFuturas()
+    {
+        if (Recorrencia == TipoRecorrencia.Nenhuma || RecorrenciaQuantidade <= 1)
+            return Array.Empty<Tarefa>();
 
-        Tarefa proxima = new()
+        List<Tarefa> futuras = new(RecorrenciaQuantidade - 1);
+        DateTime data = DataPrazo;
+        for (int i = 1; i < RecorrenciaQuantidade; i++)
         {
-            Id = Guid.NewGuid(),
-            UsuarioId = UsuarioId,
-            Nome = Nome,
-            Prioridade = Prioridade,
-            DataPrazo = proximaData.Date,
-            HorarioFinal = HorarioFinal,
-            Observacoes = Observacoes,
-            Status = StatusTarefa.Pendente,
-            Recorrencia = Recorrencia,
-            CriadaEm = DateTime.UtcNow
-        };
-        return proxima;
+            data = Recorrencia switch
+            {
+                TipoRecorrencia.Semanal => data.AddDays(7),
+                TipoRecorrencia.Mensal => data.AddMonths(1),
+                _ => data,
+            };
+
+            futuras.Add(new()
+            {
+                Id = Guid.NewGuid(),
+                UsuarioId = UsuarioId,
+                Nome = Nome,
+                Prioridade = Prioridade,
+                DataPrazo = data.Date,
+                HorarioFinal = HorarioFinal,
+                Observacoes = Observacoes,
+                Status = StatusTarefa.Pendente,
+                Recorrencia = Recorrencia,
+                RecorrenciaQuantidade = 1, // ocorrência ja gerada — sem replicação
+                CriadaEm = DateTime.UtcNow,
+            });
+        }
+        return futuras;
     }
 
     public StatusTarefa StatusComputado(DateTime agoraUtc)

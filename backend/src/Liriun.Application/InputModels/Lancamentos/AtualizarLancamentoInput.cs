@@ -9,4 +9,5 @@ public sealed record AtualizarLancamentoInput(
     CategoriaLancamento Categoria,
     TipoRecorrencia Recorrencia = TipoRecorrencia.Nenhuma,
     string? AnexoBoleto = null,
-    string? Observacoes = null);
+    string? Observacoes = null,
+    DateTime? DataPagamento = null);

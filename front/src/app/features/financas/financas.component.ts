@@ -33,139 +33,141 @@ type FiltroStatus = 'todos' | 'pendente' | 'pago';
   standalone: true,
   imports: [CommonModule, LancamentoFormComponent, ConfirmModalComponent],
   template: `
-    <header class="md:hidden flex items-center px-4 py-3.5 border-b border-border gap-4">
-      <div class="flex items-center gap-2 text-[15px] text-text-dim">
-        <i class="fa-solid fa-wallet text-accent text-[12px]"></i>
-        <strong class="text-text font-medium">Finanças</strong>
-      </div>
-    </header>
+    <div class="flex-1 px-4 md:px-8 py-5 md:py-6 overflow-auto w-full max-w-[1400px] mx-auto pb-24 md:pb-6" data-testid="financas-page">
 
-    <div class="flex-1 px-4 md:px-8 py-6 overflow-auto w-full max-w-[1400px] mx-auto" data-testid="financas-page">
-
-      <!-- Filtro: modo + ano/mes + lancar -->
-      <div class="flex flex-wrap items-center gap-2 mb-5">
-        <div class="flex bg-bg-elev border border-border rounded p-0.5" role="tablist" aria-label="Modo de visualização">
-          <button
-            type="button"
-            role="tab"
-            [attr.aria-selected]="modo() === 'mensal'"
-            class="px-3 py-1 rounded text-[12px] font-medium transition-colors"
-            [class]="modo() === 'mensal' ? 'bg-bg-input text-text' : 'text-text-dim hover:text-text'"
-            (click)="setModo('mensal')"
-          >Mensal</button>
-          <button
-            type="button"
-            role="tab"
-            [attr.aria-selected]="modo() === 'anual'"
-            class="px-3 py-1 rounded text-[12px] font-medium transition-colors"
-            [class]="modo() === 'anual' ? 'bg-bg-input text-text' : 'text-text-dim hover:text-text'"
-            (click)="setModo('anual')"
-          >Anual</button>
-        </div>
-
-        <div class="relative" (click)="$event.stopPropagation()">
-          <div class="flex items-stretch gap-0 bg-bg-elev border border-border rounded overflow-hidden">
-            <button
-              type="button"
-              class="w-8 grid place-items-center text-text-dim hover:text-text hover:bg-bg-input transition-colors"
-              [attr.aria-label]="modo() === 'mensal' ? 'Mês anterior' : 'Ano anterior'"
-              (click)="navegar(-1)"
-            ><i class="fa-solid fa-chevron-left text-[10px]"></i></button>
-            <button
-              type="button"
-              class="px-3 py-1.5 text-[13px] font-medium hover:bg-bg-input transition-colors flex items-center gap-1.5 min-w-[140px] justify-center"
-              data-testid="financas-periodo"
-              [attr.aria-expanded]="periodoAberto()"
-              aria-haspopup="true"
-              (click)="togglePeriodo()"
-            >
-              <i class="fa-regular fa-calendar text-text-dim text-[11px]"></i>
-              <span class="capitalize">{{ rotuloPeriodo() }}</span>
-              <i class="fa-solid fa-chevron-down text-text-subtle text-[8px] transition-transform" [class.rotate-180]="periodoAberto()"></i>
-            </button>
-            <button
-              type="button"
-              class="w-8 grid place-items-center text-text-dim hover:text-text hover:bg-bg-input transition-colors"
-              [attr.aria-label]="modo() === 'mensal' ? 'Próximo mês' : 'Próximo ano'"
-              (click)="navegar(1)"
-            ><i class="fa-solid fa-chevron-right text-[10px]"></i></button>
+      <!-- ===== Hero ===== -->
+      <section class="flex flex-col gap-3 mb-5">
+        <div class="flex items-end justify-between gap-3">
+          <div class="flex flex-col gap-0.5">
+            <span class="text-[10px] uppercase tracking-wider text-text-subtle font-semibold">Balanço</span>
+            <h1 class="text-[20px] md:text-[26px] font-semibold tracking-tight leading-tight capitalize">
+              {{ rotuloPeriodo() }}
+            </h1>
           </div>
-
-          @if (periodoAberto()) {
-            <div
-              class="absolute top-full left-0 mt-1.5 z-30 card-elev p-3 w-[260px] animate-fade-down"
-              data-testid="financas-periodo-popover"
-              role="dialog"
-            >
-              <div class="flex items-center justify-between mb-2">
-                <button
-                  type="button"
-                  class="w-7 h-7 grid place-items-center rounded text-text-dim hover:text-text hover:bg-bg-input"
-                  aria-label="Ano anterior"
-                  (click)="ano.set(ano() - 1)"
-                ><i class="fa-solid fa-chevron-left text-[10px]"></i></button>
-                <div class="text-[13px] font-semibold tabular-nums">{{ ano() }}</div>
-                <button
-                  type="button"
-                  class="w-7 h-7 grid place-items-center rounded text-text-dim hover:text-text hover:bg-bg-input"
-                  aria-label="Próximo ano"
-                  (click)="ano.set(ano() + 1)"
-                ><i class="fa-solid fa-chevron-right text-[10px]"></i></button>
-              </div>
-
-              @if (modo() === 'mensal') {
-                <div class="grid grid-cols-3 gap-1">
-                  @for (m of [1,2,3,4,5,6,7,8,9,10,11,12]; track m) {
-                    <button
-                      type="button"
-                      class="px-2 py-2 rounded text-[12px] font-medium capitalize transition-colors"
-                      [class]="
-                        mes() === m && ano() === anoSelecionado()
-                          ? 'bg-accent text-white'
-                          : (m === mesAtual() && ano() === anoAtual()
-                              ? 'bg-bg-input text-accent border border-accent/40'
-                              : 'bg-bg-surface text-text hover:bg-bg-input')
-                      "
-                      (click)="selecionarMes(m)"
-                    >
-                      {{ NOMES_MES_CURTO[m - 1] }}
-                    </button>
-                  }
-                </div>
-              } @else {
-                <div class="text-[11px] text-text-subtle text-center py-2">
-                  Visualizando o ano inteiro de {{ ano() }}.
-                </div>
-              }
-
-              <div class="flex justify-between items-center mt-3 pt-2 border-t border-border">
-                <button
-                  type="button"
-                  class="text-[11px] text-text-dim hover:text-accent"
-                  (click)="hoje()"
-                >Hoje</button>
-                <button
-                  type="button"
-                  class="text-[11px] text-text-subtle hover:text-text"
-                  (click)="periodoAberto.set(false)"
-                >Fechar</button>
-              </div>
-            </div>
-          }
-        </div>
-
-        <div class="ml-auto">
           <button
             type="button"
-            class="btn-primary text-[12px] py-1.5 px-3 flex items-center gap-1.5"
-            data-testid="financas-novo"
+            class="hidden md:inline-flex btn-primary text-[12px] py-1.5 px-3 items-center gap-1.5 shrink-0"
+            data-testid="financas-novo-desktop"
             (click)="abrirNovo(2)"
           >
             <i class="fa-solid fa-plus text-[10px]"></i>
             Novo lançamento
           </button>
         </div>
-      </div>
+
+        <!-- Toolbar (modo + periodo) - linha unica em mobile + desktop -->
+        <div class="flex items-stretch gap-2 flex-wrap">
+          <div class="flex bg-bg-elev border border-border rounded-lg p-0.5 h-9" role="tablist" aria-label="Modo de visualização">
+            <button
+              type="button"
+              role="tab"
+              [attr.aria-selected]="modo() === 'mensal'"
+              class="px-3 rounded text-[12px] font-medium transition-colors"
+              [class]="modo() === 'mensal' ? 'bg-bg-input text-text' : 'text-text-dim'"
+              (click)="setModo('mensal')"
+            >Mensal</button>
+            <button
+              type="button"
+              role="tab"
+              [attr.aria-selected]="modo() === 'anual'"
+              class="px-3 rounded text-[12px] font-medium transition-colors"
+              [class]="modo() === 'anual' ? 'bg-bg-input text-text' : 'text-text-dim'"
+              (click)="setModo('anual')"
+            >Anual</button>
+          </div>
+
+          <div class="relative flex-1 min-w-[200px]" (click)="$event.stopPropagation()">
+            <div class="flex items-stretch h-9 bg-bg-elev border border-border rounded-lg overflow-hidden">
+              <button
+                type="button"
+                class="w-9 grid place-items-center text-text-dim hover:text-text hover:bg-bg-input transition-colors"
+                [attr.aria-label]="modo() === 'mensal' ? 'Mês anterior' : 'Ano anterior'"
+                (click)="navegar(-1)"
+              ><i class="fa-solid fa-chevron-left text-[11px]"></i></button>
+              <button
+                type="button"
+                class="flex-1 px-3 text-[13px] font-medium hover:bg-bg-input transition-colors flex items-center gap-2 justify-center"
+                data-testid="financas-periodo"
+                [attr.aria-expanded]="periodoAberto()"
+                aria-haspopup="true"
+                (click)="togglePeriodo()"
+              >
+                <i class="fa-regular fa-calendar text-text-dim text-[11px]"></i>
+                <span class="capitalize">{{ rotuloPeriodo() }}</span>
+                <i class="fa-solid fa-chevron-down text-text-subtle text-[9px] transition-transform" [class.rotate-180]="periodoAberto()"></i>
+              </button>
+              <button
+                type="button"
+                class="w-9 grid place-items-center text-text-dim hover:text-text hover:bg-bg-input transition-colors"
+                [attr.aria-label]="modo() === 'mensal' ? 'Próximo mês' : 'Próximo ano'"
+                (click)="navegar(1)"
+              ><i class="fa-solid fa-chevron-right text-[11px]"></i></button>
+            </div>
+
+            @if (periodoAberto()) {
+              <div
+                class="absolute top-full left-0 right-0 sm:right-auto mt-1.5 z-30 card-elev p-3 sm:w-[280px] animate-fade-down"
+                data-testid="financas-periodo-popover"
+                role="dialog"
+              >
+                <div class="flex items-center justify-between mb-2">
+                  <button
+                    type="button"
+                    class="w-7 h-7 grid place-items-center rounded text-text-dim hover:text-text hover:bg-bg-input"
+                    aria-label="Ano anterior"
+                    (click)="ano.set(ano() - 1)"
+                  ><i class="fa-solid fa-chevron-left text-[10px]"></i></button>
+                  <div class="text-[13px] font-semibold tabular-nums">{{ ano() }}</div>
+                  <button
+                    type="button"
+                    class="w-7 h-7 grid place-items-center rounded text-text-dim hover:text-text hover:bg-bg-input"
+                    aria-label="Próximo ano"
+                    (click)="ano.set(ano() + 1)"
+                  ><i class="fa-solid fa-chevron-right text-[10px]"></i></button>
+                </div>
+
+                @if (modo() === 'mensal') {
+                  <div class="grid grid-cols-3 gap-1">
+                    @for (m of [1,2,3,4,5,6,7,8,9,10,11,12]; track m) {
+                      <button
+                        type="button"
+                        class="px-2 py-2 rounded text-[12px] font-medium capitalize transition-colors"
+                        [class]="
+                          mes() === m && ano() === anoSelecionado()
+                            ? 'bg-accent text-white'
+                            : (m === mesAtual() && ano() === anoAtual()
+                                ? 'bg-bg-input text-accent border border-accent/40'
+                                : 'bg-bg-surface text-text hover:bg-bg-input')
+                        "
+                        (click)="selecionarMes(m)"
+                      >
+                        {{ NOMES_MES_CURTO[m - 1] }}
+                      </button>
+                    }
+                  </div>
+                } @else {
+                  <div class="text-[11px] text-text-subtle text-center py-2">
+                    Visualizando o ano inteiro de {{ ano() }}.
+                  </div>
+                }
+
+                <div class="flex justify-between items-center mt-3 pt-2 border-t border-border">
+                  <button
+                    type="button"
+                    class="text-[11px] text-text-dim hover:text-accent"
+                    (click)="hoje()"
+                  >Hoje</button>
+                  <button
+                    type="button"
+                    class="text-[11px] text-text-subtle hover:text-text"
+                    (click)="periodoAberto.set(false)"
+                  >Fechar</button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </section>
 
       @if (carregando() && !balanco()) {
         <p class="text-text-subtle text-sm py-8 text-center">Carregando seu balanço...</p>
@@ -235,9 +237,17 @@ type FiltroStatus = 'todos' | 'pendente' | 'pago';
 
         <!-- Lista lancamentos -->
         <section class="flex flex-col gap-3 min-w-0">
-          <!-- View toggle -->
-          <div class="flex flex-wrap items-center gap-2">
-            <div class="flex bg-bg-elev border border-border rounded p-0.5" role="tablist" aria-label="Modo de visualização">
+          <!-- Section header: titulo + count + view tabs -->
+          <div class="flex flex-col gap-2.5">
+            <div class="flex items-baseline justify-between gap-3">
+              <h2 class="text-[15px] font-semibold tracking-tight">Lançamentos</h2>
+              <span class="text-[11px] text-text-subtle tabular-nums">
+                {{ lancamentosFiltrados().length }} {{ lancamentosFiltrados().length === 1 ? 'item' : 'itens' }}
+              </span>
+            </div>
+
+            <!-- View tabs: full width mobile, label sempre visivel -->
+            <div class="grid grid-cols-3 bg-bg-elev border border-border rounded-lg p-0.5 h-9" role="tablist" aria-label="Modo de visualização">
               @for (v of [
                 { v: 'lista', label: 'Lista', icone: 'fa-list-ul' },
                 { v: 'calendario', label: 'Calendário', icone: 'fa-calendar-days' },
@@ -247,52 +257,54 @@ type FiltroStatus = 'todos' | 'pendente' | 'pago';
                   type="button"
                   role="tab"
                   [attr.aria-selected]="viewLanc() === v.v"
-                  class="px-2.5 py-1 rounded text-[11px] font-medium transition-colors flex items-center gap-1.5"
-                  [class]="viewLanc() === v.v ? 'bg-bg-input text-text' : 'text-text-dim hover:text-text'"
+                  class="rounded text-[12px] font-medium transition-colors flex items-center justify-center gap-1.5"
+                  [class]="viewLanc() === v.v ? 'bg-bg-input text-text shadow-sm' : 'text-text-dim hover:text-text'"
                   [attr.data-testid]="'view-lanc-' + v.v"
                   (click)="setViewLanc($any(v.v))"
                 >
-                  <i [class]="'fa-solid ' + v.icone + ' text-[10px]'"></i>
-                  <span class="hidden sm:inline">{{ v.label }}</span>
+                  <i [class]="'fa-solid ' + v.icone + ' text-[11px]'"></i>
+                  <span>{{ v.label }}</span>
                 </button>
               }
             </div>
-            <span class="ml-auto text-[11px] text-text-subtle">
-              {{ lancamentosFiltrados().length }} {{ lancamentosFiltrados().length === 1 ? 'lançamento' : 'lançamentos' }}
-            </span>
           </div>
 
           <!-- Filtros (só lista e categoria) -->
           @if (viewLanc() !== 'calendario') {
-            <div class="flex flex-wrap items-center gap-2">
-              <div class="flex bg-bg-elev border border-border rounded p-0.5">
-                @for (t of [
-                  { v: 'todos', label: 'Tudo' },
-                  { v: 'receita', label: 'Recebimentos' },
-                  { v: 'despesa', label: 'Pagamentos' }
-                ]; track t.v) {
-                  <button
-                    type="button"
-                    class="px-2.5 py-1 rounded text-[11px] font-medium transition-colors"
-                    [class]="filtroTipo() === t.v ? 'bg-bg-input text-text' : 'text-text-dim hover:text-text'"
-                    (click)="setFiltroTipo($any(t.v))"
-                  >{{ t.label }}</button>
-                }
+            <div class="flex flex-col gap-2 bg-bg-elev/40 border border-border rounded-lg px-3 py-2.5">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium w-12 shrink-0">Tipo</span>
+                <div class="flex bg-bg-elev border border-border rounded p-0.5 flex-1 sm:flex-initial">
+                  @for (t of [
+                    { v: 'todos', label: 'Tudo' },
+                    { v: 'receita', label: 'Receita' },
+                    { v: 'despesa', label: 'Despesa' }
+                  ]; track t.v) {
+                    <button
+                      type="button"
+                      class="flex-1 sm:flex-initial px-2.5 py-1 rounded text-[11px] font-medium transition-colors whitespace-nowrap"
+                      [class]="filtroTipo() === t.v ? 'bg-bg-input text-text' : 'text-text-dim hover:text-text'"
+                      (click)="setFiltroTipo($any(t.v))"
+                    >{{ t.label }}</button>
+                  }
+                </div>
               </div>
-
-              <div class="flex bg-bg-elev border border-border rounded p-0.5">
-                @for (s of [
-                  { v: 'todos', label: 'Todos' },
-                  { v: 'pendente', label: 'A pagar' },
-                  { v: 'pago', label: 'Pagos' }
-                ]; track s.v) {
-                  <button
-                    type="button"
-                    class="px-2.5 py-1 rounded text-[11px] font-medium transition-colors"
-                    [class]="filtroStatus() === s.v ? 'bg-bg-input text-text' : 'text-text-dim hover:text-text'"
-                    (click)="setFiltroStatus($any(s.v))"
-                  >{{ s.label }}</button>
-                }
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium w-12 shrink-0">Status</span>
+                <div class="flex bg-bg-elev border border-border rounded p-0.5 flex-1 sm:flex-initial">
+                  @for (s of [
+                    { v: 'todos', label: 'Todos' },
+                    { v: 'pendente', label: 'A pagar' },
+                    { v: 'pago', label: 'Pagos' }
+                  ]; track s.v) {
+                    <button
+                      type="button"
+                      class="flex-1 sm:flex-initial px-2.5 py-1 rounded text-[11px] font-medium transition-colors whitespace-nowrap"
+                      [class]="filtroStatus() === s.v ? 'bg-bg-input text-text' : 'text-text-dim hover:text-text'"
+                      (click)="setFiltroStatus($any(s.v))"
+                    >{{ s.label }}</button>
+                  }
+                </div>
               </div>
             </div>
           }
@@ -318,7 +330,7 @@ type FiltroStatus = 'todos' | 'pendente' | 'pago';
             }
             @for (l of lancamentosFiltrados(); track l.id) {
               <article
-                class="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-bg-elev transition-colors"
+                class="px-3 sm:px-4 py-3 flex items-start sm:items-center gap-2.5 sm:gap-3 cursor-pointer hover:bg-bg-elev transition-colors"
                 [attr.data-testid]="'lancamento-' + l.id"
                 (click)="editar(l)"
               >
@@ -328,62 +340,62 @@ type FiltroStatus = 'todos' | 'pendente' | 'pago';
                 >
                   <i [class]="'fa-solid ' + iconeCategoria(l.categoria) + ' text-[12px]'"></i>
                 </div>
-                <div class="flex-1 min-w-0">
+                <div class="flex-1 min-w-0 flex flex-col gap-0.5">
                   <div class="flex items-center gap-1.5">
                     <span class="text-[13px] font-medium truncate">{{ l.descricao }}</span>
                     @if (l.recorrencia !== 0) {
-                      <i class="fa-solid fa-repeat text-accent text-[9px]" title="Recorrente"></i>
+                      <i class="fa-solid fa-repeat text-accent text-[9px] shrink-0" title="Recorrente"></i>
                     }
                     @if (l.temAnexo) {
-                      <i class="fa-solid fa-paperclip text-text-dim text-[9px]" title="Tem anexo"></i>
+                      <i class="fa-solid fa-paperclip text-text-dim text-[9px] shrink-0" title="Tem anexo"></i>
                     }
                   </div>
-                  <div class="text-[11px] text-text-subtle flex items-center gap-1.5">
+                  <div class="text-[11px] text-text-subtle flex items-center gap-1.5 flex-wrap">
                     <span>{{ rotuloCategoria(l.categoria) }}</span>
-                    <span>·</span>
-                    <span>{{ formatarData(l.dataReferencia) }}</span>
-                    @if (l.tipo === 2 && l.status === 1) {
-                      <span class="text-amber-400 font-medium">
-                        · {{ rotuloPrazo(l.dataReferencia) }}
-                      </span>
-                    }
+                    <span class="text-text-subtle/50">·</span>
+                    <span class="tabular-nums">{{ formatarData(l.dataReferencia) }}</span>
                   </div>
-                </div>
-                <div class="flex items-center gap-2 shrink-0">
-                  <div class="text-right">
-                    <div
+                  <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                    <span
                       class="text-[14px] font-semibold tabular-nums"
                       [class]="l.tipo === 1 ? 'text-emerald-400' : 'text-text'"
                     >
                       {{ l.tipo === 1 ? '+' : '−' }} {{ formatarMoeda(l.valor) }}
-                    </div>
+                    </span>
                     @if (l.tipo === 2) {
-                      <div
-                        class="text-[10px] font-medium uppercase tracking-wider"
-                        [class]="l.status === 2 ? 'text-emerald-500' : 'text-amber-400'"
-                      >
-                        {{ l.status === 2 ? 'pago' : 'pendente' }}
-                      </div>
+                      <span
+                        class="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
+                        [class]="l.status === 2 ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/15 text-amber-400'"
+                      >{{ l.status === 2 ? 'pago' : 'pendente' }}</span>
+                      @if (l.tipo === 2 && l.status === 1 && rotuloPrazo(l.dataReferencia)) {
+                        <span class="text-[10px] text-amber-400 font-medium">{{ rotuloPrazo(l.dataReferencia) }}</span>
+                      }
+                      @if (l.status === 2 && l.pagoEm) {
+                        <span class="text-[10px] text-text-subtle tabular-nums">em {{ formatarData(l.pagoEm) }}</span>
+                      }
                     }
                   </div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0 self-start sm:self-center">
                   @if (l.tipo === 2 && l.status === 1) {
                     <button
                       type="button"
-                      class="w-7 h-7 grid place-items-center rounded text-emerald-500 hover:bg-emerald-500/10 transition-colors"
+                      class="h-8 px-2.5 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-colors flex items-center gap-1.5 text-[11px] font-semibold"
                       [attr.data-testid]="'lancamento-pagar-' + l.id"
                       title="Marcar como pago"
                       (click)="$event.stopPropagation(); marcarPago(l)"
                     >
-                      <i class="fa-solid fa-check text-[12px]"></i>
+                      <i class="fa-solid fa-check text-[11px]"></i>
+                      <span class="hidden sm:inline">Pagar</span>
                     </button>
                   }
                   <button
                     type="button"
-                    class="w-7 h-7 grid place-items-center rounded text-text-subtle hover:text-danger hover:bg-danger/10 transition-colors"
+                    class="w-8 h-8 grid place-items-center rounded text-text-subtle hover:text-danger hover:bg-danger/10 transition-colors"
                     title="Remover"
                     (click)="$event.stopPropagation(); pedirRemover(l)"
                   >
-                    <i class="fa-solid fa-trash text-[11px]"></i>
+                    <i class="fa-solid fa-trash text-[12px]"></i>
                   </button>
                 </div>
               </article>
@@ -393,7 +405,8 @@ type FiltroStatus = 'todos' | 'pendente' | 'pago';
 
           <!-- ===== Vista CALENDÁRIO ===== -->
           @if (viewLanc() === 'calendario') {
-            <section class="card-elev p-4" data-testid="financas-calendario-grande">
+            <!-- Desktop: grid 7 cols -->
+            <section class="card-elev p-4 hidden md:block" data-testid="financas-calendario-grande">
               <div class="grid grid-cols-7 gap-1 text-[10px] text-text-subtle uppercase tracking-wider mb-2">
                 <span class="text-center py-1">Seg</span>
                 <span class="text-center py-1">Ter</span>
@@ -448,6 +461,83 @@ type FiltroStatus = 'todos' | 'pendente' | 'pago';
                 <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-sm bg-rose-500/40"></span>Pago</span>
               </div>
             </section>
+
+            <!-- Mobile: agenda vertical (1 dia por linha com lançamentos completos) -->
+            <section class="md:hidden card-elev divide-y divide-border" data-testid="financas-calendario-agenda">
+              @if (diasComLancamentos().length === 0) {
+                <div class="py-12 px-5 text-center flex flex-col items-center gap-3">
+                  <div class="w-14 h-14 rounded-full bg-bg-surface grid place-items-center">
+                    <i class="fa-regular fa-calendar text-text-subtle text-[20px]"></i>
+                  </div>
+                  <div class="text-[14px] font-medium">Nenhum lançamento esse mês</div>
+                </div>
+              }
+              @for (d of diasComLancamentos(); track d.iso) {
+                <div class="px-3 py-3 flex gap-3" [class.bg-accent]="d.hoje" [class.bg-opacity-5]="d.hoje">
+                  <div class="flex flex-col items-center w-12 shrink-0 leading-none">
+                    <span
+                      class="text-[20px] font-semibold tabular-nums"
+                      [class]="d.hoje ? 'text-accent' : 'text-text'"
+                    >{{ d.dia }}</span>
+                    <span
+                      class="text-[10px] uppercase tracking-wider mt-0.5"
+                      [class]="d.hoje ? 'text-accent' : 'text-text-subtle'"
+                    >{{ d.diaSemana }}</span>
+                    @if (d.hoje) {
+                      <span class="text-[8px] text-accent font-bold uppercase mt-0.5">Hoje</span>
+                    }
+                  </div>
+                  <div class="flex-1 min-w-0 flex flex-col gap-1.5">
+                    @for (l of d.lancamentos; track l.id) {
+                      <button
+                        type="button"
+                        class="text-left flex items-center gap-2 px-2 py-1.5 rounded border transition-colors"
+                        [class]="
+                          l.tipo === 1
+                            ? 'bg-emerald-500/10 border-emerald-500/30 hover:bg-emerald-500/15'
+                            : (l.status === 1 ? 'bg-amber-500/10 border-amber-500/30 hover:bg-amber-500/15' : 'bg-rose-500/10 border-rose-500/30 hover:bg-rose-500/15')
+                        "
+                        [attr.data-testid]="'cal-mob-lanc-' + l.id"
+                        (click)="editar(l)"
+                      >
+                        <div
+                          class="w-7 h-7 rounded-full grid place-items-center shrink-0"
+                          [class]="l.tipo === 1 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'"
+                        >
+                          <i [class]="'fa-solid ' + iconeCategoria(l.categoria) + ' text-[10px]'"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center gap-1.5">
+                            <span class="text-[12px] font-medium truncate">{{ l.descricao }}</span>
+                            @if (l.recorrencia !== 0) {
+                              <i class="fa-solid fa-repeat text-accent text-[8px]"></i>
+                            }
+                          </div>
+                          <div class="text-[10px] text-text-subtle">
+                            {{ rotuloCategoria(l.categoria) }}
+                            @if (l.tipo === 2) {
+                              ·
+                              <span [class]="l.status === 2 ? 'text-emerald-500' : 'text-amber-400'">
+                                {{ l.status === 2 ? 'pago' : 'a pagar' }}
+                              </span>
+                              @if (l.status === 2 && l.pagoEm) {
+                                <span class="text-text-subtle"> · pago em {{ formatarData(l.pagoEm) }}</span>
+                              }
+                            }
+                          </div>
+                        </div>
+                        <span
+                          class="text-[12px] font-semibold tabular-nums shrink-0"
+                          [class]="l.tipo === 1 ? 'text-emerald-400' : 'text-text'"
+                        >
+                          {{ l.tipo === 1 ? '+' : '−' }} {{ formatarMoeda(l.valor) }}
+                        </span>
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+            </section>
           }
 
           <!-- ===== Vista POR CATEGORIA ===== -->
@@ -501,10 +591,13 @@ type FiltroStatus = 'todos' | 'pendente' | 'pago';
                               <i class="fa-solid fa-repeat text-accent text-[9px]"></i>
                             }
                           </div>
-                          <div class="text-[11px] text-text-subtle flex items-center gap-1.5">
+                          <div class="text-[11px] text-text-subtle flex items-center gap-1.5 flex-wrap">
                             <span>{{ formatarData(l.dataReferencia) }}</span>
                             @if (l.tipo === 2 && l.status === 1) {
                               <span class="text-amber-400">· {{ rotuloPrazo(l.dataReferencia) }}</span>
+                            }
+                            @if (l.tipo === 2 && l.status === 2 && l.pagoEm) {
+                              <span class="text-emerald-500">· pago em {{ formatarData(l.pagoEm) }}</span>
                             }
                           </div>
                         </div>
@@ -514,10 +607,13 @@ type FiltroStatus = 'todos' | 'pendente' | 'pago';
                         @if (l.tipo === 2 && l.status === 1) {
                           <button
                             type="button"
-                            class="w-7 h-7 grid place-items-center rounded text-emerald-500 hover:bg-emerald-500/10"
+                            class="h-7 px-2 rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition-colors flex items-center gap-1 text-[11px] font-semibold"
                             title="Marcar como pago"
                             (click)="$event.stopPropagation(); marcarPago(l)"
-                          ><i class="fa-solid fa-check text-[11px]"></i></button>
+                          >
+                            <i class="fa-solid fa-check text-[10px]"></i>
+                            <span class="hidden sm:inline">Pagar</span>
+                          </button>
                         }
                       </article>
                     }
@@ -528,8 +624,8 @@ type FiltroStatus = 'todos' | 'pendente' | 'pago';
           }
         </section>
 
-        <!-- Lateral: calendário + categorias -->
-        <aside class="flex flex-col gap-3 min-w-0">
+        <!-- Lateral: calendário + categorias (só desktop xl) -->
+        <aside class="hidden xl:flex flex-col gap-3 min-w-0">
           @if (modo() === 'mensal') {
             <section class="card-elev p-4" data-testid="financas-calendario">
               <h3 class="text-[12px] font-semibold tracking-tight mb-3">Calendário do mês</h3>
@@ -621,6 +717,22 @@ type FiltroStatus = 'todos' | 'pendente' | 'pago';
       }
     </div>
 
+    <!-- FAB mobile (acima do bottom-nav) -->
+    <button
+      type="button"
+      class="fab-anim md:hidden fixed bottom-20 right-4 z-30 h-14 rounded-full btn-primary shadow-lg flex items-center justify-center text-white overflow-hidden transition-[padding,gap] duration-[600ms] ease-out"
+      [class]="fabExpandido() ? 'pl-4 pr-5 gap-2' : 'w-14 px-0'"
+      data-testid="financas-fab"
+      aria-label="Novo lançamento"
+      (click)="abrirNovo(2)"
+    >
+      <i class="fa-solid fa-plus text-[18px] shrink-0"></i>
+      <span
+        class="text-[14px] font-semibold whitespace-nowrap overflow-hidden transition-[max-width,opacity] duration-[600ms] ease-out"
+        [class]="fabExpandido() ? 'max-w-[200px] opacity-100' : 'max-w-0 opacity-0'"
+      >Novo lançamento</span>
+    </button>
+
     @if (mostrandoForm()) {
       <app-lancamento-form
         [lancamento]="emEdicao()"
@@ -640,6 +752,17 @@ type FiltroStatus = 'todos' | 'pendente' | 'pago';
       />
     }
   `,
+  styles: [`
+    @keyframes fab-pop-in {
+      0%   { transform: scale(0.5); opacity: 0; }
+      55%  { transform: scale(1.12); opacity: 1; }
+      80%  { transform: scale(0.96); }
+      100% { transform: scale(1); }
+    }
+    .fab-anim {
+      animation: fab-pop-in 700ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+  `],
 })
 export class FinancasComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly api = inject(FinancasService);
@@ -687,6 +810,7 @@ export class FinancasComponent implements OnInit, OnDestroy, AfterViewInit {
   readonly filtroTipo = signal<FiltroTipo>('todos');
   readonly filtroStatus = signal<FiltroStatus>('todos');
   readonly viewLanc = signal<'lista' | 'calendario' | 'categoria'>('lista');
+  readonly fabExpandido = signal(true);
 
   setViewLanc(v: 'lista' | 'calendario' | 'categoria'): void {
     this.viewLanc.set(v);
@@ -707,6 +831,7 @@ export class FinancasComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnInit(): void {
     this.carregar();
+    setTimeout(() => this.fabExpandido.set(false), 2500);
   }
 
   ngAfterViewInit(): void {}
@@ -757,6 +882,13 @@ export class FinancasComponent implements OnInit, OnDestroy, AfterViewInit {
       return `${this.NOMES_MES[this.mes() - 1]} ${this.ano()}`;
     }
     return String(this.ano());
+  }
+
+  subtituloHero(): string {
+    if (this.modo() === 'mensal') {
+      return `Balanço de ${this.NOMES_MES[this.mes() - 1]} de ${this.ano()}`;
+    }
+    return `Balanço de ${this.ano()}`;
   }
 
   carregar(): void {
@@ -875,6 +1007,41 @@ export class FinancasComponent implements OnInit, OnDestroy, AfterViewInit {
     }
     while (cells.length % 7 !== 0) cells.push({ dia: null, lancamentos: [], hoje: false });
     return cells;
+  });
+
+  // ===== Agenda mobile (vista calendário) — agrupa por dia =====
+  diasComLancamentos = computed(() => {
+    const ano = this.ano();
+    const mes = this.mes();
+    const diasSemana = ['dom', 'seg', 'ter', 'qua', 'qui', 'sex', 'sáb'];
+
+    const porDia = new Map<number, Lancamento[]>();
+    for (const l of this.lancamentos()) {
+      const d = new Date(l.dataReferencia);
+      if (d.getFullYear() === ano && d.getMonth() === mes - 1) {
+        const dia = d.getDate();
+        const arr = porDia.get(dia) ?? [];
+        arr.push(l);
+        porDia.set(dia, arr);
+      }
+    }
+
+    const hoje = new Date();
+    const ehMesAtual = hoje.getFullYear() === ano && hoje.getMonth() === mes - 1;
+
+    const dias: { iso: string; dia: number; diaSemana: string; hoje: boolean; lancamentos: Lancamento[] }[] = [];
+    const diasOrdenados = [...porDia.keys()].sort((a, b) => a - b);
+    for (const dia of diasOrdenados) {
+      const date = new Date(ano, mes - 1, dia);
+      dias.push({
+        iso: `${ano}-${String(mes).padStart(2, '0')}-${String(dia).padStart(2, '0')}`,
+        dia,
+        diaSemana: diasSemana[date.getDay()],
+        hoje: ehMesAtual && hoje.getDate() === dia,
+        lancamentos: porDia.get(dia) ?? [],
+      });
+    }
+    return dias;
   });
 
   // ===== Agrupamento por categoria =====

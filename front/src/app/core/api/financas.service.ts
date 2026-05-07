@@ -46,6 +46,7 @@ export interface LancamentoUpdatePayload {
   recorrencia?: TipoRecorrenciaLanc;
   anexoBoleto?: string | null;
   observacoes?: string | null;
+  dataPagamento?: string | null;
 }
 
 export interface BalancoCategoria {
@@ -97,6 +98,10 @@ export class FinancasService {
 
   marcarPago(id: string): Observable<Lancamento> {
     return this.http.post<Lancamento>(`${this.api}/lancamentos/${id}/pagar`, {});
+  }
+
+  desfazerPagamento(id: string): Observable<Lancamento> {
+    return this.http.post<Lancamento>(`${this.api}/lancamentos/${id}/desfazer-pagamento`, {});
   }
 
   obterBalanco(ano?: number, mes?: number): Observable<Balanco> {

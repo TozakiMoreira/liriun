@@ -65,6 +65,16 @@ public class FinancasController : ControllerBase
         return result.ToActionResult(view => Ok(view));
     }
 
+    [HttpPost("lancamentos/{id:guid}/desfazer-pagamento")]
+    public async Task<IActionResult> DesfazerPagamento(
+        [FromRoute] Guid id,
+        [FromServices] DesfazerPagamentoUseCase useCase,
+        CancellationToken ct)
+    {
+        Result<LancamentoViewModel> result = await useCase.ExecuteAsync(id, ct);
+        return result.ToActionResult(view => Ok(view));
+    }
+
     [HttpGet("balanco")]
     public async Task<IActionResult> Balanco(
         [FromServices] ObterBalancoUseCase useCase,

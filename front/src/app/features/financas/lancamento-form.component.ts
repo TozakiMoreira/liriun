@@ -12,6 +12,7 @@ import {
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { switchMap } from 'rxjs/operators';
 import { DatePickerComponent } from '../../shared/date-picker.component';
 import { extrairProblemDetails } from '../../shared/problem-details';
 import {
@@ -212,6 +213,34 @@ import {
                 <p class="text-danger text-xs">{{ erroAnexo() }}</p>
               }
             </div>
+
+            @if (estaPago()) {
+              <div class="flex flex-col gap-1.5 bg-emerald-500/5 border border-emerald-500/20 rounded p-2.5">
+                <label class="field-label flex items-center gap-1.5">
+                  <i class="fa-solid fa-check text-emerald-500 text-[10px]"></i>
+                  Data do pagamento
+                </label>
+                <app-date-picker
+                  [valor]="dataPagamento || null"
+                  placeholder="Quando foi pago"
+                  ariaLabel="Data do pagamento"
+                  (valorChange)="dataPagamento = $event ?? ''"
+                />
+                <span class="text-[10px] text-text-subtle">
+                  Ajuste pra data real, se foi diferente da que você marcou pago.
+                </span>
+                <button
+                  type="button"
+                  class="text-[11px] text-amber-400 hover:text-amber-300 hover:underline self-start mt-1 flex items-center gap-1.5 disabled:opacity-50"
+                  data-testid="lancamento-form-desfazer"
+                  [disabled]="salvando()"
+                  (click)="desfazerPagamento()"
+                >
+                  <i class="fa-solid fa-rotate-left text-[10px]"></i>
+                  Voltar pra "a pagar"
+                </button>
+              </div>
+            }
           }
 
           <div class="flex flex-col gap-1.5">
@@ -272,6 +301,7 @@ export class LancamentoFormComponent implements OnInit {
   categoria: CategoriaLancamento = 100;
   recorrencia: TipoRecorrenciaLanc = 0;
   observacoes = '';
+  dataPagamento = '';
 
   readonly anexoPreview = signal<string | null>(null);
   readonly anexoNome = signal('');
@@ -304,11 +334,31 @@ export class LancamentoFormComponent implements OnInit {
       this.categoria = this.lancamento.categoria;
       this.recorrencia = this.lancamento.recorrencia;
       this.observacoes = this.lancamento.observacoes ?? '';
+      this.dataPagamento = this.lancamento.pagoEm ? this.lancamento.pagoEm.substring(0, 10) : '';
     } else {
       this.tipo.set(this.tipoInicial);
       this.categoria = this.tipo() === 1 ? 1 : 100;
       this.data = this.hojeIso();
     }
+  }
+
+  estaPago(): boolean {
+    return this.lancamento?.tipo === 2 && this.lancamento?.status === 2;
+  }
+
+  desfazerPagamento(): void {
+    if (!this.lancamento || this.salvando()) return;
+    this.salvando.set(true);
+    this.api.desfazerPagamento(this.lancamento.id).subscribe({
+      next: (l) => {
+        this.salvando.set(false);
+        this.salvo.emit(l);
+      },
+      error: () => {
+        this.salvando.set(false);
+        this.erroGeral.set('Não consegui desfazer o pagamento.');
+      },
+    });
   }
 
   trocarTipo(novo: TipoLancamento): void {
@@ -387,16 +437,28 @@ export class LancamentoFormComponent implements OnInit {
 
     this.salvando.set(true);
 
+    const updatePayload = {
+      descricao: payload.descricao,
+      valor: payload.valor,
+      dataReferencia: payload.dataReferencia,
+      categoria: payload.categoria,
+      recorrencia: payload.recorrencia,
+      anexoBoleto: payload.anexoBoleto,
+      observacoes: payload.observacoes,
+      dataPagamento: this.estaPago() && this.dataPagamento
+        ? new Date(this.dataPagamento + 'T00:00:00').toISOString()
+        : null,
+    };
+
+    // Se editando e estava pago mas user limpou a data → desfaz pagamento primeiro, depois atualiza demais campos
+    const limpouPagamento = this.lancamento && this.estaPago() && !this.dataPagamento;
+
     const req$ = this.lancamento
-      ? this.api.atualizar(this.lancamento.id, {
-          descricao: payload.descricao,
-          valor: payload.valor,
-          dataReferencia: payload.dataReferencia,
-          categoria: payload.categoria,
-          recorrencia: payload.recorrencia,
-          anexoBoleto: payload.anexoBoleto,
-          observacoes: payload.observacoes,
-        })
+      ? (limpouPagamento
+          ? this.api.desfazerPagamento(this.lancamento.id).pipe(
+              switchMap(() => this.api.atualizar(this.lancamento!.id, updatePayload))
+            )
+          : this.api.atualizar(this.lancamento.id, updatePayload))
       : this.api.criar(payload);
 
     req$.subscribe({

@@ -49,7 +49,8 @@ public class AtualizarLancamentoUseCase
             input.Categoria,
             input.Recorrencia,
             input.AnexoBoleto,
-            input.Observacoes);
+            input.Observacoes,
+            input.DataPagamento);
 
         if (atualizar.IsFailure)
             return Result<LancamentoViewModel>.Failure(atualizar.Error!);

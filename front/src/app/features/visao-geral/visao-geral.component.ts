@@ -803,14 +803,20 @@ export class VisaoGeralComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    // Scroll agenda pra trazer hora atual ao centro
-    setTimeout(() => {
-      const el = this.agendaScroll()?.nativeElement;
-      const topo = this.topoLinhaAgora();
-      if (el && topo !== null) {
-        el.scrollTop = Math.max(0, topo - el.clientHeight / 2);
-      }
-    }, 80);
+    // Scroll agenda pra trazer hora atual ao topo (com pequena margem).
+    // Tenta multiplas vezes pra garantir que pega após render das tarefas async.
+    this.scrollAgendaAgora();
+    setTimeout(() => this.scrollAgendaAgora(), 250);
+    setTimeout(() => this.scrollAgendaAgora(), 800);
+  }
+
+  private scrollAgendaAgora(): void {
+    const el = this.agendaScroll()?.nativeElement;
+    const topo = this.topoLinhaAgora();
+    if (el && topo !== null) {
+      // Posiciona linha agora a ~80px do topo do scroll (não no centro)
+      el.scrollTop = Math.max(0, topo - 80);
+    }
   }
 
   ngOnDestroy(): void {

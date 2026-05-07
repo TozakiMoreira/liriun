@@ -15,6 +15,7 @@ public sealed record TarefaReadModel(
     TimeSpan? HorarioFinal,
     string? Observacoes,
     TipoRecorrencia Recorrencia,
+    int RecorrenciaQuantidade,
     DateTime CriadaEm,
     DateTime? ConcluidaEm,
     IReadOnlyList<TarefaCategoriaReadModel> Categorias);

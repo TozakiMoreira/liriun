@@ -84,7 +84,8 @@ public class Lancamento
         CategoriaLancamento categoria,
         TipoRecorrencia recorrencia,
         string? anexoBoleto,
-        string? observacoes)
+        string? observacoes,
+        DateTime? dataPagamento = null)
     {
         Descricao = descricao?.Trim() ?? string.Empty;
         Valor = valor;
@@ -93,6 +94,13 @@ public class Lancamento
         Recorrencia = recorrencia;
         AnexoBoleto = NormalizarAnexo(anexoBoleto);
         Observacoes = NormalizarObservacoes(observacoes);
+
+        // Se está pago e data fornecida, atualiza data do pagamento
+        if (Status == StatusLancamento.Pago && dataPagamento.HasValue)
+        {
+            PagoEm = dataPagamento.Value.Date;
+        }
+
         return Validar();
     }
 

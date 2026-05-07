@@ -57,12 +57,20 @@ public class CriarTarefaUseCase
             input.DataPrazo,
             input.HorarioFinal,
             input.Observacoes,
-            input.Recorrencia);
+            input.Recorrencia,
+            input.RecorrenciaQuantidade);
 
         if (criacaoResult.IsFailure)
             return Result<TarefaViewModel>.Failure(criacaoResult.Error!);
 
         Tarefa tarefa = await _tarefas.AdicionarAsync(criacaoResult.Value!, categoriaIds, ct);
+
+        // Gera ocorrências futuras upfront se recorrência > 1.
+        IReadOnlyList<Tarefa> futuras = criacaoResult.Value!.GerarOcorrenciasFuturas();
+        foreach (Tarefa futura in futuras)
+        {
+            await _tarefas.AdicionarAsync(futura, categoriaIds, ct);
+        }
 
         return Result<TarefaViewModel>.Success(TarefaViewModel.FromEntity(tarefa, DateTime.UtcNow));
     }

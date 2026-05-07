@@ -13,6 +13,7 @@ public class TarefaModel
     public Prioridade Prioridade { get; set; }
     public StatusTarefa Status { get; set; }
     public TipoRecorrencia Recorrencia { get; set; }
+    public int RecorrenciaQuantidade { get; set; } = 1;
     public DateTime CriadaEm { get; set; }
     public DateTime? ConcluidaEm { get; set; }
 

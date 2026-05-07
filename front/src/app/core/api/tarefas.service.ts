@@ -21,6 +21,7 @@ export interface Tarefa {
   horarioFinal: string | null;
   observacoes: string | null;
   recorrencia: TipoRecorrencia;
+  recorrenciaQuantidade: number;
   criadaEm: string;
   concluidaEm: string | null;
   categorias: TarefaCategoriaRef[];
@@ -34,6 +35,7 @@ export interface TarefaPayload {
   horarioFinal?: string | null;
   observacoes?: string | null;
   recorrencia?: TipoRecorrencia;
+  recorrenciaQuantidade?: number;
 }
 
 @Injectable({ providedIn: 'root' })

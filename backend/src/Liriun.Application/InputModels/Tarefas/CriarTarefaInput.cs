@@ -9,4 +9,5 @@ public sealed record CriarTarefaInput(
     IReadOnlyList<Guid>? CategoriaIds = null,
     TimeSpan? HorarioFinal = null,
     string? Observacoes = null,
-    TipoRecorrencia Recorrencia = TipoRecorrencia.Nenhuma);
+    TipoRecorrencia Recorrencia = TipoRecorrencia.Nenhuma,
+    int RecorrenciaQuantidade = 1);

@@ -259,6 +259,174 @@
 - **4 exemplos concretos** colados no prompt (psi, comprar, reunião, aniversário) — Gemini segue padrão melhor
 
 **Iteração 2 — turnos de pergunta/conversa:**
+(continua abaixo)
+
+---
+
+### 11. Recorrência tarefas — quantidade upfront (fix bug "não vejo próxima")
+
+**Problema:** Tarefa recorrente só gerava próxima ocorrência ao concluir. Se user não concluía, nunca via outras semanas.
+
+**Solução:**
+- Novo campo `RecorrenciaQuantidade` (1-4) em `Tarefa`
+- `GerarOcorrenciasFuturas()` cria N-1 tarefas upfront (datas avançadas +7d ou +1mês)
+- `CriarTarefaUseCase` cria tarefa original + chama upfront — todas instâncias visíveis imediatamente
+- Auto-renew on conclude **removido** (substituído por upfront determinístico)
+- `Atualizar` aceita quantidade
+- Migration `AdicionarRecorrenciaQuantidade` aplicada Supabase
+- Form: ao escolher recorrência, aparece bloco "Por quantas semanas/meses?" com chips 1x/2x/3x/4x + texto preview
+
+**Arquivos editados:**
+- `backend/src/Liriun.Core/Entities/Tarefa.cs`
+- `backend/src/Liriun.Application/InputModels/Tarefas/{Criar,Atualizar}TarefaInput.cs`
+- `backend/src/Liriun.Application/ReadModels/TarefaReadModel.cs`
+- `backend/src/Liriun.Application/ViewModels/Tarefas/TarefaViewModel.cs`
+- `backend/src/Liriun.Application/UseCases/Tarefas/{Criar,Atualizar,Concluir}TarefaUseCase.cs`
+- `backend/src/Liriun.Infrastructure/Persistence/Models/TarefaModel.cs`
+- `backend/src/Liriun.Infrastructure/Persistence/Mappers/TarefaMapper.cs`
+- `backend/src/Liriun.Infrastructure/Persistence/Configurations/TarefaConfiguration.cs`
+- `backend/src/Liriun.Infrastructure/ReadRepositories/TarefaReadRepository.cs`
+- `front/src/app/core/api/tarefas.service.ts`
+- `front/src/app/features/tarefas/tarefa-form.component.ts`
+
+---
+
+### 12. Reestruturação completa da página Tarefas + bulk select
+
+**Pedido:** estruturar igual Finanças. Bulk operations (excluir/concluir múltiplas).
+
+**Solução:**
+- Header local mobile redundante removido
+- Hero: subtítulo dinâmico (`12 pendentes · 3 atrasadas`) + botão `+ Nova tarefa` desktop
+- 3 stat cards: Pendentes / Atrasadas (vermelho se >0) / Hoje (roxo)
+- Toolbar 2 grupos: View tabs (Lista/Quadro/Semana) à esquerda; Filtros + Selecionar agrupados à direita (`md:ml-auto`)
+- FAB mobile flutuante bottom-right com **pop-in animation** ao entrar (scale spring) e **collapse suave** (max-width + opacity transition) após 2.5s — vira bolinha
+- Bulk: signal `selecionando` + `selecionados` Set
+- Botão "Selecionar"/"Cancelar" toggle (bg accent quando ativo)
+- Modo seleção: bolinha de concluir some, slot vira **checkbox quadrado** (rounded-md, 20px) distinto
+- Action bar contextual sticky bottom: count + selecionar todas + botões Concluir (verde) / Excluir (vermelho)
+- Bulk operations rodam em paralelo (loop subscribe), feedback toast
+
+**Filtros mobile:** painel agora é **bottom-sheet fullwidth** com backdrop (não mais popover estreito que virava coluna).
+
+**Arquivos editados:**
+- `front/src/app/features/tarefas/tarefas.component.ts`
+
+---
+
+### 13. Auto-scroll agenda home pra hora atual
+
+**Pedido:** ao abrir tela inicial, agenda já mostrar horário atual no topo (não 0h).
+
+**Solução:**
+- `ngAfterViewInit` chama scroll **3x** (imediato + 250ms + 800ms) — garante pegar após tarefas async chegarem
+- Linha "agora" posicionada ~80px do topo do scroll (antes era centro)
+
+**Arquivo:** `front/src/app/features/visao-geral/visao-geral.component.ts`
+
+---
+
+### 14. Badge mobile bottom-nav refatorado
+
+**Problema:** 2 badges sobrepostos (atrasadas vermelho + pendentes accent) ficavam ilegíveis no ícone.
+
+**Solução:**
+- 1 badge única à direita com **count total pendentes** em accent (sempre)
+- Dot vermelho 10px com `animate-pulse` à esquerda **só quando há atrasadas** — alerta sutil sem dominar
+- Border `bg-sidebar` pra destaque limpo (estilo iOS)
+- Posicionado relativo ao ícone, não ao botão inteiro
+
+**Arquivo:** `front/src/app/layout/shell.component.ts`
+
+---
+
+### 15. Reestruturação Finanças mobile + título destacado
+
+**Pedido:** página Finanças mobile bagunçada, calendário pequeno demais.
+
+**Soluções:**
+- Hero: label "BALANÇO" pequeno + **H1 grande do período** (`Maio 2026` / `2026`) + botão "Novo lançamento" desktop alinhado direita
+- Vista Calendário **mobile**: trocou grid 7 cols por **agenda vertical** (1 dia por linha com lançamentos legíveis, ícone, descrição, valor, status)
+- Vista Calendário **desktop**: grid 7 cols mantido (`hidden md:block`)
+- Mini-calendar lateral só `xl:flex` — esconde mobile/tablet
+- Vista Lista item refatorado: 3 linhas internas verticais (descrição+ícones / categoria·data / valor+status+prazo) — sem mais sobreposição mobile
+
+**Arquivos:** `front/src/app/features/financas/financas.component.ts`
+
+---
+
+### 16. Botão "Pagar" claro (sem confundir com status)
+
+**Problema:** ícone check verde solto parecia status "pago" mesmo quando lançamento estava pendente.
+
+**Solução:** botão virou **pill verde com border** + ícone `fa-check` + texto "Pagar" (`hidden sm:inline`). Clearly action, not state.
+
+**Arquivos:** `front/src/app/features/financas/financas.component.ts`
+
+---
+
+### 17. Data de pagamento editável + desfazer
+
+**Pedido:** ao marcar pago, sistema setava `pagoEm = hoje`. User pode ter pago em outro dia.
+
+**Solução:**
+- Form lança bloco "Data do pagamento" (bg verde sutil) quando editing && tipo=despesa && status=pago
+- Date picker editável com tip
+- Botão "↺ Voltar pra a pagar" (âmbar) chama API `desfazer-pagamento`
+- Limpar data ao salvar → frontend chama `desfazerPagamento` + `atualizar` em chain (switchMap)
+- Backend: `Lancamento.Atualizar` aceita `dataPagamento` opcional (atualiza `PagoEm` se status=Pago)
+- Backend: novo `DesfazerPagamentoUseCase` chama `MarcarComoPendente()`
+- Endpoint: `POST /financas/lancamentos/{id}/desfazer-pagamento`
+- Data de pagamento exibida nas 3 vistas (Lista/Calendário mobile/Categoria) quando status=pago
+
+**Arquivos novos:**
+- `backend/src/Liriun.Application/UseCases/Lancamentos/DesfazerPagamentoUseCase.cs`
+
+**Arquivos editados:**
+- `backend/src/Liriun.Core/Entities/Lancamento.cs`
+- `backend/src/Liriun.Application/InputModels/Lancamentos/AtualizarLancamentoInput.cs`
+- `backend/src/Liriun.Application/UseCases/Lancamentos/AtualizarLancamentoUseCase.cs`
+- `backend/src/Liriun.Application/IoC/ApplicationModule.cs`
+- `backend/src/Liriun.Api/Controllers/FinancasController.cs`
+- `front/src/app/core/api/financas.service.ts`
+- `front/src/app/features/financas/lancamento-form.component.ts`
+- `front/src/app/features/financas/financas.component.ts`
+
+---
+
+### 18. Form de tarefa estruturado em seções
+
+**Pedido:** form bagunçado, agrupar visualmente.
+
+**Solução:** template refatorado:
+- Header com ícone (`fa-pen` edit / `fa-plus` novo) + título + subtítulo de contexto
+- 4 seções com bg sutil + ícones uppercase:
+  - **Sobre**: Prioridade + Categorias (pills mais arredondados)
+  - **Quando**: Data + Hora (grid 2 cols)
+  - **Recorrência**: chips + sub-bloco quantidade quando ativo
+  - **Detalhes**: Observações com counter
+- Nome input grande (16px, py-3)
+- Footer sticky bottom com botão Cancelar + Salvar (com check icon)
+
+**Arquivos:** `front/src/app/features/tarefas/tarefa-form.component.ts`
+
+---
+
+### 19. FAB mobile com pop-in + collapse suave
+
+**Pedido:** efeito de POP no botão ao entrar, depois recolher virando bolinha.
+
+**Solução:**
+- Keyframe `fab-pop-in` (700ms cubic-bezier spring): scale 0.5 → 1.12 → 0.96 → 1
+- Após 2.5s: collapse via transition `max-width: 160 → 0` + `opacity: 1 → 0` no texto (600ms ease-out)
+- Padding/gap também transitam suave
+- Aplicado em Tarefas + Finanças
+
+**Arquivos:**
+- `front/src/app/features/tarefas/tarefas.component.ts`
+- `front/src/app/features/financas/financas.component.ts`
+
+---
 Sintoma: user pergunta "pode me indicar sites pra isso?" após criar tarefa → IA respondia "Anotado." e criava tarefa duplicada com título estranho.
 
 Causa: prompt forçava `tarefa preenchida sempre` mesmo quando turno era pergunta.

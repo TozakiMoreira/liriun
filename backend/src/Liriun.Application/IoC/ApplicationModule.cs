@@ -41,6 +41,7 @@ public static class ApplicationModule
         services.AddScoped<AtualizarLancamentoUseCase>();
         services.AddScoped<RemoverLancamentoUseCase>();
         services.AddScoped<MarcarPagoUseCase>();
+        services.AddScoped<DesfazerPagamentoUseCase>();
         services.AddScoped<ObterBalancoUseCase>();
         services.AddScoped<ObterAnexoUseCase>();
 

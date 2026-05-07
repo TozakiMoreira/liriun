@@ -464,23 +464,23 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
           class="flex flex-col items-center justify-center gap-0.5 text-text-dim active:bg-bg-elev relative"
           data-testid="nav-mobile-tarefas"
         >
-          <i class="fa-solid fa-list-check text-base"></i>
+          <div class="relative">
+            <i class="fa-solid fa-list-check text-base"></i>
+            @if (pendentesCount() > 0) {
+              <span
+                class="absolute -top-1.5 -right-2.5 text-[9px] px-1 rounded-full font-bold tabular-nums min-w-[16px] h-[16px] grid place-items-center leading-none border border-bg-sidebar bg-accent text-white"
+                [title]="pendentesCount() + ' pendente' + (pendentesCount() === 1 ? '' : 's')"
+              >{{ pendentesCount() }}</span>
+            }
+            @if (atrasadasCount() > 0) {
+              <span
+                class="absolute -top-1.5 -left-2 w-[10px] h-[10px] rounded-full bg-danger border border-bg-sidebar animate-pulse"
+                [title]="atrasadasCount() + ' atrasada' + (atrasadasCount() === 1 ? '' : 's')"
+                aria-hidden="true"
+              ></span>
+            }
+          </div>
           <span class="text-[10px] font-medium">Tarefas</span>
-          @if (atrasadasCount() > 0) {
-            <span
-              class="absolute top-1 right-1/2 translate-x-5 text-[9px] px-1 py-0 rounded-full font-bold tabular-nums min-w-[16px] text-center leading-tight bg-danger text-white"
-              [title]="atrasadasCount() + ' atrasadas'"
-            >
-              {{ atrasadasCount() }}
-            </span>
-          }
-          @if (pendentesCount() > 0) {
-            <span
-              class="absolute top-2 right-1/2 translate-x-3 text-[9px] px-1 py-0 rounded-full font-bold tabular-nums min-w-[16px] text-center leading-tight bg-accent text-white"
-            >
-              {{ pendentesCount() }}
-            </span>
-          }
         </a>
         <a
           routerLink="/app/concluidas"
