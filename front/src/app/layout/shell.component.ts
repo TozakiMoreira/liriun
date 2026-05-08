@@ -5,16 +5,17 @@ import { filter } from 'rxjs/operators';
 import { TarefasService } from '../core/api/tarefas.service';
 import { AuthService } from '../core/auth/auth.service';
 import { TokenStorage } from '../core/auth/token.storage';
+import { FEATURE_FLAGS } from '../core/features/feature-flags';
 import { PageHeaderService } from '../core/layout/page-header.service';
 import { LocaleService } from '../core/locale/locale.service';
 import { AvatarComponent } from '../shared/avatar.component';
 import { BrandComponent } from '../shared/brand.component';
-import { ThemeToggleComponent } from '../shared/theme-toggle.component';
+import { ConquistaToastComponent } from '../shared/conquista-toast.component';
 
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, AvatarComponent, BrandComponent, ThemeToggleComponent],
+  imports: [CommonModule, RouterOutlet, RouterLink, RouterLinkActive, AvatarComponent, BrandComponent, ConquistaToastComponent],
   template: `
     <div
       class="flex flex-col min-h-screen bg-bg text-text md:grid"
@@ -40,7 +41,6 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
           <div class="text-[13px] font-semibold tracking-tight"><app-brand /></div>
         </a>
         <div class="flex items-center gap-2">
-          <app-theme-toggle [mostrarLabel]="false" />
           <div
             class="relative"
             data-testid="mobile-user-menu"
@@ -177,48 +177,31 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
           </a>
         }
 
-        @if (!sidebarCollapsed()) {
-          <div
-            class="text-[10px] text-text-subtle px-2 py-1.5 tracking-wider uppercase font-semibold"
-          >
-            Início
-          </div>
-        }
         <nav class="flex flex-col gap-px" [class.items-center]="sidebarCollapsed()">
+          <a
+            routerLink="/app/captura"
+            routerLinkActive="nav-link-active"
+            class="nav-link nav-link-primary"
+            [class.nav-link-collapsed]="sidebarCollapsed()"
+            data-testid="nav-captura"
+            [title]="sidebarCollapsed() ? locale.t('nav.falar') : null"
+          >
+            <i class="fa-solid fa-microphone nav-icon"></i>
+            @if (!sidebarCollapsed()) {
+              <span class="flex-1">{{ locale.t('nav.falar') }}</span>
+            }
+          </a>
           <a
             routerLink="/app/visao-geral"
             routerLinkActive="nav-link-active"
             class="nav-link"
             [class.nav-link-collapsed]="sidebarCollapsed()"
             data-testid="nav-visao-geral"
-            [title]="sidebarCollapsed() ? 'Visão geral' : null"
+            [title]="sidebarCollapsed() ? locale.t('nav.hoje') : null"
           >
             <i class="fa-solid fa-house nav-icon"></i>
             @if (!sidebarCollapsed()) {
-              <span class="flex-1">Visão geral</span>
-            }
-          </a>
-        </nav>
-
-        @if (!sidebarCollapsed()) {
-          <div
-            class="text-[10px] text-text-subtle px-2 py-1.5 tracking-wider uppercase font-semibold mt-4"
-          >
-            Minhas tarefas
-          </div>
-        }
-        <nav class="flex flex-col gap-px" [class.items-center]="sidebarCollapsed()" [class.mt-4]="sidebarCollapsed()">
-          <a
-            routerLink="/app/captura"
-            routerLinkActive="nav-link-active"
-            class="nav-link"
-            [class.nav-link-collapsed]="sidebarCollapsed()"
-            data-testid="nav-captura"
-            [title]="sidebarCollapsed() ? 'Nova tarefa' : null"
-          >
-            <i class="fa-solid fa-bolt nav-icon"></i>
-            @if (!sidebarCollapsed()) {
-              <span class="flex-1">Nova tarefa</span>
+              <span class="flex-1">{{ locale.t('nav.hoje') }}</span>
             }
           </a>
           <a
@@ -227,11 +210,11 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
             class="nav-link"
             [class.nav-link-collapsed]="sidebarCollapsed()"
             data-testid="nav-tarefas"
-            [title]="sidebarCollapsed() ? 'Tarefas' : null"
+            [title]="sidebarCollapsed() ? locale.t('nav.tarefas') : null"
           >
             <i class="fa-solid fa-list-check nav-icon"></i>
             @if (!sidebarCollapsed()) {
-              <span class="flex-1">Tarefas</span>
+              <span class="flex-1">{{ locale.t('nav.tarefas') }}</span>
               <span class="flex items-center gap-1">
                 @if (atrasadasCount() > 0) {
                   <span
@@ -260,36 +243,31 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
             class="nav-link"
             [class.nav-link-collapsed]="sidebarCollapsed()"
             data-testid="nav-concluidas"
-            [title]="sidebarCollapsed() ? 'Concluídas' : null"
+            [title]="sidebarCollapsed() ? locale.t('nav.atividade') : null"
           >
             <i class="fa-solid fa-circle-check nav-icon"></i>
             @if (!sidebarCollapsed()) {
-              <span class="flex-1">Concluídas</span>
+              <span class="flex-1">{{ locale.t('nav.atividade') }}</span>
             }
           </a>
-          <a
-            routerLink="/app/financas"
-            routerLinkActive="nav-link-active"
-            class="nav-link"
-            [class.nav-link-collapsed]="sidebarCollapsed()"
-            data-testid="nav-financas"
-            [title]="sidebarCollapsed() ? 'Finanças' : null"
-          >
-            <i class="fa-solid fa-wallet nav-icon"></i>
-            @if (!sidebarCollapsed()) {
-              <span class="flex-1">Finanças</span>
-            }
-          </a>
+          @if (financasAtivo) {
+            <a
+              routerLink="/app/financas"
+              routerLinkActive="nav-link-active"
+              class="nav-link"
+              [class.nav-link-collapsed]="sidebarCollapsed()"
+              data-testid="nav-financas"
+              [title]="sidebarCollapsed() ? 'Finanças' : null"
+            >
+              <i class="fa-solid fa-wallet nav-icon"></i>
+              @if (!sidebarCollapsed()) {
+                <span class="flex-1">Finanças</span>
+              }
+            </a>
+          }
         </nav>
 
         <div class="mt-auto pt-3 w-full" [class.flex]="sidebarCollapsed()" [class.flex-col]="sidebarCollapsed()" [class.items-center]="sidebarCollapsed()">
-          @if (!sidebarCollapsed()) {
-            <div
-              class="text-[10px] text-text-subtle px-2 py-1.5 tracking-wider uppercase font-semibold"
-            >
-              Ajustes
-            </div>
-          }
           <nav class="flex flex-col gap-px" [class.items-center]="sidebarCollapsed()">
             <a
               routerLink="/app/configuracoes"
@@ -297,11 +275,11 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
               class="nav-link"
               [class.nav-link-collapsed]="sidebarCollapsed()"
               data-testid="nav-configs"
-              [title]="sidebarCollapsed() ? 'Configurações' : null"
+              [title]="sidebarCollapsed() ? locale.t('nav.configuracoes') : null"
             >
               <i class="fa-solid fa-gear nav-icon"></i>
               @if (!sidebarCollapsed()) {
-                <span class="flex-1">Configurações</span>
+                <span class="flex-1">{{ locale.t('nav.configuracoes') }}</span>
               }
             </a>
           </nav>
@@ -373,8 +351,6 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
           </div>
 
           <div class="flex items-center gap-3 pl-3 ml-1 border-l border-border shrink-0">
-          <app-theme-toggle />
-
           <div
             class="relative"
             data-testid="user-menu"
@@ -459,7 +435,9 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
       </main>
 
       <nav
-        class="md:hidden fixed bottom-0 inset-x-0 grid grid-cols-6 h-16 bg-bg-sidebar border-t border-border z-40"
+        class="md:hidden fixed bottom-0 inset-x-0 grid h-16 bg-bg-sidebar border-t border-border z-40"
+        [class.grid-cols-6]="financasAtivo"
+        [class.grid-cols-5]="!financasAtivo"
         data-testid="mobile-bottom-nav"
       >
         <a
@@ -469,16 +447,7 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
           data-testid="nav-mobile-visao-geral"
         >
           <i class="fa-solid fa-house text-base"></i>
-          <span class="text-[10px] font-medium">Início</span>
-        </a>
-        <a
-          routerLink="/app/captura"
-          routerLinkActive="text-accent [&>i]:text-accent"
-          class="flex flex-col items-center justify-center gap-0.5 text-text-dim active:bg-bg-elev"
-          data-testid="nav-mobile-captura"
-        >
-          <i class="fa-solid fa-bolt text-base"></i>
-          <span class="text-[10px] font-medium">Nova</span>
+          <span class="text-[10px] font-medium">{{ locale.t('nav.hoje') }}</span>
         </a>
         <a
           routerLink="/app/tarefas"
@@ -502,7 +471,18 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
               ></span>
             }
           </div>
-          <span class="text-[10px] font-medium">Tarefas</span>
+          <span class="text-[10px] font-medium">{{ locale.t('nav.tarefas') }}</span>
+        </a>
+        <a
+          routerLink="/app/captura"
+          routerLinkActive="bg-accent-strong [&>div]:bg-accent-strong"
+          class="flex items-center justify-center text-text-dim active:scale-95 transition-transform relative -top-3"
+          data-testid="nav-mobile-captura"
+          [attr.aria-label]="locale.t('nav.falar')"
+        >
+          <div class="w-14 h-14 rounded-full bg-accent grid place-items-center text-white shadow-[0_4px_14px_rgba(94,106,210,0.45)] border-4 border-bg-sidebar">
+            <i class="fa-solid fa-microphone text-xl"></i>
+          </div>
         </a>
         <a
           routerLink="/app/concluidas"
@@ -511,17 +491,19 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
           data-testid="nav-mobile-concluidas"
         >
           <i class="fa-solid fa-circle-check text-base"></i>
-          <span class="text-[10px] font-medium">Concluídas</span>
+          <span class="text-[10px] font-medium">{{ locale.t('nav.atividade') }}</span>
         </a>
-        <a
-          routerLink="/app/financas"
-          routerLinkActive="text-accent [&>i]:text-accent"
-          class="flex flex-col items-center justify-center gap-0.5 text-text-dim active:bg-bg-elev"
-          data-testid="nav-mobile-financas"
-        >
-          <i class="fa-solid fa-wallet text-base"></i>
-          <span class="text-[10px] font-medium">Finanças</span>
-        </a>
+        @if (financasAtivo) {
+          <a
+            routerLink="/app/financas"
+            routerLinkActive="text-accent [&>i]:text-accent"
+            class="flex flex-col items-center justify-center gap-0.5 text-text-dim active:bg-bg-elev"
+            data-testid="nav-mobile-financas"
+          >
+            <i class="fa-solid fa-wallet text-base"></i>
+            <span class="text-[10px] font-medium">Finanças</span>
+          </a>
+        }
         <a
           routerLink="/app/configuracoes"
           routerLinkActive="text-accent [&>i]:text-accent"
@@ -529,9 +511,11 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
           data-testid="nav-mobile-configs"
         >
           <i class="fa-solid fa-gear text-base"></i>
-          <span class="text-[10px] font-medium">Ajustes</span>
+          <span class="text-[10px] font-medium">{{ locale.t('nav.configuracoes') }}</span>
         </a>
       </nav>
+
+      <app-conquista-toast />
     </div>
   `,
   styles: [
@@ -601,6 +585,19 @@ import { ThemeToggleComponent } from '../shared/theme-toggle.component';
       :host ::ng-deep .nav-link-collapsed:hover {
         transform: none;
       }
+      :host ::ng-deep .nav-link-primary {
+        background: linear-gradient(135deg, rgba(94, 106, 210, 0.18) 0%, rgba(94, 106, 210, 0.08) 100%);
+        border: 1px solid rgba(94, 106, 210, 0.30);
+        color: rgb(var(--c-text));
+        margin-bottom: 4px;
+      }
+      :host ::ng-deep .nav-link-primary .nav-icon {
+        color: #5e6ad2;
+      }
+      :host ::ng-deep .nav-link-primary:hover {
+        background: linear-gradient(135deg, rgba(94, 106, 210, 0.28) 0%, rgba(94, 106, 210, 0.14) 100%);
+        border-color: rgba(94, 106, 210, 0.45);
+      }
       .shadow-logo {
         box-shadow: 0 0 16px rgba(94, 106, 210, 0.35),
           inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -621,6 +618,7 @@ export class ShellComponent implements OnInit {
   readonly sidebarCollapsed = signal(this.lerEstadoSidebar());
   readonly userMenuAberto = signal(false);
   readonly avisoEnDispensado = signal(this.lerAvisoEnDispensado());
+  readonly financasAtivo = FEATURE_FLAGS.financas;
 
   readonly mostrarAvisoEn = computed(
     () => this.locale.locale() === 'en' && !this.avisoEnDispensado(),

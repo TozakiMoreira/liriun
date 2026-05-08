@@ -1,7 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, computed, inject, signal } from '@angular/core';
+import { Tarefa, TarefasService } from '../../core/api/tarefas.service';
 import { TokenStorage } from '../../core/auth/token.storage';
+import { FEATURE_FLAGS } from '../../core/features/feature-flags';
+import { LocaleService } from '../../core/locale/locale.service';
 import { AvatarComponent } from '../../shared/avatar.component';
+import { ConquistaToastService } from '../../shared/conquista-toast.service';
 
 interface Conquista {
   codigo: string;
@@ -48,12 +52,12 @@ const PONTOS_POR_NIVEL = 250;
             <div class="flex flex-col gap-1 min-w-0">
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-2xl font-semibold tabular-nums">{{ pontosTotais() }}</span>
-                <span class="text-[12px] text-text-dim font-medium">pontos</span>
+                <span class="text-[12px] text-text-dim font-medium">{{ locale.t('gamif.pontos') }}</span>
                 <span
                   class="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/15 border border-accent/30 text-accent font-semibold uppercase tracking-wider"
                   data-testid="hero-nivel"
                 >
-                  Nível {{ nivel() }}
+                  {{ locale.t('gamif.nivel', { n: nivel() + '' }) }}
                 </span>
               </div>
               <div class="text-[12px] text-text-dim">
@@ -70,7 +74,7 @@ const PONTOS_POR_NIVEL = 250;
             <div class="flex flex-col leading-tight">
               <span class="text-[18px] font-semibold tabular-nums text-orange-500">{{ streak() }}</span>
               <span class="text-[10px] text-text-dim uppercase tracking-wider">
-                dias seguidos
+                {{ locale.t('gamif.dias_seguidos') }}
               </span>
             </div>
           </div>
@@ -78,7 +82,7 @@ const PONTOS_POR_NIVEL = 250;
 
         <div class="mt-4">
           <div class="flex items-center justify-between text-[11px] text-text-dim mb-1.5">
-            <span>Progresso até Nível {{ nivel() + 1 }}</span>
+            <span>{{ locale.t('gamif.progresso_ate_nivel', { n: (nivel() + 1) + '' }) }}</span>
             <span class="tabular-nums">{{ pontosNoNivel() }}/{{ pontosPorNivel }}</span>
           </div>
           <div class="h-2 rounded-full bg-bg-elev overflow-hidden" role="progressbar"
@@ -95,66 +99,48 @@ const PONTOS_POR_NIVEL = 250;
       </section>
 
       <section
-        class="card-elev p-5 flex flex-col gap-4"
-        data-testid="meta-semanal"
+        class="card-elev p-5 flex flex-col gap-3"
+        data-testid="parabens-semana"
       >
-        <div class="flex items-start justify-between gap-3">
-          <div class="flex flex-col gap-0.5">
-            <div class="flex items-center gap-2">
-              <i class="fa-solid fa-bullseye text-accent text-[13px]"></i>
-              <h3 class="text-sm font-semibold">Meta da semana</h3>
-            </div>
-            <p class="text-[12px] text-text-dim">
-              {{ rotuloMeta() }}
-            </p>
-          </div>
-          <button
-            type="button"
-            class="text-[11px] text-text-subtle hover:text-text px-2 py-1 rounded hover:bg-bg-elev"
-            data-testid="meta-editar-btn"
-            title="Editar meta"
-          >
-            <i class="fa-solid fa-pen text-[10px]"></i>
-          </button>
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-heart text-rose-400 text-[13px]"></i>
+          <h3 class="text-sm font-semibold">{{ locale.t('gamif.esta_semana') }}</h3>
         </div>
 
-        <div class="flex items-center gap-5">
-          <div class="relative w-[88px] h-[88px] shrink-0">
-            <svg viewBox="0 0 88 88" class="w-full h-full -rotate-90">
-              <circle cx="44" cy="44" r="38" fill="none" stroke="rgb(var(--c-border))" stroke-width="8" />
-              <circle
-                cx="44" cy="44" r="38" fill="none"
-                stroke="url(#gradMeta)"
-                stroke-width="8"
-                stroke-linecap="round"
-                [attr.stroke-dasharray]="circ"
-                [attr.stroke-dashoffset]="metaOffset()"
-                class="transition-[stroke-dashoffset] duration-700"
-              />
-              <defs>
-                <linearGradient id="gradMeta" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0%" stop-color="rgb(94, 106, 210)" />
-                  <stop offset="100%" stop-color="rgb(245, 158, 11)" />
-                </linearGradient>
-              </defs>
-            </svg>
-            <div class="absolute inset-0 grid place-items-center flex-col">
-              <span class="text-[18px] font-semibold tabular-nums leading-none">{{ metaAtual() }}</span>
-              <span class="text-[9.5px] text-text-subtle uppercase tracking-wider">de {{ metaAlvo() }}</span>
+        <p class="text-[14px] text-text leading-relaxed">
+          {{ mensagemSemana() }}
+        </p>
+
+        <div class="grid grid-cols-2 gap-3 mt-1">
+          <button
+            type="button"
+            class="bg-bg-surface border border-border rounded-lg p-3 flex flex-col gap-1 text-left hover:border-accent/50 hover:bg-bg-elev transition-colors group"
+            data-testid="card-tarefas-fechadas"
+            (click)="verAtividade.emit()"
+            [title]="locale.t('gamif.ver_tarefas_concluidas')"
+          >
+            <div class="flex items-center justify-between">
+              <span class="text-[11px] uppercase tracking-wider text-text-subtle font-medium">{{ locale.t('gamif.tarefas_fechadas') }}</span>
+              <i class="fa-solid fa-arrow-right text-[10px] text-text-subtle group-hover:text-accent group-hover:translate-x-0.5 transition-all"></i>
             </div>
-          </div>
-          <div class="flex flex-col gap-2 flex-1 min-w-0">
-            <div class="flex items-center gap-2 text-[12.5px]">
-              <i class="fa-solid fa-check text-emerald-500 text-[10px]"></i>
-              <span class="text-text-dim">{{ metaAtual() }} tarefas concluídas</span>
+            <div class="flex items-baseline gap-2 flex-wrap">
+              <span class="text-2xl font-semibold tabular-nums">{{ tarefasSemana() }}</span>
+              @if (deltaSemana() !== 0) {
+                <span
+                  class="text-[11px] font-medium tabular-nums"
+                  [class.text-emerald-400]="deltaSemana() > 0"
+                  [class.text-text-subtle]="deltaSemana() <= 0"
+                >
+                  {{ deltaSemana() > 0 ? '+' : '' }}{{ deltaSemana() }} {{ locale.t('gamif.delta_vs_anterior') }}
+                </span>
+              }
             </div>
-            <div class="flex items-center gap-2 text-[12.5px]">
-              <i class="fa-regular fa-clock text-text-subtle text-[10px]"></i>
-              <span class="text-text-dim">{{ metaDiasRestantes() }} dias restantes</span>
-            </div>
-            <div class="flex items-center gap-2 text-[12.5px]">
-              <i class="fa-solid fa-arrow-trend-up text-accent text-[10px]"></i>
-              <span class="text-text-dim">{{ rotuloRitmo() }}</span>
+          </button>
+          <div class="bg-bg-surface border border-border rounded-lg p-3 flex flex-col gap-1">
+            <span class="text-[11px] uppercase tracking-wider text-text-subtle font-medium">{{ locale.t('gamif.dias_ativos') }}</span>
+            <div class="flex items-baseline gap-2">
+              <span class="text-2xl font-semibold tabular-nums">{{ diasAtivosSemana() }}</span>
+              <span class="text-[11px] text-text-subtle">{{ locale.t('gamif.de_n', { n: '7' }) }}</span>
             </div>
           </div>
         </div>
@@ -167,19 +153,19 @@ const PONTOS_POR_NIVEL = 250;
         <div class="flex items-center justify-between gap-3">
           <div class="flex items-center gap-2">
             <i class="fa-solid fa-medal text-accent text-[13px]"></i>
-            <h3 class="text-sm font-semibold">Conquistas</h3>
+            <h3 class="text-sm font-semibold">{{ locale.t('gamif.conquistas') }}</h3>
             <span
               class="text-[11px] px-1.5 py-0.5 rounded-full bg-bg-elev border border-border text-text-dim tabular-nums"
-              >{{ totalDesbloqueadas() }}/{{ conquistas.length }}</span
+              >{{ totalDesbloqueadas() }}/{{ conquistas().length }}</span
             >
           </div>
         </div>
 
         <div
-          class="grid grid-cols-2 sm:grid-cols-3 gap-2.5"
+          class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5"
           data-testid="conquistas-grid"
         >
-          @for (c of conquistas; track c.codigo) {
+          @for (c of conquistas(); track c.codigo) {
             <div
               class="flex items-center gap-3 p-3 rounded-lg border transition-colors"
               [class.bg-bg-surface]="c.desbloqueada"
@@ -201,9 +187,9 @@ const PONTOS_POR_NIVEL = 250;
                   <i class="fa-solid fa-lock text-text-subtle text-[12px]"></i>
                 }
               </div>
-              <div class="flex flex-col leading-tight min-w-0">
-                <span class="text-[12.5px] font-semibold truncate">{{ c.nome }}</span>
-                <span class="text-[10.5px] text-text-dim line-clamp-1">{{ c.descricao }}</span>
+              <div class="flex flex-col leading-tight min-w-0 flex-1">
+                <span class="text-[13px] font-semibold">{{ c.nome }}</span>
+                <span class="text-[11px] text-text-dim leading-snug">{{ c.descricao }}</span>
                 @if (!c.desbloqueada && c.progresso) {
                   <span class="text-[10px] text-text-subtle tabular-nums mt-0.5"
                     >{{ c.progresso.atual }}/{{ c.progresso.alvo }}</span
@@ -215,6 +201,61 @@ const PONTOS_POR_NIVEL = 250;
         </div>
       </section>
 
+      <section
+        class="card-elev p-5 flex flex-col gap-4"
+        data-testid="marcos-pessoais"
+      >
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-mountain-sun text-accent text-[13px]"></i>
+          <h3 class="text-sm font-semibold">{{ locale.t('gamif.marcos_titulo') }}</h3>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div class="bg-bg-surface border border-border rounded-lg p-4 flex flex-col gap-1">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-fire text-orange-500 text-[12px]"></i>
+              <span class="text-[11px] uppercase tracking-wider text-text-subtle font-medium">{{ locale.t('gamif.maior_streak') }}</span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-2xl font-semibold tabular-nums">{{ recordeStreak() }}</span>
+              <span class="text-[12px] text-text-dim">{{ locale.t('gamif.dias') }}</span>
+            </div>
+          </div>
+          <div class="bg-bg-surface border border-border rounded-lg p-4 flex flex-col gap-1">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-check-double text-emerald-500 text-[12px]"></i>
+              <span class="text-[11px] uppercase tracking-wider text-text-subtle font-medium">{{ locale.t('gamif.total_acumulado') }}</span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-2xl font-semibold tabular-nums">{{ totalAcumulado() }}</span>
+              <span class="text-[12px] text-text-dim">{{ locale.t('gamif.tarefas') }}</span>
+            </div>
+          </div>
+          <div class="bg-bg-surface border border-border rounded-lg p-4 flex flex-col gap-1">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-star text-amber-400 text-[12px]"></i>
+              <span class="text-[11px] uppercase tracking-wider text-text-subtle font-medium">{{ locale.t('gamif.melhor_semana') }}</span>
+            </div>
+            <div class="flex items-baseline gap-1.5">
+              <span class="text-2xl font-semibold tabular-nums">{{ melhorSemana() }}</span>
+              <span class="text-[12px] text-text-dim">{{ locale.t('gamif.tarefas') }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="card-elev p-5 flex flex-col items-center gap-2 text-center"
+        data-testid="frase-positiva"
+        style="background-image: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(94, 106, 210, 0.10), transparent 70%);"
+      >
+        <i class="fa-solid fa-quote-left text-accent text-[14px] opacity-50"></i>
+        <p class="text-[14px] text-text leading-relaxed max-w-[440px] italic">
+          {{ frasePositiva() }}
+        </p>
+      </section>
+
+      @if (rankingAtivo) {
       <section
         class="card-elev p-5 flex flex-col gap-4"
         data-testid="leaderboard-secao"
@@ -307,25 +348,159 @@ const PONTOS_POR_NIVEL = 250;
           Ranking visível apenas pra você e pessoas que você convidou. Ninguém vê suas tarefas — só os pontos.
         </p>
       </section>
+      }
 
-      <p class="text-[11px] text-text-subtle text-center pt-2 pb-4">
-        Protótipo · dados ilustrativos · backend em desenvolvimento
-      </p>
+      <div class="flex flex-col items-center gap-2 pt-2 pb-4">
+        <button
+          type="button"
+          class="text-[11px] text-text-subtle hover:text-accent transition-colors flex items-center gap-1.5"
+          data-testid="demo-conquista-btn"
+          (click)="simularConquista()"
+        >
+          <i class="fa-solid fa-bell text-[10px]"></i>
+          {{ locale.t('gamif.demo_btn') }}
+        </button>
+        <p class="text-[11px] text-text-subtle text-center">
+          {{ locale.t('gamif.legend') }}
+        </p>
+      </div>
     </div>
   `,
 })
-export class GamificacaoPainelComponent {
+export class GamificacaoPainelComponent implements OnInit {
   private readonly storage = inject(TokenStorage);
+  private readonly conquistaToast = inject(ConquistaToastService);
+  private readonly tarefasApi = inject(TarefasService);
+  readonly locale = inject(LocaleService);
 
+  @Output() readonly verAtividade = new EventEmitter<void>();
+
+  readonly rankingAtivo = FEATURE_FLAGS.rankingAmigos;
   readonly pontosPorNivel = PONTOS_POR_NIVEL;
-  readonly circ = 2 * Math.PI * 38;
 
-  readonly pontosTotais = signal(1240);
-  readonly streak = signal(12);
-  readonly metaAtual = signal(18);
-  readonly metaAlvo = signal(25);
-  readonly metaDiasRestantes = signal(3);
+  readonly historico = signal<Tarefa[]>([]);
+  readonly carregando = signal(true);
+  readonly erroCarregar = signal(false);
   readonly periodoLb = signal<'semana' | 'total'>('semana');
+
+  ngOnInit(): void {
+    this.carregando.set(true);
+    const ate = new Date();
+    const de = new Date();
+    de.setDate(de.getDate() - 90);
+    this.tarefasApi.listarConcluidas(de.toISOString(), ate.toISOString()).subscribe({
+      next: (lista) => {
+        this.historico.set(lista);
+        this.carregando.set(false);
+      },
+      error: () => {
+        this.erroCarregar.set(true);
+        this.carregando.set(false);
+      },
+    });
+  }
+
+  private chaveData(d: Date): string {
+    return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+  }
+
+  readonly totalAcumulado = computed(() => this.historico().length);
+
+  readonly tarefasSemana = computed(() => {
+    const inicio = this.inicioSemana();
+    return this.historico().filter((t) => t.concluidaEm && new Date(t.concluidaEm) >= inicio).length;
+  });
+
+  readonly tarefasSemanaPassada = computed(() => {
+    const inicioAtual = this.inicioSemana();
+    const inicioPassada = new Date(inicioAtual);
+    inicioPassada.setDate(inicioPassada.getDate() - 7);
+    return this.historico().filter((t) => {
+      if (!t.concluidaEm) return false;
+      const d = new Date(t.concluidaEm);
+      return d >= inicioPassada && d < inicioAtual;
+    }).length;
+  });
+
+  readonly diasAtivosSemana = computed(() => {
+    const inicio = this.inicioSemana();
+    const dias = new Set<string>();
+    for (const t of this.historico()) {
+      if (!t.concluidaEm) continue;
+      const d = new Date(t.concluidaEm);
+      if (d >= inicio) dias.add(this.chaveData(d));
+    }
+    return dias.size;
+  });
+
+  readonly streak = computed(() => {
+    const dias = new Set<string>();
+    for (const t of this.historico()) {
+      if (!t.concluidaEm) continue;
+      dias.add(this.chaveData(new Date(t.concluidaEm)));
+    }
+    let count = 0;
+    const cursor = new Date();
+    cursor.setHours(0, 0, 0, 0);
+    while (dias.has(this.chaveData(cursor))) {
+      count++;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return count;
+  });
+
+  readonly recordeStreak = computed(() => {
+    const dias = [...new Set(
+      this.historico()
+        .filter((t) => t.concluidaEm)
+        .map((t) => this.chaveData(new Date(t.concluidaEm!))),
+    )].sort();
+    if (dias.length === 0) return 0;
+    let max = 1;
+    let atual = 1;
+    for (let i = 1; i < dias.length; i++) {
+      const a = dias[i - 1].split('-').map(Number);
+      const b = dias[i].split('-').map(Number);
+      const dA = new Date(a[0], a[1], a[2]);
+      const dB = new Date(b[0], b[1], b[2]);
+      const diff = Math.round((dB.getTime() - dA.getTime()) / 86400000);
+      if (diff === 1) {
+        atual++;
+        if (atual > max) max = atual;
+      } else {
+        atual = 1;
+      }
+    }
+    return Math.max(max, this.streak());
+  });
+
+  readonly melhorSemana = computed(() => {
+    const porSemana = new Map<string, number>();
+    for (const t of this.historico()) {
+      if (!t.concluidaEm) continue;
+      const d = new Date(t.concluidaEm);
+      const inicio = new Date(d);
+      inicio.setDate(d.getDate() - d.getDay());
+      inicio.setHours(0, 0, 0, 0);
+      const chave = this.chaveData(inicio);
+      porSemana.set(chave, (porSemana.get(chave) ?? 0) + 1);
+    }
+    return Math.max(0, ...porSemana.values());
+  });
+
+  readonly pontosTotais = computed(() => {
+    const total = this.totalAcumulado();
+    const streakAtual = this.streak();
+    return total * 10 + streakAtual * 5;
+  });
+
+  private inicioSemana(): Date {
+    const hoje = new Date();
+    const inicio = new Date(hoje);
+    inicio.setDate(hoje.getDate() - hoje.getDay());
+    inicio.setHours(0, 0, 0, 0);
+    return inicio;
+  }
 
   readonly nivel = computed(() => Math.floor(this.pontosTotais() / PONTOS_POR_NIVEL) + 1);
   readonly pontosNoNivel = computed(() => this.pontosTotais() % PONTOS_POR_NIVEL);
@@ -337,83 +512,98 @@ export class GamificacaoPainelComponent {
     return `Faltam ${faltam} pts pro Nível ${this.nivel() + 1}`;
   });
 
-  readonly metaOffset = computed(() => {
-    const pct = Math.min(this.metaAtual() / this.metaAlvo(), 1);
-    return this.circ * (1 - pct);
+  readonly deltaSemana = computed(() => this.tarefasSemana() - this.tarefasSemanaPassada());
+
+  readonly mensagemSemana = computed(() => {
+    const nome = this.storage.usuario()?.nome?.split(' ')[0] ?? this.locale.t('gamif.voce');
+    const t = this.tarefasSemana();
+    const d = this.deltaSemana();
+    const vars = { nome, t: t + '' };
+    if (t === 0) return this.locale.t('gamif.msg_zero', vars);
+    if (d > 5) return this.locale.t('gamif.msg_grande', vars);
+    if (d > 0) return this.locale.t('gamif.msg_mais', vars);
+    if (d === 0) return this.locale.t('gamif.msg_constancia', vars);
+    return this.locale.t('gamif.msg_menos', vars);
   });
 
-  readonly rotuloMeta = computed(() => {
-    const pct = (this.metaAtual() / this.metaAlvo()) * 100;
-    if (pct >= 100) return 'Meta concluída — você arrasou esta semana.';
-    if (pct >= 70) return 'Quase lá. Falta pouco pra fechar a semana.';
-    if (pct >= 40) return 'No ritmo certo, continua assim.';
-    return 'Comece pequeno. Uma tarefa de cada vez.';
+  readonly frasePositiva = computed(() => {
+    const dia = new Date().getDate();
+    const idx = (dia % 8) + 1;
+    return this.locale.t(`frase.${idx}`);
   });
 
-  readonly rotuloRitmo = computed(() => {
-    const ritmo = this.metaAtual() / Math.max(7 - this.metaDiasRestantes(), 1);
-    return `Ritmo: ${ritmo.toFixed(1)} tarefas/dia`;
-  });
+  private noPrazoCount(): number {
+    return this.historico().filter((t) => {
+      if (!t.concluidaEm || !t.dataPrazo) return false;
+      return new Date(t.concluidaEm) <= new Date(t.dataPrazo);
+    }).length;
+  }
 
-  readonly conquistas: Conquista[] = [
-    {
-      codigo: 'primeira-tarefa',
-      nome: 'Primeiros passos',
-      descricao: 'Concluiu sua primeira tarefa',
-      icone: 'fa-seedling',
-      desbloqueada: true,
-      desbloqueadaEm: '2026-04-12',
-      cor: 'emerald',
-    },
-    {
-      codigo: '10-tarefas',
-      nome: 'Pegando o ritmo',
-      descricao: '10 tarefas concluídas',
-      icone: 'fa-bolt',
-      desbloqueada: true,
-      desbloqueadaEm: '2026-04-18',
-      cor: 'sky',
-    },
-    {
-      codigo: 'streak-7',
-      nome: 'Sete dias forte',
-      descricao: '7 dias seguidos com tarefa',
-      icone: 'fa-fire',
-      desbloqueada: true,
-      desbloqueadaEm: '2026-04-25',
-      cor: 'orange',
-    },
-    {
-      codigo: 'no-prazo-10',
-      nome: 'Sempre no prazo',
-      descricao: '10 tarefas concluídas antes do prazo',
-      icone: 'fa-clock',
-      desbloqueada: true,
-      desbloqueadaEm: '2026-05-02',
-      cor: 'violet',
-    },
-    {
-      codigo: '100-tarefas',
-      nome: 'Centena',
-      descricao: '100 tarefas concluídas',
-      icone: 'fa-mountain',
-      desbloqueada: false,
-      progresso: { atual: 67, alvo: 100 },
-      cor: 'amber',
-    },
-    {
-      codigo: 'streak-30',
-      nome: 'Mês de fogo',
-      descricao: '30 dias seguidos',
-      icone: 'fa-trophy',
-      desbloqueada: false,
-      progresso: { atual: 12, alvo: 30 },
-      cor: 'rose',
-    },
-  ];
+  readonly conquistas = computed<Conquista[]>(() => {
+    const total = this.totalAcumulado();
+    const recorde = this.recordeStreak();
+    const noPrazo = this.noPrazoCount();
+    const _ = this.locale.locale();
+    return [
+      {
+        codigo: 'primeira-tarefa',
+        nome: this.locale.t('conquista.primeiros_passos.nome'),
+        descricao: this.locale.t('conquista.primeiros_passos.desc'),
+        icone: 'fa-seedling',
+        desbloqueada: total >= 1,
+        cor: 'emerald',
+        progresso: total < 1 ? { atual: 0, alvo: 1 } : undefined,
+      },
+      {
+        codigo: '10-tarefas',
+        nome: this.locale.t('conquista.10_tarefas.nome'),
+        descricao: this.locale.t('conquista.10_tarefas.desc'),
+        icone: 'fa-bolt',
+        desbloqueada: total >= 10,
+        cor: 'sky',
+        progresso: total < 10 ? { atual: total, alvo: 10 } : undefined,
+      },
+      {
+        codigo: 'streak-7',
+        nome: this.locale.t('conquista.streak_7.nome'),
+        descricao: this.locale.t('conquista.streak_7.desc'),
+        icone: 'fa-fire',
+        desbloqueada: recorde >= 7,
+        cor: 'orange',
+        progresso: recorde < 7 ? { atual: recorde, alvo: 7 } : undefined,
+      },
+      {
+        codigo: 'no-prazo-10',
+        nome: this.locale.t('conquista.no_prazo_10.nome'),
+        descricao: this.locale.t('conquista.no_prazo_10.desc'),
+        icone: 'fa-clock',
+        desbloqueada: noPrazo >= 10,
+        cor: 'violet',
+        progresso: noPrazo < 10 ? { atual: noPrazo, alvo: 10 } : undefined,
+      },
+      {
+        codigo: '100-tarefas',
+        nome: this.locale.t('conquista.centena.nome'),
+        descricao: this.locale.t('conquista.centena.desc'),
+        icone: 'fa-mountain',
+        desbloqueada: total >= 100,
+        cor: 'amber',
+        progresso: total < 100 ? { atual: total, alvo: 100 } : undefined,
+      },
+      {
+        codigo: 'streak-30',
+        nome: this.locale.t('conquista.streak_30.nome'),
+        descricao: this.locale.t('conquista.streak_30.desc'),
+        icone: 'fa-trophy',
+        desbloqueada: recorde >= 30,
+        cor: 'rose',
+        progresso: recorde < 30 ? { atual: recorde, alvo: 30 } : undefined,
+      },
+    ];
+  });
 
   readonly totalDesbloqueadas = computed(
-    () => this.conquistas.filter((c) => c.desbloqueada).length,
+    () => this.conquistas().filter((c) => c.desbloqueada).length,
   );
 
   private readonly amigos: AmigoRanking[] = [
@@ -497,5 +687,18 @@ export class GamificacaoPainelComponent {
       orange: 'text-orange-500',
     };
     return map[c.cor];
+  }
+
+  simularConquista(): void {
+    const lista = this.conquistas();
+    const bloqueadas = lista.filter((c) => !c.desbloqueada);
+    const alvo = bloqueadas[0] ?? lista[0];
+    this.conquistaToast.mostrar({
+      codigo: alvo.codigo,
+      nome: alvo.nome,
+      descricao: alvo.descricao,
+      icone: alvo.icone,
+      cor: alvo.cor,
+    });
   }
 }

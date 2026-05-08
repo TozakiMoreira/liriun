@@ -14,6 +14,8 @@ import { Router, RouterLink } from '@angular/router';
 import { Tarefa, TarefasService } from '../../core/api/tarefas.service';
 import { Balanco, FinancasService } from '../../core/api/financas.service';
 import { TokenStorage } from '../../core/auth/token.storage';
+import { FEATURE_FLAGS } from '../../core/features/feature-flags';
+import { LocaleService } from '../../core/locale/locale.service';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { StaggerInDirective } from '../../shared/stagger-in.directive';
 import { BrandComponent } from '../../shared/brand.component';
@@ -52,7 +54,7 @@ interface DiaResumo {
     <header class="md:hidden flex items-center px-4 py-3.5 border-b border-border gap-4">
       <div class="flex items-center gap-2 text-[15px] text-text-dim">
         <i class="fa-solid fa-house text-accent text-[12px]"></i>
-        <strong class="text-text font-medium">Visão geral</strong>
+        <strong class="text-text font-medium">{{ locale.t('home.titulo') }}</strong>
       </div>
     </header>
 
@@ -91,7 +93,7 @@ interface DiaResumo {
       </section>
 
       @if (carregando()) {
-        <p class="text-text-subtle text-sm">Carregando...</p>
+        <p class="text-text-subtle text-sm">{{ locale.t('home.carregando') }}</p>
       } @else if (erro()) {
         <div class="px-3 py-2.5 rounded border border-danger/30 bg-danger/10 text-danger text-xs">
           {{ erro() }}
@@ -110,7 +112,7 @@ interface DiaResumo {
             data-testid="card-pendentes"
           >
             <div class="flex items-center justify-between">
-              <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">Pendentes hoje</span>
+              <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">{{ locale.t('home.pendentes_hoje') }}</span>
               <i class="fa-solid fa-calendar-day text-accent/70 text-[12px]"></i>
             </div>
             <div class="text-3xl font-semibold tabular-nums">{{ pendentesHoje() }}</div>
@@ -124,7 +126,7 @@ interface DiaResumo {
             data-testid="card-atrasadas"
           >
             <div class="flex items-center justify-between">
-              <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">Atrasadas</span>
+              <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">{{ locale.t('home.atrasadas') }}</span>
               <i class="fa-solid fa-triangle-exclamation text-[12px]"
                 [class.text-danger]="atrasadas() > 0"
                 [class.text-text-subtle]="atrasadas() === 0"
@@ -148,7 +150,7 @@ interface DiaResumo {
             data-testid="card-concluidas-semana"
           >
             <div class="flex items-center justify-between">
-              <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">Feitas esta semana</span>
+              <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">{{ locale.t('home.feitas_semana') }}</span>
               <i class="fa-solid fa-circle-check text-emerald-400/70 text-[12px]"></i>
             </div>
             <div class="text-3xl font-semibold tabular-nums">{{ concluidasSemana() }}</div>
@@ -168,11 +170,11 @@ interface DiaResumo {
             data-testid="card-captura"
           >
             <div class="flex items-center justify-between">
-              <span class="text-[10px] uppercase tracking-wider text-accent font-semibold">Adicionar tarefa</span>
+              <span class="text-[10px] uppercase tracking-wider text-accent font-semibold">{{ locale.t('home.adicionar_tarefa') }}</span>
               <i class="fa-solid fa-bolt text-accent text-[12px]"></i>
             </div>
-            <div class="text-base font-semibold mt-1.5 text-text">Conversa com <app-brand /></div>
-            <div class="text-[11px] text-text-dim">Texto, voz ou modo manual.</div>
+            <div class="text-base font-semibold mt-1.5 text-text">{{ locale.t('home.conversa_com') }} <app-brand /></div>
+            <div class="text-[11px] text-text-dim">{{ locale.t('home.modo_descricao') }}</div>
           </a>
         </div>
 
@@ -181,7 +183,7 @@ interface DiaResumo {
           <div class="flex items-center justify-between px-4 py-3 border-b border-border">
             <div class="flex items-center gap-2">
               <i class="fa-solid fa-calendar-day text-accent text-[12px]"></i>
-              <h2 class="text-[13px] font-semibold tracking-tight">Agenda de hoje</h2>
+              <h2 class="text-[13px] font-semibold tracking-tight">{{ locale.t('home.agenda_hoje') }}</h2>
               <span class="text-[11px] text-text-subtle">{{ dataHojeFormatada() }}</span>
             </div>
             <a
@@ -300,7 +302,11 @@ interface DiaResumo {
         </section>
 
         <div class="flex flex-col gap-3 min-w-0">
-        <div class="grid grid-cols-1 xl:grid-cols-3 gap-3">
+        <div
+          class="grid grid-cols-1 gap-3"
+          [class.xl:grid-cols-3]="financasAtivo"
+        >
+          @if (financasAtivo) {
           <a
             routerLink="/app/financas"
             class="card-elev relative overflow-hidden xl:col-span-2 flex flex-col gap-3 p-5 cursor-pointer hover:border-border-strong transition-colors group"
@@ -320,7 +326,7 @@ interface DiaResumo {
                 <div class="w-7 h-7 rounded-full bg-accent-violet/15 grid place-items-center">
                   <i class="fa-solid fa-wallet text-accent-violet text-[12px]"></i>
                 </div>
-                <h2 class="text-[13px] font-semibold tracking-tight">Finanças do mês</h2>
+                <h2 class="text-[13px] font-semibold tracking-tight">{{ locale.t('home.financas_mes') }}</h2>
               </div>
               <span class="text-[10px] text-text-subtle uppercase tracking-wider flex items-center gap-1.5 group-hover:text-text transition-colors">
                 {{ rotuloMesAtual() }}
@@ -331,7 +337,7 @@ interface DiaResumo {
             @if (balancoMes(); as b) {
               <div class="relative flex items-end gap-4 mt-1">
                 <div class="flex flex-col gap-0.5">
-                  <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">Saldo</span>
+                  <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">{{ locale.t('home.saldo') }}</span>
                   <span
                     class="text-[28px] font-semibold tabular-nums leading-none"
                     [class]="b.saldo >= 0 ? 'text-text' : 'text-rose-400'"
@@ -340,7 +346,7 @@ interface DiaResumo {
                   </span>
                   @if (b.totalReceitas > 0) {
                     <span class="text-[11px] text-text-dim mt-0.5">
-                      {{ percentualEconomiaMes() }}% do que recebeu
+                      {{ locale.t('home.economizou', { p: percentualEconomiaMes() + '' }) }}
                     </span>
                   }
                 </div>
@@ -349,7 +355,7 @@ interface DiaResumo {
                   <div class="flex items-center justify-between text-[11px]">
                     <span class="flex items-center gap-1.5 text-text-dim">
                       <i class="fa-solid fa-arrow-up text-emerald-500 text-[9px]"></i>
-                      Recebido
+                      {{ locale.t('home.recebido') }}
                     </span>
                     <span class="text-emerald-400 tabular-nums font-medium">{{ formatarMoeda(b.totalReceitas) }}</span>
                   </div>
@@ -363,7 +369,7 @@ interface DiaResumo {
                   <div class="flex items-center justify-between text-[11px] mt-1">
                     <span class="flex items-center gap-1.5 text-text-dim">
                       <i class="fa-solid fa-arrow-down text-rose-500 text-[9px]"></i>
-                      Despesas
+                      {{ locale.t('home.despesas') }}
                     </span>
                     <span class="text-rose-400 tabular-nums font-medium">{{ formatarMoeda(b.totalDespesasPagas + b.totalDespesasPendentes) }}</span>
                   </div>
@@ -380,26 +386,27 @@ interface DiaResumo {
                   @if (b.totalDespesasPendentes > 0) {
                     <div class="flex items-center gap-1.5 text-[10px] text-amber-400 mt-1">
                       <i class="fa-solid fa-circle-exclamation text-[9px]"></i>
-                      <span class="tabular-nums">{{ formatarMoeda(b.totalDespesasPendentes) }} a pagar</span>
+                      <span class="tabular-nums">{{ formatarMoeda(b.totalDespesasPendentes) }} {{ locale.t('home.a_pagar') }}</span>
                     </div>
                   }
                 </div>
               </div>
             } @else {
               <div class="relative flex flex-col items-start gap-2 py-3">
-                <span class="text-[20px] font-semibold text-text-dim">Nada lançado por aqui</span>
-                <span class="text-[12px] text-text-subtle">Comece registrando seus recebimentos e contas a pagar.</span>
+                <span class="text-[20px] font-semibold text-text-dim">{{ locale.t('home.nada_lancado') }}</span>
+                <span class="text-[12px] text-text-subtle">{{ locale.t('home.financas_cta') }}</span>
                 <span class="text-[11px] text-accent group-hover:underline mt-1 flex items-center gap-1.5">
-                  Abrir Finanças <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                  {{ locale.t('home.abrir_financas') }} <i class="fa-solid fa-arrow-right text-[9px]"></i>
                 </span>
               </div>
             }
           </a>
+          }
 
           <section class="card-elev p-4 flex flex-col gap-3" data-testid="grafico-categorias">
-            <h2 class="text-[13px] font-semibold tracking-tight">Pendentes por categoria</h2>
+            <h2 class="text-[13px] font-semibold tracking-tight">{{ locale.t('home.pendentes_categoria') }}</h2>
             @if (categoriasResumo().length === 0) {
-              <p class="text-text-subtle text-[12px] italic">Sem categorias com tarefas pendentes.</p>
+              <p class="text-text-subtle text-[12px] italic">{{ locale.t('home.sem_pendentes_cat') }}</p>
             } @else {
               <div class="flex items-center gap-4">
                 <svg viewBox="0 0 36 36" class="w-28 h-28" aria-hidden="true">
@@ -436,11 +443,11 @@ interface DiaResumo {
 
         <section class="card-elev p-4 flex flex-col gap-3" data-testid="prioridades-resumo">
           <div class="flex items-center justify-between">
-            <h2 class="text-[13px] font-semibold tracking-tight">Pendentes por prioridade</h2>
+            <h2 class="text-[13px] font-semibold tracking-tight">{{ locale.t('home.pendentes_prioridade') }}</h2>
             <span class="text-[10px] text-text-subtle uppercase tracking-wider">{{ totalPendentes() }} no total</span>
           </div>
           @if (totalPendentes() === 0) {
-            <p class="text-text-subtle text-[12px] italic">Sem pendentes.</p>
+            <p class="text-text-subtle text-[12px] italic">{{ locale.t('home.sem_pendentes') }}</p>
           } @else {
             <div class="flex h-2 rounded-full overflow-hidden bg-bg-elev/60" role="presentation">
               @for (p of prioridadesResumo(); track p.label) {
@@ -469,11 +476,11 @@ interface DiaResumo {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <section class="card-elev p-4 flex flex-col gap-2" data-testid="lista-hoje">
             <div class="flex items-center justify-between">
-              <h2 class="text-[13px] font-semibold tracking-tight">Pra hoje</h2>
-              <a routerLink="/app/tarefas" class="text-[11px] text-accent hover:text-accent-hover">Ver todas →</a>
+              <h2 class="text-[13px] font-semibold tracking-tight">{{ locale.t('home.pra_hoje') }}</h2>
+              <a routerLink="/app/tarefas" class="text-[11px] text-accent hover:text-accent-hover">{{ locale.t('home.ver_todas') }}</a>
             </div>
             @if (tarefasHoje().length === 0) {
-              <p class="text-text-subtle text-[12px] italic py-3">Nada agendado pra hoje.</p>
+              <p class="text-text-subtle text-[12px] italic py-3">{{ locale.t('home.nada_hoje') }}</p>
             } @else {
               <ul class="flex flex-col" appStaggerIn [staggerDelay]="40">
                 @for (t of tarefasHoje(); track t.id) {
@@ -491,11 +498,11 @@ interface DiaResumo {
 
           <section class="card-elev p-4 flex flex-col gap-2" data-testid="lista-concluidas-semana">
             <div class="flex items-center justify-between">
-              <h2 class="text-[13px] font-semibold tracking-tight">Feitas esta semana</h2>
-              <a routerLink="/app/concluidas" class="text-[11px] text-accent hover:text-accent-hover">Ver todas →</a>
+              <h2 class="text-[13px] font-semibold tracking-tight">{{ locale.t('home.feitas_semana') }}</h2>
+              <a routerLink="/app/concluidas" class="text-[11px] text-accent hover:text-accent-hover">{{ locale.t('home.ver_todas') }}</a>
             </div>
             @if (concluidasUltimas().length === 0) {
-              <p class="text-text-subtle text-[12px] italic py-3">Nada por enquanto.</p>
+              <p class="text-text-subtle text-[12px] italic py-3">{{ locale.t('home.nada_semana') }}</p>
             } @else {
               <ul class="flex flex-col" appStaggerIn [staggerDelay]="40">
                 @for (t of concluidasUltimas(); track t.id) {
@@ -534,8 +541,10 @@ export class VisaoGeralComponent implements OnInit, OnDestroy, AfterViewInit {
   private readonly storage = inject(TokenStorage);
   private readonly pageHeader = inject(PageHeaderService);
   private readonly router = inject(Router);
+  readonly locale = inject(LocaleService);
 
   readonly balancoMes = signal<Balanco | null>(null);
+  readonly financasAtivo = FEATURE_FLAGS.financas;
 
   readonly tarefaDetalhe = signal<Tarefa | null>(null);
   readonly processandoDetalhe = signal(false);
@@ -650,7 +659,7 @@ export class VisaoGeralComponent implements OnInit, OnDestroy, AfterViewInit {
 
   constructor() {
     this.pageHeader.set({
-      titulo: 'Visão geral',
+      titulo: this.locale.t('home.titulo'),
       iconeClasse: 'fa-solid fa-house text-accent text-[12px]',
     });
   }
@@ -793,11 +802,13 @@ export class VisaoGeralComponent implements OnInit, OnDestroy, AfterViewInit {
       },
     });
 
-    const hoje = new Date();
-    this.financasApi.obterBalanco(hoje.getFullYear(), hoje.getMonth() + 1).subscribe({
-      next: (b) => this.balancoMes.set(b),
-      error: () => {},
-    });
+    if (this.financasAtivo) {
+      const hoje = new Date();
+      this.financasApi.obterBalanco(hoje.getFullYear(), hoje.getMonth() + 1).subscribe({
+        next: (b) => this.balancoMes.set(b),
+        error: () => {},
+      });
+    }
 
     this.agoraTimer = window.setInterval(() => this.agora.set(new Date()), 60000);
   }
@@ -829,27 +840,27 @@ export class VisaoGeralComponent implements OnInit, OnDestroy, AfterViewInit {
 
   saudacao(): string {
     const h = new Date().getHours();
-    if (h < 6) return 'Boa madrugada';
-    if (h < 12) return 'Bom dia';
-    if (h < 18) return 'Boa tarde';
-    return 'Boa noite';
+    if (h < 6) return this.locale.t('home.saudacao_madrugada');
+    if (h < 12) return this.locale.t('home.saudacao_manha');
+    if (h < 18) return this.locale.t('home.saudacao_tarde');
+    return this.locale.t('home.saudacao_noite');
   }
 
   readonly resumoSaudacao = computed(() => {
-    if (this.carregando()) return 'Carregando seu painel...';
+    if (this.carregando()) return this.locale.t('home.resumo_carregando');
     const atrasadas = this.atrasadas();
     const hoje = this.pendentesHoje();
     const total = this.totalPendentes();
     if (atrasadas > 0) {
-      return `${atrasadas} ${atrasadas === 1 ? 'tarefa atrasada' : 'tarefas atrasadas'} esperando você. Bora resolver.`;
+      return this.locale.t(atrasadas === 1 ? 'home.resumo_atrasada_1' : 'home.resumo_atrasadas', { n: atrasadas + '' });
     }
     if (hoje > 0) {
-      return `${hoje} ${hoje === 1 ? 'tarefa' : 'tarefas'} pra hoje. Tá no controle.`;
+      return this.locale.t(hoje === 1 ? 'home.resumo_hoje_1' : 'home.resumo_hoje', { n: hoje + '' });
     }
     if (total > 0) {
-      return `Nada pra hoje, mas tem ${total} ${total === 1 ? 'tarefa' : 'tarefas'} no radar.`;
+      return this.locale.t(total === 1 ? 'home.resumo_pendentes_1' : 'home.resumo_pendentes', { n: total + '' });
     }
-    return 'Tudo em dia. Aproveita.';
+    return this.locale.t('home.resumo_tudo_em_dia');
   });
 
   alturaBarra(valor: number): number {

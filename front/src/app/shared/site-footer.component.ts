@@ -70,7 +70,7 @@ import { BrandComponent } from './brand.component';
                 routerLink="/app/captura"
                 class="text-[13px] text-text-dim hover:text-accent transition-colors"
                 data-testid="footer-link-nova"
-                >@if (locale.locale() === 'pt') { Nova tarefa } @else { New task }</a
+                >@if (locale.locale() === 'pt') { Falar } @else { Speak }</a
               >
               <a
                 routerLink="/app/tarefas"

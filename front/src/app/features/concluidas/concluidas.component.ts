@@ -6,6 +6,7 @@ import { ConfirmModalComponent } from '../../shared/confirm-modal.component';
 import { extrairProblemDetails } from '../../shared/problem-details';
 import { TarefaDetalheModalComponent } from '../tarefas/tarefa-detalhe-modal.component';
 import { PageHeaderService } from '../../core/layout/page-header.service';
+import { LocaleService } from '../../core/locale/locale.service';
 import { GamificacaoPainelComponent } from './gamificacao-painel.component';
 
 interface Confirmacao {
@@ -31,7 +32,7 @@ interface GrupoData {
     <header class="md:hidden flex flex-col sm:flex-row sm:items-center px-4 py-3.5 border-b border-border gap-3 sm:gap-4">
       <div class="flex items-center gap-2 text-[15px] text-text-dim">
         <i class="fa-solid fa-circle-check text-emerald-500 text-[12px]"></i>
-        <strong class="text-text font-medium">Concluídas</strong>
+        <strong class="text-text font-medium">{{ locale.t('page_title.completed') }}</strong>
         <span
           class="ml-1.5 text-[11px] px-2 py-0.5 rounded-full bg-bg-elev border border-border"
           data-testid="completed-count"
@@ -56,7 +57,7 @@ interface GrupoData {
             (click)="aba.set('resumo')"
           >
             <i class="fa-solid fa-trophy text-[10px]"></i>
-            Resumo
+            {{ locale.t('atividade.tab_resumo') }}
           </button>
           <button
             type="button"
@@ -66,7 +67,7 @@ interface GrupoData {
             (click)="aba.set('historico')"
           >
             <i class="fa-solid fa-list text-[10px]"></i>
-            Histórico
+            {{ locale.t('atividade.tab_lista') }}
           </button>
         </div>
 
@@ -79,7 +80,7 @@ interface GrupoData {
               data-testid="period-hoje"
               (click)="setPeriodo('hoje')"
             >
-              Hoje
+              {{ locale.t('atividade.periodo_hoje') }}
             </button>
             <button
               type="button"
@@ -88,7 +89,7 @@ interface GrupoData {
               data-testid="period-semana"
               (click)="setPeriodo('semana')"
             >
-              Semana
+              {{ locale.t('atividade.periodo_semana') }}
             </button>
             <button
               type="button"
@@ -97,7 +98,7 @@ interface GrupoData {
               data-testid="period-mes"
               (click)="setPeriodo('mes')"
             >
-              Mês
+              {{ locale.t('atividade.periodo_mes') }}
             </button>
           </div>
         }
@@ -106,7 +107,7 @@ interface GrupoData {
 
     <div class="flex-1 px-4 md:px-8 py-6 overflow-auto" data-testid="concluidas-page">
       @if (aba() === 'resumo') {
-        <app-gamificacao-painel />
+        <app-gamificacao-painel (verAtividade)="aba.set('historico')" />
       } @else {
       @if (erroReabrir()) {
         <div
@@ -118,10 +119,10 @@ interface GrupoData {
       }
 
       @if (carregando()) {
-        <p class="text-text-subtle text-sm">Carregando...</p>
+        <p class="text-text-subtle text-sm">{{ locale.t('atividade.carregando') }}</p>
       } @else if (concluidas().length === 0) {
         <div class="text-center py-16 text-text-subtle text-[13px]" data-testid="concluidas-vazio">
-          Nada concluído neste período.
+          {{ locale.t('atividade.vazio') }}
         </div>
       } @else {
         <div
@@ -136,7 +137,7 @@ interface GrupoData {
           <div class="text-3xl font-semibold tabular-nums">{{ concluidas().length }}</div>
           <div class="flex flex-col gap-0.5">
             <div class="text-sm font-medium">{{ rotuloPeriodo() }}</div>
-            <div class="text-xs text-text-dim">Continua nesse ritmo.</div>
+            <div class="text-xs text-text-dim">{{ locale.t('atividade.continua_ritmo') }}</div>
           </div>
         </div>
 
@@ -223,18 +224,19 @@ interface GrupoData {
 })
 export class ConcluidasComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly pageHeader = inject(PageHeaderService);
+  readonly locale = inject(LocaleService);
   private readonly acoesTplRef = viewChild<TemplateRef<unknown>>('acoesTpl');
 
   constructor() {
     this.pageHeader.set({
-      titulo: 'Concluídas',
+      titulo: this.locale.t('page_title.completed'),
       iconeClasse: 'fa-solid fa-circle-check text-emerald-500 text-[12px]',
     });
   }
 
   ngAfterViewInit(): void {
     this.pageHeader.set({
-      titulo: 'Concluídas',
+      titulo: this.locale.t('page_title.completed'),
       iconeClasse: 'fa-solid fa-circle-check text-emerald-500 text-[12px]',
       acoesTpl: this.acoesTplRef() ?? null,
     });
@@ -364,7 +366,12 @@ export class ConcluidasComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   rotuloPeriodo(): string {
-    return { hoje: 'hoje', semana: 'nesta semana', mes: 'neste mês' }[this.periodo()];
+    const map = {
+      hoje: this.locale.t('atividade.label_hoje'),
+      semana: this.locale.t('atividade.label_semana'),
+      mes: this.locale.t('atividade.label_mes'),
+    };
+    return map[this.periodo()];
   }
 
   private intervalo(): { de: string; ate: string } {

@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard, guestGuard, onboardingGuard } from './core/auth/auth.guard';
+import { featureFlagGuard } from './core/features/feature-flags';
 
 export const routes: Routes = [
   {
@@ -90,6 +91,7 @@ export const routes: Routes = [
       },
       {
         path: 'financas',
+        canActivate: [featureFlagGuard('financas')],
         data: { tituloKey: 'page_title.finances' },
         loadComponent: () =>
           import('./features/financas/financas.component').then((m) => m.FinancasComponent),
@@ -110,7 +112,7 @@ export const routes: Routes = [
             (m) => m.AlterarSenhaComponent,
           ),
       },
-      { path: '', redirectTo: 'visao-geral', pathMatch: 'full' },
+      { path: '', redirectTo: 'captura', pathMatch: 'full' },
     ],
   },
   { path: '**', redirectTo: '' },

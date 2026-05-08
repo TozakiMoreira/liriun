@@ -19,7 +19,7 @@ export const guestGuard: CanActivateFn = () => {
 
   if (!storage.estaAutenticado()) return true;
 
-  return router.createUrlTree(['/app/visao-geral']);
+  return router.createUrlTree(['/app/captura']);
 };
 
 /**

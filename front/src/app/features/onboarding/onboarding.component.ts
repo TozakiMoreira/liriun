@@ -160,7 +160,7 @@ export class OnboardingComponent implements OnInit {
     this.categoriasApi.listar().subscribe({
       next: (cats) => {
         if (cats.length > 0) {
-          this.router.navigateByUrl('/app/visao-geral');
+          this.router.navigateByUrl('/app/captura');
         }
       },
       error: () => of(null),

@@ -100,8 +100,8 @@ import { SiteFooterComponent } from '../../shared/site-footer.component';
                     data-testid="landing-menu-nova-tarefa"
                     (click)="fecharMenu()"
                   >
-                    <i class="fa-solid fa-bolt text-accent text-[12px] w-4 text-center"></i>
-                    @if (locale.locale() === 'pt') { Nova tarefa } @else { New task }
+                    <i class="fa-solid fa-microphone text-accent text-[12px] w-4 text-center"></i>
+                    @if (locale.locale() === 'pt') { Falar } @else { Speak }
                   </a>
                   <div class="h-px bg-border my-1"></div>
                   <button

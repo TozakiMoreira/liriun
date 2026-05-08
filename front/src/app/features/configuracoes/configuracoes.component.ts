@@ -6,6 +6,8 @@ import { Router, RouterLink } from '@angular/router';
 import { Categoria, CategoriasService } from '../../core/api/categorias.service';
 import { AuthService } from '../../core/auth/auth.service';
 import { TokenStorage } from '../../core/auth/token.storage';
+import { LocaleService } from '../../core/locale/locale.service';
+import { ThemeService } from '../../core/theme/theme.service';
 import { AvatarComponent } from '../../shared/avatar.component';
 import { ConfirmModalComponent } from '../../shared/confirm-modal.component';
 import { ExcluirContaModalComponent } from '../../shared/excluir-conta-modal.component';
@@ -36,19 +38,19 @@ interface Confirmacao {
     <header class="md:hidden flex items-center px-4 py-3.5 border-b border-border gap-4">
       <div class="flex items-center gap-2 text-[15px] text-text-dim">
         <i class="fa-solid fa-gear text-accent text-[12px]"></i>
-        <strong class="text-text font-medium">Configurações</strong>
+        <strong class="text-text font-medium">{{ locale.t('page_title.settings') }}</strong>
       </div>
     </header>
 
     <div class="flex-1 px-4 md:px-8 py-6 md:py-8 overflow-auto" data-testid="configuracoes-page">
       <div class="max-w-[760px] mx-auto flex flex-col gap-8">
         <section class="flex flex-col gap-3" data-testid="section-perfil-wrap">
-          <h2 class="text-xl font-semibold tracking-tight">Perfil</h2>
+          <h2 class="text-xl font-semibold tracking-tight">{{ locale.t('configs.section_perfil') }}</h2>
         <section class="card-elev p-5 flex flex-col gap-4" data-testid="section-perfil">
           <div class="flex items-start justify-between gap-3">
             <div class="flex flex-col gap-0.5">
               <div class="text-xs text-text-dim">
-                Seu nome e email. Mude quando quiser.
+                {{ locale.t('configs.perfil_descricao') }}
               </div>
             </div>
             @if (!editandoPerfil()) {
@@ -67,7 +69,7 @@ interface Confirmacao {
           @if (editandoPerfil()) {
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div class="flex flex-col gap-1.5">
-                <label class="field-label" for="perfil-nome">Nome</label>
+                <label class="field-label" for="perfil-nome">{{ locale.t('configs.perfil_nome') }}</label>
                 <input
                   id="perfil-nome"
                   type="text"
@@ -84,7 +86,7 @@ interface Confirmacao {
                 }
               </div>
               <div class="flex flex-col gap-1.5">
-                <label class="field-label" for="perfil-email">Email</label>
+                <label class="field-label" for="perfil-email">{{ locale.t('configs.perfil_email') }}</label>
                 <input
                   id="perfil-email"
                   type="email"
@@ -202,7 +204,7 @@ interface Confirmacao {
                 data-testid="perfil-alterar-senha-btn"
               >
                 <i class="fa-solid fa-key text-[10px]"></i>
-                Alterar senha
+                {{ locale.t('configs.alterar_senha') }}
               </a>
             </div>
           }
@@ -210,11 +212,11 @@ interface Confirmacao {
         </section>
 
         <section class="flex flex-col gap-3" data-testid="section-categorias-wrap">
-          <h2 class="text-xl font-semibold tracking-tight">Categorias</h2>
+          <h2 class="text-xl font-semibold tracking-tight">{{ locale.t('configs.section_categorias') }}</h2>
         <section class="card-elev p-5 flex flex-col gap-3" data-testid="section-categorias">
           <div class="flex flex-col gap-0.5">
             <div class="text-xs text-text-dim">
-              Não dá pra excluir uma categoria com tarefas pendentes.
+              {{ locale.t('configs.categorias_descricao') }}
             </div>
           </div>
 
@@ -275,7 +277,7 @@ interface Confirmacao {
                 }
               </div>
             } @empty {
-              <p class="text-text-subtle text-[13px] py-2">Nenhuma categoria.</p>
+              <p class="text-text-subtle text-[13px] py-2">{{ locale.t('configs.categorias_nenhuma') }}</p>
             }
           </div>
 
@@ -306,17 +308,108 @@ interface Confirmacao {
         </section>
         </section>
 
+        <section class="flex flex-col gap-3" data-testid="section-aparencia-wrap">
+          <h2 class="text-xl font-semibold tracking-tight">{{ locale.t('configs.section_aparencia') }}</h2>
+          <section class="card-elev p-5 flex flex-col gap-4" data-testid="section-aparencia">
+            <div class="text-xs text-text-dim">
+              {{ locale.t('configs.aparencia_descricao') }}
+            </div>
+            <div class="rounded-lg border border-border overflow-hidden divide-y divide-border">
+              <button
+                type="button"
+                class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-text-dim hover:text-text text-left"
+                [class.bg-accent]="theme.theme() === 'light'"
+                [class.bg-opacity-10]="theme.theme() === 'light'"
+                [class.!text-text]="theme.theme() === 'light'"
+                data-testid="theme-light-btn"
+                (click)="theme.definir('light')"
+              >
+                <i class="fa-solid fa-sun text-amber-400 text-[15px] w-5 text-center shrink-0"></i>
+                <span class="text-[13px] font-medium flex-1">{{ locale.t('configs.aparencia_claro') }}</span>
+                @if (theme.theme() === 'light') {
+                  <i class="fa-solid fa-check text-accent text-[12px]"></i>
+                }
+              </button>
+              <button
+                type="button"
+                class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-text-dim hover:text-text text-left"
+                [class.bg-accent]="theme.theme() === 'dark'"
+                [class.bg-opacity-10]="theme.theme() === 'dark'"
+                [class.!text-text]="theme.theme() === 'dark'"
+                data-testid="theme-dark-btn"
+                (click)="theme.definir('dark')"
+              >
+                <i class="fa-solid fa-moon text-sky-300 text-[15px] w-5 text-center shrink-0"></i>
+                <span class="text-[13px] font-medium flex-1">{{ locale.t('configs.aparencia_escuro') }}</span>
+                @if (theme.theme() === 'dark') {
+                  <i class="fa-solid fa-check text-accent text-[12px]"></i>
+                }
+              </button>
+            </div>
+            <button
+              type="button"
+              class="text-[11px] text-text-subtle hover:text-text self-start flex items-center gap-1.5"
+              data-testid="theme-reset-btn"
+              (click)="theme.resetar()"
+            >
+              <i class="fa-solid fa-rotate-left text-[10px]"></i>
+              {{ locale.t('configs.aparencia_seguir_sistema') }}
+            </button>
+          </section>
+        </section>
+
+        <section class="flex flex-col gap-3" data-testid="section-idioma-wrap">
+          <h2 class="text-xl font-semibold tracking-tight">{{ locale.t('configs.section_idioma') }}</h2>
+          <section class="card-elev p-5 flex flex-col gap-4" data-testid="section-idioma">
+            <div class="text-xs text-text-dim">
+              {{ locale.t('configs.idioma_descricao') }}
+            </div>
+            <div class="rounded-lg border border-border overflow-hidden divide-y divide-border">
+              <button
+                type="button"
+                class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-text-dim hover:text-text text-left"
+                [class.bg-accent]="locale.locale() === 'pt'"
+                [class.bg-opacity-10]="locale.locale() === 'pt'"
+                [class.!text-text]="locale.locale() === 'pt'"
+                data-testid="locale-pt-btn"
+                (click)="locale.setLocale('pt')"
+              >
+                <span class="text-[10px] font-bold tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 shrink-0">PT-BR</span>
+                <span class="text-[13px] font-medium flex-1">{{ locale.t('configs.idioma_pt') }}</span>
+                @if (locale.locale() === 'pt') {
+                  <i class="fa-solid fa-check text-accent text-[12px]"></i>
+                }
+              </button>
+              <button
+                type="button"
+                class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-text-dim hover:text-text text-left"
+                [class.bg-accent]="locale.locale() === 'en'"
+                [class.bg-opacity-10]="locale.locale() === 'en'"
+                [class.!text-text]="locale.locale() === 'en'"
+                data-testid="locale-en-btn"
+                (click)="locale.setLocale('en')"
+              >
+                <span class="text-[10px] font-bold tracking-wider px-1.5 py-0.5 rounded bg-sky-500/15 text-sky-400 border border-sky-500/30 shrink-0">US</span>
+                <span class="text-[13px] font-medium flex-1">{{ locale.t('configs.idioma_en') }}</span>
+                @if (locale.locale() === 'en') {
+                  <i class="fa-solid fa-check text-accent text-[12px]"></i>
+                }
+              </button>
+            </div>
+          </section>
+        </section>
+
         <section class="flex flex-col gap-3" data-testid="section-zona-perigosa-wrap">
-          <h2 class="text-xl font-semibold tracking-tight text-danger">Zona perigosa</h2>
+          <h2 class="text-xl font-semibold tracking-tight text-danger">{{ locale.t('configs.section_zona_perigosa') }}</h2>
           <section
             class="card-elev p-5 flex flex-col gap-4 border-danger/30"
             data-testid="section-zona-perigosa"
           >
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div class="flex flex-col gap-0.5">
-                <div class="text-[13px] font-medium text-text">Excluir conta</div>
+                <div class="text-[13px] font-medium text-text">{{ locale.t('configs.excluir_conta') }}</div>
                 <div class="text-xs text-text-dim leading-relaxed">
-                  Apaga sua conta e todas as tarefas/categorias associadas. Não dá pra desfazer.
+                  {{ locale.t('configs.excluir_conta_descricao') }}
                 </div>
               </div>
               <button
@@ -325,7 +418,7 @@ interface Confirmacao {
                 data-testid="excluir-conta-btn"
                 (click)="abrirExcluirContaModal()"
               >
-                Excluir minha conta
+                {{ locale.t('configs.excluir_conta_btn') }}
               </button>
             </div>
           </section>
@@ -371,10 +464,12 @@ export class ConfiguracoesComponent implements OnInit, OnDestroy {
   private readonly storage = inject(TokenStorage);
   private readonly pageHeader = inject(PageHeaderService);
   private readonly router = inject(Router);
+  readonly theme = inject(ThemeService);
+  readonly locale = inject(LocaleService);
 
   constructor() {
     this.pageHeader.set({
-      titulo: 'Configurações',
+      titulo: this.locale.t('page_title.settings'),
       iconeClasse: 'fa-solid fa-gear text-accent text-[12px]',
     });
   }

@@ -30,6 +30,7 @@ import {
   TarefasService,
 } from '../../core/api/tarefas.service';
 import { TokenStorage } from '../../core/auth/token.storage';
+import { LocaleService } from '../../core/locale/locale.service';
 import { extrairProblemDetails } from '../../shared/problem-details';
 import { TarefaFormComponent } from '../tarefas/tarefa-form.component';
 import { BrandComponent } from '../../shared/brand.component';
@@ -51,8 +52,8 @@ type Modo = 'manual' | 'liriun' | null;
           type="button"
           class="group inline-flex items-center justify-center w-8 h-8 rounded-md text-text-dim bg-bg-elev border border-border hover:text-text hover:border-border-strong active:scale-95 transition-all"
           data-testid="captura-voltar"
-          aria-label="Voltar pra escolha de modo"
-          title="Voltar pra escolha de modo"
+          [attr.aria-label]="locale.t('captura.aria_voltar_modo')"
+          [attr.title]="locale.t('captura.aria_voltar_modo')"
           (click)="voltarSelecaoModo()"
         >
           <i class="fa-solid fa-arrow-left text-[13px] transition-transform group-hover:-translate-x-0.5"></i>
@@ -66,18 +67,21 @@ type Modo = 'manual' | 'liriun' | null;
             class="hover:text-text transition-colors"
             (click)="voltarSelecaoModo()"
           >
-            Nova tarefa
+            {{ locale.t('captura.crumb_falar') }}
           </button>
           <i class="fa-solid fa-chevron-right text-[9px] text-accent"></i>
           <span class="text-text font-medium flex items-center gap-1.5">
             <i class="fa-solid fa-wand-magic-sparkles text-accent text-[11px]"></i>
-            <span>Modo&nbsp;<app-brand /></span>
+            <span>
+              @if (locale.locale() === 'pt') { Modo&nbsp;<app-brand /> }
+              @else { <app-brand />&nbsp;Mode }
+            </span>
           </span>
         </nav>
       } @else {
         <div class="flex items-center gap-2 text-[15px] text-text-dim">
           <i class="fa-solid fa-bolt text-accent text-[12px]"></i>
-          <strong class="text-text font-medium">Nova tarefa</strong>
+          <strong class="text-text font-medium">{{ locale.t('captura.crumb_falar') }}</strong>
         </div>
       }
     </header>
@@ -88,10 +92,13 @@ type Modo = 'manual' | 'liriun' | null;
         <span class="text-text font-medium text-[13px] flex items-center gap-1.5">
           @if (modo() === 'liriun') {
             <i class="fa-solid fa-wand-magic-sparkles text-accent text-[11px]"></i>
-            <span>Modo&nbsp;<app-brand /></span>
+            <span>
+              @if (locale.locale() === 'pt') { Modo&nbsp;<app-brand /> }
+              @else { <app-brand />&nbsp;Mode }
+            </span>
           } @else {
             <i class="fa-solid fa-pen-to-square text-text-dim text-[11px]"></i>
-            <span>Modo manual</span>
+            <span>{{ locale.t('captura.modo_manual_short') }}</span>
           }
         </span>
       }
@@ -116,11 +123,16 @@ type Modo = 'manual' | 'liriun' | null;
               class="text-lg font-medium text-text-dim tracking-tight"
               data-testid="liriun-prompt"
             >
-              O que você precisa anotar?
+              {{ locale.t('captura.prompt') }}
             </div>
             <p class="text-text-dim max-w-[440px] mx-auto leading-relaxed">
-              Escolha como quer criar a tarefa. Manual pra quando você já sabe tudo, <app-brand /> pra
-              conversar comigo até a tarefa ficar do jeito certo.
+              @if (locale.locale() === 'pt') {
+                Escolha como quer criar a tarefa. Manual pra quando você já sabe tudo, <app-brand /> pra
+                conversar comigo até a tarefa ficar do jeito certo.
+              } @else {
+                Choose how to create the task. Manual when you know everything, <app-brand /> to chat with
+                me until it’s right.
+              }
             </p>
           </div>
 
@@ -138,16 +150,15 @@ type Modo = 'manual' | 'liriun' | null;
                   <i class="fa-solid fa-pen-to-square"></i>
                 </div>
               </div>
-              <div class="text-base font-semibold tracking-tight text-text-dim">Manual</div>
+              <div class="text-base font-semibold tracking-tight text-text-dim">{{ locale.t('captura.modo_manual') }}</div>
               <div class="text-[13px] text-text-dim leading-relaxed">
-                Você preenche os campos na mão: nome, categoria, prazo e prioridade. Rápido e sem
-                surpresas.
+                {{ locale.t('captura.modo_manual_desc') }}
               </div>
               <div class="flex items-center justify-between mt-1.5 pt-3.5 border-t border-border">
                 <div
                   class="text-[13px] font-medium text-text group-hover:text-accent flex items-center gap-1.5 transition-colors"
                 >
-                  Criar tarefa
+                  {{ locale.t('captura.criar_tarefa') }}
                   <i class="fa-solid fa-arrow-right text-[11px] group-hover:translate-x-0.5 transition-transform"></i>
                 </div>
                 <span class="kbd-pill hidden md:inline-flex">M</span>
@@ -172,14 +183,20 @@ type Modo = 'manual' | 'liriun' | null;
               </div>
               <div class="text-base font-semibold tracking-tight text-accent"><app-brand /></div>
               <div class="text-[13px] text-text-dim leading-relaxed">
-                Texto livre. Diga o que precisa fazer, quando e onde — eu monto a tarefa direto
-                pra você revisar.
+                @if (locale.locale() === 'pt') {
+                  Texto livre. Diga o que precisa fazer, quando e onde — eu monto a tarefa direto pra
+                  você revisar.
+                } @else {
+                  Free text. Tell me what to do, when and where — I’ll build the task for you to
+                  review.
+                }
               </div>
               <div class="flex items-center justify-between mt-1.5 pt-3.5 border-t border-border">
                 <div
                   class="text-[13px] font-medium text-text group-hover:text-accent flex items-center gap-1.5 transition-colors"
                 >
-                  Conversar com <app-brand />
+                  @if (locale.locale() === 'pt') { Conversar com <app-brand /> }
+                  @else { {{ locale.t('captura.conversar') }} with <app-brand /> }
                   <i class="fa-solid fa-arrow-right text-[11px] group-hover:translate-x-0.5 transition-transform"></i>
                 </div>
                 <span class="kbd-pill hidden md:inline-flex">L</span>
@@ -193,7 +210,7 @@ type Modo = 'manual' | 'liriun' | null;
           >
             <i class="fa-solid fa-keyboard"></i>
             <span>
-              <span class="kbd-pill">M</span> manual ·
+              <span class="kbd-pill">M</span> {{ locale.t('captura.modo_manual') }} ·
               <span class="kbd-pill">L</span> <app-brand />
             </span>
           </div>
@@ -262,8 +279,8 @@ type Modo = 'manual' | 'liriun' | null;
                     type="button"
                     class="text-[12px] px-2.5 py-1 rounded-md bg-accent/15 border border-accent/30 text-accent hover:bg-accent/25 hover:border-accent/50 transition-colors flex items-center gap-1.5 font-medium"
                     data-testid="liriun-novo-chat"
-                    aria-label="Começar nova conversa"
-                    title="Começar do zero"
+                    [attr.aria-label]="locale.t('captura.aria_nova_conversa')"
+                    [attr.title]="locale.t('captura.title_nova_conversa')"
                     [disabled]="analisando() || salvando() || gravando()"
                     (click)="novoChat()"
                   >
@@ -274,7 +291,7 @@ type Modo = 'manual' | 'liriun' | null;
                     type="button"
                     class="text-text-subtle hover:text-text text-lg w-7 h-7 grid place-items-center leading-none transition-colors rounded hover:bg-bg"
                     data-testid="liriun-fechar"
-                    aria-label="Fechar conversa"
+                    [attr.aria-label]="locale.t('captura.aria_fechar_conversa')"
                     (click)="fecharChat()"
                   >
                     ×
@@ -438,7 +455,7 @@ type Modo = 'manual' | 'liriun' | null;
                 <div
                   class="flex flex-wrap gap-1.5 mb-2"
                   data-testid="chat-quick-replies"
-                  aria-label="Respostas rápidas"
+                  [attr.aria-label]="locale.t('captura.aria_respostas_rapidas')"
                 >
                   <button
                     type="button"
@@ -506,8 +523,8 @@ type Modo = 'manual' | 'liriun' | null;
                       type="button"
                       class="chat-icon-btn chat-icon-secondary"
                       data-testid="chat-cancelar-audio"
-                      aria-label="Cancelar gravação"
-                      title="Cancelar"
+                      [attr.aria-label]="locale.t('captura.aria_cancelar_grav')"
+                      [attr.title]="locale.t('captura.title_cancelar')"
                       (click)="cancelarGravacao()"
                     >
                       <i class="fa-solid fa-trash text-[11px]"></i>
@@ -516,8 +533,8 @@ type Modo = 'manual' | 'liriun' | null;
                       type="button"
                       class="chat-icon-btn chat-icon-primary"
                       data-testid="chat-parar-audio"
-                      aria-label="Parar gravação"
-                      title="Parar e ouvir"
+                      [attr.aria-label]="locale.t('captura.aria_parar_grav')"
+                      [attr.title]="locale.t('captura.title_parar_ouvir')"
                       (click)="pararGravacao()"
                     >
                       <i class="fa-solid fa-stop text-[11px]"></i>
@@ -546,8 +563,8 @@ type Modo = 'manual' | 'liriun' | null;
                         type="button"
                         class="chat-icon-btn chat-icon-secondary"
                         data-testid="chat-previa-descartar"
-                        aria-label="Descartar áudio"
-                        title="Descartar"
+                        [attr.aria-label]="locale.t('captura.aria_descartar_audio')"
+                        [attr.title]="locale.t('captura.title_descartar')"
                         (click)="descartarPrevia()"
                       >
                         <i class="fa-solid fa-trash text-[11px]"></i>
@@ -556,8 +573,8 @@ type Modo = 'manual' | 'liriun' | null;
                         type="button"
                         class="chat-icon-btn chat-icon-secondary"
                         data-testid="chat-previa-regravar"
-                        aria-label="Regravar"
-                        title="Regravar"
+                        [attr.aria-label]="locale.t('captura.aria_regravar')"
+                        [attr.title]="locale.t('captura.title_regravar')"
                         [disabled]="analisando() || salvando()"
                         (click)="reGravarPrevia()"
                       >
@@ -567,8 +584,8 @@ type Modo = 'manual' | 'liriun' | null;
                         type="button"
                         class="chat-icon-btn chat-icon-primary"
                         data-testid="chat-previa-enviar"
-                        aria-label="Enviar áudio"
-                        title="Enviar"
+                        [attr.aria-label]="locale.t('captura.aria_enviar_audio')"
+                        [attr.title]="locale.t('captura.title_enviar')"
                         [disabled]="analisando() || salvando()"
                         (click)="enviarPrevia()"
                       >
@@ -598,8 +615,8 @@ type Modo = 'manual' | 'liriun' | null;
                           type="button"
                           class="chat-icon-btn chat-icon-secondary"
                           data-testid="chat-mic"
-                          aria-label="Gravar mensagem de voz"
-                          title="Gravar áudio"
+                          [attr.aria-label]="locale.t('captura.aria_gravar_msg_voz')"
+                          [attr.title]="locale.t('captura.title_gravar_audio')"
                           [disabled]="analisando() || salvando()"
                           (click)="iniciarGravacao()"
                         >
@@ -626,9 +643,17 @@ type Modo = 'manual' | 'liriun' | null;
                 >
                   <span>
                     @if (gravacaoSuportada()) {
-                      <span class="kbd-pill">Ctrl</span>+<span class="kbd-pill">Espaço</span> grava ·
+                      @if (locale.locale() === 'pt') {
+                        <span class="kbd-pill">Ctrl</span>+<span class="kbd-pill">Espaço</span> grava ·
+                      } @else {
+                        <span class="kbd-pill">Ctrl</span>+<span class="kbd-pill">Space</span> records ·
+                      }
                     }
-                    <span class="kbd-pill">Esc</span> fecha
+                    @if (locale.locale() === 'pt') {
+                      <span class="kbd-pill">Esc</span> fecha
+                    } @else {
+                      <span class="kbd-pill">Esc</span> closes
+                    }
                   </span>
                 </div>
               }
@@ -647,7 +672,7 @@ type Modo = 'manual' | 'liriun' | null;
                 >
                   <i class="fa-solid fa-lightbulb text-accent text-[14px]"></i>
                 </span>
-                <span>Sugestões de uso</span>
+                <span>{{ locale.t('captura.sugestoes_titulo') }}</span>
               </div>
               <div class="flex flex-wrap gap-2">
                 <button
@@ -657,7 +682,7 @@ type Modo = 'manual' | 'liriun' | null;
                   (click)="usarExemplo('Tenho uma reunião amanhã às 14h, online via Teams, com o Lucas')"
                 >
                   <i class="fa-solid fa-people-group text-[11px]"></i>
-                  <span>Tenho uma reunião amanhã às 14h, online via Teams, com o Lucas</span>
+                  <span>{{ locale.t('captura.sugestao_1') }}</span>
                 </button>
                 <button
                   type="button"
@@ -666,7 +691,7 @@ type Modo = 'manual' | 'liriun' | null;
                   (click)="usarExemplo('Vou estudar para a prova do dia 15/03')"
                 >
                   <i class="fa-solid fa-graduation-cap text-[11px]"></i>
-                  <span>Vou estudar para a prova do dia 15/03</span>
+                  <span>{{ locale.t('captura.sugestao_2') }}</span>
                 </button>
                 <button
                   type="button"
@@ -675,13 +700,21 @@ type Modo = 'manual' | 'liriun' | null;
                   (click)="usarExemplo('Comprar fita métrica até sexta na loja do Pedrão, urgente')"
                 >
                   <i class="fa-solid fa-cart-shopping text-[11px]"></i>
-                  <span>Comprar fita métrica até sexta na loja do Pedrão, urgente</span>
+                  <span>{{ locale.t('captura.sugestao_3') }}</span>
                 </button>
               </div>
               <div class="text-[11px] text-text-subtle leading-relaxed px-0.5">
-                Diga <span class="text-text-dim">o quê</span>, <span class="text-text-dim">quando</span>, <span class="text-text-dim">onde</span> ou <span class="text-text-dim">como</span>. Quanto mais contexto, mais completa fica.
+                @if (locale.locale() === 'pt') {
+                  Diga <span class="text-text-dim">o quê</span>, <span class="text-text-dim">quando</span>, <span class="text-text-dim">onde</span> ou <span class="text-text-dim">como</span>. Quanto mais contexto, mais completa fica.
+                } @else {
+                  Tell me <span class="text-text-dim">what</span>, <span class="text-text-dim">when</span>, <span class="text-text-dim">where</span> or <span class="text-text-dim">how</span>. The more context, the better.
+                }
                 @if (gravacaoSuportada()) {
-                  <span class="ml-1 text-text-subtle">·  <span class="kbd-pill">Ctrl</span>+<span class="kbd-pill">Espaço</span> grava áudio</span>
+                  @if (locale.locale() === 'pt') {
+                    <span class="ml-1 text-text-subtle">·  <span class="kbd-pill">Ctrl</span>+<span class="kbd-pill">Espaço</span> grava áudio</span>
+                  } @else {
+                    <span class="ml-1 text-text-subtle">·  <span class="kbd-pill">Ctrl</span>+<span class="kbd-pill">Space</span> records audio</span>
+                  }
                 }
               </div>
             </div>
@@ -992,6 +1025,7 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
   private readonly destroyRef = inject(DestroyRef);
   private readonly pageHeader = inject(PageHeaderService);
   private readonly router = inject(Router);
+  readonly locale = inject(LocaleService);
 
   readonly modo = signal<Modo>(null);
   readonly nomeUsuario = signal(this.storage.usuario()?.nome ?? '');
@@ -1139,7 +1173,7 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
   // ===== Header dinamico =====
   private aplicarHeaderEscolhaModo(): void {
     this.pageHeader.set({
-      titulo: 'Nova tarefa',
+      titulo: 'Falar',
       iconeClasse: 'fa-solid fa-bolt text-accent text-[12px]',
       subtituloTpl: this.subtituloTplRef() ?? null,
       voltar: null,
@@ -1148,7 +1182,7 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
 
   private aplicarHeaderModoSelecionado(): void {
     this.pageHeader.set({
-      titulo: 'Nova tarefa',
+      titulo: 'Falar',
       iconeClasse: null,
       subtituloTpl: this.subtituloTplRef() ?? null,
       voltar: {
@@ -1161,7 +1195,7 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
 
   private aplicarHeaderAjustando(): void {
     this.pageHeader.set({
-      titulo: 'Nova tarefa',
+      titulo: 'Falar',
       iconeClasse: null,
       subtituloTpl: this.subtituloTplRef() ?? null,
       voltar: {
@@ -1182,10 +1216,10 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
 
   saudacao(): string {
     const h = new Date().getHours();
-    if (h < 6) return 'Boa madrugada';
-    if (h < 12) return 'Bom dia';
-    if (h < 18) return 'Boa tarde';
-    return 'Boa noite';
+    if (h < 6) return this.locale.t('captura.greeting_madrugada');
+    if (h < 12) return this.locale.t('captura.greeting_manha');
+    if (h < 18) return this.locale.t('captura.greeting_tarde');
+    return this.locale.t('captura.greeting_noite');
   }
 
   abrirManual(): void {

@@ -106,8 +106,14 @@ import { LocaleService } from '../../core/locale/locale.service';
                   <span
                     class="absolute -left-3 top-1.5 bottom-1.5 w-0.5 bg-accent rounded-r"
                   ></span>
-                  <i class="fa-solid fa-bolt text-accent text-[9px] w-3"></i>
-                  <span>Nova tarefa</span>
+                  <i class="fa-solid fa-microphone text-accent text-[9px] w-3"></i>
+                  <span>Falar</span>
+                </div>
+                <div
+                  class="flex items-center gap-2 px-2 py-1 rounded text-text-dim text-[11px]"
+                >
+                  <i class="fa-solid fa-house text-[9px] w-3"></i>
+                  <span>Hoje</span>
                 </div>
                 <div
                   class="flex items-center gap-2 px-2 py-1 rounded text-text-dim text-[11px]"
@@ -119,14 +125,14 @@ import { LocaleService } from '../../core/locale/locale.service';
                   class="flex items-center gap-2 px-2 py-1 rounded text-text-dim text-[11px]"
                 >
                   <i class="fa-solid fa-circle-check text-[9px] w-3"></i>
-                  <span>Concluídas</span>
+                  <span>Histórico</span>
                 </div>
               </div>
 
               <div class="flex-1 flex flex-col overflow-hidden">
                 <div class="flex items-center gap-2 px-3 py-2 border-b border-border">
-                  <i class="fa-solid fa-bolt text-accent text-[10px]"></i>
-                  <strong class="text-text font-medium text-[10px]">Nova tarefa</strong>
+                  <i class="fa-solid fa-microphone text-accent text-[10px]"></i>
+                  <strong class="text-text font-medium text-[10px]">Falar</strong>
                 </div>
                 <div class="flex-1 px-3 py-3 flex flex-col gap-2 overflow-hidden">
                   <div class="flex justify-end">

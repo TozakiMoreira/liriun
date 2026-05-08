@@ -8,6 +8,7 @@ import { extrairProblemDetails } from '../../shared/problem-details';
 import { TarefaDetalheModalComponent } from './tarefa-detalhe-modal.component';
 import { TarefaFormComponent } from './tarefa-form.component';
 import { PageHeaderService } from '../../core/layout/page-header.service';
+import { LocaleService } from '../../core/locale/locale.service';
 import { ItemAgendaPosicionado, calcularLayoutAgenda } from '../../shared/agenda-layout';
 
 interface Grupo {
@@ -79,7 +80,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
         <span
           class="text-[10px] uppercase tracking-wider text-text-subtle font-medium sm:hidden"
           aria-hidden="true"
-        >Modo</span>
+        >{{ locale.t('tarefas.modo') }}</span>
         <div
           class="flex items-center bg-bg-elev border border-border rounded p-0.5"
           role="tablist"
@@ -100,7 +101,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
             title="Visualizar em lista"
           >
             <i class="fa-solid fa-list text-[10px]"></i>
-            <span class="hidden sm:inline">Lista</span>
+            <span class="hidden sm:inline">{{ locale.t('tarefas.lista') }}</span>
           </button>
           <button
             type="button"
@@ -117,7 +118,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
             title="Visualizar em quadro"
           >
             <i class="fa-solid fa-columns text-[10px]"></i>
-            <span class="hidden sm:inline">Quadro</span>
+            <span class="hidden sm:inline">{{ locale.t('tarefas.quadro') }}</span>
           </button>
           <button
             type="button"
@@ -134,7 +135,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
             title="Visualizar a semana"
           >
             <i class="fa-solid fa-calendar-week text-[10px]"></i>
-            <span class="hidden sm:inline">Semana</span>
+            <span class="hidden sm:inline">{{ locale.t('tarefas.semana') }}</span>
           </button>
         </div>
 
@@ -314,8 +315,8 @@ const FILTROS_PADRAO: FiltrosTarefas = {
             (click)="abrirNova()"
           >
             <i class="fa-solid fa-plus text-[10px]"></i>
-            <span class="hidden sm:inline">Nova tarefa</span>
-            <span class="sm:hidden">Nova</span>
+            <span class="hidden sm:inline">{{ locale.t('tarefas.nova_tarefa') }}</span>
+            <span class="sm:hidden">{{ locale.t('tarefas.nova_curto') }}</span>
           </button>
         </div>
     </ng-template>
@@ -342,8 +343,8 @@ const FILTROS_PADRAO: FiltrosTarefas = {
           <section class="card-elev p-3 md:p-4 flex flex-col gap-1 animate-fade-up">
             <div class="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-text-subtle font-medium">
               <i class="fa-solid fa-list-check text-accent text-[10px]"></i>
-              <span class="hidden sm:inline">Pendentes</span>
-              <span class="sm:hidden">Total</span>
+              <span class="hidden sm:inline">{{ locale.t('tarefas.pendentes') }}</span>
+              <span class="sm:hidden">{{ locale.t('tarefas.total') }}</span>
             </div>
             <div class="text-[20px] md:text-[22px] font-semibold tabular-nums">
               {{ pendentes().length }}
@@ -371,8 +372,8 @@ const FILTROS_PADRAO: FiltrosTarefas = {
           <section class="card-elev p-3 md:p-4 flex flex-col gap-1 animate-fade-up" style="animation-delay: 120ms">
             <div class="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-text-subtle font-medium">
               <i class="fa-regular fa-calendar text-accent-violet text-[10px]"></i>
-              <span class="hidden sm:inline">Hoje</span>
-              <span class="sm:hidden">Hoje</span>
+              <span class="hidden sm:inline">{{ locale.t('tarefas.hoje') }}</span>
+              <span class="sm:hidden">{{ locale.t('tarefas.hoje') }}</span>
             </div>
             <div class="text-[20px] md:text-[22px] font-semibold tabular-nums text-accent-violet">
               {{ qtdHoje() }}
@@ -444,7 +445,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                 aria-label="Filtros"
               >
                 <div class="flex flex-col gap-1.5">
-                  <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">Status</span>
+                  <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">{{ locale.t('tarefas.status') }}</span>
                   <div class="flex flex-wrap gap-1.5" role="radiogroup">
                     @for (opt of [
                       { v: 'todas', label: 'Todas' },
@@ -468,7 +469,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                  <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">Prioridade</span>
+                  <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">{{ locale.t('tarefas.prioridade') }}</span>
                   <div class="flex flex-wrap gap-1.5">
                     @for (p of [
                       { v: 1, label: 'Urgente' },
@@ -495,7 +496,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                 </div>
 
                 <div class="flex flex-col gap-1.5">
-                  <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">Período</span>
+                  <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">{{ locale.t('tarefas.periodo') }}</span>
                   <div class="flex flex-wrap gap-1.5" role="radiogroup">
                     @for (opt of [
                       { v: 'todas', label: 'Todas' },
@@ -523,7 +524,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
 
                 @if (categoriasDisponiveis().length > 0) {
                   <div class="flex flex-col gap-1.5">
-                    <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">Categorias</span>
+                    <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">{{ locale.t('tarefas.categorias') }}</span>
                     <div class="flex flex-wrap gap-1.5">
                       @for (c of categoriasDisponiveis(); track c.id) {
                         <button
@@ -548,7 +549,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                       type="button"
                       class="text-[11px] text-text-dim hover:text-text underline underline-offset-2"
                       (click)="limparFiltros()"
-                    >Limpar filtros</button>
+                    >{{ locale.t('tarefas.limpar_filtros') }}</button>
                   </div>
                 }
               </div>
@@ -569,10 +570,10 @@ const FILTROS_PADRAO: FiltrosTarefas = {
           >
             @if (selecionando()) {
               <i class="fa-solid fa-xmark text-[12px]"></i>
-              <span>Cancelar</span>
+              <span>{{ locale.t('tarefas.cancelar') }}</span>
             } @else {
               <i class="fa-regular fa-square-check text-[12px]"></i>
-              <span>Selecionar</span>
+              <span>{{ locale.t('tarefas.selecionar') }}</span>
             }
           </button>
           </div>
@@ -589,7 +590,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
       }
 
       @if (carregando()) {
-        <p class="text-text-subtle text-sm">Carregando...</p>
+        <p class="text-text-subtle text-sm">{{ locale.t('tarefas.carregando') }}</p>
       } @else if (pendentes().length === 0) {
         <div class="text-center py-16 text-text-subtle text-[13px]" data-testid="tarefas-vazio">
           Tudo em dia. Nada pra fazer agora.
@@ -599,7 +600,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
           class="text-center py-16 text-text-subtle text-[13px] flex flex-col items-center gap-2"
           data-testid="tarefas-vazio-filtros"
         >
-          <span>Nenhuma tarefa bate com seus filtros.</span>
+          <span>{{ locale.t('tarefas.vazio_filtros') }}</span>
           <button
             type="button"
             class="text-text-dim hover:text-text underline underline-offset-2 text-[12px]"
@@ -690,7 +691,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
             <!-- Tarefas sem hora do dia -->
             @if (tarefasSemHoraDiaSelecionado().length > 0) {
               <div class="card-elev p-3 flex flex-col gap-1.5">
-                <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">Sem hora</span>
+                <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">{{ locale.t('tarefas.sem_hora') }}</span>
                 @for (t of tarefasSemHoraDiaSelecionado(); track t.id) {
                   <button
                     type="button"
@@ -1189,7 +1190,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
         <span
           class="text-[14px] font-semibold whitespace-nowrap overflow-hidden transition-[max-width,opacity] duration-[600ms] ease-out"
           [class]="fabExpandido() ? 'max-w-[160px] opacity-100' : 'max-w-0 opacity-0'"
-        >Nova tarefa</span>
+        >{{ locale.t('tarefas.nova_tarefa') }}</span>
       </button>
     }
 
@@ -1230,7 +1231,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
           (click)="concluirSelecionadas()"
         >
           <i class="fa-solid fa-check text-[10px]"></i>
-          <span class="hidden sm:inline">Concluir</span>
+          <span class="hidden sm:inline">{{ locale.t('tarefas.concluir') }}</span>
         </button>
         <button
           type="button"
@@ -1240,7 +1241,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
           (click)="excluirSelecionadas()"
         >
           <i class="fa-solid fa-trash text-[10px]"></i>
-          <span class="hidden sm:inline">Excluir</span>
+          <span class="hidden sm:inline">{{ locale.t('tarefas.excluir') }}</span>
         </button>
       </div>
     }
@@ -1306,19 +1307,20 @@ export class TarefasComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly tarefasApi = inject(TarefasService);
   private readonly route = inject(ActivatedRoute);
   private readonly pageHeader = inject(PageHeaderService);
+  readonly locale = inject(LocaleService);
   private readonly subtituloTplRef = viewChild<TemplateRef<unknown>>('subtituloTpl');
   private readonly acoesTplRef = viewChild<TemplateRef<unknown>>('acoesTpl');
 
   constructor() {
     this.pageHeader.set({
-      titulo: 'Minhas Tarefas',
+      titulo: this.locale.t('tarefas.titulo'),
       iconeClasse: 'fa-solid fa-list-check text-accent text-[12px]',
     });
   }
 
   private aplicarTemplatesPageHeader(): void {
     this.pageHeader.set({
-      titulo: 'Minhas Tarefas',
+      titulo: this.locale.t('tarefas.titulo'),
       iconeClasse: 'fa-solid fa-list-check text-accent text-[12px]',
     });
   }
