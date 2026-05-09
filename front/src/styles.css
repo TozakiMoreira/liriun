@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap");
 @import "primeicons/primeicons.css";
 @import "@fortawesome/fontawesome-free/css/all.min.css";
@@ -33,42 +34,51 @@
   }
 
   :root {
-    --c-bg: 8 9 10;
-    --c-bg-elev: 16 17 19;
-    --c-bg-input: 19 20 26;
-    --c-surface: 22 24 28;
-    --c-sidebar: 11 12 14;
-    --c-border: 31 32 35;
-    --c-border-strong: 42 43 47;
-    --c-text: 247 248 248;
-    --c-text-dim: 138 143 152;
-    --c-text-subtle: 98 102 109;
-    --c-accent: 94 106 210;
-    --c-accent-hover: 113 121 216;
-    --c-accent-violet: 139 92 246;
-    --c-danger: 235 87 87;
-    --brand-base: rgb(247 248 248);
-    --brand-accent: rgb(139 92 246);
+    /* Liriun Brand Kit v1.0 (Maio 2026) — tokens canônicos */
+    --liriun-violet-400: #A88BFF;
+    --liriun-violet-500: #9C7BFF;
+    --liriun-violet-600: #7C7DF6;
+    --liriun-violet-700: #5B8DEF;
+    --liriun-grad-brand: linear-gradient(135deg, #A88BFF 0%, #7C7DF6 55%, #5B8DEF 100%);
+    --font-display: 'Geist', system-ui, sans-serif;
+    --font-mono: 'Geist Mono', ui-monospace, monospace;
+
+    --c-bg: 7 8 11;
+    --c-bg-elev: 14 16 20;
+    --c-bg-input: 14 16 20;
+    --c-surface: 20 22 28;
+    --c-sidebar: 10 11 14;
+    --c-border: 28 30 36;
+    --c-border-strong: 42 45 54;
+    --c-text: 244 246 252;
+    --c-text-dim: 158 164 178;
+    --c-text-subtle: 110 116 130;
+    --c-accent: 156 123 255;
+    --c-accent-hover: 124 125 246;
+    --c-accent-violet: 168 139 255;
+    --c-danger: 248 113 113;
+    --brand-base: rgb(244 246 252);
+    --brand-accent: rgb(156 123 255);
     color-scheme: dark;
   }
 
   .theme-light {
-    --c-bg: 247 248 250;
+    --c-bg: 250 250 247;
     --c-bg-elev: 255 255 255;
-    --c-bg-input: 244 245 247;
-    --c-surface: 240 242 245;
-    --c-sidebar: 250 251 253;
-    --c-border: 226 228 232;
-    --c-border-strong: 200 203 208;
-    --c-text: 16 17 19;
-    --c-text-dim: 78 82 88;
-    --c-text-subtle: 130 134 140;
-    --c-accent: 79 91 196;
-    --c-accent-hover: 94 106 210;
-    --c-accent-violet: 124 58 237;
+    --c-bg-input: 244 244 240;
+    --c-surface: 244 244 240;
+    --c-sidebar: 252 252 248;
+    --c-border: 228 226 220;
+    --c-border-strong: 200 198 192;
+    --c-text: 14 16 20;
+    --c-text-dim: 78 80 88;
+    --c-text-subtle: 130 132 140;
+    --c-accent: 124 125 246;
+    --c-accent-hover: 91 141 239;
+    --c-accent-violet: 156 123 255;
     --c-danger: 220 38 38;
-    --brand-base: rgb(16 17 19);
-    --brand-accent: rgb(124 58 237);
+    --brand-base: rgb(14 16 20);
+    --brand-accent: rgb(124 125 246);
     color-scheme: light;
   }
 

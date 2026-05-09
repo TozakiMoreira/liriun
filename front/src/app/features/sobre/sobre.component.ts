@@ -27,7 +27,7 @@ import { LocaleService } from '../../core/locale/locale.service';
             Início
           </a>
           <a routerLink="/" class="flex items-center gap-2.5" aria-label="Liriun — início">
-            <img src="/logo.png" alt="" class="w-8 h-8 object-contain" aria-hidden="true" />
+            <img src="/liriun-assets/logo/liriun-icon.svg" alt="" class="w-8 h-8 object-contain" aria-hidden="true" />
             <span class="text-[15px] font-semibold tracking-tight"><app-brand /></span>
           </a>
           <div class="flex items-center gap-2">
@@ -79,7 +79,7 @@ import { LocaleService } from '../../core/locale/locale.service';
               >
                 <div class="flex items-center gap-2 mb-3">
                   <img
-                    src="/logo.png"
+                    src="/liriun-assets/logo/liriun-icon.svg"
                     alt="Liriun"
                     class="w-7 h-7 rounded-md object-contain"
                     style="box-shadow: 0 0 12px rgba(94, 106, 210, 0.35);"
@@ -147,7 +147,7 @@ import { LocaleService } from '../../core/locale/locale.service';
                   <div class="flex items-start gap-1.5 max-w-[95%]">
                     <img
                       class="w-5 h-5 rounded object-contain shrink-0 mt-0.5"
-                      src="/logo.png"
+                      src="/liriun-assets/logo/liriun-icon.svg"
                       alt="Liriun"
                     />
                     <div

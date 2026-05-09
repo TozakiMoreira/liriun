@@ -8,7 +8,7 @@ import { BrandComponent } from './brand.component';
   template: `
     <div class="flex flex-col items-center gap-4">
       <img
-        src="/logo.png"
+        src="/liriun-assets/logo/liriun-icon.svg"
         alt="Liriun"
         class="w-16 h-16 object-contain"
         aria-hidden="true"

@@ -1,0 +1,325 @@
+{
+  "Meta": {
+    "siteName": "Liriun",
+    "tagline": "Your next task, spoken.",
+    "homeDescription": "Liriun is your personal voice-first task assistant. It listens, organizes and reminds — no commands, no friction, on every device."
+  },
+  "Nav": {
+    "produto": "Product",
+    "precos": "Pricing",
+    "empresa": "Company",
+    "blog": "Blog",
+    "entrar": "Sign in",
+    "baixarApp": "Get the app",
+    "homeAria": "Liriun · home"
+  },
+  "Hero": {
+    "badge": "Open beta · May 2026",
+    "title1": "Your task list,",
+    "title2": "guided by voice.",
+    "lead": "Liriun listens, organizes and remembers. A personal productivity companion — no commands, no friction, on every device.",
+    "ctaPrimary": "Start free",
+    "ctaSecondary": "Watch demo · 1 min",
+    "rating": "★★★★★  4.9 · App Store",
+    "users": "12,000+ users"
+  },
+  "Recursos": {
+    "kicker": "Features",
+    "title1": "Designed to",
+    "title2": "flow with you.",
+    "lead": "Liriun isn't just a task app — it's an agent that learns your rhythm, your vocabulary and the contexts that matter to you.",
+    "voz": {
+      "title": "Voice-first organization",
+      "desc": "Speak the way you think. Liriun extracts title, due date, priority and category automatically — without you opening a keyboard."
+    },
+    "agente": {
+      "title": "Personal agent",
+      "desc": "The assistant learns your habits: how you name projects, when you work and surfaces reminders at the right moment."
+    },
+    "multi": {
+      "title": "Cross-platform",
+      "desc": "iOS, Android, web. Everything synced in real time, with the same considered experience — whichever device you open."
+    }
+  },
+  "Stats": {
+    "users": "active users",
+    "accuracy": "transcription accuracy",
+    "latency": "average latency",
+    "lgpd": "encrypted data"
+  },
+  "RecursosPage": {
+    "title": "Features",
+    "description": "Liriun listens, understands and organizes. An agent that gives your time back.",
+    "kicker": "What Liriun does",
+    "heroLine1": "An app",
+    "heroLine2": "that listens.",
+    "lead": "No commands. No friction. Speak the way you think — Liriun handles the rest.",
+    "voz": {
+      "kicker": "Voice",
+      "title": "Speak the way you think.",
+      "lead": "Liriun pulls title, due date, priority and category from what you said — no keyboard required."
+    },
+    "agente": {
+      "kicker": "Agent",
+      "title": "Learns your rhythm.",
+      "lead": "How you name projects, when you work, what you tend to put off — it all becomes context to nudge you at the right time."
+    },
+    "organizacao": {
+      "kicker": "Organization",
+      "title": "Your day, three ways.",
+      "lead": "List, board or week. Categories with color. Recurrence in plain language — just say \"every Tuesday\"."
+    },
+    "privacidade": {
+      "kicker": "Privacy",
+      "title": "Your data is yours.",
+      "lead": "We don't train AI on your content. We don't sell it. We don't share it. JSON export in one click."
+    },
+    "ctaTitle": "Start speaking.",
+    "ctaLead": "Open beta, free.",
+    "ctaButton": "Create account"
+  },
+  "Precos": {
+    "title": "Pricing",
+    "description": "Liriun plans — V1 free for everyone during the open beta.",
+    "kicker": "Plans",
+    "heroLine1": "Start free.",
+    "heroLine2": "Always.",
+    "lead": "Liriun is free during the open beta. In 2027 we'll launch an optional Pro plan — without ever taking features away from the free plan.",
+    "betaBadge": "Beta · May 2026",
+    "tiers": {
+      "free": {
+        "name": "Beta",
+        "price": "$0",
+        "period": "forever",
+        "tagline": "Everything in Liriun, free during the open beta.",
+        "ctaLabel": "Start free",
+        "features": [
+          "Unlimited tasks",
+          "Unlimited voice capture",
+          "Liriun Mode (conversational AI)",
+          "Custom categories",
+          "Sync iOS · Android · Web",
+          "JSON export",
+          "Email support"
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "$5",
+        "period": "/mo · coming soon",
+        "tagline": "More context, more memory, more integration.",
+        "ctaLabel": "Notify me",
+        "features": [
+          "Everything in Beta",
+          "Extended context history",
+          "Google Calendar and Apple Calendar integration",
+          "Notion and Todoist integration (import)",
+          "Custom wake word (Phase 3)",
+          "Daily email summary",
+          "Priority support"
+        ]
+      }
+    },
+    "faq": {
+      "title": "Frequently asked",
+      "items": {
+        "q1": {
+          "q": "Is the Beta plan really free forever?",
+          "a": "Yes. Whoever joins during the beta keeps the Beta plan at no cost, with no expiration."
+        },
+        "q2": {
+          "q": "When will Pro launch?",
+          "a": "Targeting early 2027. You can join the waitlist with no commitment."
+        },
+        "q3": {
+          "q": "Is my data mine?",
+          "a": "Always. You can export everything in JSON at any time. None of your content is used to train AI."
+        },
+        "q4": {
+          "q": "Is there a money-back guarantee?",
+          "a": "Beta is free. Pro will have a 14-day unconditional guarantee."
+        }
+      }
+    }
+  },
+  "FooterCTA": {
+    "title": "Start talking to your day.",
+    "lead": "No credit card required. Available on iOS, Android and web.",
+    "primary": "Get the app",
+    "secondary": "Open in browser"
+  },
+  "Footer": {
+    "tagline": "Digital productivity companion. Crafted with care in São Paulo by ToMore.",
+    "produto": "Product",
+    "empresa": "Company",
+    "suporte": "Support",
+    "legal": "Legal",
+    "links": {
+      "recursos": "Features",
+      "precos": "Pricing",
+      "mobile": "Mobile",
+      "roadmap": "Roadmap",
+      "empresa": "Company",
+      "blog": "Blog",
+      "carreiras": "Careers",
+      "imprensa": "Press",
+      "ajuda": "Help",
+      "status": "Status",
+      "contato": "Contact",
+      "comunidade": "Community",
+      "termos": "Terms",
+      "privacidade": "Privacy",
+      "cookies": "Cookies",
+      "lgpd": "LGPD"
+    },
+    "copyright": "© 2026 ToMore · all rights reserved",
+    "version": "liriun.com · v 1.0"
+  },
+  "Empresa": {
+    "title": "The company",
+    "description": "ToMore — the company behind Liriun. Founded in 2026 by Lucas Moreira and Pedro Tozaki in São Paulo.",
+    "eyebrow": "The company behind Liriun",
+    "heroLine1": "We are",
+    "heroBrand": "ToMore",
+    "heroLine2": ".",
+    "lead": "In a world of endless notifications, never-ending lists and exhausted minds, ToMore was born in 2026 with a mission: to prove that well-designed technology can take care of people's minds — instead of the other way around.",
+    "founders": {
+      "eyebrow": "Who founded it",
+      "title": "Two partners. One obsession with software done right.",
+      "role": "Co-founder",
+      "pedroBio": "Software engineer, in love with systems that disappear at the right time. Leads product and architecture.",
+      "lucasBio": "Designer and strategist. Owns experience, brand and the relationship with the community.",
+      "formulaCaption": "Tozaki + Moreira = ToMore"
+    },
+    "missao": {
+      "eyebrow": "Why",
+      "title": "Give people their time back.",
+      "p1": "We believe productivity should not cost your mental health. Most apps are designed to capture attention; we want the opposite — software that disappears when the work is done.",
+      "p2": "ToMore is driven by a simple conviction: making people's lives easier is taking care of their minds. Every product decision starts with a question — does this add weight or take it off? Nothing ships in Liriun unless it serves less friction, less noise, less load.",
+      "p3": "That is why we built Liriun as a discreet companion: it listens, organizes, remembers. You go back to living, not managing lists."
+    },
+    "produto": {
+      "eyebrow": "What we do today",
+      "titlePrefix": "Today:",
+      "titleBrand": "Liriun",
+      "body": "Liriun is our first product: a personal task organizer with conversational AI. More than a productivity app, it's a calm extension of your mind — and the first step of our mission to give people their time back.",
+      "ctaSobre": "Discover Liriun",
+      "ctaSignup": "Create a free account"
+    },
+    "valores": {
+      "eyebrow": "What we believe",
+      "title": "The principles that guide what we do.",
+      "v1": {
+        "title": "Light software, light life",
+        "body": "Well-built technology doesn't compete for attention. You open it when you need to; it steps back when you don't."
+      },
+      "v2": {
+        "title": "Conversation before commands",
+        "body": "The most natural way to organize life is by talking about it. We replace forms with language whenever possible."
+      },
+      "v3": {
+        "title": "Privacy is a right",
+        "body": "Your data is yours. We don't sell it, we don't train AI on it, we don't share it. When you leave, we wipe everything."
+      },
+      "v4": {
+        "title": "People before product",
+        "body": "We measure success by how you feel — not by the time spent in the app. If you felt relieved, we got it right."
+      }
+    },
+    "contato": {
+      "eyebrow": "Reach out",
+      "title": "We are here.",
+      "body": "For partnerships, press, suggestions or just to say hi — we're available at",
+      "cta": "Send email",
+      "footer": "We read every message. Reply within 48 business hours."
+    }
+  },
+  "Termos": {
+    "title": "Terms of Service",
+    "description": "Liriun Terms of Service — voice-first task assistant by ToMore.",
+    "lastUpdate": "Last updated: May 9, 2026 · V1",
+    "notice": "Document drafted under Brazilian Internet Bill of Rights (Law 12.965/2014), Consumer Code (Law 8.078/1990) and General Data Protection Law (Law 13.709/2018). Will be reviewed by digital-law counsel before public launch.",
+    "doubts": "Questions? Write to"
+  },
+  "Privacidade": {
+    "title": "Privacy Policy",
+    "description": "How Liriun collects, uses and protects your personal data — under Brazilian LGPD.",
+    "lastUpdate": "Last updated: May 9, 2026 · V1",
+    "notice": "Document drafted under LGPD (Law 13.709/2018), Brazilian Internet Bill of Rights (Law 12.965/2014) and ANPD guidance. Will be reviewed by digital-law counsel before public launch."
+  },
+  "LocaleSwitcher": {
+    "label": "Language",
+    "pt": "Português",
+    "en": "English"
+  },
+  "Auth": {
+    "kicker": "Beta · May 2026",
+    "loginTitle": "Good to see you",
+    "loginLead": "Your next task, spoken.",
+    "signupTitle": "Create account",
+    "signupLead": "Open beta · free.",
+    "recoverTitle": "Recover password",
+    "recoverLead": "We'll email a link for you to reset your password.",
+    "email": "Email",
+    "senha": "Password",
+    "nome": "Name",
+    "entrar": "Sign in",
+    "criarConta": "Create account",
+    "jaTemConta": "I already have an account — sign in",
+    "esqueciSenha": "Forgot my password",
+    "enviarLink": "Send link",
+    "voltarLogin": "Back to sign in",
+    "aceitarTermos": "I have read and accept the Terms of Service and Privacy Policy.",
+    "aceitarTermosPrefixo": "I have read and accept the",
+    "termosLink": "Terms of Service",
+    "aceitarTermosE": " and the",
+    "privacidadeLink": "Privacy Policy",
+    "passwordReq": {
+      "aria": "Password requirements",
+      "length": "At least 8 characters",
+      "uppercase": "At least one uppercase letter",
+      "special": "At least one special character"
+    },
+    "erroEmailInvalido": "Invalid email.",
+    "erroSenhaCurta": "Password must meet all requirements.",
+    "erroNomeObrigatorio": "Name is required.",
+    "erroAceiteTermos": "You must accept the Terms and the Privacy Policy.",
+    "erroLogin": "Login failed. Check email and password.",
+    "linkEnviado": "Link sent. Check your inbox."
+  },
+  "AppShell": {
+    "falar": "Speak",
+    "hoje": "Today",
+    "tarefas": "Tasks",
+    "atividade": "Activity",
+    "configuracoes": "Settings",
+    "sair": "Sign out",
+    "perfil": "Profile"
+  },
+  "AppPlaceholder": {
+    "emConstrucao": "Under construction. Coming next sprint.",
+    "voltarHome": "Back to home"
+  },
+  "Onboarding": {
+    "kicker": "Let's get started",
+    "title": "How do you organize your tasks?",
+    "lead": "Categories group tasks by context. Pick what makes sense — you can adjust later.",
+    "templatesTitle": "Suggestions",
+    "customTitle": "Create your own",
+    "customPlaceholder": "Category name",
+    "adicionar": "Add",
+    "selecionadas": "Selected",
+    "remover": "Remove",
+    "continuar": "Continue",
+    "salvando": "Saving…",
+    "vazioErro": "Pick or create at least one category.",
+    "salvarErro": "Couldn't save. Try again.",
+    "templates": {
+      "trabalho": "Work",
+      "faculdade": "School",
+      "casa": "Home",
+      "compras": "Shopping",
+      "pessoal": "Personal"
+    }
+  }
+}

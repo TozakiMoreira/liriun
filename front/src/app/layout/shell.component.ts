@@ -33,7 +33,7 @@ import { ConquistaToastComponent } from '../shared/conquista-toast.component';
           aria-label="Ir pra página inicial"
         >
           <img
-            src="/logo.png"
+            src="/liriun-assets/logo/liriun-icon.svg"
             alt="Liriun"
             class="w-9 h-9 object-contain"
             aria-hidden="true"
@@ -135,7 +135,7 @@ import { ConquistaToastComponent } from '../shared/conquista-toast.component';
               title="Visão geral"
             >
               <img
-                src="/logo.png"
+                src="/liriun-assets/logo/liriun-icon.svg"
                 alt="Liriun"
                 class="w-10 h-10 object-contain shrink-0"
                 aria-hidden="true"
@@ -173,7 +173,7 @@ import { ConquistaToastComponent } from '../shared/conquista-toast.component';
             aria-label="Ir pra visão geral"
             title="Visão geral"
           >
-            <img src="/logo.png" alt="Liriun" class="w-full h-full object-contain" />
+            <img src="/liriun-assets/logo/liriun-icon.svg" alt="Liriun" class="w-full h-full object-contain" />
           </a>
         }
 

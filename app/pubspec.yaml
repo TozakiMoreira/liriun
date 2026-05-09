@@ -1,0 +1,69 @@
+name: liriun_app
+description: Liriun — assistente pessoal de tarefas por voz. App Flutter (mobile + web logado).
+publish_to: "none"
+version: 0.1.0+1
+
+environment:
+  sdk: ">=3.5.0 <4.0.0"
+  flutter: ">=3.24.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  # State management + DI
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Routing
+  go_router: ^14.6.2
+
+  # HTTP client + interceptors (consome backend .NET via REST + JWT)
+  dio: ^5.7.0
+  pretty_dio_logger: ^1.4.0
+
+  # Secure storage pra JWT
+  flutter_secure_storage: ^9.2.2
+
+  # Voice + speech
+  speech_to_text: ^7.0.0
+  flutter_tts: ^4.2.2
+  permission_handler: ^11.3.1
+
+  # Storage local
+  shared_preferences: ^2.3.4
+
+  # I18n
+  intl: ^0.20.1
+
+  # Date utils
+  timezone: ^0.10.0
+
+  # Push notifications (futuro)
+  firebase_core: ^3.8.1
+  firebase_messaging: ^15.1.6
+
+  # Utils
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+  # Code generation
+  build_runner: ^2.4.13
+  freezed: ^2.5.7
+  json_serializable: ^6.9.0
+  riverpod_generator: ^2.6.3
+  custom_lint: ^0.7.0
+  riverpod_lint: ^2.6.3
+
+flutter:
+  uses-material-design: true
+  generate: true
+  assets:
+    - assets/icons/

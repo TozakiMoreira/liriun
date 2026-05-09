@@ -1,0 +1,125 @@
+/* ════════════════════════════════════════════════════════════════
+   Liriun · Design Tokens
+   Cole este arquivo em apps/web/app/globals.css ou importe-o.
+   v 1.0 · maio 2026
+   ══════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Brand · Violet (primary) ─────────────────────────────────── */
+  --liriun-violet-50:  #F5F1FF;
+  --liriun-violet-100: #E8DEFF;
+  --liriun-violet-200: #D2BFFF;
+  --liriun-violet-300: #B79CFF;
+  --liriun-violet-400: #A88BFF;
+  --liriun-violet-500: #9C7BFF;   /* primary */
+  --liriun-violet-600: #7C7DF6;
+  --liriun-violet-700: #5B8DEF;   /* trail-end of brand gradient */
+  --liriun-violet-800: #4A5FD0;
+  --liriun-violet-900: #2E3A8F;
+
+  /* Brand gradient — usar nos CTAs principais e hero */
+  --liriun-grad-brand: linear-gradient(135deg, #A88BFF 0%, #7C7DF6 55%, #5B8DEF 100%);
+  --liriun-grad-shine: linear-gradient(180deg, rgba(255,255,255,0.32) 0%, rgba(255,255,255,0) 40%);
+
+  /* ── Surfaces (dark mode default) ─────────────────────────────── */
+  --liriun-bg:          #07080B;   /* page background */
+  --liriun-surface:     #0E1014;   /* cards, panels */
+  --liriun-surface-hi:  #14161C;   /* elevated cards, hover */
+  --liriun-overlay:     rgba(14, 16, 20, 0.72); /* modals over content */
+
+  /* ── Text ─────────────────────────────────────────────────────── */
+  --liriun-text:        rgba(244, 246, 252, 0.96);
+  --liriun-text-muted:  rgba(244, 246, 252, 0.65);
+  --liriun-text-faint:  rgba(244, 246, 252, 0.42);
+  --liriun-text-dim:    rgba(244, 246, 252, 0.28);
+
+  /* ── Borders ──────────────────────────────────────────────────── */
+  --liriun-border:      rgba(255, 255, 255, 0.06);
+  --liriun-border-hi:   rgba(255, 255, 255, 0.10);
+  --liriun-border-glow: rgba(156, 123, 255, 0.32);
+
+  /* ── Semantic ─────────────────────────────────────────────────── */
+  --liriun-success: #4ADE80;
+  --liriun-warning: #FBBF24;
+  --liriun-danger:  #F87171;
+  --liriun-info:    #5B8DEF;
+
+  /* ── Typography ───────────────────────────────────────────────── */
+  --liriun-font-sans: 'Geist', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --liriun-font-mono: 'Geist Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --liriun-text-xs:   12px;
+  --liriun-text-sm:   13px;
+  --liriun-text-base: 15px;
+  --liriun-text-md:   17px;
+  --liriun-text-lg:   22px;
+  --liriun-text-xl:   28px;
+  --liriun-text-2xl:  36px;
+  --liriun-text-3xl:  48px;
+  --liriun-text-4xl:  64px;
+  --liriun-text-5xl:  88px;
+
+  --liriun-leading-tight: 1.1;
+  --liriun-leading-snug:  1.25;
+  --liriun-leading-base:  1.5;
+  --liriun-leading-loose: 1.65;
+
+  --liriun-tracking-tight:  -0.8px;
+  --liriun-tracking-normal:  0;
+  --liriun-tracking-wide:   0.4px;
+  --liriun-tracking-mono:   1.4px;
+
+  /* ── Radii ────────────────────────────────────────────────────── */
+  --liriun-radius-xs: 6px;
+  --liriun-radius-sm: 10px;
+  --liriun-radius-md: 14px;
+  --liriun-radius-lg: 18px;
+  --liriun-radius-xl: 22px;
+  --liriun-radius-2xl: 28px;
+  --liriun-radius-pill: 999px;
+
+  /* ── Shadows ──────────────────────────────────────────────────── */
+  --liriun-shadow-sm:    0 1px 2px rgba(0, 0, 0, 0.20);
+  --liriun-shadow-md:    0 4px 16px rgba(0, 0, 0, 0.30);
+  --liriun-shadow-lg:    0 12px 32px rgba(0, 0, 0, 0.45);
+  --liriun-shadow-xl:    0 30px 60px rgba(0, 0, 0, 0.55);
+  --liriun-shadow-glow:  0 6px 18px rgba(91, 141, 239, 0.32);
+  --liriun-shadow-inset: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+
+  /* ── Spacing scale (rem-based, 4 px grid) ─────────────────────── */
+  --liriun-space-1:  4px;
+  --liriun-space-2:  8px;
+  --liriun-space-3:  12px;
+  --liriun-space-4:  16px;
+  --liriun-space-5:  20px;
+  --liriun-space-6:  24px;
+  --liriun-space-8:  32px;
+  --liriun-space-10: 40px;
+  --liriun-space-12: 48px;
+  --liriun-space-16: 64px;
+  --liriun-space-20: 80px;
+  --liriun-space-24: 96px;
+
+  /* ── Motion ───────────────────────────────────────────────────── */
+  --liriun-duration-fast: 180ms;
+  --liriun-duration-base: 220ms;
+  --liriun-duration-slow: 360ms;
+  --liriun-duration-xslow: 520ms;
+
+  --liriun-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --liriun-ease-decel:    cubic-bezier(0.25, 0.1, 0.25, 1);
+  --liriun-ease-expo:     cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Light mode (opt-in via [data-theme="light"]) ────────────────── */
+[data-theme="light"] {
+  --liriun-bg:         #FAFAF7;
+  --liriun-surface:    #FFFFFF;
+  --liriun-surface-hi: #F4F4F0;
+  --liriun-text:       rgba(14, 16, 20, 0.96);
+  --liriun-text-muted: rgba(14, 16, 20, 0.65);
+  --liriun-text-faint: rgba(14, 16, 20, 0.42);
+  --liriun-text-dim:   rgba(14, 16, 20, 0.28);
+  --liriun-border:     rgba(14, 16, 20, 0.08);
+  --liriun-border-hi:  rgba(14, 16, 20, 0.14);
+}
