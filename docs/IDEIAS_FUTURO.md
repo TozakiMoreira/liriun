@@ -1,7 +1,19 @@
 # Liriun - Funcionalidades Futuras
 
-Lista de funcionalidades e melhorias que NAO serao implementadas na V1.
-Organizado por prioridade: as ideias mais impactantes (que transformariam o app) primeiro.
+> **Atualizado em 2026-05-09 apos pivo pra app mobile com agente de voz.**
+> Lista de funcionalidades que NAO entram no MVP da Fase 1.
+> Organizado por prioridade: as ideias mais impactantes primeiro.
+> **Roadmap de fases oficiais** (Fase 1 MVP -> Fase 7+ premium): ver `CONTEXTO_APP.md` secao 3 e `ESTRATEGIA_LIRIUN.md` secao 5.
+
+### Itens que migraram pra escopo CURRENT (nao sao mais futuro)
+- App mobile nativo -> agora eh o produto principal (Flutter)
+- Captura por audio com transcricao -> core do MVP
+- Atalhos rapidos do celular -> Fase 2 do roadmap
+- Lembretes por geolocalizacao -> Fase 2/3
+- Sistema de notificacoes -> Fase 2 (push) / Fase 5 (SMS/ligacao via Twilio)
+- Multi-usuario completo -> ja decidido (Supabase Auth + Google + Apple Sign-In)
+- Modo dark -> default no app (decidido)
+- Sincronizacao calendarios -> Fase 4
 
 ---
 
@@ -16,17 +28,11 @@ Ideias que mudam completamente a usabilidade do app. Devem vir primeiro nas prox
 - A mensagem entra no fluxo normal: IA categoriza, salva no banco, aparece no app
 - Aceita texto e audio (com transcricao)
 
-## Sistema de notificacoes
-- Notificar o usuario sobre tarefas com prazo se aproximando ou vencendo
-- Push no celular (app mobile) e no navegador (web)
-- Tipos:
-  - Tarefas que vencem no mesmo dia (alerta logo cedo)
-  - Tarefas vencendo em poucas horas
-  - Tarefas urgentes pendentes ha muito tempo
-- Configuracoes:
-  - Habilitar/desabilitar tipos
-  - Horarios preferidos
-  - Modo "nao perturbe"
+## Sistema de notificacoes (Fase 2 — push / Fase 5 — SMS+ligacao)
+- Push no celular via Firebase Cloud Messaging (Fase 2)
+- SMS e ligacao via Twilio (Fase 5)
+- Tipos: tarefas vencendo no dia, em poucas horas, urgentes pendentes
+- Configuracoes: tipos, horarios, modo "nao perturbe"
 
 ## Recorrencia de tarefas
 - Tarefas que se repetem automaticamente
@@ -34,16 +40,11 @@ Ideias que mudam completamente a usabilidade do app. Devem vir primeiro nas prox
 - Suporta padroes: diario, semanal, mensal, anual, customizado
 - Sem isso, o usuario recria as mesmas tarefas o tempo todo
 
-## Aplicativo mobile nativo
-- Migrar de web responsivo para app mobile nativo (ou hibrido)
-- Distribuicao via Play Store / App Store
-- Habilita varias outras features dependentes (push, atalhos, geolocalizacao, etc.)
+## ~~Aplicativo mobile nativo~~ (MIGRADO pra escopo CURRENT)
+> Agora e o produto principal. Stack: Flutter + Riverpod + feature-first. Ver `CONTEXTO_APP.md`.
 
-## Captura por audio com transcricao
-- Botao para gravar audio direto na tela de captura
-- Sistema transcreve automaticamente em texto
-- Texto transcrito segue o fluxo normal (IA categoriza)
-- APIs possiveis: Gemini (suporta audio direto), Whisper (OpenAI), Google Speech-to-Text
+## ~~Captura por audio com transcricao~~ (MIGRADO pra MVP)
+> Core do produto novo. Gemini multimodal interpreta audio + texto.
 
 ## Modo "captura instantanea" sem revisao
 - Configuracao opcional ativada pelo usuario
@@ -56,19 +57,18 @@ Ideias que mudam completamente a usabilidade do app. Devem vir primeiro nas prox
 
 # TIER 2 - Alto valor, complementam o core
 
-## Atalhos rapidos do celular
-- Abrir o app via comando ou atalho do sistema operacional
-- Exemplo: clicar 5 vezes seguidas no botao de travamento
-- Uso de gestos, atalhos da tela de bloqueio, widgets, Quick Tiles
+## Atalhos rapidos do celular (Fase 2)
+- Widget na home screen (Android + iOS)
+- Atalho na Central de Controle (iOS) / Quick Settings (Android)
+- Notificacao persistente com botao "Falar com Liriun"
 - Apos abrir, microfone ja inicia gravando automaticamente
 - Objetivo: do impulso ate salvo em poucos segundos
-- Restricao: atalho de 5 cliques so funciona bem em Android; iOS e mais limitado
+- iOS tem mais restricao que Android (limitacao Apple)
 
-## Lembretes por geolocalizacao
+## Lembretes por geolocalizacao (Fase 2/3)
 - "Quando eu chegar no mercado, lembrar de comprar X"
 - Celular detecta o local e dispara o alerta
-- Depende do app mobile nativo
-- Sem custo adicional
+- Sem custo adicional (APIs nativas)
 
 ## Chat conversacional com a IA sobre suas tarefas
 - Conversa em linguagem natural sobre o conteudo do app
@@ -222,11 +222,11 @@ Ideias que mudam completamente a usabilidade do app. Devem vir primeiro nas prox
   4. Frances (fr) — Franca + Canada + Africa
   5. Alemao (de) — Europa central
   6. Italiano (it) — opcional
-- **Pre-requisitos tecnicos (fazer ja na V1)**:
+- **Pre-requisitos tecnicos (fazer ja no MVP)**:
   - Nenhuma string hardcoded no codigo — tudo via chave de traducao desde o primeiro commit
-  - `@angular/localize` configurado no front desde o inicio
-  - `IStringLocalizer` + resource files configurado no back
-  - Estrutura de arquivo de traducao escolhida (JSON, XLIFF ou PO)
+  - Flutter: `flutter_localizations` + `intl` configurado desde o inicio
+  - Site Next.js: `next-intl` configurado desde o inicio
+  - Estrutura de arquivo de traducao escolhida (ARB pro Flutter, JSON pro Next)
   - Fallback de idioma definido (ex: se falta chave em fr, cai pra en)
 - **Desafios especificos do Liriun**:
   - **Tom de voz em outros idiomas** — o tom "Liriun seco e discreto" precisa ser traduzido com cuidado, nao literal. Pode exigir revisao humana nativa por idioma
@@ -250,21 +250,19 @@ Ideias que mudam completamente a usabilidade do app. Devem vir primeiro nas prox
 
 ## Multiplataforma completa
 - A solucao em diversos dispositivos:
-  - Web desktop (ja contemplado na V1)
-  - Mobile Android e iOS (Tier 1)
-  - Smartwatches (Apple Watch, Wear OS) - captura ultra-rapida por voz
-  - Assistentes de voz (Siri, Google Assistant, Alexa)
-  - Desktop nativo (Windows/Mac/Linux via Electron, Tauri, etc.)
-- Sincronizacao em tempo real entre dispositivos
+  - Mobile Android e iOS (Flutter — ja escopo MVP)
+  - Web logado (Flutter Web — ja escopo MVP)
+  - Smartwatches (Apple Watch, Wear OS) — captura ultra-rapida por voz
+  - Assistentes de voz nativos (Siri Shortcuts, Google Assistant Actions, Alexa Skill)
+  - Desktop nativo (Windows/Mac/Linux via Flutter desktop)
+- Sincronizacao em tempo real entre dispositivos (Supabase Realtime)
 - UX otimizada por contexto (smartwatch foca em voz e leitura rapida)
 
 ## Notificacao por email
 - Resumo diario do que esta pendente
 - Alertas de prazos vencendo
 
-## Modo dark
-- Alternar entre tema claro e escuro
-- Salvar preferencia do usuario
+## ~~Modo dark~~ (MIGRADO — default no app novo)
 
 ## Tema de cores personalizavel pelo usuario
 - Usuario escolhe a paleta do app (accent color, fundo)
@@ -272,7 +270,7 @@ Ideias que mudam completamente a usabilidade do app. Devem vir primeiro nas prox
   - **Basico**: seletor entre 4-5 accent colors predefinidos ("Liriun Purple", "Mono Cinza", "Ember Laranja", etc)
   - **Intermediario**: temas nomeados completos (cada um com accent + fundo + bordas)
   - **Avancado**: editor de tokens CSS abertos pro usuario mexer a vontade
-- V1 e dark-only clonando Linear — essa ideia e pra quando o app tiver base de usuarios com gostos diferentes
+- App novo tem identidade visual fixa (ver `docs/design-ref/`) — essa ideia e pra quando o app tiver base de usuarios com gostos diferentes
 
 ---
 
@@ -292,10 +290,8 @@ Ideias que mudam completamente a usabilidade do app. Devem vir primeiro nas prox
 - Backup completo do banco
 - Import de outras fontes (WhatsApp, Notion, etc.)
 
-## PWA com modo offline
-- App instalavel no celular via navegador
-- Funciona offline e sincroniza ao voltar a internet
-- Service worker para cache
+## ~~PWA com modo offline~~ (substituido pelo app Flutter nativo)
+> App nativo Flutter substitui PWA. Modo offline parado pra V2 (ver `CONTEXTO_APP.md`).
 
 ---
 
@@ -303,15 +299,13 @@ Ideias que mudam completamente a usabilidade do app. Devem vir primeiro nas prox
 
 ## Recuperacao de senha funcional
 - Envio de codigo/link por email para resetar senha
-- Atualmente o email so e armazenado, sem fluxo
+- Implementar no backend .NET (gerar token + email transacional via Resend/SendGrid)
 
-## Multi-usuario completo
-- Cadastro publico
-- Cada usuario com seus proprios dados
-- Login com Google (OAuth)
+## ~~Multi-usuario completo~~ (MIGRADO — backend .NET ja tem JWT proprio + Google/Apple Sign-In planejado)
 
 ## Two-factor authentication (2FA)
 - Camada extra de seguranca
+- TOTP no .NET (lib `Otp.NET` ou similar) — futuro, pos-MVP
 
 ---
 

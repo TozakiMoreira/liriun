@@ -1,8 +1,14 @@
 # Plano de Negócio — Liriun (ToMore)
 
 > Template para preenchimento pela equipe ToMore.
-> Última atualização: 2026-05-07
+> Última atualização: 2026-05-09
 > **Como usar:** cada seção tem orientações em itálico e campos `[preencher]`. Discutir em equipe e preencher.
+
+> ## ⚠️ STATUS: PARKED até MVP estar pronto
+>
+> Decisão tomada em 2026-05-09: **não preencher este plano agora**. Foco total no desenvolvimento do MVP do app (Fase 1, ver `CONTEXTO_APP.md`). Pricing, captação, marketing, projeções, lojas — tudo isso será discutido **depois que o app estiver funcional e testável**.
+>
+> Mantém este template como **estrutura pronta** pra retomar quando chegar a hora. Stack técnica abaixo já foi atualizada para refletir as decisões pós-pivô (Flutter + Supabase + Next.js).
 
 ---
 
@@ -93,9 +99,11 @@
 
 | Concorrente | Preço | Forças | Fraquezas | Como ganhamos |
 |-------------|-------|--------|-----------|---------------|
-| Goblin Tools | $3/mês | AI nativa, audiência TDAH | UI feia | `[preencher]` |
-| Finch | Free / $40/ano | Mascote, mental health | Só mobile, sem tarefas reais | `[preencher]` |
-| Reflectly | $60/ano | Journaling + IA | Sem tarefas | `[preencher]` |
+| **Google Gemini app** | Free | Voz nativa, integra com Tasks/Calendar/Gmail, ecossistema Google | Genérico, tom corporativo, sem personalização do agente | Vertical em tasks + UX premium + identidade |
+| Goblin Tools | $3/mês | AI nativa, audiência TDAH | UI feia | Voz + visual + tom |
+| Siri / Google Assistant nativos | Free | Pré-instalados, wake word funcional | Plataforma fechada, tasks rasas | Cross-platform + foco em tasks |
+| Finch | Free / $40/ano | Mascote, mental health | Só mobile, sem tarefas reais | Foco em tarefas + voz |
+| Reflectly | $60/ano | Journaling + IA | Sem tarefas | Tarefas + voz |
 | `[adicionar]` | | | | |
 
 ### 4.2 Concorrentes indiretos
@@ -136,9 +144,11 @@
 
 *Cada usuário ativo custa quanto pra rodar?*
 
-- Backend hosting: R$ `[preencher — dividido por usuários]`
-- Banco Supabase: R$ `[preencher]`
-- Gemini API (custo médio por usuário ativo): R$ `[preencher]`
+- Hosting backend .NET (Oracle Free / Railway / VPS): R$ `[preencher — Oracle Free é R$0 até limites]`
+- Supabase Postgres (DB only): R$ `[preencher — free até 500MB, depois Pro $25/mês]`
+- Gemini API Flash-Lite (custo médio por usuário ativo): R$ `[preencher — ~R$0,007 por usuário/mês com 1000 usuários]`
+- Firebase Cloud Messaging (push): R$ `[preencher — free tier generoso]`
+- Vercel (site Next.js): R$ `[preencher — free tier serve até X req]`
 - Storage / CDN / outros: R$ `[preencher]`
 - **Total: R$ `[soma]`**
 
@@ -221,13 +231,17 @@ Para cada etapa definir taxa alvo:
 
 ### 7.3 Custos operacionais mensais
 
-- Hosting backend (Railway / Oracle Free): R$ `[preencher]`
-- Banco Supabase: R$ `[preencher]`
-- Gemini API estimativa: R$ `[preencher]`
-- Domínio + DNS: R$ `[preencher]`
-- Email transacional: R$ `[preencher]`
-- Analytics / monitoring: R$ `[preencher]`
+- Hosting backend .NET (Oracle Free / Railway / VPS): R$ `[preencher — Oracle Free $0; Railway $5-25/mês; DigitalOcean $30/mês]`
+- Supabase Postgres (DB only): R$ `[preencher — free até 500MB, depois Pro $25/mês]`
+- Gemini API estimativa: R$ `[preencher — ~$1,30/mês por 1000 usuários ativos]`
+- Vercel (site Next.js): R$ `[preencher — free até X bandwidth]`
+- Firebase Cloud Messaging: R$ `[preencher — free tier]`
+- Domínio + DNS (liriun.com): R$ `[preencher — anual já comprado]`
+- Email transacional (Resend / SendGrid): R$ `[preencher]`
+- Analytics / monitoring (PostHog / Sentry): R$ `[preencher]`
 - Stripe / pagamento (% por transação): `[preencher]`
+- Apple Developer Account: $99/ano
+- Google Play Developer: $25 único
 - **Total fixo: R$ `[soma]`**
 
 ### 7.4 Investimentos pontuais
@@ -279,15 +293,16 @@ Para cada etapa definir taxa alvo:
 - Significado / origem: `[preencher se quiser registrar]`
 
 ### 9.2 Tom de voz
-*Já definido no CLAUDE.md como "mordomo seco e calmo". Preencher se evoluir.*
+*Será definido após MVP funcional (parked até escolher TTS final). Histórico V1 web: "mordomo seco e calmo". Reavaliar se mantém ou ajusta para o produto novo (voice agent).*
 
-`[preencher]`
+`[preencher pós-MVP]`
 
 ### 9.3 Identidade visual
-- Paleta primária: `[códigos hex]`
-- Tipografia: Sora (Google Fonts)
-- Logo: `[descrição / link]`
-- Mascote: `[a definir — contratação Q2]`
+- **Style guide oficial:** `docs/design-ref/Liriun · Visual Reference · Print.pdf` (paleta, tipografia, componentes, mockups)
+- **Estilo:** misto Things 3 + Granola + Arc Search + iOS 26 Liquid Glass — dark default, gradiente roxo→azul accent, glassmorphism sutil
+- **Logo / ícones:** `docs/design-ref/liriun-icon-{1024,512,192}.png`, `liriun-glyph.svg`
+- **Tipografia:** ver style guide (a confirmar — não é mais Sora do V1 web)
+- **Mascote:** Tier 7 / Fase 7 (parked, ver `IDEIAS_FUTURO.md`)
 
 ### 9.4 Personalidade da marca
 *5 adjetivos. Ex: calmo, sutil, inteligente, acolhedor, presente.*
@@ -363,13 +378,15 @@ Para cada etapa definir taxa alvo:
 
 ## 13. Próximos passos imediatos
 
-- [ ] Lucas e Pedro lerem este template e o `ESTRATEGIA_LIRIUN.md`
-- [ ] Reunião dia `[preencher data]` para discussão
-- [ ] Decidir os pontos da Seção 7 do documento de estratégia
-- [ ] Preencher seções deste plano que conseguirmos
-- [ ] Definir orçamento Q1 (próximos 3 meses)
+> **STATUS: PARKED.** Foco atual = MVP do app (Fase 1). Retomar este plano só quando MVP estiver funcional.
+
+Quando retomar:
+- [ ] Lucas e Pedro relerem `ESTRATEGIA_LIRIUN.md` (já atualizado pra direção voice agent)
+- [ ] Definir pricing baseado em custo Gemini real medido durante MVP
+- [ ] Preencher seções deste plano com dados reais
+- [ ] Definir orçamento de marketing pós-lançamento
 - [ ] Decidir captação ou bootstrap
-- [ ] `[adicionar]`
+- [ ] Investigar processo de publicação App Store + Google Play
 
 ---
 
