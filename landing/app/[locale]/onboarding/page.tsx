@@ -1,5 +1,7 @@
 "use client";
 
+export const runtime = "edge";
+
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 

@@ -1,5 +1,7 @@
 "use client";
 
+export const runtime = "edge";
+
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { useUsuarioAtual } from "@/components/auth/auth-provider";
