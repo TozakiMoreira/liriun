@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TokenStorage } from '../../core/auth/token.storage';
 import { BrandComponent } from '../../shared/brand.component';
 import { SiteFooterComponent } from '../../shared/site-footer.component';
 import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
@@ -28,7 +29,9 @@ import { UserMenuComponent } from '../../shared/user-menu.component';
             <span class="text-[15px] font-semibold tracking-tight"><app-brand /></span>
           </a>
           <div class="flex items-center gap-2">
-            <span class="hidden sm:inline-flex"><app-theme-toggle /></span>
+            @if (!logado()) {
+              <span class="hidden sm:inline-flex"><app-theme-toggle /></span>
+            }
             <app-user-menu />
           </div>
         </div>
@@ -375,4 +378,7 @@ import { UserMenuComponent } from '../../shared/user-menu.component';
     </main>
   `,
 })
-export class PoliticaPrivacidadeComponent {}
+export class PoliticaPrivacidadeComponent {
+  private readonly storage = inject(TokenStorage);
+  readonly logado = () => this.storage.estaAutenticado();
+}

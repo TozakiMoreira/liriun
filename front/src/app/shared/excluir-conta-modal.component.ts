@@ -5,9 +5,11 @@ import {
   HostListener,
   Input,
   Output,
+  inject,
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { LocaleService } from '../core/locale/locale.service';
 import { PasswordInputComponent } from './password-input.component';
 
 @Component({
@@ -29,13 +31,13 @@ import { PasswordInputComponent } from './password-input.component';
         <div class="flex items-center justify-between border-b border-border px-5 py-3.5">
           <h2 id="excluir-conta-title" class="text-sm font-semibold text-danger flex items-center gap-2">
             <i class="fa-solid fa-triangle-exclamation"></i>
-            Excluir conta
+            {{ locale.t('excluir_conta.titulo') }}
           </h2>
           <button
             type="button"
             class="text-text-subtle hover:text-text text-base p-1 leading-none"
             data-testid="excluir-conta-close"
-            aria-label="Fechar"
+            [attr.aria-label]="locale.t('excluir_conta.fechar')"
             (click)="onCancelar()"
           >
             ×
@@ -45,21 +47,21 @@ import { PasswordInputComponent } from './password-input.component';
         <div class="p-5 flex flex-col gap-4">
           <div class="text-[13px] text-text-dim leading-relaxed">
             <p class="mb-2">
-              Essa ação <strong class="text-danger">não pode ser desfeita</strong>. Vou apagar permanentemente:
+              {{ locale.t('excluir_conta.aviso_acao') }} <strong class="text-danger">{{ locale.t('excluir_conta.aviso_irreversivel') }}</strong>{{ locale.t('excluir_conta.aviso_apagar') }}
             </p>
             <ul class="list-disc pl-5 space-y-0.5 text-text-subtle text-xs">
-              <li>Sua conta e dados de perfil</li>
-              <li>Todas as suas tarefas (pendentes, concluídas, atrasadas)</li>
-              <li>Todas as suas categorias</li>
-              <li>Histórico de capturas e observações</li>
+              <li>{{ locale.t('excluir_conta.item_perfil') }}</li>
+              <li>{{ locale.t('excluir_conta.item_tarefas') }}</li>
+              <li>{{ locale.t('excluir_conta.item_categorias') }}</li>
+              <li>{{ locale.t('excluir_conta.item_historico') }}</li>
             </ul>
           </div>
 
           <div class="flex flex-col gap-1.5">
-            <label class="field-label" for="excluir-senha">Confirme com sua senha</label>
+            <label class="field-label" for="excluir-senha">{{ locale.t('excluir_conta.confirme_senha') }}</label>
             <app-password-input
               inputId="excluir-senha"
-              placeholder="Sua senha"
+              [placeholder]="locale.t('excluir_conta.placeholder_senha')"
               autocomplete="current-password"
               testid="excluir-conta-senha-input"
               [value]="senha()"
@@ -77,7 +79,7 @@ import { PasswordInputComponent } from './password-input.component';
               data-testid="excluir-conta-confirma-checkbox"
               [(ngModel)]="confirmaIrreversivel"
             />
-            <span>Entendo que essa ação é irreversível.</span>
+            <span>{{ locale.t('excluir_conta.confirma_irreversivel') }}</span>
           </label>
 
           @if (erro()) {
@@ -93,7 +95,7 @@ import { PasswordInputComponent } from './password-input.component';
             [disabled]="processando()"
             (click)="onCancelar()"
           >
-            Cancelar
+            {{ locale.t('excluir_conta.cancelar') }}
           </button>
           <button
             type="button"
@@ -102,7 +104,7 @@ import { PasswordInputComponent } from './password-input.component';
             [disabled]="!senha() || !confirmaIrreversivel || processando()"
             (click)="onConfirmar()"
           >
-            {{ processando() ? 'Excluindo...' : 'Excluir minha conta' }}
+            {{ processando() ? locale.t('excluir_conta.excluindo') : locale.t('excluir_conta.btn') }}
           </button>
         </div>
       </div>
@@ -110,6 +112,8 @@ import { PasswordInputComponent } from './password-input.component';
   `,
 })
 export class ExcluirContaModalComponent {
+  readonly locale = inject(LocaleService);
+
   @Input() set processandoExterno(v: boolean) {
     this.processando.set(v);
   }

@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TokenStorage } from '../../core/auth/token.storage';
 import { BrandComponent } from '../../shared/brand.component';
 import { SiteFooterComponent } from '../../shared/site-footer.component';
 import { ThemeToggleComponent } from '../../shared/theme-toggle.component';
@@ -31,7 +32,9 @@ import { LocaleService } from '../../core/locale/locale.service';
           </a>
           <div class="flex items-center gap-2">
             <app-locale-switcher />
-            <span class="hidden sm:inline-flex"><app-theme-toggle /></span>
+            @if (!autenticado()) {
+              <span class="hidden sm:inline-flex"><app-theme-toggle /></span>
+            }
             <app-user-menu />
           </div>
         </div>
@@ -331,4 +334,6 @@ import { LocaleService } from '../../core/locale/locale.service';
 })
 export class EmpresaComponent {
   readonly locale = inject(LocaleService);
+  private readonly storage = inject(TokenStorage);
+  readonly autenticado = computed(() => this.storage.estaAutenticado());
 }

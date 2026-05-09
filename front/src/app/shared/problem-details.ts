@@ -8,6 +8,7 @@ export interface ProblemDetailsResultado {
 export function extrairProblemDetails(
   err: HttpErrorResponse,
   fallback: string,
+  semConexaoMsg?: string,
 ): ProblemDetailsResultado {
   const body = err?.error;
   const errosCampo: Record<string, string> = {};
@@ -29,7 +30,10 @@ export function extrairProblemDetails(
   }
 
   if (err.status === 0) {
-    return { errosCampo, mensagemGeral: 'Sem conexão com o servidor. Tenta de novo em instantes.' };
+    return {
+      errosCampo,
+      mensagemGeral: semConexaoMsg ?? 'Sem conexão com o servidor. Tenta de novo em instantes.',
+    };
   }
 
   return { errosCampo, mensagemGeral: fallback };

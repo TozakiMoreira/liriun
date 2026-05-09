@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, HostListener, Input, Output, computed } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, Output, computed, inject } from '@angular/core';
 import { Tarefa } from '../../core/api/tarefas.service';
+import { LocaleService } from '../../core/locale/locale.service';
 import { quebrarTextoEmSegmentos } from '../../shared/auto-link';
 
 @Component({
@@ -40,8 +41,8 @@ import { quebrarTextoEmSegmentos } from '../../shared/auto-link';
               type="button"
               class="w-8 h-8 grid place-items-center text-text-subtle hover:text-danger hover:bg-danger/10 rounded transition-colors"
               data-testid="detalhe-excluir"
-              title="Excluir tarefa"
-              aria-label="Excluir tarefa"
+              [attr.title]="locale.t('detalhe.aria_excluir')"
+              [attr.aria-label]="locale.t('detalhe.aria_excluir')"
               (click)="onExcluir()"
             >
               <i class="fa-solid fa-trash text-[12px]"></i>
@@ -50,8 +51,8 @@ import { quebrarTextoEmSegmentos } from '../../shared/auto-link';
               type="button"
               class="w-8 h-8 grid place-items-center text-text-subtle hover:text-text hover:bg-bg-elev rounded text-base leading-none transition-colors"
               data-testid="detalhe-close"
-              aria-label="Fechar"
-              title="Fechar"
+              [attr.aria-label]="locale.t('detalhe.aria_fechar')"
+              [attr.title]="locale.t('detalhe.aria_fechar')"
               (click)="fechar()"
             >
               ×
@@ -63,7 +64,7 @@ import { quebrarTextoEmSegmentos } from '../../shared/auto-link';
           <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-[12px]">
             <div class="flex flex-col gap-1">
               <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">
-                Prioridade
+                {{ locale.t('form.prioridade_label') }}
               </span>
               <div class="flex items-center gap-1.5 text-text">
                 <span
@@ -75,7 +76,7 @@ import { quebrarTextoEmSegmentos } from '../../shared/auto-link';
             </div>
             <div class="flex flex-col gap-1">
               <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">
-                Prazo
+                {{ locale.t('detalhe.prazo') }}
               </span>
               <div
                 class="text-text tabular-nums"
@@ -87,14 +88,14 @@ import { quebrarTextoEmSegmentos } from '../../shared/auto-link';
             </div>
             <div class="flex flex-col gap-1">
               <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">
-                Status
+                {{ locale.t('tarefas.status') }}
               </span>
               <div class="text-text capitalize">{{ rotuloStatus(tarefa.status) }}</div>
             </div>
             @if (tarefa.recorrencia) {
               <div class="flex flex-col gap-1">
                 <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">
-                  Recorrência
+                  {{ locale.t('form.recorrencia_label') }}
                 </span>
                 <div class="flex items-center gap-1.5 text-text">
                   <i class="fa-solid fa-repeat text-accent text-[10px]" aria-hidden="true"></i>
@@ -107,7 +108,7 @@ import { quebrarTextoEmSegmentos } from '../../shared/auto-link';
           @if (tarefa.categorias.length > 0) {
             <div class="flex flex-col gap-1.5">
               <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">
-                Categorias
+                {{ locale.t('form.categorias_label') }}
               </span>
               <div class="flex flex-wrap gap-1.5">
                 @for (c of tarefa.categorias; track c.id) {
@@ -122,7 +123,7 @@ import { quebrarTextoEmSegmentos } from '../../shared/auto-link';
 
           <div class="flex flex-col gap-1.5">
             <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">
-              Observações
+              {{ locale.t('detalhe.observacoes') }}
             </span>
 
             @if (tarefa.observacoes) {
@@ -146,7 +147,7 @@ import { quebrarTextoEmSegmentos } from '../../shared/auto-link';
               </div>
             } @else {
               <p class="text-text-subtle text-[12px] italic">
-                Nada anotado por aqui ainda. Use "Editar tarefa" pra adicionar.
+                {{ locale.t('detalhe.obs_vazio') }}
               </p>
             }
           </div>
@@ -162,7 +163,7 @@ import { quebrarTextoEmSegmentos } from '../../shared/auto-link';
                 (click)="onEditarTudo()"
               >
                 <i class="fa-solid fa-pen text-[10px]"></i>
-                Editar tarefa
+                {{ locale.t('detalhe.editar_tarefa') }}
               </button>
               <button
                 type="button"
@@ -171,7 +172,7 @@ import { quebrarTextoEmSegmentos } from '../../shared/auto-link';
                 (click)="onConcluir()"
               >
                 <i class="fa-solid fa-check text-[10px]"></i>
-                Marcar como feita
+                {{ locale.t('detalhe.marcar_feita') }}
               </button>
             } @else {
               <button
@@ -181,7 +182,7 @@ import { quebrarTextoEmSegmentos } from '../../shared/auto-link';
                 (click)="onReabrir()"
               >
                 <i class="fa-solid fa-rotate-left text-[10px]"></i>
-                Reabrir como pendente
+                {{ locale.t('detalhe.reabrir_pendente') }}
               </button>
             }
           </div>
@@ -191,6 +192,8 @@ import { quebrarTextoEmSegmentos } from '../../shared/auto-link';
   `,
 })
 export class TarefaDetalheModalComponent {
+  readonly locale = inject(LocaleService);
+
   @Input({ required: true }) tarefa!: Tarefa;
   @Output() fechado = new EventEmitter<void>();
   @Output() editarTudo = new EventEmitter<Tarefa>();
@@ -225,18 +228,19 @@ export class TarefaDetalheModalComponent {
   }
 
   rotuloPrioridade(p: number): string {
-    return ['', 'Urgente', 'Importante', 'Normal', 'Baixa'][p] ?? 'Normal';
+    const chaves = ['', 'form.prioridade_urgente', 'form.prioridade_importante', 'form.prioridade_normal', 'form.prioridade_baixa'];
+    return this.locale.t(chaves[p] ?? 'form.prioridade_normal');
   }
 
   rotuloStatus(s: number): string {
-    if (s === 2) return 'Concluída';
-    if (s === 3) return 'Atrasada';
-    return 'Pendente';
+    if (s === 2) return this.locale.t('detalhe.status_concluida');
+    if (s === 3) return this.locale.t('detalhe.status_atrasada');
+    return this.locale.t('detalhe.status_pendente');
   }
 
   rotuloRecorrencia(r: number): string {
-    if (r === 1) return 'Toda semana';
-    if (r === 2) return 'Todo mês';
+    if (r === 1) return this.locale.t('detalhe.recorrencia_semanal');
+    if (r === 2) return this.locale.t('detalhe.recorrencia_mensal');
     return '';
   }
 
@@ -261,9 +265,9 @@ export class TarefaDetalheModalComponent {
     const diasDiff = Math.round((alvo.getTime() - hoje.getTime()) / 86400000);
     const horaSufixo = t.horarioFinal ? `, ${t.horarioFinal.substring(0, 5)}` : '';
 
-    if (diasDiff === 0) return `Hoje${horaSufixo}`;
-    if (diasDiff === 1) return `Amanhã${horaSufixo}`;
-    if (diasDiff === -1) return `Ontem${horaSufixo}`;
+    if (diasDiff === 0) return `${this.locale.t('data.hoje')}${horaSufixo}`;
+    if (diasDiff === 1) return `${this.locale.t('data.amanha')}${horaSufixo}`;
+    if (diasDiff === -1) return `${this.locale.t('data.ontem')}${horaSufixo}`;
 
     const data = `${pad(alvo.getDate())}/${pad(alvo.getMonth() + 1)}/${alvo.getFullYear()}`;
     return `${data}${horaSufixo}`;

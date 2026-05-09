@@ -83,7 +83,7 @@ import { ConquistaToastComponent } from '../shared/conquista-toast.component';
                   (click)="fecharUserMenu()"
                 >
                   <i class="fa-solid fa-house text-[12px] w-4 text-center"></i>
-                  Página inicial
+                  {{ locale.t('nav.pagina_inicial') }}
                 </a>
                 <a
                   routerLink="/sobre"
@@ -92,7 +92,7 @@ import { ConquistaToastComponent } from '../shared/conquista-toast.component';
                   (click)="fecharUserMenu()"
                 >
                   <i class="fa-solid fa-circle-info text-[12px] w-4 text-center"></i>
-                  Sobre o Liriun
+                  {{ locale.t('nav.sobre_liriun', { brand: 'Liriun' }) }}
                 </a>
                 <div class="h-px bg-border my-1"></div>
                 <a
@@ -102,7 +102,7 @@ import { ConquistaToastComponent } from '../shared/conquista-toast.component';
                   (click)="fecharUserMenu()"
                 >
                   <i class="fa-solid fa-gear text-[12px] w-4 text-center"></i>
-                  Configurações
+                  {{ locale.t('nav.configuracoes') }}
                 </a>
                 <button
                   type="button"
@@ -111,7 +111,7 @@ import { ConquistaToastComponent } from '../shared/conquista-toast.component';
                   (click)="sair(); fecharUserMenu()"
                 >
                   <i class="fa-solid fa-right-from-bracket text-[12px] w-4 text-center"></i>
-                  Sair
+                  {{ locale.t('nav.sair') }}
                 </button>
               </div>
             }
@@ -295,27 +295,6 @@ import { ConquistaToastComponent } from '../shared/conquista-toast.component';
       </aside>
 
       <main class="flex flex-col min-w-0 flex-1 pb-16 md:pb-0">
-        @if (mostrarAvisoEn()) {
-          <div
-            class="flex items-start sm:items-center gap-2 px-4 md:px-8 py-2 bg-accent/10 border-b border-accent/20 text-[12px] text-text"
-            data-testid="shell-locale-warning-en"
-            role="status"
-          >
-            <i class="fa-solid fa-circle-info text-accent text-[12px] mt-0.5 sm:mt-0" aria-hidden="true"></i>
-            <span class="flex-1">
-              The app interface is currently in Portuguese only. Public pages and onboarding are translated.
-            </span>
-            <button
-              type="button"
-              class="text-text-dim hover:text-text px-1.5 py-0.5 rounded hover:bg-bg-elev text-[11px] font-medium"
-              data-testid="shell-locale-warning-dismiss"
-              (click)="dispensarAvisoEn()"
-              aria-label="Dismiss notice"
-            >
-              <i class="fa-solid fa-xmark text-[11px]"></i>
-            </button>
-          </div>
-        }
         <header
           class="hidden md:flex items-center gap-3 h-14 px-4 md:px-8 border-b border-border bg-bg-sidebar/60 backdrop-blur-sm sticky top-0 z-30"
           data-testid="shell-topbar"
@@ -370,7 +349,7 @@ import { ConquistaToastComponent } from '../shared/conquista-toast.component';
                 [size]="28"
               />
               <span class="text-[13px] font-medium text-text max-w-[140px] truncate">
-                {{ storage.usuario()?.nome || 'Conta' }}
+                {{ storage.usuario()?.nome || locale.t('nav.conta') }}
               </span>
               <i
                 class="fa-solid fa-chevron-down text-[9px] text-text-subtle transition-transform"
@@ -395,7 +374,7 @@ import { ConquistaToastComponent } from '../shared/conquista-toast.component';
                   (click)="fecharUserMenu()"
                 >
                   <i class="fa-solid fa-house text-[12px] w-4 text-center"></i>
-                  Página inicial
+                  {{ locale.t('nav.pagina_inicial') }}
                 </a>
                 <a
                   routerLink="/sobre"
@@ -404,7 +383,7 @@ import { ConquistaToastComponent } from '../shared/conquista-toast.component';
                   (click)="fecharUserMenu()"
                 >
                   <i class="fa-solid fa-circle-info text-[12px] w-4 text-center"></i>
-                  Sobre o Liriun
+                  {{ locale.t('nav.sobre_liriun', { brand: 'Liriun' }) }}
                 </a>
                 <div class="h-px bg-border my-1"></div>
                 <a
@@ -414,7 +393,7 @@ import { ConquistaToastComponent } from '../shared/conquista-toast.component';
                   (click)="fecharUserMenu()"
                 >
                   <i class="fa-solid fa-gear text-[12px] w-4 text-center"></i>
-                  Configurações
+                  {{ locale.t('nav.configuracoes') }}
                 </a>
                 <button
                   type="button"
@@ -423,7 +402,7 @@ import { ConquistaToastComponent } from '../shared/conquista-toast.component';
                   (click)="sair(); fecharUserMenu()"
                 >
                   <i class="fa-solid fa-right-from-bracket text-[12px] w-4 text-center"></i>
-                  Sair
+                  {{ locale.t('nav.sair') }}
                 </button>
               </div>
             }

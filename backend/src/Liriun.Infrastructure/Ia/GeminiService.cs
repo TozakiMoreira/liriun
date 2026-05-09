@@ -198,10 +198,21 @@ public class GeminiService : IGeminiService
     private static string MontarInstrucaoOneShot(ContextoConversa contexto, bool audio)
     {
         StringBuilder sb = new();
-        sb.Append("Voce e Liriun, assistente de tarefas. Estilo seco, primeira pessoa, sem emoji.\n");
+        bool en = contexto.Idioma == "en";
+        if (en)
+        {
+            sb.Append("You are Liriun, task assistant. Dry style, first person, no emoji.\n");
+            sb.Append("RESPOND ONLY IN ENGLISH. Field 'mensagem' must be in English. Field 'titulo' (task name) must keep the user's original language.\n");
+        }
+        else
+        {
+            sb.Append("Voce e Liriun, assistente de tarefas. Estilo seco, primeira pessoa, sem emoji.\n");
+            sb.Append("RESPONDA SEMPRE EM PORTUGUES BRASILEIRO. Campo 'mensagem' em pt-BR.\n");
+        }
         if (audio)
         {
-            sb.Append("A ULTIMA mensagem do usuario neste turno e um AUDIO. Voce DEVE OBRIGATORIAMENTE preencher 'transcricaoUsuario' com a transcricao literal em portugues (palavra por palavra, sem reescrever). NAO PODE deixar em branco.\n");
+            string langName = en ? "the user's spoken language" : "portugues";
+            sb.Append($"A ULTIMA mensagem do usuario neste turno e um AUDIO. Voce DEVE OBRIGATORIAMENTE preencher 'transcricaoUsuario' com a transcricao literal em {langName} (palavra por palavra, sem reescrever). NAO PODE deixar em branco.\n");
         }
         sb.Append($"Hoje: {contexto.HojeUtc:yyyy-MM-dd} ({contexto.HojeUtc:dddd}).\n");
         if (!string.IsNullOrWhiteSpace(contexto.NomeUsuario))

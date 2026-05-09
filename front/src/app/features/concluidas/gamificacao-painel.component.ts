@@ -509,7 +509,7 @@ export class GamificacaoPainelComponent implements OnInit {
   );
   readonly rotuloProximoNivel = computed(() => {
     const faltam = PONTOS_POR_NIVEL - this.pontosNoNivel();
-    return `Faltam ${faltam} pts pro Nível ${this.nivel() + 1}`;
+    return this.locale.t('gamif.faltam_pontos', { n: faltam + '', prox: (this.nivel() + 1) + '' });
   });
 
   readonly deltaSemana = computed(() => this.tarefasSemana() - this.tarefasSemanaPassada());
