@@ -1,3 +1,5 @@
+export const runtime = "edge";
+
 import { redirect } from "@/i18n/routing";
 
 export default async function AppRootRedirect({

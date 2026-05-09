@@ -1,5 +1,7 @@
 "use client";
 
+export const runtime = "edge";
+
 import { useMemo } from "react";
 
 import { TarefaRow } from "@/components/app/tarefa-row";
