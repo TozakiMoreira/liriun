@@ -1,365 +1,200 @@
-# Estratégia Liriun — Foco, Corte e Próximos Passos
+# Estratégia Liriun — Posicionamento e Decisões Estratégicas
 
-> Documento de discussão interna ToMore. Posicionamento, decisões de produto, roadmap focado.
-> **Premissa:** "Quem faz tudo, não faz nada." Vamos cortar feio. Sem peso de trabalho perdido.
-> Última atualização: 2026-05-07
-
----
-
-## 1. Diagnóstico atual
-
-### O que somos hoje
-Liriun é um organizador pessoal de tarefas com captura por IA conversacional (texto + voz via Gemini multimodal). Tem páginas públicas (landing, sobre, empresa), auth, onboarding de categorias, captura manual + Liriun, 3 visualizações de tarefas (Lista/Kanban/Semana), concluídas, finanças, configurações, alterar senha. Web responsiva, dark/light theme, i18n PT-BR + EN nas páginas públicas.
-
-### O problema
-**Identidade confusa.** Hoje o Liriun parece ao mesmo tempo:
-- Todoist (3 views, kanban, lista, semana)
-- App de finanças (módulo de contas)
-- App casual (onboarding curto, ilustração leve)
-- App mental health (marketing "mente leve")
-- App social (gamificação ranking amigos em protótipo)
-
-Usuário não sabe o que somos. Mercado pune produto sem identidade clara.
-
-### O mercado real
-Lutamos em uma categoria saturada com gigantes consolidados:
-- **Todoist** — 30M usuários, 10 anos de polimento, mobile perfeito
-- **TickTick** — Pomodoro + hábitos + calendário, baratíssimo
-- **Sunsama** — premium calm planner R$100/mês
-- **Notion** — wiki + tasks, padrão de mercado
-- **Motion / Reclaim** — AI scheduling B2B
-- **Goblin Tools** — AI captura para TDAH (concorrente direto, modelo barato)
-- **Finch** — self-care + mascote (concorrente direto Tier 7 nosso)
-
-**Bater de frente em produtividade pura é suicídio.** Todoist tem 10 anos de vantagem em integrações, mobile, sincronização. Não vamos ganhar nesse jogo.
+> Documento estratégico interno ToMore.
+> **Última atualização: 2026-05-09** — revisado após pivô para app mobile com agente de voz (ver `CONTEXTO_APP.md`).
+> **Premissa:** "Quem faz tudo, não faz nada." Sem peso de trabalho perdido.
 
 ---
 
-## 2. Posicionamento escolhido
+## 0. Histórico do produto
+
+- **V1 web (Angular + .NET)** — organizador pessoal de tarefas com captura por IA conversacional. Funcional, no ar, com paleta dark Linear-style.
+- **Pivô (2026-05-08)** — produto vira multi-cliente com **agente pessoal por voz** como diferencial mobile. Site Angular V1 vai ser substituído por Next.js. Adicionado app Flutter mobile.
+- **Decisão arquitetural (2026-05-09)** — backend .NET continua como **backend principal centralizado** (não substituído por Supabase). Padrão multi-client / headless backend. Site + app + plataformas futuras consomem a mesma API REST. Supabase usado só como Postgres gerenciado.
+
+A estratégia abaixo é para o **produto novo** (multi-client com agente de voz).
+
+---
+
+## 1. Diagnóstico — onde estamos hoje (2026-05-09)
+
+### O produto novo
+Liriun é um **organizador pessoal de tarefas multi-plataforma com agente de voz**. Web e mobile compartilham a mesma conta e dados (single source of truth no backend .NET). Diferencial: agente de voz no mobile, identidade visual premium em todos clientes.
+
+### Como nos posicionamos
+- Não somos Todoist (gigante de produtividade).
+- Não somos Notion (wiki + tasks).
+- Não somos um clone de Gemini app.
+- Somos um **vertical de produtividade pessoal por voz, com identidade visual e tom próprios**.
+
+### Maior risco competitivo
+**Google Gemini app já faz o core do que pretendemos** — voz, criação/consulta de tarefas no Google Tasks, integração com Calendar/Gmail. Gratuito e pré-instalado em Android. Liriun precisa convencer que vale **substituir ou complementar** Gemini para o público alvo.
+
+### Vantagens defensáveis (potenciais)
+1. **Foco vertical em tarefas** — Gemini é genérico e raso em tasks; Liriun pode ser profundo (categorias com cor, prioridade, prazo hora-exata, recorrência rica).
+2. **Personalização do agente** — nome custom, voz custom, personalidade. Gemini não permite.
+3. **UX premium dedicada** — visual AI-native (ver `docs/design-ref/`), não app Google plano.
+4. **Privacidade/controle** — promessa "seus dados, seu agente", não Google sabendo tudo.
+5. **Multi-canal futuro** — Telegram/WhatsApp/SMS via Twilio (Fase 5). Gemini não faz.
+
+---
+
+## 2. Posicionamento
 
 ### A aposta
 
-> **Liriun é o assistente calmo de IA para mentes sobrecarregadas.**
-> Para quem tem TDAH, ansiedade, ou simplesmente cansou de apps de produtividade que parecem planilhas.
+> **Liriun é o seu assistente pessoal de tarefas por voz.**
+> Para quem cansou de apps de produtividade frios e quer um companheiro que escuta, organiza e responde — com identidade própria.
 > A vida cabe na sua cabeça, mas não precisa morar lá.
 
 ### Audiência alvo
-- Estudantes universitários sobrecarregados
-- Profissionais 25-40 com burnout / fadiga digital
-- Pessoas com TDAH (mercado underserved gigante)
-- Jovens que vivem no celular e não querem mais um app frio
+- Estudantes universitários sobrecarregados que querem capturar ideias rápido por voz.
+- Profissionais 25-40 com fadiga digital, que falam com Siri/Gemini mas querem algo mais focado.
+- Pessoas com TDAH (mercado underserved gigante) — captura por voz reduz fricção.
+- Jovens que vivem no celular e gostam de assistentes/companheiros AI.
 
-### Concorrentes diretos pós-pivô
-- **Goblin Tools** (TDAH + AI)
-- **Finch** (self-care + mascote + tarefas)
-- **Reflectly** (journaling + IA)
-
-Não Todoist. Não TickTick. Não Notion. **Saímos da briga errada.**
-
----
-
-## 3. Lista do que matar
-
-> Peso afetivo de código já escrito não importa. Cada feature off-brand custa atenção do usuário e dilui a mensagem.
-
-### Matar imediatamente (deletar ou esconder atrás de feature flag)
-
-| Item | Por que mata |
-|------|-------------|
-| **Módulo Finanças completo** | Off-brand. "Mente leve" + boletos = contradição. Mata stress inverso. Goblin/Finch não têm e estão bem |
-| **Visão Kanban (Quadro)** | Corporate. Audiência alvo não usa kanban. Confunde |
-| **Visão Semana (calendário Seg-Dom)** | Power-user feature. Pesa cognição. Quem quer agenda usa Google Calendar |
-| **Ranking competitivo amigos** | Anti-calm. Comparação social = ansiedade. Finch acertou em não ter isso |
-| **Página Empresa (`/empresa`)** | Vanity. Usuário não liga pra história fundadores no V1. Mata até ter brand reconhecido |
-| **Onboarding de categorias bloqueante** | Atrito imediato. Toda app moderna deixa pular. Categorias pode ser sugerido mid-flow |
-
-### Manter só essencial
-
-| Mantém | Por quê |
-|--------|---------|
-| **Captura por voz multimodal Gemini** | Diferencial real. Único na categoria mass BR |
-| **Captura por texto + IA categorização** | Core do produto |
-| **Visão Lista** | Única view essencial |
-| **Visão Geral (dashboard home)** | Reduzir info: só agenda hoje + saudação |
-| **Concluídas** | Pra fechar ciclo emocional ("vi o que fiz") |
-| **Recorrência tarefa** | Esperado pelo mercado |
-| **Conquistas pessoais (sem ranking)** | Reforço positivo, alinha brand |
-| **Streak pessoal** | Dopamina sem comparação |
-| **Tema claro/escuro** | Acessibilidade |
-
-### Renomear / repensar
-
-| Antes | Depois | Motivo |
-|-------|--------|--------|
-| **"Tarefas"** | **"Sua mente"** ou **"Suas anotações"** | "Tarefa" remete a trabalho. "Anotação" alinha brand |
-| **"Captura"** | **"Falar com Liriun"** | Captura é frio, técnico |
-| **"Visão geral"** | **"Hoje"** | Mais imediato |
-| **"Concluídas"** | **"Feito"** ou **"O que você concluiu"** | Mais humano |
+### Concorrência real
+| Tipo | Concorrente | Como ganhamos |
+|---|---|---|
+| Direto AI assistant geral | **Google Gemini app**, **Siri**, Alexa | Foco vertical em tasks + UX premium + personalização |
+| Direto AI tasks | **Goblin Tools** ($3/mês) | Voz nativa + visual cuidado + tom próprio |
+| Indireto produtividade | Todoist, TickTick, Notion | Não competimos em features — vendemos experiência diferente |
+| Indireto self-care | Finch, Reflectly | Foco em tarefas reais, não só humor/journaling |
 
 ---
 
-## 4. O que dobrar (foco total)
+## 3. Pilares estratégicos do MVP
 
-### A. Captura por voz como núcleo absoluto
-- Botão de microfone gigante, sempre acessível, em qualquer tela
-- Atalho global (mobile: 3D touch, atalho lock screen, widget)
-- "Falar com Liriun" deve ser ato de 2 segundos
-- Hold-to-record (paradigma WhatsApp) — reduz fricção
-- Transcrição em tempo real visível enquanto fala
-- Auto-stop por silêncio (VAD)
-- Captura instantânea sem revisão (modo "confiar na IA") opcional
+### A. Voz como núcleo absoluto
+- Botão de microfone gigante, sempre acessível, em qualquer tela (já desenhado nos mockups oficiais — ver `docs/design-ref/`).
+- "Falar com Liriun" deve ser ato de 2 segundos.
+- Gemini multimodal interpreta texto + áudio em uma chamada.
+- Resposta por voz (TTS nativo do dispositivo no MVP).
+- Wake word ("Hey Liriun") fica para Fase 3 — primeiro entregar valor dentro do app.
 
-### B. Mascote do Liriun (Tier 7)
-- Pixel art (contratar artista BR — Lucas R$, Pedro R$)
-- Liriun ganha rosto. Frases saem em balão de fala dele
-- Estados emocionais: feliz quando completa tarefa, calmo quando vazio, ansioso quando muitas atrasadas
-- **Diferencial brutal vs Todoist/TickTick** que são caixas de texto frias
-- Personalização: paleta + acessórios desbloqueáveis por uso
+### B. Identidade visual premium
+- Estilo definido: misto **Things 3 + Granola + Arc Search + iOS 26 Liquid Glass** (decidido 2026-05-09).
+- Dark mode default, gradiente roxo→azul como accent, glassmorphism sutil.
+- Style guide oficial: `docs/design-ref/Liriun · Visual Reference · Print.pdf`.
+- App Flutter e site Next.js compartilham a mesma identidade.
 
-### C. Companheiro / desabafo (Tier 7)
-- Modo "conversa livre": user fala sentimentos, não tarefas
-- Liriun escuta, valida, sugere micro-ações
-- Guard-rails: detectar crise (ideação suicida, violência) → CVV imediatamente
-- Diferencial gigantesco. Ninguém na categoria tasks faz isso
+### C. Personalização do agente
+- Nome custom desde o cadastro ("como você quer me chamar?").
+- Voz nativa do dispositivo no MVP. Upgrade futuro (Fish Audio, ElevenLabs) se incomodar.
+- Tom de voz definido lá na frente (parked até MVP funcional).
 
-### D. Pomodoro + intervalos saudáveis (Tier 7)
-- Timer com mascote em modo foco
-- Intervalo: mascote sugere água, alongamento, regra 20-20-20
-- Estatística diária
-
-### E. Mobile nativo (PWA primeiro, app store depois)
-- PWA instalável Android/iOS (caminho mais rápido)
-- Push notifications via Web Push
-- Atalho home screen
-- Offline read (vê tarefas) + offline create texto (sync depois)
-- App store: Capacitor wrapper sobre o web (quando tiver tração)
-
-### F. Notificações inteligentes
-- Não notificar TUDO (anti-calm)
-- Lembretes de tarefas com prazo se aproximando
-- Alerta gentil de tarefa atrasada (1x/dia, não spam)
-- Resumo da manhã: "Bom dia, Pedro. Hoje tem 3 coisas, todas leves"
-- Resumo da noite: "Você fechou bem hoje. Amanhã tem reunião 14h"
-
-### G. Sincronização Google/Apple Calendar (read-only V1)
-- Mostrar eventos do calendar nativo dentro da agenda do Liriun
-- Sem editar (V1)
-- Reduz fricção: user não precisa abrir 2 apps
+### D. Multi-plataforma desde o dia 1
+- **Backend .NET centralizado** atende todos clientes (web, mobile, futuro: smartwatch, Alexa, browser ext).
+- Flutter compila pra iOS + Android (e potencialmente Web logado).
+- Site Next.js cobre web (login, tarefas, agente, config).
+- Adicionar plataforma nova = só implementar front, backend não muda.
+- Single source of truth: cria tarefa no app → vê no site → reflete em todo lugar.
 
 ---
 
-## 5. Pricing e monetização
+## 4. Pricing — PARKED
 
-### Plano sugerido
+> **Status:** Decidir SOMENTE após MVP funcional. Não tentar definir pricing antes de medir custo real (Gemini, infra, suporte).
 
-| Tier | Preço | O que inclui | Público |
-|------|-------|--------------|---------|
-| **Free** | R$0 | Captura ilimitada texto, voz limitada (10/dia), tarefas ilimitadas, recorrência básica, tema | Maioria |
-| **Plus** | R$14,90/mês ou R$129/ano | Voz ilimitada, mascote básico, Pomodoro, push notifications avançadas, calendar sync read-only | Pessoas comprometidas |
-| **Premium** | R$29,90/mês ou R$249/ano | Mascote personalizável + acessórios, minigames, companheiro chat ilimitado, calendar sync read+write, prioridade no suporte | Power users / fãs |
+Quando chegar a hora, modelo provável (rascunho não-vinculante):
 
-### Métricas alvo (1º ano após lançamento)
+| Tier | Preço sugerido | Inclui |
+|---|---|---|
+| Free | R$0 | Captura limitada, tarefas ilimitadas, recorrência básica |
+| Plus | R$ a definir | Voz ilimitada, integrações de calendário, push avançado |
+| Premium | R$ a definir | Personalização total do agente, voz premium TTS, mascote/Pomodoro (Fase 7) |
 
-- Free → Plus: 4-6% conversão
-- Plus → Premium: 15-20% upgrade
-- Churn mensal Plus: <8%
-- LTV/CAC: alvo 3:1
-
-### Marketing inicial sugerido
-
-- TikTok / Instagram com vídeos de captura por voz (visual forte)
-- Comunidade Reddit r/ADHD (mercado underserved)
-- Threads X / Twitter brasileiras de produtividade
-- Parceria com criadores de conteúdo nicho TDAH / mental health
-- App Store Optimization (ASO) com palavras-chave: "TDAH organização", "ansiedade tarefas", "AI assistant Brazil"
+Discutir pricing com base em:
+- Custo real Gemini API por usuário ativo.
+- Benchmarks: Todoist Premium, TickTick, Goblin Tools, Finch.
+- Alavancagem do diferencial (UX + voz + tom).
 
 ---
 
-## 6. Roadmap focado (12 meses)
+## 5. Roadmap de longo prazo (alto nível)
 
-### Q1 (Mês 1-3) — Cortar e mobilizar
+> Roadmap detalhado por fase está em `CONTEXTO_APP.md` seções 3 e 4. Aqui é só visão estratégica.
 
-- [ ] Esconder Finanças atrás de feature flag (não deletar, reativar se mudar ideia)
-- [ ] Remover Kanban e Semana das views (deixar só Lista)
-- [ ] Remover ranking competitivo (manter só conquistas pessoais e streak)
-- [ ] Remover página Empresa
-- [ ] Onboarding pular-friendly (skippable)
-- [ ] Renomear seções (Tarefas → Anotações, Captura → Falar com Liriun, etc)
-- [ ] PWA completo (manifest, service worker, install prompt)
-- [ ] Push notifications (Web Push API)
-- [ ] Offline L2 (read tarefas + create texto)
-- [ ] Recuperação de senha (bloqueador real para usuários)
-- [ ] OAuth Google login (reduz atrito cadastro)
+| Fase | Foco | Deliverable de marca |
+|---|---|---|
+| **Fase 1 (MVP)** | Agente funcional dentro do app | App instalável local (PC + APK celular) |
+| **Fase 2** | Acesso rápido sem abrir app | Widget, atalhos, push |
+| **Fase 3** | Wake word + always listening | "Hey Liriun" custom |
+| **Fase 4** | Integração com calendários | Google + Apple + Outlook |
+| **Fase 5** | Lembretes avançados | SMS + ligação via Twilio |
+| **Fase 6** | Lojas + monetização | App Store + Play Store + pricing |
+| **Fase 7+** | Mascote, Pomodoro, companheiro chat | Plano premium (ver `IDEIAS_FUTURO.md` Tier 7) |
 
-### Q2 (Mês 4-6) — Diferencial de marca
-
-- [ ] Contratar artista para mascote pixel art
-- [ ] Implementar mascote em estados básicos (feliz, calmo, ansioso, dormindo)
-- [ ] Integrar mascote em todas mensagens do app (balão de fala)
-- [ ] Pomodoro com mascote em modo foco
-- [ ] Sugestões saudáveis no intervalo (banco interno de dicas)
-- [ ] Calendar sync read-only Google
-- [ ] Captura por voz hold-to-record (paradigma WhatsApp)
-- [ ] Transcrição em tempo real visível
-- [ ] Modo captura instantânea (sem revisão)
-
-### Q3 (Mês 7-9) — Monetização e companheiro
-
-- [ ] Implementar Stripe / pagamento recorrente
-- [ ] Paywall e gates de feature (voz limite, mascote básico vs custom)
-- [ ] Tela de upgrade clara
-- [ ] Companheiro chat (modo conversa livre, com guard-rails de crise)
-- [ ] Acessórios desbloqueáveis do mascote
-- [ ] Minigame primeiro (cuidar de planta digital — tipo Forest)
-- [ ] Estatísticas pessoais detalhadas (gráficos, padrões, "você é mais produtivo nas terças")
-
-### Q4 (Mês 10-12) — Expansão e store
-
-- [ ] App store iOS via Capacitor
-- [ ] App store Android via Capacitor
-- [ ] i18n EN polido (revisão por nativo)
-- [ ] Marketing inicial: TikTok, Instagram, Reddit r/ADHD
-- [ ] Programa beta fechado para feedback nativo EN
-- [ ] Calendar sync read+write
-- [ ] Melhorias performance (bundle size, loading)
+Cada fase só começa quando a anterior estiver consolidada. **Nada de pular fase.**
 
 ---
 
-## 7. Decisões pendentes (votar aqui)
+## 6. Métricas de sucesso (12 meses pós-lançamento)
 
-> Marcar X na opção escolhida pela ToMore. Adicionar comentário se quiser justificar.
+> Serão revisadas quando MVP estiver pronto e tivermos dados reais.
 
-### 7.1 Finanças
-
-- [ ] Manter como está
-- [ ] Esconder atrás de feature flag (recomendado)
-- [ ] Deletar tudo
-
-**Comentário:**
-
-### 7.2 Visões de tarefas
-
-- [ ] Manter Lista + Kanban + Semana
-- [ ] Manter Lista + Semana
-- [ ] Manter só Lista (recomendado)
-
-**Comentário:**
-
-### 7.3 Ranking competitivo amigos
-
-- [ ] Manter como está
-- [ ] Manter ranking mas tornar opt-in (deslig padrão)
-- [ ] Remover ranking, manter conquistas pessoais e streak (recomendado)
-
-**Comentário:**
-
-### 7.4 Mascote pixel art
-
-- [ ] Sim, contratar artista (recomendado se for plano de produto sério)
-- [ ] Não, manter sem mascote
-- [ ] Versão simplificada (emoji estilizado / SVG simples interno)
-
-**Comentário:**
-
-### 7.5 Companheiro chat (desabafo)
-
-- [ ] Sim, V2 priority
-- [ ] Sim, mas só V3 ou V4 (preocupação compliance / segurança)
-- [ ] Não fazer
-
-**Comentário:**
-
-### 7.6 Mobile
-
-- [ ] PWA only (recomendado começar)
-- [ ] Capacitor wrapper para app stores (quando tiver tração)
-- [ ] Native real (Swift + Kotlin) — caro
-
-**Comentário:**
-
-### 7.7 Pricing free
-
-- [ ] Voz ilimitada no free (mais aquisição, mais custo Gemini)
-- [ ] Voz limitada no free 10/dia (recomendado, controla custo)
-- [ ] Voz limitada no free 5/dia
-- [ ] Voz só no Plus
-
-**Comentário:**
-
-### 7.8 Pricing Plus
-
-- [ ] R$9,90/mês
-- [ ] R$14,90/mês (recomendado)
-- [ ] R$19,90/mês
-- [ ] R$24,90/mês
-
-**Comentário:**
+Rascunho:
+- 5.000 usuários cadastrados
+- 800 usuários ativos semanais (WAU)
+- 150 assinantes pagos (após Fase 6)
+- App store rating ≥ 4.5
+- 1 review em vídeo grande no YouTube de tech BR
+- Citado como "alternativa ao Gemini app focada em tarefas" em pelo menos 2 publicações BR
 
 ---
 
-## 8. Riscos e como mitigar
+## 7. Riscos estratégicos
 
 | Risco | Probabilidade | Impacto | Mitigação |
-|-------|---------------|---------|-----------|
-| Não diferenciar a tempo, virar Todoist genérico | Alta | Alto | Esse documento. Cortar agora. |
-| Custo Gemini API explode com escala | Média | Alto | Limite voz no free, pricing premium leva esse custo |
-| Companheiro chat vira problema legal/saúde mental | Média | Alto | Guard-rails sólidos, revisão jurídica antes lançar, parceria com profissional |
-| Mobile não acontece, perdemos mercado mass | Alta | Alto | PWA primeiro (rápido), Capacitor depois |
-| Sem mascote / arte, brand fica genérico | Alta | Médio | Investir em arte. É o que separa Finch de produtos sem alma |
-| Compliance LGPD com finanças | Baixa (se removermos) | Alto | Remover finanças resolve |
-| Burnout do time fundador | Média | Alto | Plano focado, não tentar 50 features |
+|---|---|---|---|
+| Google integra Gemini ainda mais ao Android e Liriun fica obsoleto | Alta | Alto | Foco em UX + personalização que Google não entrega |
+| Custo Gemini API explode com escala | Média | Alto | Limite voz no Free, pricing premium absorve custo |
+| MVP demora demais e perde momento | Alta | Alto | Roadmap focado, online-only no MVP, sem feature creep |
+| Burnout do time fundador | Média | Alto | Uma fase por vez, sem multitarefa estratégica |
+| Apple barra wake word custom no iOS (já barra) | Confirmada | Médio | Comunicar limitação no onboarding, focar Android primeiro |
+| Compliance LGPD ao expandir (calendar, SMS, dados sensíveis) | Média | Alto | Revisão jurídica antes da Fase 4+ |
 
 ---
 
-## 9. Métricas de sucesso para 12 meses
+## 8. Decisões pendentes
 
-- 10.000 usuários cadastrados
-- 1.500 usuários ativos semanais (WAU)
-- 300 assinantes pagos (Plus + Premium combinados)
-- MRR R$5.000+
-- App store rating ≥ 4.5
-- Ser citado como "alternativa do Todoist para TDAH" em pelo menos 3 publicações brasileiras de tecnologia ou saúde mental
-- 1 review em vídeo grande no YouTube nicho produtividade BR
+> Itens parados aguardando momento certo. **NÃO discutir agora** — registrar pra retomar pós-MVP.
 
----
-
-## 10. Próximas conversas em equipe
-
-- [ ] Revisar este documento com Lucas e Pedro
-- [ ] Bater martelo nas decisões da Seção 7
-- [ ] Ajustar roadmap conforme decisões
-- [ ] Atualizar `CLAUDE.md` com novo escopo focado
-- [ ] Iniciar Q1 (cortes + PWA)
+- [ ] Modelo de pricing definitivo (Free/Plus/Premium, valores, limites)
+- [ ] Estratégia de marketing/aquisição (canais, orçamento, criadores)
+- [ ] Decisão sobre captação externa vs bootstrap
+- [ ] Tom de voz exato do agente (após escolher TTS final)
+- [ ] Política de wake word (custom name por usuário ou fixo "Liriun")
+- [ ] Mascote pixel art (Tier 7) — manter parado ou começar a investigar artistas?
+- [ ] Companheiro chat / desabafo (Tier 7) — risco compliance saúde mental, parado
 
 ---
 
-## Apêndice — Concorrentes detalhados
+## 9. Apêndice — Concorrentes detalhados
+
+### Google Gemini app — **concorrente principal**
+- Funcionalidade: voz nativa, conversação multi-turno (Gemini Live), integração com Tasks/Calendar/Gmail/Maps, gratuito.
+- Pontos fortes: ecossistema Google, sempre disponível, modelo state-of-the-art.
+- Pontos fracos: genérico (não foca em tasks profundamente), tom corporativo Google, sem personalização do agente, dados no Google.
+- **Como ganhamos:** vertical, UX, personalização, identidade.
 
 ### Goblin Tools
-- AI captura para TDAH
-- Modelo barato ($3/mês)
-- UI feia, sem polimento
-- Diferencial nosso: voz + mascote + tom + UX
+- AI captura para TDAH ($3/mês).
+- UI feia, sem polimento.
+- **Como ganhamos:** voz + visual premium + tom + multi-plataforma.
+
+### Siri / Alexa
+- Plataformas fechadas (Siri = só iOS, Alexa = ecossistema Amazon).
+- **Como ganhamos:** cross-platform, focado em tarefas (Siri/Alexa são genéricos).
 
 ### Finch
-- Self-care + mascote
-- App-only mobile
-- Audiência jovem feminina
-- Diferencial nosso: foco em tarefas reais, não só self-care; cross-platform; voz
+- Self-care + mascote, audiência jovem feminina.
+- Não tem tasks reais, é mais hábitos.
+- **Como ganhamos:** foco em tarefas + voz nativa.
 
-### Reflectly
-- Journaling com IA
-- Premium $60/ano
-- Diferencial nosso: tarefas + journaling combinados
-
-### Todoist
-- Mercado consolidado
-- Não competimos diretamente. Diferente posicionamento.
-
-### TickTick
-- Pomodoro + hábitos
-- Diferencial nosso: tom + mascote + voz nativa
+### Todoist / TickTick / Notion
+- Concorrentes indiretos. Públicos diferentes. Não brigamos por recursos.
 
 ---
 
-*Documento vivo. Atualizar conforme decisões em reunião.*
+*Documento vivo. Atualizar conforme decisões em reunião com Lucas.*

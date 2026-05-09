@@ -1,246 +1,249 @@
 # Contexto do Projeto Liriun
 
-> **Fonte autoritativa de produto:** `docs/ENTREVISTA.md` (decisões da entrevista de descoberta).
-> **Plano de execução:** `docs/DESENVOLVIMENTO.md`.
-> Este arquivo é o resumo rápido pra carregar em contexto.
+> **Fonte autoritativa de produto e arquitetura:** `docs/CONTEXTO_APP.md`.
+> **Estratégia / posicionamento:** `docs/ESTRATEGIA_LIRIUN.md`.
+> **Backlog futuro:** `docs/IDEIAS_FUTURO.md`.
+> **Plano de negócio (PARKED):** `docs/PLANO_NEGOCIO_TEMPLATE.md`.
+> **Style guide visual:** `docs/design-ref/Liriun · Visual Reference · Print.pdf`.
+> Este arquivo é resumo rápido. Detalhes técnicos completos em `CONTEXTO_APP.md`.
 
 ## Sobre o projeto
-- Projeto pessoal de preparacao para o PI (Projeto Integrador) da faculdade
-- Objetivo: praticar comunicacao frontend/backend com deploy em producao
-- Nome: **Liriun** — Organizador Pessoal de Ideias e Tarefas
-- Renomeado de "Jarvis" → "Liriun" em 2026-05-03. Rebrand completo: namespaces .NET (`Liriun.Core`, `Liriun.Api`, etc), `LiriunDbContext`, `ConnectionStrings:Liriun`, JWT issuer `liriun-api`/audience `liriun-app`, contract `papel: 'liriun'` (enum + validator + use case + tests), localStorage `liriun.token`/`liriun.user`. Pasta raiz movida pra `c:\Workspace\Liriun\Liriun`.
 
-## Decisoes tomadas
+- Projeto pessoal — preparação para PI (Projeto Integrador) da faculdade
+- Nome: **Liriun** — organizador pessoal de tarefas com agente de voz
+- Renomeado de "Jarvis" → "Liriun" em 2026-05-03
+
+## Estado atual (2026-05-09)
+
+### V1 web (Angular + .NET) — FUNCIONAL, no ar
+Organizador pessoal de tarefas com captura por IA conversacional (texto + voz Gemini multimodal). Stack: Angular 18 + .NET 10 + Supabase Postgres + Gemini API. Ver seção "V1 — Implementado" abaixo pra detalhes do que tem pronto.
+
+### Pivô (2026-05-08) — produto novo em desenvolvimento
+Liriun vira **multi-cliente com agente de voz**:
+- **App Flutter mobile** (iOS + Android) com agente de voz como diferencial
+- **Site Next.js** que substitui Angular V1 (funcionalidade completa, não só landing)
+- **Backend .NET continua como backend principal centralizado**
+- **Supabase = só Postgres** (sem Auth/RLS/Edge Functions)
+- Adicionar plataforma futura (smartwatch, Alexa, etc) = só implementa front
+
+Padrão: **headless backend / multi-client** (Linear, Asana, Slack fazem assim).
+
+```
+Web (Next.js)   ─┐
+App Flutter     ─┼─→ Backend .NET ─→ Supabase Postgres
+Plataformas fut ─┘   (REST + JWT + Gemini)
+```
+
+## Decisões tomadas (2026-05-09)
 
 ### Stack
-- Backend: .NET 10 (LTS) com ASP.NET Core Web API + Clean Architecture
-- Frontend: Angular 18 com standalone components, signals, TailwindCSS, fonte Sora
-- Banco: Supabase (PostgreSQL na nuvem)
-- IA: Google Gemini API (default `gemini-2.0-flash`, configuravel via `Gemini:Model`)
-- Deploy: Vercel (front) + Railway (back) OU Oracle Cloud Free + Docker + dominio proprio — decisao final na Fase 6
+| Camada | Tecnologia |
+|---|---|
+| Backend | **.NET 10** + ASP.NET Core Web API + Clean Architecture (Liriun.Core/Application/Infrastructure/Api) |
+| Banco | **Supabase Postgres** (DB only — projeto NOVO separado do V1) |
+| Auth | **JWT próprio do .NET** + Google/Apple Sign-In via OAuth no .NET |
+| App mobile | **Flutter** + **Riverpod** + **feature-first** (`/lib/features/{auth,tarefas,agente,categorias,config}`) |
+| Site web | **Next.js 15** (App Router) + Tailwind v4 + shadcn/ui + Framer Motion + React Query |
+| HTTP client | dio (Flutter) / fetch + React Query (Next.js) |
+| Codegen | OpenAPI Generator (Dart + TypeScript clients gerados a partir do .NET) |
+| IA | Google Gemini API (default `gemini-2.0-flash`) |
+| STT/TTS | Nativo do dispositivo (sem custo) |
+| Push | Firebase Cloud Messaging |
+| Hosting backend | Oracle Cloud Free / Railway (decidir mais perto da publicação) |
+| Hosting site | Vercel (free tier) |
 
-### Auth
-- Multi-user (cada usuario com tarefas privadas)
-- Cadastro pede email + senha + nome (nome serve pra personalizacao do tom do Liriun)
-- Login pede email + senha
-- Senha armazenada com hash no banco
-- Token JWT no localStorage
-- V1 NAO tem: recuperacao de senha, confirmacao de email, reset de senha
-
-### Dominio
-- 2 entidades principais: Tarefa e Categoria (N:N entre elas)
-- Tag foi UNIFICADA em Categoria — nao existe mais Tag separada
-- Categorias sao criadas/editadas pelo usuario via tela de Configuracoes
-- **Prazo NAO e entidade.** Cada tarefa tem `DataPrazo: DateTime?` e `HorarioFinal: TimeSpan?` direto, ambos opcionais. Decidido em 2026-04-30.
-- Apresentacao relativa ("Hoje", "Amanha", "Em N dias") calculada na tela de Minhas Tarefas a partir de `DataPrazo`.
-- Categorias ad-hoc criadas durante criacao de tarefa VIRAM modelo permanente
-- IA so pode escolher entre as categorias ja cadastradas pelo usuario
-- IA retorna null nos campos quando nao consegue inferir (texto vago)
+### Domínio (mantido do V1, evolui no novo)
+- 2 entidades: Tarefa e Categoria (N:N entre elas)
+- Tag UNIFICADA em Categoria
+- `Tarefa.DataPrazo: DateTime?` + `Tarefa.HorarioFinal: TimeSpan?` (ambos opcionais)
+- Apresentação relativa ("Hoje", "Amanhã", "Em N dias") calculada na tela
+- Categorias ad-hoc na criação viram modelo permanente
+- IA só escolhe entre categorias do usuário; retorna null quando não infere
 - Prioridades fixas: urgente, importante, normal, baixa
-- Status: pendente, concluida, atrasada (transicao pendente→atrasada calculada no backend ao listar)
-- Status atrasada considera fuso BRT (`America/Sao_Paulo`) — backend converte UTC pra local (`Tarefa.ConverterParaFusoUsuario`).
-- Ao concluir tarefa, o usuario PERMANECE na mesma tela (facilita concluir varias em sequencia)
-- HorarioFinal opcional. Quando null, status atrasado considera fim do dia (23:59:59).
-- Exclusao de categoria: BLOQUEADA se tiver tarefa pendente vinculada
+- Status: pendente, concluida, atrasada (calculado no backend, fuso BRT `America/Sao_Paulo`)
+- Concluir tarefa: usuário PERMANECE na tela (concluir várias em sequência)
+- Exclusão de categoria BLOQUEADA se tiver tarefa pendente vinculada
 
 ### Terminologia oficial
-- "Tarefa" (nao "anotacao", nao "nota")
-- "Categoria" (nao "tag")
-- "Minhas tarefas" / "Tarefas" (nao "Dashboard")
-- "Visao geral" pra pagina home/dashboard
-- "Modo Manual" vs "Modo Liriun" — os dois modos de criacao
-- Componente `<app-brand>` renderiza nome — sempre usar em vez de hardcoded "Liriun"
+- "Tarefa" (não "anotação", não "nota")
+- "Categoria" (não "tag")
+- "Minhas tarefas" / "Tarefas" (não "Dashboard")
+- "Visão geral" pra dashboard home
+- "Modo Manual" vs "Modo Liriun" — os dois modos de criação
 
-### Fluxo de criacao de tarefa
-Usuario escolhe ANTES de digitar qual modo usar (2 botoes: Manual ou Liriun).
+### Fluxo de criação de tarefa
+Usuário escolhe ANTES de digitar qual modo usar (2 botões: Manual ou Liriun).
 
-**Modo Manual:**
-- Form com: nome (obrigatorio), categorias (multi-select), data (opcional), hora (opcional, exige data), prioridade
-- Salva direto
+**Modo Manual:** form (nome, categorias, data, hora, prioridade) → salva direto.
 
-**Modo Liriun (com IA):**
-1. Textarea livre OU audio (mic) — usuario escreve/fala texto
-2. Backend chama Gemini passando texto + categorias do usuario (audio: multimodal `inlineData`)
-3. Gemini retorna JSON: titulo, categorias[], data, hora opcional, prioridade, observacoes, transcricaoUsuario (audio)
-4. Frontend mostra card de revisao — usuario edita ou salva
-5. Auto-save quando user confirma "salva"/"sim"/"pode salvar" via texto/voz E ja tinha sugestao na tela
-6. Se Gemini falhar/timeout/JSON invalido: mensagem de erro especifica + opcao manual
-7. Rate limit 429: mensagem `"Bati no limite. Espera ~Xs e tenta de novo."`
-8. IA NAO re-categoriza ao editar tarefa existente
+**Modo Liriun:**
+1. Texto OU áudio (mic)
+2. Backend .NET chama Gemini com texto + categorias do usuário (áudio: multimodal `inlineData`)
+3. Gemini retorna JSON: `titulo, categorias[], data, hora?, prioridade, observacoes, transcricaoUsuario`
+4. Front mostra card de revisão → usuário edita ou salva
+5. Auto-save quando user confirma "salva"/"sim"/"pode salvar" via texto/voz E já tinha sugestão na tela
+6. Falha Gemini/timeout/JSON inválido: mensagem específica + opção manual
+7. Rate limit 429: `"Bati no limite. Espera ~Xs e tenta de novo."`
+8. IA NÃO re-categoriza ao editar tarefa existente
 
 ### Modos de IA (one-shot vs interativo)
-Decidido em 2026-05-02. Controlado por `GeminiOptions.ModoInterativo` (default `false`).
-
-- **One-shot (default):** Liriun NAO faz perguntas. Sempre retorna `completo=true` com tarefa preenchida. Campos faltantes ficam null. Observacoes copiam o "onde/como" CRU.
-- **Interativo (reservado pro plano pago):** Liriun pode fazer ate 3 perguntas de contexto e enriquece observacoes com checklist. Codigo PRESERVADO em `GeminiService.MontarInstrucaoInterativo` — nao remover.
-
-Motivacao: economizar tokens. One-shot fecha em 1 turno com prompt ~75% menor.
+Controlado por `GeminiOptions.ModoInterativo` (default `false`).
+- **One-shot:** Liriun NÃO faz perguntas. Retorna `completo=true`. Observações copiam "onde/como" CRU.
+- **Interativo (reservado pro plano pago):** até 3 perguntas + checklist. Código preservado em `GeminiService.MontarInstrucaoInterativo`.
 
 ### Onboarding
-- Bloqueante no primeiro acesso apos cadastro
-- So pergunta categorias
-- Templates padrao: Trabalho, Faculdade, Casa, Compras, Pessoal
-- Usuario pode aceitar templates, editar ou criar do zero
+- Bloqueante no primeiro acesso pós-cadastro
+- Pergunta: nome do usuário, nome do agente ("como me chamar?"), categorias
+- Templates padrão: Trabalho, Faculdade, Casa, Compras, Pessoal
 
-### Telas (V1)
-- Landing publica em `/`
-- Login (email + senha)
-- Cadastro (email + senha + nome)
-- Onboarding (categorias)
-- Visao geral em `/app/visao-geral` — DEFAULT da area autenticada
-- Captura rapida em `/app/captura` (escolhe Manual ou Liriun)
-- Tarefas em `/app/tarefas` (lista + Quadro + Semana)
-- Concluidas em `/app/concluidas`
-- Configuracoes em `/app/configuracoes`
-- Alterar senha em `/app/configuracoes/alterar-senha`
-- Shell autenticado vive em `/app/*` com header global (`PageHeaderService`)
-
-### Padroes de UI/UX
-- Paleta: Linear-style (dark default, cinza-azulado, accent roxo). Tema claro disponivel via `ThemeService` (toggle iOS-style global)
-- Estilo: clean, denso, profissional
-- NAO usar emojis no app — usar Font Awesome (Free)
-- Responsivo desktop + mobile browser (V1 nao e app nativo)
-- data-testid obrigatorio em TODOS elementos interativos
-- Microanimacoes: Tailwind keyframes (`animate-fade-up`, `animate-scale-in`, etc) + diretiva `appStaggerIn` pra entradas em cascade
-- Modais sempre com backdrop `animate-fade-in` + card `animate-scale-in`
-- Confirmacoes destrutivas: `<app-confirm-modal>` (NUNCA `confirm()` nativo)
-- Erros HTTP: helper `extrairProblemDetails(err, fallback)` — nunca ler `err.error.mensagem`
-- Botoes submit: desabilitar SO durante carregamento, nunca em `f.invalid`
-- Form sem `required`/`pattern` HTML5 — usar `novalidate`, validar em TS
-- Botoes icone-only: `aria-label` obrigatorio
-- Header global gerenciado por `PageHeaderService`. Cada componente seta `titulo`/`iconeClasse`/`subtituloTpl`/`voltar` no constructor + `ngAfterViewInit`. Limpar em `onDestroy`.
-- Date/Time pickers usam portal pro `document.body` (escapa overflow do modal)
+### Identidade visual
+- Style guide oficial: `docs/design-ref/Liriun · Visual Reference · Print.pdf`
+- Estilo: misto **Things 3 + Granola + Arc Search + iOS 26 Liquid Glass**
+- Dark mode default, gradiente roxo→azul accent, glassmorphism sutil
+- Sem emojis. Ícones lineares finos (Lucide pro web, equivalente Flutter)
+- App e site compartilham mesma identidade visual
 
 ### Tom de voz do Liriun
-- Primeira pessoa sempre (mordomo digital)
-- Seco, discreto, competente, formal com humor sutil
-- Nunca emoji, nunca exclamacao dupla, nunca celebracao exagerada
-- Usa nome do usuario com parcimonia (aberturas, erros — nao em toda frase)
-- Presente em confirmacoes, estados vazios, erros, loading
-- Exemplos:
-  - "Anotado, Pedro. Prazo ate sexta, 23:59."
-  - "Organizei pra voce: categoria Compras, prazo ate amanha. Confere se fiz certo."
-  - "Tudo em dia, Pedro. Nada pra fazer agora."
-  - "Nao consegui entender dessa vez. Preenche manual que eu salvo."
+- Primeira pessoa sempre (mordomo digital seco e competente)
+- Nunca emoji, nunca exclamação dupla, nunca celebração exagerada
+- Nome do usuário com parcimônia (aberturas, erros — não em toda frase)
+- Exemplos: "Anotado, Pedro. Prazo até sexta, 23:59." / "Tudo em dia, Pedro." / "Não consegui entender dessa vez. Preenche manual que eu salvo."
+- **Reavaliar pós-MVP** quando definir voz final (TTS nativo no MVP, upgrade futuro se incomodar)
+
+### PARKED (não decidir agora — só pós-MVP funcional)
+- Pricing / monetização
+- Publicação App Store ($99/ano) + Google Play ($25 único)
+- Wake word ("Hey Liriun") — Fase 3
+- Lembretes SMS/ligação via Twilio — Fase 5
+- Build iOS (sócio testa quando finalizar)
+- Offline-first (V2)
+- Mascote, Pomodoro, companheiro chat (Tier 7)
 
 ---
 
-## V1 — Implementado ✅
+## V1 — Implementado ✅ (Angular + .NET, ainda no ar)
+
+> Esse foi o produto pré-pivô. Funcionalidade segue funcional. Site Next.js novo vai cobrir tudo isso e substituir.
 
 **Auth & Onboarding**
-- ✅ Cadastro/login com JWT + hash
+- ✅ Cadastro/login com JWT + hash BCrypt
 - ✅ Onboarding bloqueante de categorias
 
 **Captura**
 - ✅ Modo Manual (form completo)
 - ✅ Modo Liriun (texto)
-- ✅ Modo Liriun por audio (Gemini multimodal — adicionado em 2026-05-02 a pedido do user, originalmente V2)
-  - Waveform AnalyserNode durante gravacao
+- ✅ Modo Liriun por áudio (Gemini multimodal)
+  - Waveform AnalyserNode durante gravação
   - Preview/playback antes de enviar
   - Auto-stop em 60s
-  - Atalho `Ctrl+Espaco` toggle gravacao
-- ✅ Auto-save quando user confirma sugestao
+  - Atalho `Ctrl+Espaço` toggle gravação
+- ✅ Auto-save quando user confirma sugestão
 - ✅ Quick-reply chips ("Salva", "Muda data", etc)
-- ✅ Persistencia rascunho/conversa em localStorage (TTL 1h)
-- ✅ Continuar conversa pos-save (Liriun pergunta proxima)
+- ✅ Persistência rascunho/conversa em localStorage (TTL 1h)
+- ✅ Continuar conversa pós-save
 
 **Tarefas**
-- ✅ 3 visualizacoes: Lista, Quadro (Kanban), Semana (calendario Seg-Dom com hora atual)
+- ✅ 3 visualizações: Lista, Quadro (Kanban), Semana (Seg-Dom com hora atual)
 - ✅ Atrasadas em destaque
 - ✅ Filtros (status, prioridade, categoria) em dropdown popover
-- ✅ Categorias com bloqueio de exclusao
+- ✅ Categorias com bloqueio de exclusão
 - ✅ Status atrasada respeita fuso BRT
-- ✅ Reabrir tarefa concluida (originalmente excluida da V1, adicionado por necessidade UX)
+- ✅ Reabrir tarefa concluída
 - ✅ Detalhe modal + edit unificado
-- ✅ Concluidas com filtro por periodo
+- ✅ Concluídas com filtro por período
 
-**Visao geral (NEW V1)**
-- ✅ Dashboard home: 4 stat cards, gráfico atividade semana (barras), donut categorias, agenda do dia (timeline com linha "agora"), pendentes por prioridade, listas pra hoje + feitas semana
-- ✅ Saudacao dinamica com nome + foto
+**Visão geral**
+- ✅ Dashboard home: 4 stat cards, gráfico atividade semana, donut categorias, agenda do dia (timeline com linha "agora"), pendentes por prioridade
 
-**UI/UX**
-- ✅ Tema claro/escuro togglavel (originalmente V2 — adicionado por demanda)
-- ✅ Toggle de tema iOS-style (componente shared)
+**UI/UX V1 (Angular)**
+- ✅ Tema claro/escuro togglável (`ThemeService`)
 - ✅ Sidebar collapsible
 - ✅ Header global via `PageHeaderService`
-- ✅ Microanimacoes (entrada cascade, hover lift, modais scale-in)
-- ✅ Date/Time pickers customizados (portal pro body, evita clip de modal)
-- ✅ Toast verde de sucesso ao salvar tarefa
-- ✅ Logo correto (`/logocorreta.png`)
+- ✅ Microanimações Tailwind keyframes
+- ✅ Date/Time pickers customizados (portal pro body)
+- ✅ Confirmações destrutivas: `<app-confirm-modal>` (NUNCA `confirm()` nativo)
+- ✅ Erros HTTP: helper `extrairProblemDetails(err, fallback)`
 
 **Backend**
 - ✅ Clean Architecture (Core/Application/Infrastructure/Api) sem violations
 - ✅ Result<T> + ProblemDetails RFC 7807
 - ✅ FluentValidation
-- ✅ Migrations EF Core aplicadas no Supabase
-- ✅ Rate limit 429 do Gemini tratado com mensagem especifica
+- ✅ Migrations EF Core aplicadas no Supabase V1
+- ✅ Rate limit 429 do Gemini tratado
 
 **Rebrand Jarvis → Liriun (2026-05-03)**
-- ✅ Namespaces `Liriun.{Core,Application,Infrastructure,Api}` + assemblies/csproj renomeados
+- ✅ Namespaces `Liriun.{Core,Application,Infrastructure,Api}`
 - ✅ `LiriunDbContext`, `ConnectionStrings:Liriun`
-- ✅ JWT issuer `liriun-api` / audience `liriun-app` (appsettings + user-secrets)
-- ✅ Contract `papel: 'liriun'` (`PapelConversa.Liriun`, validator, use case, mensagens)
+- ✅ JWT issuer `liriun-api` / audience `liriun-app`
+- ✅ Contract `papel: 'liriun'` (`PapelConversa.Liriun`)
 - ✅ ProblemDetails Type `https://liriun-api/erros/...`
-- ✅ Frontend: `liriun.token`/`liriun.user` localStorage, `PapelMensagem = 'liriun'`, `environment.prod.apiUrl`
-- ✅ Solution renomeada `Liriun.slnx`, http file `Liriun.Api.http`
+- ✅ Frontend Angular: `liriun.token`/`liriun.user` localStorage, `PapelMensagem = 'liriun'`
+- ✅ Solution `Liriun.slnx`, http file `Liriun.Api.http`
 
 ---
 
-## V2 — Pendente / Backlog 📋
+## Próxima etapa — produto novo (Fase 1 MVP)
 
-**Pre-V1 (deve entrar antes do demo PI):**
-- 🔴 Mover CORS allowed origins pra config (atualmente hardcoded `localhost:4200`)
-- 🔴 `environment.prod.ts` apiUrl ainda placeholder (`api.liriun.app` nao existe — apontar pro deploy real antes de ir pra producao)
+Detalhes em `docs/CONTEXTO_APP.md` seção 4. Resumo das 3 frentes paralelas:
 
-**Features V2:**
-- App mobile nativo (Expo lab existe em `/front2`)
-- Notificacoes push/email (prazo se aproximando, atrasada)
-- Recorrencia de tarefas
-- Captura via Telegram/WhatsApp
-- Recuperacao de senha (envio email)
-- Reset de senha
-- Confirmacao de email
-- Busca textual
-- Subtarefas / checklist
-- Anexos (links, imagens)
-- Export JSON/CSV
-- PWA com modo offline
-- Modo "captura instantanea" (sem revisao)
-- Streaming de resposta Gemini (SSE)
-- Historico de conversas persistido em DB (sidebar tipo ChatGPT)
-- FFmpeg conversion webm → ogg (audio compat 100%)
-- Gemini 2.5-flash com retry-after exponential backoff
-- VAD (auto-stop quando user para de falar)
-- Hold-to-record (paradigma WhatsApp puro)
-- IA cria categoria nova automaticamente
-- Re-categorizacao automatica ao editar
-- Metas pessoais / metricas de produtividade
-- Insights / analise pessoal
-- Templates de anotacao
-- Pesquisa semantica (embeddings)
-- Lembretes geolocalizacao
-- Tema personalizavel pelo user (paleta custom)
-- Plano pago: mascote, Pomodoro, minigames, Liriun companheiro
+### Backend .NET (reaproveita 90% do V1)
+- Atualizar `ConnectionStrings:Liriun` pra Supabase NOVO (não V1)
+- Rodar migrations EF Core no banco novo
+- OpenAPI/Swagger detalhado pra codegen
+- CORS pra `app.liriun.com` + `liriun.com` + dev hosts
+- Adicionar Google + Apple Sign-In via OAuth
 
-**Excluido permanentemente da V1 (mantido em V2 backlog):**
-- Notificacoes push/email
-- App mobile nativo
-- Modo dark/light togglavel ✅ — JA ENTROU NA V1
-- Audio/voz ✅ — JA ENTROU NA V1
-- Reabrir concluida ✅ — JA ENTROU NA V1
-- Visao geral ✅ — JA ENTROU NA V1
+### App Flutter (do zero)
+- `flutter create liriun_app` com estrutura feature-first
+- Riverpod, dio, client gerado do OpenAPI
+- Telas: login, cadastro, onboarding, conversa com agente, tarefas, configurações
+- STT/TTS nativos
+- Firebase Cloud Messaging
+
+### Site Next.js (substitui Angular V1)
+- `create-next-app` + Tailwind + shadcn/ui
+- Tokens do design system (`docs/design-ref/`)
+- Mesmas funcionalidades do V1 (login, tarefas, agente, config)
+- Client TypeScript gerado do OpenAPI
+- Deploy Vercel
+
+## Roadmap de fases (alto nível)
+
+| Fase | Foco |
+|---|---|
+| **Fase 1 (MVP)** | Backend + site novo + app Flutter funcionais |
+| Fase 2 | Acesso rápido (widgets, atalhos, push) |
+| Fase 3 | Wake word + always listening |
+| Fase 4 | Integração com calendários (Google, Apple, Outlook) |
+| Fase 5 | Lembretes avançados (SMS + ligação via Twilio) |
+| Fase 6 | Lojas + monetização |
+| Fase 7+ | Mascote, Pomodoro, companheiro chat (Tier 7) |
 
 ---
-
-## Plano
-- Plano agressivo: Dia 1 (backend + banco + deploy back) / Dia 2 (frontend + deploy front). Ver `docs/DESENVOLVIMENTO.md` pro plano completo em fases.
 
 ## Arquivos do projeto
-- `docs/PROJETO.md` - Documento principal completo
-- `docs/ENTREVISTA.md` - Descoberta de produto consolidada (fonte autoritativa de decisoes)
-- `docs/DESENVOLVIMENTO.md` - Plano de desenvolvimento em fases com checklist
-- `backend/ARCHITECTURE.md` - Arquitetura do backend (Clean Architecture, Result<T>, ProblemDetails, FluentValidation, Read/Write repos)
-- `docs/FUTURO.md` - Visão de longo prazo / ideias futuras
-- `docs/CHECKLIST_PRODUCAO.md` - Itens a varrer antes de abrir cadastro publico
-- `docs/banco/MIGRATIONS.md` - Tutorial de comandos `dotnet ef` pra migrations
-- `CLAUDE.md` - Este arquivo, contexto resumido pra Claude (fica na raiz pro Claude Code carregar automaticamente)
+
+### Ativos (raiz)
+- `CLAUDE.md` — este arquivo (resumo pra Claude Code)
+- `README.md` — README operacional do repo
+
+### Ativos (docs/)
+- `CONTEXTO_APP.md` — **fonte autoritativa de arquitetura e decisões técnicas**
+- `ESTRATEGIA_LIRIUN.md` — posicionamento, concorrência, pilares
+- `IDEIAS_FUTURO.md` — backlog priorizado por tier
+- `PLANO_NEGOCIO_TEMPLATE.md` — PARKED até MVP
+- `design-ref/` — style guide oficial (PDF + ícones + glyph)
+
+### Arquivados (docs/docs-arquivados/)
+Documentos do V1 web mantidos como referência histórica:
+- `ARCHITECTURE.md`, `CHECKLIST_PRODUCAO.md`, `CORRECOES_V1.md`, `DEPLOY.md`
+- `DESENVOLVIMENTO.md`, `ENTREVISTA.md`, `PROJETO.md`, `banco/MIGRATIONS.md`
+
+### Documentos legais (docs/termos-de-uso/)
+- `TERMOS_USO.md`, `POLITICA_PRIVACIDADE.md`
+
+### Código
+- `backend/` — .NET (PRINCIPAL, evoluindo)
+- `front/` — Angular V1 (no ar até site Next.js cobrir tudo, depois arquiva)
+- `app/` — Flutter mobile (pasta vazia, a popular)
+- `site/` — Next.js (a criar) [pasta ainda não existe]

@@ -1,6 +1,25 @@
 # Liriun
 
-Organizador pessoal de tarefas com IA. Modo Manual (preenche o form) ou Modo Liriun (texto livre / áudio → Gemini extrai a tarefa).
+Organizador pessoal de tarefas com agente de voz.
+
+## Direção atual (2026-05-09)
+
+O projeto está em **transição** de produto único (V1 web) para **multi-cliente com agente de voz**:
+
+- **V1 web (Angular + .NET)** — funcional, no ar, segue rodando até o site novo cobrir tudo. As instruções de setup deste README cobrem o V1.
+- **Produto novo** — backend .NET continua como **backend principal centralizado**, atendendo:
+  - **Site Next.js** (substitui Angular V1 com mesma funcionalidade, modernizado)
+  - **App Flutter mobile** (Android + iOS, com agente de voz como diferencial)
+  - **Plataformas futuras** (smartwatch, Alexa skill, browser extension, etc) — todas consomem a mesma API REST
+
+```
+Web (Next.js)   ─┐
+App Flutter     ─┼─→ Backend .NET ─→ Supabase Postgres
+Plataformas fut ─┘   (REST + JWT + Gemini)
+```
+
+> **Fonte autoritativa de decisões técnicas e arquitetura:** [`docs/CONTEXTO_APP.md`](docs/CONTEXTO_APP.md).
+> **Style guide visual:** [`docs/design-ref/Liriun · Visual Reference · Print.pdf`](docs/design-ref/).
 
 ## Sumário
 
@@ -8,7 +27,7 @@ Organizador pessoal de tarefas com IA. Modo Manual (preenche o form) ou Modo Lir
 - [Estrutura do repositório](#estrutura-do-repositório)
 - [Pré-requisitos](#pré-requisitos)
 - [Configuração — backend](#configuração--backend)
-- [Configuração — frontend](#configuração--frontend)
+- [Configuração — frontend (Angular V1)](#configuração--frontend-angular-v1)
 - [Como rodar (passo a passo)](#como-rodar-passo-a-passo)
 - [Migrations](#migrations)
 - [Testes](#testes)
@@ -18,48 +37,71 @@ Organizador pessoal de tarefas com IA. Modo Manual (preenche o form) ou Modo Lir
 
 ## Stack
 
+### Backend (PRINCIPAL — evolui pra produto novo)
 | Camada | Tecnologia |
 |--------|------------|
-| Backend | .NET 10 + ASP.NET Core Web API + Clean Architecture (Core, Application, Infrastructure, Api) |
+| API | .NET 10 + ASP.NET Core Web API + Clean Architecture (Core, Application, Infrastructure, Api) |
 | ORM | Entity Framework Core 9 + Npgsql |
-| Banco | PostgreSQL (Supabase em dev/prod) |
-| Auth | JWT Bearer (HS256) + BCrypt pro hash de senha |
+| Banco | PostgreSQL no Supabase (em V1) / projeto Supabase NOVO no produto novo |
+| Auth | JWT Bearer (HS256) + BCrypt + Google/Apple Sign-In (a adicionar) |
 | IA | Google Gemini API (`gemini-2.0-flash` por padrão) |
 | Validação | FluentValidation |
 | Testes | xUnit + FluentAssertions + Moq |
-| Frontend | Angular 18 (standalone components, Signals) |
+
+### Frontend Angular V1 (legado, segue rodando)
+| Camada | Tecnologia |
+|--------|------------|
+| Framework | Angular 18 (standalone components, Signals) |
 | UI | PrimeNG 18 + TailwindCSS 3 + Font Awesome Free |
-| Deploy | Vercel (front) + Railway (back) — a confirmar |
+
+### Produto novo (a construir)
+| Camada | Tecnologia |
+|--------|------------|
+| Site web | Next.js 15 (App Router) + Tailwind v4 + shadcn/ui + Framer Motion + React Query |
+| App mobile | Flutter + Riverpod + feature-first + dio |
+| Codegen client | OpenAPI Generator (TypeScript pro Next, Dart pro Flutter) |
+| STT/TTS | Nativo do dispositivo |
+| Push | Firebase Cloud Messaging |
+
+### Hosting (a definir)
+- Backend: Oracle Cloud Free / Railway / VPS
+- Site: Vercel
+- Banco: Supabase Postgres
 
 ## Estrutura do repositório
 
 ```
 Liriun/
-├── backend/
-│   ├── ARCHITECTURE.md
+├── backend/                            # .NET 10 — backend principal
 │   ├── src/
-│   │   ├── Liriun.Core/             # Entidades, Enums, Errors, Result<T>, interfaces de repo
-│   │   ├── Liriun.Application/      # UseCases, InputModels, ViewModels, Validators, IoC
-│   │   ├── Liriun.Infrastructure/   # EF Core, Repos, Auth (JWT/BCrypt), GeminiService, Migrations
-│   │   └── Liriun.Api/              # Controllers, Program.cs, Middlewares, appsettings
+│   │   ├── Liriun.Core/                # Entidades, Enums, Errors, Result<T>, interfaces de repo
+│   │   ├── Liriun.Application/         # UseCases, InputModels, ViewModels, Validators, IoC
+│   │   ├── Liriun.Infrastructure/      # EF Core, Repos, Auth (JWT/BCrypt), GeminiService, Migrations
+│   │   └── Liriun.Api/                 # Controllers, Program.cs, Middlewares, appsettings
 │   └── tests/
 │       ├── Liriun.Core.Tests/
 │       ├── Liriun.Application.Tests/
 │       └── Liriun.Api.Tests/
-├── front/                           # Angular 18
+├── front/                              # Angular V1 (segue rodando até site Next.js cobrir)
 │   ├── src/app/
-│   │   ├── core/                    # auth, http, api services
-│   │   ├── features/                # landing, auth, onboarding, captura, tarefas, concluidas, configuracoes
-│   │   ├── layout/                  # shell autenticado
-│   │   └── shared/                  # componentes reusáveis
-│   └── src/environments/            # environment.ts (dev) / environment.prod.ts
+│   │   ├── core/                       # auth, http, api services
+│   │   ├── features/                   # landing, auth, onboarding, captura, tarefas, concluidas, configuracoes
+│   │   ├── layout/                     # shell autenticado
+│   │   └── shared/                     # componentes reusáveis
+│   └── src/environments/               # environment.ts (dev) / environment.prod.ts
+├── app/                                # Flutter mobile (vazia, a popular — Riverpod + feature-first)
+├── site/                               # Next.js (ainda não criado)
 ├── docs/
-│   ├── PROJETO.md / ENTREVISTA.md / DESENVOLVIMENTO.md / FUTURO.md
-│   ├── CHECKLIST_PRODUCAO.md
-│   └── banco/MIGRATIONS.md
-├── CLAUDE.md                        # contexto resumido pra Claude Code
-├── .env.example                     # template de variáveis (copie pra .env.local)
-└── .env.local                       # valores reais (gitignored)
+│   ├── CONTEXTO_APP.md                 # FONTE AUTORITATIVA — arquitetura e decisões
+│   ├── ESTRATEGIA_LIRIUN.md            # posicionamento, concorrência
+│   ├── IDEIAS_FUTURO.md                # backlog priorizado por tier
+│   ├── PLANO_NEGOCIO_TEMPLATE.md       # PARKED até MVP
+│   ├── design-ref/                     # style guide visual oficial (PDF + ícones)
+│   ├── docs-arquivados/                # docs históricos do V1 (ARCHITECTURE, ENTREVISTA, etc)
+│   └── termos-de-uso/                  # TERMOS_USO.md, POLITICA_PRIVACIDADE.md
+├── CLAUDE.md                           # contexto resumido pra Claude Code
+├── .env.example                        # template de variáveis (copie pra .env.local)
+└── .env.local                          # valores reais (gitignored)
 ```
 
 ## Pré-requisitos
@@ -68,11 +110,18 @@ Liriun/
 |------------|--------|------------|
 | .NET SDK | 10.0+ | https://dotnet.microsoft.com/download |
 | Node.js | 20.x LTS+ | https://nodejs.org |
-| Angular CLI | 18.x | `npm install -g @angular/cli@18` (opcional — também roda via `npx`) |
+| Angular CLI | 18.x | `npm install -g @angular/cli@18` (V1) |
 | EF Core CLI | 9.0+ | `dotnet tool install --global dotnet-ef` |
 | Conta Supabase | — | https://supabase.com (free tier serve) |
 | Gemini API key | — | https://aistudio.google.com/apikey (free tier) |
 | Git | — | — |
+
+### Para o produto novo (a instalar quando começar)
+| Ferramenta | Versão | Observação |
+|------------|--------|------------|
+| Flutter SDK | 3.x+ | https://flutter.dev/docs/get-started/install |
+| Android Studio | — | pra emulador Android e debug |
+| Xcode | — | pra build iOS (sócio testa em Mac) |
 
 ## Configuração — backend
 
@@ -130,11 +179,13 @@ A connection string aponta direto pro PostgreSQL do Supabase. Pega em **Project 
 Host=db.<ref>.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=<senha>;SSL Mode=Require;Trust Server Certificate=true
 ```
 
+> **Produto novo:** vai usar projeto Supabase **NOVO** (separado do V1). Free tier permite 2 projetos por organização.
+
 ### Gemini API key
 
 Cria em https://aistudio.google.com/apikey. Free tier basta pra dev (rate limit ~15 req/min, ~1500 req/dia em `gemini-2.0-flash`). Quando estoura `429`, o backend devolve `IaErrors.LimiteExcedido()` com retry hint.
 
-## Configuração — frontend
+## Configuração — frontend (Angular V1)
 
 Edita `front/src/environments/environment.ts` se a API local rodar em outra porta:
 
@@ -145,16 +196,11 @@ export const environment = {
 };
 ```
 
-Pra build de produção, ajusta `front/src/environments/environment.prod.ts` com a URL pública da API:
-
-```ts
-export const environment = {
-  production: true,
-  apiUrl: 'https://api.liriun.app',
-};
-```
+Pra build de produção, ajusta `front/src/environments/environment.prod.ts` com a URL pública da API.
 
 CORS no backend libera só `http://localhost:4200` em dev (`Program.cs`). Se mudar a porta do front, atualiza lá também.
+
+> **Quando o site Next.js novo for criado**, CORS precisa liberar também `http://localhost:3000` (dev Next) + `http://localhost:8080` (dev Flutter Web) + os domínios de produção.
 
 ## Como rodar (passo a passo)
 
@@ -167,7 +213,7 @@ cd Liriun
 # Backend: restore
 dotnet restore backend
 
-# Frontend: instala pacotes
+# Frontend V1 (Angular): instala pacotes
 cd front
 npm install
 cd ..
@@ -194,7 +240,7 @@ dotnet run
 
 Abre Swagger automático em http://localhost:5108/swagger.
 
-### 5. Sobe frontend
+### 5. Sobe frontend Angular V1
 
 Em outro terminal:
 
@@ -224,13 +270,6 @@ dotnet ef database update <MigrationAnterior> --startup-project ../Liriun.Api
 dotnet ef migrations remove --startup-project ../Liriun.Api
 ```
 
-Migrations existentes:
-
-- `20260421210155_InitialCreate`
-- `20260430054400_RemoverPrazoEHorarioOpcional`
-- `20260501235308_AdicionarFotoPerfilUsuario`
-- `20260502033421_TarefaDataPrazoObrigatoriaEObservacoes`
-
 ## Testes
 
 ```powershell
@@ -249,10 +288,12 @@ Testes da `Application` mockam `IGeminiService` e repos via Moq, não precisam d
 
 | Serviço | URL |
 |---------|-----|
-| Frontend | http://localhost:4200 |
+| Frontend V1 (Angular) | http://localhost:4200 |
 | Backend (HTTP) | http://localhost:5108 |
 | Backend (HTTPS) | https://localhost:7208 |
 | Swagger | http://localhost:5108/swagger |
+| Site Next.js (novo, futuro) | http://localhost:3000 |
+| Flutter Web (novo, futuro) | http://localhost:8080 |
 
 Pra autenticar no Swagger: `POST /auth/cadastro` ou `POST /auth/login`, copia o `token` da resposta, clica em **Authorize** e cola **só o JWT** (sem o prefixo `Bearer`).
 
@@ -276,16 +317,19 @@ Quando o plano pago for implementado, a leitura do flag migra de config global p
 
 ## Documentação adicional
 
-Tudo em `docs/`:
+### Ativos (foco no produto novo)
+- **[`docs/CONTEXTO_APP.md`](docs/CONTEXTO_APP.md)** — **fonte autoritativa** de arquitetura e decisões técnicas
+- **[`docs/ESTRATEGIA_LIRIUN.md`](docs/ESTRATEGIA_LIRIUN.md)** — posicionamento, pilares, concorrência
+- **[`docs/IDEIAS_FUTURO.md`](docs/IDEIAS_FUTURO.md)** — backlog priorizado por tier
+- **[`docs/PLANO_NEGOCIO_TEMPLATE.md`](docs/PLANO_NEGOCIO_TEMPLATE.md)** — PARKED até MVP
+- **[`docs/design-ref/`](docs/design-ref/)** — style guide visual oficial (PDF + ícones)
+- **[`CLAUDE.md`](CLAUDE.md)** — contexto resumido pra Claude Code
 
-- **`PROJETO.md`** — documento principal completo
-- **`ENTREVISTA.md`** — descoberta de produto consolidada (fonte autoritativa de decisões de produto)
-- **`DESENVOLVIMENTO.md`** — plano de desenvolvimento em fases com checklist
-- **`FUTURO.md`** — visão de longo prazo / backlog pós-V1
-- **`CHECKLIST_PRODUCAO.md`** — itens a varrer antes de abrir cadastro público
-- **`banco/MIGRATIONS.md`** — comandos `dotnet ef` pra criar/aplicar/reverter migrations
+### Arquivados (referência histórica V1 web)
+Em `docs/docs-arquivados/`: `ARCHITECTURE.md`, `CHECKLIST_PRODUCAO.md`, `CORRECOES_V1.md`, `DEPLOY.md`, `DESENVOLVIMENTO.md`, `ENTREVISTA.md`, `PROJETO.md`, `banco/MIGRATIONS.md`.
 
-E **`backend/ARCHITECTURE.md`** detalha a Clean Architecture (Result<T>, ProblemDetails, FluentValidation, padrão Read/Write repos).
+### Documentos legais
+Em `docs/termos-de-uso/`: `TERMOS_USO.md`, `POLITICA_PRIVACIDADE.md`.
 
 ## Troubleshooting
 
