@@ -34,7 +34,7 @@ O agente funciona como **interceptador**: usuario fala -> agente interpreta -> c
 | App (mobile + web) | **Flutter** (Dart) | Um codebase pra Android + iOS + Web. Melhor performance pra audio/ML on-device (Dart FFI), UI consistente cross-platform, 46% market share 2026, SDK Picovoice disponivel |
 | Backend/Auth | **Supabase** (Auth + PostgreSQL + Realtime + Storage) | Serverless, ja usam o DB, free tier generoso, escala automaticamente. Substitui o backend .NET por completo |
 | API/Logica | **Supabase Edge Functions** (TypeScript/Deno) | Sem servidor pra manter, serverless, chamadas a Gemini e logica de negocios |
-| IA/NLU | **Google Gemini API** | Ja usam, funciona bem pra extrair tarefas de texto natural |
+| IA/NLU | **Google Gemini API (Flash-Lite pago)** | Mais barato do mercado pra extracao ($0.10/1M input tokens). ~$1.30/mes com 1000 usuarios. Ativar billing no AI Studio, mesma API key |
 | STT (Speech-to-Text) | **Nativo do dispositivo** (Android/iOS built-in) | Gratis, funciona offline, baixa latencia. Upgrade futuro se necessario |
 | TTS (Text-to-Speech) | **Nativo do dispositivo** (flutter_tts) | Gratis, funciona offline. Upgrade futuro pra Fish Audio ou Speechmatics se quiserem voz premium |
 | Wake word | **Picovoice Porcupine** (comecar) ou **openWakeWord** (alternativa open source) | On-device, treina wake word por texto em segundos |
@@ -238,6 +238,17 @@ O agente funciona como **interceptador**: usuario fala -> agente interpreta -> c
 ### TTS
 - Nativo do dispositivo: gratis, funciona offline, qualidade boa (nao incrivel)
 - Upgrade futuro: Fish Audio S2 (~$15/1M chars) ou Speechmatics ($0.011/1K chars)
+
+### Gemini API — Custos reais estimados
+- Free tier: limitado a Flash models, 5-15 RPM, 100-1000 RPD, precisa renovar diariamente
+- **Plano pago (Flash-Lite): $0.10 input / $0.40 output por 1M tokens**
+- Cada request do Liriun usa ~500 tokens input + ~200 output
+- Custo mensal estimado:
+  - Teste (50 req/dia): ~$0.01/mes
+  - 100 usuarios: ~$0.13/mes
+  - 1.000 usuarios: ~$1.30/mes
+  - 10.000 usuarios: ~$13.00/mes
+- Como ativar: Google AI Studio > Settings > Billing > adicionar cartao. Mesma API key, sem mudar codigo
 
 ---
 
