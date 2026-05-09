@@ -49,7 +49,9 @@ import { SiteFooterComponent } from '../../shared/site-footer.component';
 
           <div class="flex items-center gap-2">
             <app-locale-switcher />
-            <span class="hidden sm:inline-flex"><app-theme-toggle /></span>
+            @if (!autenticado()) {
+              <span class="hidden sm:inline-flex"><app-theme-toggle /></span>
+            }
 
           @if (autenticado()) {
             <div

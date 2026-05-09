@@ -32,7 +32,9 @@ import { LocaleService } from '../../core/locale/locale.service';
           </a>
           <div class="flex items-center gap-2">
             <app-locale-switcher />
-            <span class="hidden sm:inline-flex"><app-theme-toggle /></span>
+            @if (!autenticado()) {
+              <span class="hidden sm:inline-flex"><app-theme-toggle /></span>
+            }
             <app-user-menu />
           </div>
         </div>
@@ -107,32 +109,32 @@ import { LocaleService } from '../../core/locale/locale.service';
                     class="absolute -left-3 top-1.5 bottom-1.5 w-0.5 bg-accent rounded-r"
                   ></span>
                   <i class="fa-solid fa-microphone text-accent text-[9px] w-3"></i>
-                  <span>Falar</span>
+                  <span>{{ locale.t('nav.falar') }}</span>
                 </div>
                 <div
                   class="flex items-center gap-2 px-2 py-1 rounded text-text-dim text-[11px]"
                 >
                   <i class="fa-solid fa-house text-[9px] w-3"></i>
-                  <span>Hoje</span>
+                  <span>{{ locale.t('nav.hoje') }}</span>
                 </div>
                 <div
                   class="flex items-center gap-2 px-2 py-1 rounded text-text-dim text-[11px]"
                 >
                   <i class="fa-solid fa-list-check text-[9px] w-3"></i>
-                  <span>Tarefas</span>
+                  <span>{{ locale.t('nav.tarefas') }}</span>
                 </div>
                 <div
                   class="flex items-center gap-2 px-2 py-1 rounded text-text-dim text-[11px]"
                 >
                   <i class="fa-solid fa-circle-check text-[9px] w-3"></i>
-                  <span>Histórico</span>
+                  <span>{{ locale.t('nav.atividade') }}</span>
                 </div>
               </div>
 
               <div class="flex-1 flex flex-col overflow-hidden">
                 <div class="flex items-center gap-2 px-3 py-2 border-b border-border">
                   <i class="fa-solid fa-microphone text-accent text-[10px]"></i>
-                  <strong class="text-text font-medium text-[10px]">Falar</strong>
+                  <strong class="text-text font-medium text-[10px]">{{ locale.t('nav.falar') }}</strong>
                 </div>
                 <div class="flex-1 px-3 py-3 flex flex-col gap-2 overflow-hidden">
                   <div class="flex justify-end">

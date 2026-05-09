@@ -6,6 +6,7 @@ import {
   OnDestroy,
   OnInit,
   computed,
+  effect,
   inject,
   signal,
   viewChild,
@@ -116,7 +117,7 @@ interface DiaResumo {
               <i class="fa-solid fa-calendar-day text-accent/70 text-[12px]"></i>
             </div>
             <div class="text-3xl font-semibold tabular-nums">{{ pendentesHoje() }}</div>
-            <div class="text-[11px] text-text-dim">{{ totalPendentes() }} no total</div>
+            <div class="text-[11px] text-text-dim">{{ locale.t('home.n_no_total', { n: totalPendentes() + '' }) }}</div>
           </a>
 
           <a
@@ -137,9 +138,9 @@ interface DiaResumo {
             >{{ atrasadas() }}</div>
             <div class="text-[11px] text-text-dim">
               @if (atrasadas() === 0) {
-                Tudo no prazo
+                {{ locale.t('home.tudo_no_prazo') }}
               } @else {
-                Resolve antes que vire bola de neve
+                {{ locale.t('home.bola_neve') }}
               }
             </div>
           </a>
@@ -662,6 +663,13 @@ export class VisaoGeralComponent implements OnInit, OnDestroy, AfterViewInit {
       titulo: this.locale.t('home.titulo'),
       iconeClasse: 'fa-solid fa-house text-accent text-[12px]',
     });
+    effect(() => {
+      const _ = this.locale.locale();
+      this.pageHeader.set({
+        titulo: this.locale.t('home.titulo'),
+        iconeClasse: 'fa-solid fa-house text-accent text-[12px]',
+      });
+    });
   }
 
   readonly nomeUsuario = signal(this.storage.usuario()?.nome ?? '');
@@ -707,7 +715,16 @@ export class VisaoGeralComponent implements OnInit, OnDestroy, AfterViewInit {
   );
 
   readonly diasSemana = computed<DiaResumo[]>(() => {
-    const labels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+    const _ = this.locale.locale();
+    const labels = [
+      this.locale.t('dia.seg'),
+      this.locale.t('dia.ter'),
+      this.locale.t('dia.qua'),
+      this.locale.t('dia.qui'),
+      this.locale.t('dia.sex'),
+      this.locale.t('dia.sab'),
+      this.locale.t('dia.dom'),
+    ];
     const inicio = this.segundaDaSemana(new Date());
     const dias: DiaResumo[] = [];
     for (let i = 0; i < 7; i++) {

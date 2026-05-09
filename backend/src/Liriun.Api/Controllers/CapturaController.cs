@@ -83,7 +83,7 @@ public class CapturaController : ControllerBase
             bytes = ms.ToArray();
         }
 
-        Result<ConversaCapturaViewModel> result = await useCase.ExecuteComAudioAsync(historico, bytes, mime, ct);
+        Result<ConversaCapturaViewModel> result = await useCase.ExecuteComAudioAsync(historico, bytes, mime, form.Idioma, ct);
         return result.ToActionResult(view => Ok(view));
     }
 
@@ -91,6 +91,7 @@ public class CapturaController : ControllerBase
     {
         public IFormFile? Audio { get; set; }
         public string? Historico { get; set; }
+        public string? Idioma { get; set; }
     }
 
     private static string ExtrairMimeBase(string? contentType)

@@ -13,6 +13,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CategoriasService, Categoria } from '../../core/api/categorias.service';
+import { LocaleService } from '../../core/locale/locale.service';
 import { DatePickerComponent } from '../../shared/date-picker.component';
 import { TimePickerComponent } from '../../shared/time-picker.component';
 import {
@@ -56,17 +57,17 @@ export interface SugestaoTarefa {
           </div>
           <div class="flex-1 min-w-0">
             <div id="tarefa-form-title" class="text-[15px] font-semibold leading-tight">
-              {{ tarefa ? 'Editar tarefa' : 'Nova tarefa' }}
+              {{ tarefa ? locale.t('form.editar_tarefa') : locale.t('form.nova_tarefa') }}
             </div>
             <div class="text-[11px] text-text-subtle">
-              {{ tarefa ? 'Ajuste os campos abaixo.' : 'Preencha o que importa. Campos opcionais ficam pra depois.' }}
+              {{ tarefa ? locale.t('form.editar_subtitulo') : locale.t('form.criar_subtitulo') }}
             </div>
           </div>
           <button
             type="button"
             class="w-8 h-8 grid place-items-center text-text-subtle hover:text-text hover:bg-bg-input rounded transition-colors"
             data-testid="tarefa-form-close"
-            aria-label="Fechar"
+            [attr.aria-label]="locale.t('form.fechar')"
             (click)="fechar()"
           >
             <i class="fa-solid fa-xmark text-[14px]"></i>
@@ -81,7 +82,7 @@ export interface SugestaoTarefa {
               name="nome"
               type="text"
               class="input-base !text-[16px] !py-3 !font-medium"
-              placeholder="O que precisa ser feito"
+              [placeholder]="locale.t('form.nome_hero_placeholder')"
               data-testid="tarefa-form-nome"
               maxlength="200"
               [(ngModel)]="nome"
@@ -96,13 +97,13 @@ export interface SugestaoTarefa {
             <div class="flex flex-col gap-2">
               <span class="text-[10px] uppercase tracking-wider text-text-subtle font-semibold flex items-center gap-1.5">
                 <i class="fa-solid fa-flag text-[9px]"></i>
-                Prioridade
+                {{ locale.t('form.prioridade_label') }}
               </span>
               <div
                 class="flex flex-wrap gap-1.5"
                 data-testid="tarefa-form-prioridade"
                 role="radiogroup"
-                aria-label="Prioridade"
+                [attr.aria-label]="locale.t('form.prioridade_label')"
               >
                 @for (p of opcoesPrioridade; track p.valor) {
                   <button
@@ -120,7 +121,7 @@ export interface SugestaoTarefa {
                       [style.background-color]="p.cor"
                       aria-hidden="true"
                     ></span>
-                    {{ p.rotulo }}
+                    {{ locale.t(p.chave) }}
                   </button>
                 }
               </div>
@@ -129,20 +130,20 @@ export interface SugestaoTarefa {
             <div class="flex flex-col gap-2 pt-3 border-t border-border/60">
               <span class="text-[10px] uppercase tracking-wider text-text-subtle font-semibold flex items-center gap-1.5">
                 <i class="fa-solid fa-tag text-[9px]"></i>
-                Categorias
+                {{ locale.t('form.categorias_label') }}
               </span>
               @if (carregandoCategorias()) {
                 <span class="text-xs text-text-subtle" data-testid="tarefa-form-cat-loading">
-                  Carregando categorias...
+                  {{ locale.t('form.categorias_carregando') }}
                 </span>
               } @else if (erroCarregarCategorias()) {
                 <div class="flex items-center justify-between gap-2 text-xs text-danger" data-testid="tarefa-form-cat-erro">
-                  <span>Não consegui carregar suas categorias.</span>
+                  <span>{{ locale.t('form.categorias_erro') }}</span>
                   <button
                     type="button"
                     class="text-text-dim hover:text-text underline underline-offset-2"
                     (click)="carregarCategorias()"
-                  >Tentar de novo</button>
+                  >{{ locale.t('form.categorias_tentar_novo') }}</button>
                 </div>
               } @else {
                 <div class="flex flex-wrap gap-1.5" data-testid="tarefa-form-categorias">
@@ -159,7 +160,7 @@ export interface SugestaoTarefa {
                       (click)="toggleCategoria(cat.id)"
                     >{{ cat.nome }}</button>
                   } @empty {
-                    <span class="text-xs text-text-subtle italic">Nenhuma categoria cadastrada. Crie em Configurações.</span>
+                    <span class="text-xs text-text-subtle italic">{{ locale.t('form.categorias_vazio') }}</span>
                   }
                 </div>
               }
@@ -170,16 +171,16 @@ export interface SugestaoTarefa {
           <section class="flex flex-col gap-2 bg-bg-surface/30 border border-border rounded-lg p-3.5">
             <span class="text-[10px] uppercase tracking-wider text-text-subtle font-semibold flex items-center gap-1.5">
               <i class="fa-regular fa-calendar text-[9px]"></i>
-              Quando
+              {{ locale.t('form.quando') }}
             </span>
             <div class="grid grid-cols-1 sm:grid-cols-[1fr_140px] gap-2.5">
               <div class="flex flex-col gap-1">
-                <span class="text-[10px] text-text-subtle">Data</span>
+                <span class="text-[10px] text-text-subtle">{{ locale.t('form.data_label') }}</span>
                 <app-date-picker
                   [valor]="data || null"
                   [min]="dataMinima"
-                  placeholder="Selecionar data"
-                  ariaLabel="Data da tarefa"
+                  [placeholder]="locale.t('form.data_picker_placeholder')"
+                  [ariaLabel]="locale.t('form.data_aria')"
                   (valorChange)="data = $event ?? ''"
                   data-testid="tarefa-form-data-picker"
                 />
@@ -188,12 +189,12 @@ export interface SugestaoTarefa {
                 }
               </div>
               <div class="flex flex-col gap-1">
-                <span class="text-[10px] text-text-subtle">Hora <span class="opacity-70">(opcional)</span></span>
+                <span class="text-[10px] text-text-subtle">{{ locale.t('form.hora_label') }} <span class="opacity-70">{{ locale.t('form.hora_opcional') }}</span></span>
                 <app-time-picker
                   [valor]="hora || null"
                   [disabled]="!data"
                   placeholder="--:--"
-                  ariaLabel="Horário da tarefa"
+                  [ariaLabel]="locale.t('form.hora_aria')"
                   (valorChange)="hora = $event ?? ''"
                   data-testid="tarefa-form-hora-picker"
                 />
@@ -205,9 +206,9 @@ export interface SugestaoTarefa {
           <section class="flex flex-col gap-2 bg-bg-surface/30 border border-border rounded-lg p-3.5">
             <span class="text-[10px] uppercase tracking-wider text-text-subtle font-semibold flex items-center gap-1.5">
               <i class="fa-solid fa-repeat text-[9px]"></i>
-              Recorrência
+              {{ locale.t('form.recorrencia_label') }}
             </span>
-            <div class="flex flex-wrap gap-1.5" data-testid="tarefa-form-recorrencia" role="radiogroup" aria-label="Recorrência">
+            <div class="flex flex-wrap gap-1.5" data-testid="tarefa-form-recorrencia" role="radiogroup" [attr.aria-label]="locale.t('form.recorrencia_label')">
               @for (r of opcoesRecorrencia; track r.valor) {
                 <button
                   type="button"
@@ -225,7 +226,7 @@ export interface SugestaoTarefa {
                   @if (r.valor !== 0) {
                     <i class="fa-solid fa-repeat text-[9px]" aria-hidden="true"></i>
                   }
-                  {{ r.rotulo }}
+                  {{ locale.t(r.chave) }}
                 </button>
               }
             </div>
@@ -233,7 +234,7 @@ export interface SugestaoTarefa {
             @if (recorrencia !== 0) {
               <div class="flex flex-col gap-2 mt-1 pt-3 border-t border-border/60">
                 <span class="text-[11px] text-text-dim">
-                  Por quantas {{ recorrencia === 1 ? 'semanas' : 'meses' }}?
+                  {{ recorrencia === 1 ? locale.t('form.por_quantas_semanas') : locale.t('form.por_quantos_meses') }}
                 </span>
                 <div class="flex gap-1.5" role="radiogroup">
                   @for (q of [1, 2, 3, 4]; track q) {
@@ -253,7 +254,7 @@ export interface SugestaoTarefa {
                   }
                 </div>
                 <span class="text-[11px] text-text-subtle italic">
-                  Crio {{ recorrenciaQuantidade }} {{ recorrenciaQuantidade === 1 ? 'tarefa' : 'tarefas' }} repetindo a cada {{ recorrencia === 1 ? 'semana' : 'mês' }}.
+                  {{ msgRepeticao() }}
                 </span>
               </div>
             }
@@ -264,8 +265,8 @@ export interface SugestaoTarefa {
             <div class="flex items-center justify-between">
               <span class="text-[10px] uppercase tracking-wider text-text-subtle font-semibold flex items-center gap-1.5">
                 <i class="fa-solid fa-align-left text-[9px]"></i>
-                Detalhes
-                <span class="text-text-subtle/70 normal-case font-normal">(opcional)</span>
+                {{ locale.t('form.detalhes') }}
+                <span class="text-text-subtle/70 normal-case font-normal">{{ locale.t('form.detalhes_opcional') }}</span>
               </span>
               <span
                 class="text-[10px] tabular-nums"
@@ -280,7 +281,7 @@ export interface SugestaoTarefa {
               name="observacoes"
               rows="3"
               class="input-base resize-none !text-[13px]"
-              placeholder="Detalhes, links, lembretes — o que precisar"
+              [placeholder]="locale.t('form.observacoes_placeholder')"
               [attr.maxlength]="OBS_LIMITE"
               data-testid="tarefa-form-observacoes"
               [(ngModel)]="observacoes"
@@ -302,7 +303,7 @@ export interface SugestaoTarefa {
               data-testid="tarefa-form-cancelar"
               (click)="fechar()"
               [disabled]="salvando()"
-            >Cancelar</button>
+            >{{ locale.t('form.cancelar') }}</button>
             <button
               type="submit"
               class="btn-primary flex items-center gap-1.5"
@@ -311,10 +312,10 @@ export interface SugestaoTarefa {
             >
               @if (salvando()) {
                 <i class="fa-solid fa-circle-notch fa-spin text-[10px]"></i>
-                Salvando...
+                {{ locale.t('form.salvando') }}
               } @else {
                 <i class="fa-solid fa-check text-[10px]"></i>
-                {{ tarefa ? 'Salvar' : 'Criar tarefa' }}
+                {{ tarefa ? locale.t('form.salvar') : locale.t('form.criar_tarefa') }}
               }
             </button>
           </div>
@@ -357,20 +358,30 @@ export interface SugestaoTarefa {
 export class TarefaFormComponent implements OnInit {
   static readonly OBS_LIMITE_VAL = 4000;
   readonly OBS_LIMITE = TarefaFormComponent.OBS_LIMITE_VAL;
-  readonly opcoesPrioridade: { valor: Prioridade; rotulo: string; cor: string }[] = [
-    { valor: 1, rotulo: 'Urgente', cor: '#ef4444' },
-    { valor: 2, rotulo: 'Importante', cor: '#f59e0b' },
-    { valor: 3, rotulo: 'Normal', cor: '#5e6ad2' },
-    { valor: 4, rotulo: 'Baixa', cor: '#6b7280' },
+  readonly opcoesPrioridade: { valor: Prioridade; chave: string; cor: string }[] = [
+    { valor: 1, chave: 'form.prioridade_urgente', cor: '#ef4444' },
+    { valor: 2, chave: 'form.prioridade_importante', cor: '#f59e0b' },
+    { valor: 3, chave: 'form.prioridade_normal', cor: '#5e6ad2' },
+    { valor: 4, chave: 'form.prioridade_baixa', cor: '#6b7280' },
   ];
-  readonly opcoesRecorrencia: { valor: TipoRecorrencia; rotulo: string }[] = [
-    { valor: 0, rotulo: 'Sem repetir' },
-    { valor: 1, rotulo: 'Toda semana' },
-    { valor: 2, rotulo: 'Todo mês' },
+  readonly opcoesRecorrencia: { valor: TipoRecorrencia; chave: string }[] = [
+    { valor: 0, chave: 'form.recorrencia_nenhuma' },
+    { valor: 1, chave: 'form.recorrencia_semanal' },
+    { valor: 2, chave: 'form.recorrencia_mensal' },
   ];
 
   private readonly categoriasApi = inject(CategoriasService);
   private readonly tarefasApi = inject(TarefasService);
+  readonly locale = inject(LocaleService);
+
+  msgRepeticao(): string {
+    const n = this.recorrenciaQuantidade;
+    const semanal = this.recorrencia === 1;
+    const key = semanal
+      ? n === 1 ? 'form.crio_n_semanas_1' : 'form.crio_n_semanas'
+      : n === 1 ? 'form.crio_n_meses_1' : 'form.crio_n_meses';
+    return this.locale.t(key, { n: n + '' });
+  }
 
   @Input() tarefa: Tarefa | null = null;
   @Input() nomeInicial = '';
@@ -481,15 +492,15 @@ export class TarefaFormComponent implements OnInit {
 
     const erros: Record<string, string> = {};
     if (!this.nome.trim()) {
-      erros['nome'] = 'Dá um nome pra tarefa.';
+      erros['nome'] = this.locale.t('errors.form_nome');
     }
     if (!this.data) {
-      erros['dataprazo'] = 'Escolhe uma data pra essa tarefa.';
+      erros['dataprazo'] = this.locale.t('errors.form_data_obrigatoria');
     } else if (this.data < this.dataMinima) {
-      erros['dataprazo'] = 'A data não pode ser anterior a hoje.';
+      erros['dataprazo'] = this.locale.t('errors.form_data_passada');
     }
     if (this.observacoes.length > TarefaFormComponent.OBS_LIMITE_VAL) {
-      erros['observacoes'] = `Observações passam de ${TarefaFormComponent.OBS_LIMITE_VAL} caracteres.`;
+      erros['observacoes'] = this.locale.t('errors.form_obs_limite', { n: TarefaFormComponent.OBS_LIMITE_VAL + '' });
     }
     if (Object.keys(erros).length > 0) {
       this.errosCampo.set(erros);
@@ -521,7 +532,7 @@ export class TarefaFormComponent implements OnInit {
       },
       error: (err: HttpErrorResponse) => {
         this.salvando.set(false);
-        const r = extrairProblemDetails(err, 'Não consegui salvar. Tenta de novo.');
+        const r = extrairProblemDetails(err, this.locale.t('errors.salvar_retry'), this.locale.t('errors.sem_conexao'));
         if (Object.keys(r.errosCampo).length > 0) {
           this.errosCampo.set(r.errosCampo);
         } else {

@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { AfterViewInit, Component, OnDestroy, OnInit, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, OnInit, TemplateRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { Tarefa, TarefasService } from '../../core/api/tarefas.service';
 import { ConfirmModalComponent } from '../../shared/confirm-modal.component';
 import { extrairProblemDetails } from '../../shared/problem-details';
@@ -232,6 +232,15 @@ export class ConcluidasComponent implements OnInit, AfterViewInit, OnDestroy {
       titulo: this.locale.t('page_title.completed'),
       iconeClasse: 'fa-solid fa-circle-check text-emerald-500 text-[12px]',
     });
+    effect(() => {
+      const _ = this.locale.locale();
+      this.pageHeader.set({
+        titulo: this.locale.t('page_title.completed'),
+        iconeClasse: 'fa-solid fa-circle-check text-emerald-500 text-[12px]',
+        acoesTpl: this.acoesTplRef() ?? null,
+      });
+      this.erroReabrir.set(null);
+    });
   }
 
   ngAfterViewInit(): void {
@@ -307,8 +316,9 @@ export class ConcluidasComponent implements OnInit, AfterViewInit, OnDestroy {
           n.delete(t.id);
           return n;
         });
-        const r = extrairProblemDetails(err, 'Não consegui reabrir essa tarefa.');
-        this.erroReabrir.set(r.mensagemGeral ?? 'Não consegui reabrir essa tarefa.');
+        const fallback = this.locale.t('errors.reabrir_tarefa');
+        const r = extrairProblemDetails(err, fallback, this.locale.t('errors.sem_conexao'));
+        this.erroReabrir.set(r.mensagemGeral ?? fallback);
       },
     });
   }
@@ -326,9 +336,9 @@ export class ConcluidasComponent implements OnInit, AfterViewInit, OnDestroy {
   pedirExcluirDoDetalhe(t: Tarefa): void {
     this.tarefaDetalhe.set(null);
     this.confirmacao.set({
-      titulo: 'Excluir tarefa',
-      mensagem: `Excluir "${t.nome}"? Não dá pra desfazer.`,
-      textoConfirmar: 'Excluir',
+      titulo: this.locale.t('confirm.excluir_tarefa_titulo'),
+      mensagem: this.locale.t('confirm.excluir_tarefa_msg', { nome: t.nome }),
+      textoConfirmar: this.locale.t('confirm.excluir'),
       acao: () => this.excluir(t),
     });
   }
@@ -340,8 +350,9 @@ export class ConcluidasComponent implements OnInit, AfterViewInit, OnDestroy {
         this.concluidas.update((list) => list.filter((x) => x.id !== t.id));
       },
       error: (err: HttpErrorResponse) => {
-        const r = extrairProblemDetails(err, 'Não consegui excluir essa tarefa.');
-        this.erroReabrir.set(r.mensagemGeral ?? 'Não consegui excluir essa tarefa.');
+        const fallback = this.locale.t('errors.excluir_tarefa');
+        const r = extrairProblemDetails(err, fallback, this.locale.t('errors.sem_conexao'));
+        this.erroReabrir.set(r.mensagemGeral ?? fallback);
       },
     });
   }
@@ -398,25 +409,14 @@ export class ConcluidasComponent implements OnInit, AfterViewInit, OnDestroy {
     alvo.setHours(0, 0, 0, 0);
     const diff = Math.round((hoje.getTime() - alvo.getTime()) / 86400000);
 
-    const dias = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-    const meses = [
-      'jan',
-      'fev',
-      'mar',
-      'abr',
-      'mai',
-      'jun',
-      'jul',
-      'ago',
-      'set',
-      'out',
-      'nov',
-      'dez',
-    ];
-    const dataFmt = `${dias[d.getDay()]}, ${d.getDate()} ${meses[d.getMonth()]}`;
+    const diasKey = ['dia.domingo', 'dia.segunda', 'dia.terca', 'dia.quarta', 'dia.quinta', 'dia.sexta', 'dia.sabado'];
+    const mesesKey = ['mes.jan','mes.fev','mes.mar','mes.abr','mes.mai','mes.jun','mes.jul','mes.ago','mes.set','mes.out','mes.nov','mes.dez'];
+    const dia = this.locale.t(diasKey[d.getDay()]);
+    const mes = this.locale.t(mesesKey[d.getMonth()]);
+    const dataFmt = `${dia}, ${d.getDate()} ${mes}`;
 
-    if (diff === 0) return `Hoje · ${dataFmt}`;
-    if (diff === 1) return `Ontem · ${dataFmt}`;
+    if (diff === 0) return `${this.locale.t('data.hoje')} · ${dataFmt}`;
+    if (diff === 1) return `${this.locale.t('data.ontem')} · ${dataFmt}`;
     return dataFmt;
   }
 

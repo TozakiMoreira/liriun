@@ -240,7 +240,7 @@ type Modo = 'manual' | 'liriun' | null;
                 class="text-base text-text-dim tracking-tight"
                 data-testid="liriun-prompt-chat"
               >
-                Me conta o que você quer registrar.
+                {{ locale.t('captura.me_conta') }}
               </div>
             </div>
           }
@@ -1052,10 +1052,11 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
   readonly isMobile = signal(this.detectarMobile());
 
   readonly placeholderChat = computed(() => {
-    if (this.chatAtivo()) return 'Escreve aqui...';
+    const _ = this.locale.locale();
+    if (this.chatAtivo()) return this.locale.t('captura.placeholder_chat_ativo');
     return this.isMobile()
-      ? 'Digite o que você pensa...'
-      : 'Ex: marcar reunião com Pedro amanhã às 18h';
+      ? this.locale.t('captura.placeholder_mobile')
+      : this.locale.t('captura.placeholder_desktop');
   });
 
   @HostListener('window:resize')
@@ -1146,6 +1147,14 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
     });
 
     effect(() => {
+      const _ = this.locale.locale();
+      const m = untracked(() => this.modo());
+      if (m === null) this.aplicarHeaderEscolhaModo();
+      else this.aplicarHeaderModoSelecionado();
+      this.erroChat.set(null);
+    });
+
+    effect(() => {
       // Auto-persist conversa quando algo muda no modo Liriun.
       const m = this.modo();
       const rascunho = this.rascunho();
@@ -1173,7 +1182,7 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
   // ===== Header dinamico =====
   private aplicarHeaderEscolhaModo(): void {
     this.pageHeader.set({
-      titulo: 'Falar',
+      titulo: this.locale.t('nav.falar'),
       iconeClasse: 'fa-solid fa-bolt text-accent text-[12px]',
       subtituloTpl: this.subtituloTplRef() ?? null,
       voltar: null,
@@ -1182,7 +1191,7 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
 
   private aplicarHeaderModoSelecionado(): void {
     this.pageHeader.set({
-      titulo: 'Falar',
+      titulo: this.locale.t('nav.falar'),
       iconeClasse: null,
       subtituloTpl: this.subtituloTplRef() ?? null,
       voltar: {
@@ -1195,7 +1204,7 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
 
   private aplicarHeaderAjustando(): void {
     this.pageHeader.set({
-      titulo: 'Falar',
+      titulo: this.locale.t('nav.falar'),
       iconeClasse: null,
       subtituloTpl: this.subtituloTplRef() ?? null,
       voltar: {
@@ -1368,8 +1377,9 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
       },
       error: (err: HttpErrorResponse) => {
         this.analisando.set(false);
-        const r = extrairProblemDetails(err, 'Não consegui processar agora.');
-        this.erroChat.set(r.mensagemGeral ?? 'Não consegui processar agora.');
+        const fallback = this.locale.t('errors.processar_ia');
+        const r = extrairProblemDetails(err, fallback, this.locale.t('errors.sem_conexao'));
+        this.erroChat.set(r.mensagemGeral ?? fallback);
         this.precisaScrollar = true;
       },
     });
@@ -1421,8 +1431,9 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
       },
       error: (err: HttpErrorResponse) => {
         this.salvando.set(false);
-        const r = extrairProblemDetails(err, 'Não consegui salvar.');
-        this.erroChat.set(r.mensagemGeral ?? 'Não consegui salvar. Ajusta e tenta de novo.');
+        const fallback = this.locale.t('errors.salvar');
+        const r = extrairProblemDetails(err, fallback, this.locale.t('errors.sem_conexao'));
+        this.erroChat.set(r.mensagemGeral ?? fallback);
       },
     });
   }
@@ -1653,8 +1664,9 @@ export class CapturaComponent implements AfterViewInit, AfterViewChecked {
       },
       error: (err: HttpErrorResponse) => {
         this.analisando.set(false);
-        const r = extrairProblemDetails(err, 'Não consegui processar o áudio.');
-        this.erroChat.set(r.mensagemGeral ?? 'Não consegui processar o áudio.');
+        const fallback = this.locale.t('errors.processar_audio');
+        const r = extrairProblemDetails(err, fallback, this.locale.t('errors.sem_conexao'));
+        this.erroChat.set(r.mensagemGeral ?? fallback);
         this.precisaScrollar = true;
       },
     });

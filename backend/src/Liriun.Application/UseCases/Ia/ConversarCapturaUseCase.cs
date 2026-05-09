@@ -52,7 +52,7 @@ public class ConversarCapturaUseCase
                 m.Texto.Trim()))
             .ToList();
 
-        (ContextoConversa contexto, IReadOnlyList<CategoriaReadModel> categorias) = await MontarContextoAsync(mensagens, ct);
+        (ContextoConversa contexto, IReadOnlyList<CategoriaReadModel> categorias) = await MontarContextoAsync(mensagens, NormalizarIdioma(input.Idioma), ct);
 
         Result<RespostaConversa> respostaResult = await _gemini.ConversarAsync(contexto, ct);
         return MapearResposta(respostaResult, categorias);
@@ -62,6 +62,7 @@ public class ConversarCapturaUseCase
         IReadOnlyList<MensagemInput> historico,
         ReadOnlyMemory<byte> audio,
         string mimeType,
+        string? idioma,
         CancellationToken ct)
     {
         // Historico pode ser vazio (primeiro turno e o audio). Validamos so o que veio.
@@ -84,14 +85,21 @@ public class ConversarCapturaUseCase
                 m.Texto.Trim()))
             .ToList();
 
-        (ContextoConversa contexto, IReadOnlyList<CategoriaReadModel> categorias) = await MontarContextoAsync(mensagens, ct);
+        (ContextoConversa contexto, IReadOnlyList<CategoriaReadModel> categorias) = await MontarContextoAsync(mensagens, NormalizarIdioma(idioma), ct);
 
         Result<RespostaConversa> respostaResult = await _gemini.ConversarComAudioAsync(contexto, audio, mimeType, ct);
         return MapearResposta(respostaResult, categorias);
     }
 
+    private static string NormalizarIdioma(string? idioma)
+    {
+        if (string.IsNullOrWhiteSpace(idioma)) return "pt";
+        string lower = idioma.Trim().ToLowerInvariant();
+        return lower == "en" ? "en" : "pt";
+    }
+
     private async Task<(ContextoConversa, IReadOnlyList<CategoriaReadModel>)> MontarContextoAsync(
-        IReadOnlyList<MensagemConversa> mensagens, CancellationToken ct)
+        IReadOnlyList<MensagemConversa> mensagens, string idioma, CancellationToken ct)
     {
         var usuario = await _usuarios.ObterPorIdAsync(_usuarioLogado.Id, ct);
         IReadOnlyList<CategoriaReadModel> categorias = await _categoriaRead.ListarPorUsuarioAsync(_usuarioLogado.Id, ct);
@@ -100,7 +108,8 @@ public class ConversarCapturaUseCase
             mensagens,
             usuario?.Nome ?? string.Empty,
             DateTime.UtcNow,
-            categorias.Select(c => new CategoriaContexto(c.Id, c.Nome)).ToList());
+            categorias.Select(c => new CategoriaContexto(c.Id, c.Nome)).ToList(),
+            idioma);
 
         return (contexto, categorias);
     }

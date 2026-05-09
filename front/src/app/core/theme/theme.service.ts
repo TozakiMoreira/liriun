@@ -8,6 +8,8 @@ const STORAGE_KEY = 'liriun.theme';
 export class ThemeService {
   private readonly _theme = signal<Theme>(this.lerInicial());
   readonly theme = this._theme.asReadonly();
+  private readonly _seguindoSistema = signal<boolean>(this.lerSalvo() === null);
+  readonly seguindoSistema = this._seguindoSistema.asReadonly();
 
   constructor() {
     this.aplicar(this._theme());
@@ -20,6 +22,7 @@ export class ThemeService {
 
   definir(t: Theme): void {
     this._theme.set(t);
+    this._seguindoSistema.set(false);
     this.aplicar(t);
     try {
       localStorage.setItem(STORAGE_KEY, t);
@@ -39,7 +42,16 @@ export class ThemeService {
     }
     const t = this.lerSistema();
     this._theme.set(t);
+    this._seguindoSistema.set(true);
     this.aplicar(t);
+  }
+
+  alternarSeguirSistema(): void {
+    if (this._seguindoSistema()) {
+      this.definir(this._theme());
+    } else {
+      this.resetar();
+    }
   }
 
   private aplicar(t: Theme): void {

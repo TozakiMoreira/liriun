@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { AfterViewInit, Component, HostListener, OnDestroy, OnInit, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
+import { AfterViewInit, Component, HostListener, OnDestroy, OnInit, TemplateRef, computed, effect, inject, signal, viewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Tarefa, TarefasService } from '../../core/api/tarefas.service';
 import { ConfirmModalComponent } from '../../shared/confirm-modal.component';
@@ -9,6 +9,7 @@ import { TarefaDetalheModalComponent } from './tarefa-detalhe-modal.component';
 import { TarefaFormComponent } from './tarefa-form.component';
 import { PageHeaderService } from '../../core/layout/page-header.service';
 import { LocaleService } from '../../core/locale/locale.service';
+import { CategoriasModalComponent } from '../../shared/categorias-modal.component';
 import { ItemAgendaPosicionado, calcularLayoutAgenda } from '../../shared/agenda-layout';
 
 interface Grupo {
@@ -59,7 +60,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
 @Component({
   selector: 'app-tarefas',
   standalone: true,
-  imports: [CommonModule, TarefaFormComponent, TarefaDetalheModalComponent, ConfirmModalComponent],
+  imports: [CommonModule, TarefaFormComponent, TarefaDetalheModalComponent, ConfirmModalComponent, CategoriasModalComponent],
   template: `
 
     <ng-template #subtituloTpl>
@@ -70,7 +71,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
         {{ tarefasFiltradas().length }} pendente{{ tarefasFiltradas().length === 1 ? '' : 's' }}
         @if (filtrosAtivos() > 0) {
           <span class="text-text-subtle">·</span>
-          <span class="text-accent">{{ filtrosAtivos() }} filtro{{ filtrosAtivos() === 1 ? '' : 's' }}</span>
+          <span class="text-accent">{{ locale.t(filtrosAtivos() === 1 ? 'tarefas.filtro_n_aplicado_1' : 'tarefas.filtro_n_aplicado', { n: filtrosAtivos() + '' }) }}</span>
         }
       </span>
     </ng-template>
@@ -154,7 +155,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
             (click)="toggleFiltrosPanel()"
           >
             <i class="fa-solid fa-filter text-[10px]"></i>
-            Filtros
+            {{ locale.t('tarefas.filtros_btn') }}
             @if (filtrosAtivos() > 0) {
               <span class="text-[10px] px-1.5 py-px rounded-full bg-accent text-white font-medium">
                 {{ filtrosAtivos() }}
@@ -170,7 +171,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
               class="fixed inset-x-3 bottom-20 z-30 card-elev p-4 flex flex-col gap-3 dropdown-in md:absolute md:inset-x-auto md:bottom-auto md:right-0 md:top-full md:mt-1.5 md:w-[320px] md:max-w-[calc(100vw-2rem)]"
               data-testid="filtros-panel"
               role="dialog"
-              aria-label="Filtros"
+              [attr.aria-label]="locale.t('tarefas.filtros_btn')"
             >
         <div class="flex flex-col gap-1.5">
           <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">
@@ -178,9 +179,9 @@ const FILTROS_PADRAO: FiltrosTarefas = {
           </span>
           <div class="flex flex-wrap gap-1.5" role="radiogroup">
             @for (opt of [
-              { v: 'todas', label: 'Todas' },
-              { v: 'noprazo', label: 'No prazo' },
-              { v: 'atrasadas', label: 'Atrasadas' }
+              { v: 'todas', label: locale.t('tarefas.todas') },
+              { v: 'noprazo', label: locale.t('tarefas.no_prazo') },
+              { v: 'atrasadas', label: locale.t('tarefas.atrasadas') }
             ]; track opt.v) {
               <button
                 type="button"
@@ -207,10 +208,10 @@ const FILTROS_PADRAO: FiltrosTarefas = {
           </span>
           <div class="flex flex-wrap gap-1.5">
             @for (p of [
-              { v: 1, label: 'Urgente' },
-              { v: 2, label: 'Importante' },
-              { v: 3, label: 'Normal' },
-              { v: 4, label: 'Baixa' }
+              { v: 1, label: locale.t('form.prioridade_urgente') },
+              { v: 2, label: locale.t('form.prioridade_importante') },
+              { v: 3, label: locale.t('form.prioridade_normal') },
+              { v: 4, label: locale.t('form.prioridade_baixa') }
             ]; track p.v) {
               <button
                 type="button"
@@ -240,12 +241,12 @@ const FILTROS_PADRAO: FiltrosTarefas = {
           </span>
           <div class="flex flex-wrap gap-1.5" role="radiogroup">
             @for (opt of [
-              { v: 'todas', label: 'Todas' },
-              { v: 'hoje', label: 'Hoje' },
-              { v: 'amanha', label: 'Amanhã' },
-              { v: 'semana', label: 'Esta semana' },
-              { v: 'mes', label: 'Este mês' },
-              { v: 'proximoMes', label: 'Mês que vem' }
+              { v: 'todas', label: locale.t('tarefas.todas') },
+              { v: 'hoje', label: locale.t('tarefas.hoje') },
+              { v: 'amanha', label: locale.t('tarefas.amanha') },
+              { v: 'semana', label: locale.t('tarefas.esta_semana') },
+              { v: 'mes', label: locale.t('tarefas.este_mes_filt') },
+              { v: 'proximoMes', label: locale.t('tarefas.proximo_mes') }
             ]; track opt.v) {
               <button
                 type="button"
@@ -300,7 +301,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
               data-testid="filtros-limpar"
               (click)="limparFiltros()"
             >
-              Limpar filtros
+              {{ locale.t('tarefas.limpar_filtros') }}
             </button>
           </div>
         }
@@ -325,8 +326,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
 
       <!-- ===== Hero ===== -->
       <section class="flex flex-col gap-3 mb-5">
-        <div class="flex items-center justify-between gap-3">
-          <p class="text-[13px] text-text-dim">{{ subtituloHero() }}</p>
+        <div class="flex items-center justify-end gap-3">
           <button
             type="button"
             class="hidden md:inline-flex btn-primary text-[12px] py-1.5 px-3 items-center gap-1.5 shrink-0"
@@ -334,7 +334,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
             (click)="abrirNova()"
           >
             <i class="fa-solid fa-plus text-[10px]"></i>
-            Nova tarefa
+            {{ locale.t('tarefas.nova_tarefa') }}
           </button>
         </div>
 
@@ -343,8 +343,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
           <section class="card-elev p-3 md:p-4 flex flex-col gap-1 animate-fade-up">
             <div class="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-text-subtle font-medium">
               <i class="fa-solid fa-list-check text-accent text-[10px]"></i>
-              <span class="hidden sm:inline">{{ locale.t('tarefas.pendentes') }}</span>
-              <span class="sm:hidden">{{ locale.t('tarefas.total') }}</span>
+              <span>{{ locale.t('tarefas.pendentes') }}</span>
             </div>
             <div class="text-[20px] md:text-[22px] font-semibold tabular-nums">
               {{ pendentes().length }}
@@ -360,7 +359,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
           >
             <div class="flex items-center gap-1.5 text-[10px] uppercase tracking-wider text-text-subtle font-medium">
               <i class="fa-solid fa-triangle-exclamation text-danger text-[10px]"></i>
-              Atrasadas
+              {{ locale.t('tarefas.atrasadas') }}
             </div>
             <div
               class="text-[20px] md:text-[22px] font-semibold tabular-nums"
@@ -383,11 +382,11 @@ const FILTROS_PADRAO: FiltrosTarefas = {
 
         <!-- Toolbar: view tabs + filtros/selecionar agrupados -->
         <div class="flex flex-col md:flex-row md:items-center gap-2">
-          <div class="inline-flex bg-bg-elev border border-border rounded-lg p-0.5 h-9" role="tablist" aria-label="Modo de visualização">
+          <div class="inline-flex bg-bg-elev border border-border rounded-lg p-0.5 h-9" role="tablist" [attr.aria-label]="locale.t('tarefas.modo')">
             @for (v of [
-              { v: 'lista', label: 'Lista', icone: 'fa-list' },
-              { v: 'kanban', label: 'Quadro', icone: 'fa-columns' },
-              { v: 'semana', label: 'Semana', icone: 'fa-calendar-week' }
+              { v: 'lista', label: locale.t('tarefas.lista'), icone: 'fa-list' },
+              { v: 'kanban', label: locale.t('tarefas.quadro'), icone: 'fa-columns' },
+              { v: 'semana', label: locale.t('tarefas.semana'), icone: 'fa-calendar-week' }
             ]; track v.v) {
               <button
                 type="button"
@@ -420,7 +419,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
               (click)="toggleFiltrosPanel()"
             >
               <i class="fa-solid fa-filter text-[10px]"></i>
-              Filtros
+              {{ locale.t('tarefas.filtros_btn') }}
               @if (filtrosAtivos() > 0) {
                 <span class="text-[10px] px-1.5 py-px rounded-full bg-accent text-white font-medium">
                   {{ filtrosAtivos() }}
@@ -442,15 +441,15 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                 class="fixed left-3 right-3 top-auto bottom-20 md:absolute md:top-full md:left-0 md:right-auto md:bottom-auto md:mt-1.5 md:w-[340px] z-40 card-elev p-4 flex flex-col gap-3 max-h-[70vh] overflow-y-auto animate-fade-up md:animate-fade-down"
                 data-testid="filtros-panel-novo"
                 role="dialog"
-                aria-label="Filtros"
+                [attr.aria-label]="locale.t('tarefas.filtros_btn')"
               >
                 <div class="flex flex-col gap-1.5">
                   <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">{{ locale.t('tarefas.status') }}</span>
                   <div class="flex flex-wrap gap-1.5" role="radiogroup">
                     @for (opt of [
-                      { v: 'todas', label: 'Todas' },
-                      { v: 'noprazo', label: 'No prazo' },
-                      { v: 'atrasadas', label: 'Atrasadas' }
+                      { v: 'todas', label: locale.t('tarefas.todas') },
+                      { v: 'noprazo', label: locale.t('tarefas.no_prazo') },
+                      { v: 'atrasadas', label: locale.t('tarefas.atrasadas') }
                     ]; track opt.v) {
                       <button
                         type="button"
@@ -472,10 +471,10 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                   <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">{{ locale.t('tarefas.prioridade') }}</span>
                   <div class="flex flex-wrap gap-1.5">
                     @for (p of [
-                      { v: 1, label: 'Urgente' },
-                      { v: 2, label: 'Importante' },
-                      { v: 3, label: 'Normal' },
-                      { v: 4, label: 'Baixa' }
+                      { v: 1, label: locale.t('form.prioridade_urgente') },
+                      { v: 2, label: locale.t('form.prioridade_importante') },
+                      { v: 3, label: locale.t('form.prioridade_normal') },
+                      { v: 4, label: locale.t('form.prioridade_baixa') }
                     ]; track p.v) {
                       <button
                         type="button"
@@ -499,12 +498,12 @@ const FILTROS_PADRAO: FiltrosTarefas = {
                   <span class="text-[10px] uppercase tracking-wider text-text-subtle font-medium">{{ locale.t('tarefas.periodo') }}</span>
                   <div class="flex flex-wrap gap-1.5" role="radiogroup">
                     @for (opt of [
-                      { v: 'todas', label: 'Todas' },
-                      { v: 'hoje', label: 'Hoje' },
-                      { v: 'amanha', label: 'Amanhã' },
-                      { v: 'semana', label: 'Esta semana' },
-                      { v: 'mes', label: 'Este mês' },
-                      { v: 'proximoMes', label: 'Mês que vem' }
+                      { v: 'todas', label: locale.t('tarefas.todas') },
+                      { v: 'hoje', label: locale.t('tarefas.hoje') },
+                      { v: 'amanha', label: locale.t('tarefas.amanha') },
+                      { v: 'semana', label: locale.t('tarefas.esta_semana') },
+                      { v: 'mes', label: locale.t('tarefas.este_mes_filt') },
+                      { v: 'proximoMes', label: locale.t('tarefas.proximo_mes') }
                     ]; track opt.v) {
                       <button
                         type="button"
@@ -576,6 +575,17 @@ const FILTROS_PADRAO: FiltrosTarefas = {
               <span>{{ locale.t('tarefas.selecionar') }}</span>
             }
           </button>
+          <button
+            type="button"
+            class="px-3 h-9 rounded-lg text-[12px] font-medium border bg-bg-elev border-border text-text-dim hover:text-accent hover:border-accent/40 transition-colors flex items-center gap-1.5"
+            data-testid="categorias-btn"
+            [attr.title]="locale.t('tarefas.gerenciar_categorias')"
+            [attr.aria-label]="locale.t('tarefas.gerenciar_categorias')"
+            (click)="categoriasModalAberto.set(true)"
+          >
+            <i class="fa-solid fa-tag text-[12px]"></i>
+            <span class="hidden sm:inline">{{ locale.t('tarefas.categorias') }}</span>
+          </button>
           </div>
         </div>
       </section>
@@ -629,7 +639,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
               [disabled]="semanaAtualExibida() && diaSelecionadoEhHoje()"
               (click)="irHoje()"
             >
-              Hoje
+              {{ locale.t('tarefas.hoje') }}
             </button>
             <button
               type="button"
@@ -677,7 +687,7 @@ const FILTROS_PADRAO: FiltrosTarefas = {
               <div class="flex-1 text-center">
                 <div class="text-[13px] font-semibold capitalize">{{ rotuloDiaSelecionado() }}</div>
                 @if (diaSelecionadoEhHoje()) {
-                  <div class="text-[10px] text-accent uppercase tracking-wider font-bold">Hoje · {{ rotuloAgora() }}</div>
+                  <div class="text-[10px] text-accent uppercase tracking-wider font-bold">{{ locale.t('tarefas.hoje') }} · {{ rotuloAgora() }}</div>
                 }
               </div>
               <button
@@ -1290,6 +1300,12 @@ const FILTROS_PADRAO: FiltrosTarefas = {
         (excluir)="pedirExcluirDoDetalhe($event)"
       ></app-tarefa-detalhe-modal>
     }
+
+    @if (categoriasModalAberto()) {
+      <app-categorias-modal
+        (fechado)="categoriasModalAberto.set(false)"
+      ></app-categorias-modal>
+    }
   `,
   styles: [`
     @keyframes fab-pop-in {
@@ -1316,6 +1332,11 @@ export class TarefasComponent implements OnInit, AfterViewInit, OnDestroy {
       titulo: this.locale.t('tarefas.titulo'),
       iconeClasse: 'fa-solid fa-list-check text-accent text-[12px]',
     });
+    effect(() => {
+      const _ = this.locale.locale();
+      this.aplicarTemplatesPageHeader();
+      this.erroLista.set(null);
+    });
   }
 
   private aplicarTemplatesPageHeader(): void {
@@ -1330,6 +1351,7 @@ export class TarefasComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly formAberto = signal(false);
   readonly emEdicao = signal<Tarefa | null>(null);
   readonly tarefaDetalhe = signal<Tarefa | null>(null);
+  readonly categoriasModalAberto = signal(false);
   readonly processando = signal(new Set<string>());
   readonly saindo = signal(new Set<string>());
   readonly erroLista = signal<string | null>(null);
@@ -1444,9 +1466,13 @@ export class TarefasComponent implements OnInit, AfterViewInit, OnDestroy {
   subtituloHero(): string {
     const total = this.pendentes().length;
     const atr = this.qtdAtrasadas();
-    if (total === 0) return 'Tudo em dia. Nada pra fazer agora.';
-    const partes: string[] = [`${total} pendente${total === 1 ? '' : 's'}`];
-    if (atr > 0) partes.push(`${atr} atrasada${atr === 1 ? '' : 's'}`);
+    if (total === 0) return this.locale.t('tarefas.tudo_em_dia');
+    const palavraPendentes = total === 1 ? this.locale.t('tarefas.pendente') : this.locale.t('tarefas.pendentes_lc');
+    const partes: string[] = [`${total} ${palavraPendentes}`];
+    if (atr > 0) {
+      const palavraAtrasada = atr === 1 ? this.locale.t('tarefas.atrasada') : this.locale.t('tarefas.atrasadas_lc');
+      partes.push(`${atr} ${palavraAtrasada}`);
+    }
     return partes.join(' · ');
   }
 
@@ -1560,11 +1586,12 @@ export class TarefasComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   readonly colunasKanban = computed<ColunaKanban[]>(() => {
+    const _ = this.locale.locale();
     const ordem = [
-      { prioridade: 1, titulo: 'Urgente', cor: '#eb5757' },
-      { prioridade: 2, titulo: 'Importante', cor: '#f59e0b' },
-      { prioridade: 3, titulo: 'Normal', cor: '#5e6ad2' },
-      { prioridade: 4, titulo: 'Baixa', cor: '#62666d' },
+      { prioridade: 1, titulo: this.locale.t('form.prioridade_urgente'), cor: '#eb5757' },
+      { prioridade: 2, titulo: this.locale.t('form.prioridade_importante'), cor: '#f59e0b' },
+      { prioridade: 3, titulo: this.locale.t('form.prioridade_normal'), cor: '#5e6ad2' },
+      { prioridade: 4, titulo: this.locale.t('form.prioridade_baixa'), cor: '#62666d' },
     ];
     const lista = this.tarefasFiltradas();
     return ordem.map((o) => {
@@ -1675,8 +1702,9 @@ export class TarefasComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       error: (err: HttpErrorResponse) => {
         this.carregando.set(false);
-        const r = extrairProblemDetails(err, 'Não consegui carregar suas tarefas.');
-        this.erroLista.set(r.mensagemGeral ?? 'Não consegui carregar suas tarefas.');
+        const fallback = this.locale.t('errors.carregar_tarefas');
+        const r = extrairProblemDetails(err, fallback, this.locale.t('errors.sem_conexao'));
+        this.erroLista.set(r.mensagemGeral ?? fallback);
       },
     });
   }
@@ -1709,17 +1737,18 @@ export class TarefasComponent implements OnInit, AfterViewInit, OnDestroy {
           n.delete(t.id);
           return n;
         });
-        const r = extrairProblemDetails(err, 'Não consegui concluir essa tarefa.');
-        this.erroLista.set(r.mensagemGeral ?? 'Não consegui concluir essa tarefa.');
+        const fallback = this.locale.t('errors.concluir_tarefa');
+        const r = extrairProblemDetails(err, fallback, this.locale.t('errors.sem_conexao'));
+        this.erroLista.set(r.mensagemGeral ?? fallback);
       },
     });
   }
 
   pedirExcluir(t: Tarefa): void {
     this.confirmacao.set({
-      titulo: 'Excluir tarefa',
-      mensagem: `Excluir "${t.nome}"? Não dá pra desfazer.`,
-      textoConfirmar: 'Excluir',
+      titulo: this.locale.t('confirm.excluir_tarefa_titulo'),
+      mensagem: this.locale.t('confirm.excluir_tarefa_msg', { nome: t.nome }),
+      textoConfirmar: this.locale.t('confirm.excluir'),
       acao: () => this.excluir(t),
     });
   }
@@ -1731,8 +1760,9 @@ export class TarefasComponent implements OnInit, AfterViewInit, OnDestroy {
         this.pendentes.update((list) => list.filter((x) => x.id !== t.id));
       },
       error: (err: HttpErrorResponse) => {
-        const r = extrairProblemDetails(err, 'Não consegui excluir essa tarefa.');
-        this.erroLista.set(r.mensagemGeral ?? 'Não consegui excluir essa tarefa.');
+        const fallback = this.locale.t('errors.excluir_tarefa');
+        const r = extrairProblemDetails(err, fallback, this.locale.t('errors.sem_conexao'));
+        this.erroLista.set(r.mensagemGeral ?? fallback);
       },
     });
   }
@@ -1831,9 +1861,9 @@ export class TarefasComponent implements OnInit, AfterViewInit, OnDestroy {
   rotuloDiaSelecionado(): string {
     const d = this.parseDataLocal(this.diaSelecionadoSemana());
     if (!d) return '';
-    const dias = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
-    const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
-    return `${dias[d.getDay()]}, ${d.getDate()} ${meses[d.getMonth()]}`;
+    const diasKey = ['dia.domingo', 'dia.segunda', 'dia.terca', 'dia.quarta', 'dia.quinta', 'dia.sexta', 'dia.sabado'];
+    const mesesKey = ['mes.jan','mes.fev','mes.mar','mes.abr','mes.mai','mes.jun','mes.jul','mes.ago','mes.set','mes.out','mes.nov','mes.dez'];
+    return `${this.locale.t(diasKey[d.getDay()])}, ${d.getDate()} ${this.locale.t(mesesKey[d.getMonth()])}`;
   }
 
   // Layout do dia selecionado (mobile day view)
@@ -1849,7 +1879,16 @@ export class TarefasComponent implements OnInit, AfterViewInit, OnDestroy {
     const inicio = this.semanaInicio();
     const hojeIso = this.dateParaIsoLocal(new Date());
     const dias: { iso: string; diaNum: number; diaCurto: string; hoje: boolean }[] = [];
-    const labels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
+    const _ = this.locale.locale();
+    const labels = [
+      this.locale.t('dia.seg'),
+      this.locale.t('dia.ter'),
+      this.locale.t('dia.qua'),
+      this.locale.t('dia.qui'),
+      this.locale.t('dia.sex'),
+      this.locale.t('dia.sab'),
+      this.locale.t('dia.dom'),
+    ];
     for (let i = 0; i < 7; i++) {
       const d = new Date(inicio);
       d.setDate(inicio.getDate() + i);
@@ -2105,23 +2144,22 @@ export class TarefasComponent implements OnInit, AfterViewInit, OnDestroy {
     const diasDiff = Math.round((alvo.getTime() - hoje.getTime()) / 86400000);
     const horaSufixo = t.horarioFinal ? `, ${t.horarioFinal.substring(0, 5)}` : '';
 
-    if (diasDiff === 0) return `Hoje${horaSufixo}`;
-    if (diasDiff === 1) return `Amanhã${horaSufixo}`;
-    if (diasDiff === -1) return `Ontem${horaSufixo}`;
+    if (diasDiff === 0) return `${this.locale.t('data.hoje')}${horaSufixo}`;
+    if (diasDiff === 1) return `${this.locale.t('data.amanha')}${horaSufixo}`;
+    if (diasDiff === -1) return `${this.locale.t('data.ontem')}${horaSufixo}`;
 
     if (diasDiff > 0) {
-      return `Em ${this.frasePeriodo(alvo, hoje)}`;
+      return `${this.locale.t('tarefas.em')} ${this.frasePeriodo(alvo, hoje)}`;
     }
 
-    // passado (atrasada com mais de 1 dia)
-    return `${this.frasePeriodo(hoje, alvo)} atrás`;
+    return `${this.frasePeriodo(hoje, alvo)} ${this.locale.t('tarefas.atras')}`;
   }
 
   private frasePeriodo(maior: Date, menor: Date): string {
     const diasDiff = Math.round((maior.getTime() - menor.getTime()) / 86400000);
 
     if (diasDiff < 30) {
-      return `${diasDiff} dias`;
+      return `${diasDiff} ${this.locale.t('tarefas.dias_lc')}`;
     }
 
     const anosDiff = maior.getFullYear() - menor.getFullYear();
@@ -2130,10 +2168,10 @@ export class TarefasComponent implements OnInit, AfterViewInit, OnDestroy {
     const meses = mesesDiff + ajusteMes;
 
     if (meses < 12) {
-      return meses === 1 ? '1 mês' : `${meses} meses`;
+      return meses === 1 ? this.locale.t('tarefas.mes_1') : this.locale.t('tarefas.meses_n', { n: meses + '' });
     }
 
     const anos = Math.floor(meses / 12);
-    return anos === 1 ? '1 ano' : `${anos} anos`;
+    return anos === 1 ? this.locale.t('tarefas.ano_1') : this.locale.t('tarefas.anos_n', { n: anos + '' });
   }
 }

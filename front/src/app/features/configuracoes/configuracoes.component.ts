@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Categoria, CategoriasService } from '../../core/api/categorias.service';
@@ -61,7 +61,7 @@ interface Confirmacao {
                 (click)="iniciarEdicaoPerfil()"
               >
                 <i class="fa-solid fa-pen text-[10px]"></i>
-                Editar perfil
+                {{ locale.t('configs.perfil_editar_btn') }}
               </button>
             }
           </div>
@@ -123,7 +123,7 @@ interface Confirmacao {
                 (click)="cancelarEdicaoPerfil()"
                 [disabled]="salvandoPerfil()"
               >
-                Cancelar
+                {{ locale.t('configs.cancelar') }}
               </button>
               <button
                 type="button"
@@ -132,7 +132,7 @@ interface Confirmacao {
                 (click)="salvarPerfil()"
                 [disabled]="salvandoPerfil()"
               >
-                {{ salvandoPerfil() ? 'Salvando...' : 'Salvar' }}
+                {{ salvandoPerfil() ? locale.t('configs.salvando') : locale.t('configs.salvar') }}
               </button>
             </div>
           } @else {
@@ -141,7 +141,7 @@ interface Confirmacao {
                 type="button"
                 class="relative group rounded-full focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 focus:ring-offset-bg-elev"
                 data-testid="perfil-foto-btn"
-                aria-label="Trocar foto de perfil"
+                [attr.aria-label]="locale.t('configs.foto_aria_trocar')"
                 (click)="abrirFotoModal()"
               >
                 <app-avatar
@@ -165,7 +165,7 @@ interface Confirmacao {
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1 w-full">
                 <div class="flex flex-col gap-1">
                   <div class="text-[11px] font-medium text-text-subtle uppercase tracking-wider">
-                    Nome
+                    {{ locale.t('configs.perfil_nome') }}
                   </div>
                   <div
                     class="text-[13px] px-3 py-2 bg-bg-surface border border-border rounded"
@@ -176,7 +176,7 @@ interface Confirmacao {
                 </div>
                 <div class="flex flex-col gap-1">
                   <div class="text-[11px] font-medium text-text-subtle uppercase tracking-wider">
-                    Email
+                    {{ locale.t('configs.perfil_email') }}
                   </div>
                   <div
                     class="text-[13px] px-3 py-2 bg-bg-surface border border-border rounded"
@@ -196,7 +196,7 @@ interface Confirmacao {
 
             <div class="border-t border-border pt-4 flex items-center justify-between gap-3">
               <div class="text-xs text-text-dim">
-                Quer trocar sua senha?
+                {{ locale.t('configs.perfil_quer_trocar_senha') }}
               </div>
               <a
                 routerLink="/app/configuracoes/alterar-senha"
@@ -211,102 +211,6 @@ interface Confirmacao {
         </section>
         </section>
 
-        <section class="flex flex-col gap-3" data-testid="section-categorias-wrap">
-          <h2 class="text-xl font-semibold tracking-tight">{{ locale.t('configs.section_categorias') }}</h2>
-        <section class="card-elev p-5 flex flex-col gap-3" data-testid="section-categorias">
-          <div class="flex flex-col gap-0.5">
-            <div class="text-xs text-text-dim">
-              {{ locale.t('configs.categorias_descricao') }}
-            </div>
-          </div>
-
-          <div class="flex flex-col" data-testid="categorias-list">
-            @for (c of categorias(); track c.id) {
-              <div
-                class="grid grid-cols-[1fr_auto] items-center gap-3 py-2.5 px-3 border-b border-border last:border-b-0 hover:bg-bg-surface group focus-within:bg-bg-surface"
-                [attr.data-testid]="'cat-' + c.id"
-              >
-                @if (editandoCat() === c.id) {
-                  <input
-                    type="text"
-                    class="input-base"
-                    [(ngModel)]="novoNomeCat"
-                    name="renomeio"
-                    aria-label="Novo nome da categoria"
-                    (keydown.enter)="confirmarRenomearCategoria(c)"
-                    (keydown.escape)="cancelarEdicaoCat()"
-                  />
-                  <div class="flex gap-1">
-                    <button
-                      type="button"
-                      class="btn-secondary text-xs py-1.5 px-3"
-                      (click)="confirmarRenomearCategoria(c)"
-                    >
-                      Salvar
-                    </button>
-                    <button
-                      type="button"
-                      class="text-xs px-2 text-text-dim hover:text-text"
-                      (click)="cancelarEdicaoCat()"
-                    >
-                      Cancelar
-                    </button>
-                  </div>
-                } @else {
-                  <span class="text-[13px] font-medium">{{ c.nome }}</span>
-                  <div class="flex gap-0.5 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
-                    <button
-                      type="button"
-                      class="w-[26px] h-[26px] rounded grid place-items-center text-text-subtle hover:bg-bg-surface hover:text-text focus:outline-none focus:text-text focus:bg-bg-surface"
-                      aria-label="Renomear categoria"
-                      title="Renomear"
-                      (click)="iniciarRenomearCategoria(c)"
-                    >
-                      <i class="fa-solid fa-pen text-xs"></i>
-                    </button>
-                    <button
-                      type="button"
-                      class="w-[26px] h-[26px] rounded grid place-items-center text-text-subtle hover:bg-danger/15 hover:text-danger focus:outline-none focus:text-danger focus:bg-danger/15"
-                      aria-label="Excluir categoria"
-                      title="Excluir"
-                      (click)="pedirExcluirCategoria(c)"
-                    >
-                      <i class="fa-solid fa-trash text-xs"></i>
-                    </button>
-                  </div>
-                }
-              </div>
-            } @empty {
-              <p class="text-text-subtle text-[13px] py-2">{{ locale.t('configs.categorias_nenhuma') }}</p>
-            }
-          </div>
-
-          <div class="flex gap-2">
-            <input
-              type="text"
-              class="input-base flex-1"
-              placeholder="Nova categoria (ex: Academia, Leitura)"
-              data-testid="cat-new-input"
-              [(ngModel)]="novaCategoria"
-              name="novaCat"
-              aria-label="Nome da nova categoria"
-              (keydown.enter)="adicionarCategoria()"
-            />
-            <button
-              type="button"
-              class="btn-secondary"
-              data-testid="cat-new-btn"
-              (click)="adicionarCategoria()"
-            >
-              Adicionar
-            </button>
-          </div>
-
-          @if (erroCat()) {
-            <p class="text-danger text-xs" data-testid="cat-erro">{{ erroCat() }}</p>
-          }
-        </section>
-        </section>
 
         <section class="flex flex-col gap-3" data-testid="section-aparencia-wrap">
           <h2 class="text-xl font-semibold tracking-tight">{{ locale.t('configs.section_aparencia') }}</h2>
@@ -346,15 +250,19 @@ interface Confirmacao {
                 }
               </button>
             </div>
-            <button
-              type="button"
-              class="text-[11px] text-text-subtle hover:text-text self-start flex items-center gap-1.5"
-              data-testid="theme-reset-btn"
-              (click)="theme.resetar()"
+            <label
+              class="flex items-center gap-2 text-[12px] text-text-dim cursor-pointer select-none self-start"
+              data-testid="theme-seguir-sistema-label"
             >
-              <i class="fa-solid fa-rotate-left text-[10px]"></i>
-              {{ locale.t('configs.aparencia_seguir_sistema') }}
-            </button>
+              <input
+                type="checkbox"
+                class="h-4 w-4 cursor-pointer accent-[var(--accent)]"
+                data-testid="theme-seguir-sistema-check"
+                [checked]="theme.seguindoSistema()"
+                (change)="theme.alternarSeguirSistema()"
+              />
+              <span>{{ locale.t('configs.aparencia_seguir_sistema_label') }}</span>
+            </label>
           </section>
         </section>
 
@@ -395,6 +303,39 @@ interface Confirmacao {
                   <i class="fa-solid fa-check text-accent text-[12px]"></i>
                 }
               </button>
+            </div>
+          </section>
+        </section>
+
+        <section class="flex flex-col gap-3" data-testid="section-legal-wrap">
+          <h2 class="text-xl font-semibold tracking-tight">{{ locale.t('configs.section_legal') }}</h2>
+          <section class="card-elev p-5 flex flex-col gap-3" data-testid="section-legal">
+            <div class="text-xs text-text-dim">
+              {{ locale.t('configs.legal_descricao') }}
+            </div>
+            <div class="rounded-lg border border-border overflow-hidden divide-y divide-border">
+              <a
+                routerLink="/termos-uso"
+                target="_blank"
+                rel="noopener"
+                class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-text-dim hover:text-text"
+                data-testid="legal-termos-link"
+              >
+                <i class="fa-solid fa-file-contract text-accent text-[14px] w-5 text-center shrink-0"></i>
+                <span class="text-[13px] font-medium flex-1">{{ locale.t('configs.legal_termos') }}</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-text-subtle"></i>
+              </a>
+              <a
+                routerLink="/politica-privacidade"
+                target="_blank"
+                rel="noopener"
+                class="w-full px-4 py-3 flex items-center gap-3 transition-colors text-text-dim hover:text-text"
+                data-testid="legal-privacidade-link"
+              >
+                <i class="fa-solid fa-shield-halved text-accent text-[14px] w-5 text-center shrink-0"></i>
+                <span class="text-[13px] font-medium flex-1">{{ locale.t('configs.legal_privacidade') }}</span>
+                <i class="fa-solid fa-arrow-up-right-from-square text-[10px] text-text-subtle"></i>
+              </a>
             </div>
           </section>
         </section>
@@ -471,6 +412,13 @@ export class ConfiguracoesComponent implements OnInit, OnDestroy {
     this.pageHeader.set({
       titulo: this.locale.t('page_title.settings'),
       iconeClasse: 'fa-solid fa-gear text-accent text-[12px]',
+    });
+    effect(() => {
+      const _ = this.locale.locale();
+      this.erroCat.set(null);
+      this.erroPerfilGeral.set(null);
+      this.sucessoPerfil.set(null);
+      this.erroExcluirConta.set(null);
     });
   }
 
@@ -565,15 +513,16 @@ export class ConfiguracoesComponent implements OnInit, OnDestroy {
       next: () => {
         this.salvandoPerfil.set(false);
         this.editandoPerfil.set(false);
-        this.sucessoPerfil.set('Perfil atualizado.');
+        this.sucessoPerfil.set(this.locale.t('configs.perfil_atualizado'));
       },
       error: (err: HttpErrorResponse) => {
         this.salvandoPerfil.set(false);
-        const r = extrairProblemDetails(err, 'Não consegui atualizar.');
+        const fallback = this.locale.t('errors.fallback');
+        const r = extrairProblemDetails(err, fallback, this.locale.t('errors.sem_conexao'));
         if (Object.keys(r.errosCampo).length > 0) {
           this.errosPerfilCampo.set(r.errosCampo);
         } else {
-          this.erroPerfilGeral.set(r.mensagemGeral ?? 'Não consegui atualizar.');
+          this.erroPerfilGeral.set(r.mensagemGeral ?? fallback);
         }
       },
     });
@@ -596,7 +545,7 @@ export class ConfiguracoesComponent implements OnInit, OnDestroy {
       },
       error: (err: HttpErrorResponse) => {
         this.salvandoFoto.set(false);
-        const r = extrairProblemDetails(err, 'Não consegui salvar a foto.');
+        const r = extrairProblemDetails(err, this.locale.t('errors.fallback'), this.locale.t('errors.sem_conexao'));
         const primeiro = Object.values(r.errosCampo)[0];
         this.erroPerfilGeral.set(primeiro ?? r.mensagemGeral ?? 'Não consegui salvar a foto.');
         this.fotoModalAberto.set(false);
@@ -615,7 +564,7 @@ export class ConfiguracoesComponent implements OnInit, OnDestroy {
       },
       error: (err: HttpErrorResponse) => {
         this.salvandoFoto.set(false);
-        const r = extrairProblemDetails(err, 'Não consegui remover a foto.');
+        const r = extrairProblemDetails(err, this.locale.t('errors.fallback'), this.locale.t('errors.sem_conexao'));
         this.erroPerfilGeral.set(r.mensagemGeral ?? 'Não consegui remover a foto.');
         this.fotoModalAberto.set(false);
       },
@@ -665,9 +614,9 @@ export class ConfiguracoesComponent implements OnInit, OnDestroy {
 
   pedirExcluirCategoria(c: Categoria): void {
     this.confirmacao.set({
-      titulo: 'Excluir categoria',
-      mensagem: `Excluir "${c.nome}"? Não dá pra desfazer.`,
-      textoConfirmar: 'Excluir',
+      titulo: this.locale.t('configs.confirma_excluir_categoria_titulo'),
+      mensagem: this.locale.t('configs.confirma_excluir_categoria_msg', { nome: c.nome }),
+      textoConfirmar: this.locale.t('configs.excluir'),
       acao: () => this.excluirCategoria(c),
     });
   }
@@ -681,7 +630,7 @@ export class ConfiguracoesComponent implements OnInit, OnDestroy {
   }
 
   private aplicarErroCat(err: HttpErrorResponse, fallback: string): void {
-    const r = extrairProblemDetails(err, fallback);
+    const r = extrairProblemDetails(err, fallback, this.locale.t('errors.sem_conexao'));
     const primeiroErroCampo = Object.values(r.errosCampo)[0];
     this.erroCat.set(primeiroErroCampo ?? r.mensagemGeral ?? fallback);
   }
@@ -717,7 +666,7 @@ export class ConfiguracoesComponent implements OnInit, OnDestroy {
       },
       error: (err: HttpErrorResponse) => {
         this.excluindoConta.set(false);
-        const r = extrairProblemDetails(err, 'Não consegui excluir sua conta. Tenta de novo.');
+        const r = extrairProblemDetails(err, this.locale.t('errors.fallback'), this.locale.t('errors.sem_conexao'));
         const primeiro = Object.values(r.errosCampo)[0];
         this.erroExcluirConta.set(primeiro ?? r.mensagemGeral ?? 'Não consegui excluir sua conta.');
       },
