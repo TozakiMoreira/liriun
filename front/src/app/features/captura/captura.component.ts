@@ -225,7 +225,7 @@ type Modo = 'manual' | 'liriun' | null;
           @if (!chatAtivo()) {
             <div class="text-center flex flex-col items-center gap-3 fade-down">
               <img
-                src="/logo.png"
+                src="/liriun-assets/logo/liriun-icon.svg"
                 alt="Liriun"
                 class="w-20 h-20 object-contain shrink-0"
                 aria-hidden="true"
@@ -257,7 +257,7 @@ type Modo = 'manual' | 'liriun' | null;
                 <div class="flex items-center gap-2">
                   <img
                     class="w-9 h-9 object-contain"
-                    src="/logo.png"
+                    src="/liriun-assets/logo/liriun-icon.svg"
                     alt="Liriun"
                     aria-hidden="true"
                   />
@@ -309,7 +309,7 @@ type Modo = 'manual' | 'liriun' | null;
                     <div class="flex items-start gap-2 max-w-[88%] msg-in">
                       <img
                         class="w-9 h-9 object-contain shrink-0 mt-0.5"
-                        src="/logo.png"
+                        src="/liriun-assets/logo/liriun-icon.svg"
                         alt="Liriun"
                         aria-hidden="true"
                       />
@@ -334,7 +334,7 @@ type Modo = 'manual' | 'liriun' | null;
                   <div class="flex items-start gap-2 max-w-[85%] msg-in">
                     <img
                       class="w-9 h-9 object-contain shrink-0 mt-0.5"
-                      src="/logo.png"
+                      src="/liriun-assets/logo/liriun-icon.svg"
                       alt="Liriun"
                       aria-hidden="true"
                     />
@@ -352,7 +352,7 @@ type Modo = 'manual' | 'liriun' | null;
                   <div class="flex items-start gap-2 max-w-[95%] msg-in" data-testid="chat-sugestao">
                     <img
                       class="w-9 h-9 object-contain shrink-0 mt-0.5"
-                      src="/logo.png"
+                      src="/liriun-assets/logo/liriun-icon.svg"
                       alt="Liriun"
                       aria-hidden="true"
                     />

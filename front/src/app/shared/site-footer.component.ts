@@ -20,7 +20,7 @@ import { BrandComponent } from './brand.component';
               data-testid="footer-logo"
             >
               <img
-                src="/logo.png"
+                src="/liriun-assets/logo/liriun-icon.svg"
                 alt=""
                 class="w-8 h-8 object-contain"
                 aria-hidden="true"

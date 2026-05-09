@@ -43,6 +43,16 @@ public class AuthController : ControllerBase
         return result.ToActionResult(() => NoContent());
     }
 
+    [HttpGet("perfil")]
+    [Authorize]
+    public async Task<IActionResult> ObterPerfil(
+        [FromServices] ObterPerfilUseCase useCase,
+        CancellationToken ct)
+    {
+        Result<PerfilViewModel> result = await useCase.ExecuteAsync(ct);
+        return result.ToActionResult(view => Ok(view));
+    }
+
     [HttpPut("perfil")]
     [Authorize]
     public async Task<IActionResult> AtualizarPerfil(

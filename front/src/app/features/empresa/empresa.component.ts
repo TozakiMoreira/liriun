@@ -27,7 +27,7 @@ import { LocaleService } from '../../core/locale/locale.service';
             Início
           </a>
           <a routerLink="/" class="flex items-center gap-2.5" aria-label="Liriun — início">
-            <img src="/logo.png" alt="" class="w-8 h-8 object-contain" aria-hidden="true" />
+            <img src="/liriun-assets/logo/liriun-icon.svg" alt="" class="w-8 h-8 object-contain" aria-hidden="true" />
             <span class="text-[15px] font-semibold tracking-tight"><app-brand /></span>
           </a>
           <div class="flex items-center gap-2">

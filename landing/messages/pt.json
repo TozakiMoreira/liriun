@@ -1,0 +1,325 @@
+{
+  "Meta": {
+    "siteName": "Liriun",
+    "tagline": "Sua próxima tarefa, na voz.",
+    "homeDescription": "Liriun é seu assistente pessoal de tarefas por voz. Escuta, organiza e lembra — sem comandos, sem fricção, em qualquer dispositivo."
+  },
+  "Nav": {
+    "produto": "Produto",
+    "precos": "Preços",
+    "empresa": "Empresa",
+    "blog": "Blog",
+    "entrar": "Entrar",
+    "baixarApp": "Baixar app",
+    "homeAria": "Liriun · página inicial"
+  },
+  "Hero": {
+    "badge": "Beta aberto · maio 2026",
+    "title1": "Sua lista de tarefas,",
+    "title2": "conduzida por voz.",
+    "lead": "Liriun escuta, organiza e lembra. Um companheiro pessoal de produtividade — sem comandos, sem fricção, em qualquer dispositivo.",
+    "ctaPrimary": "Começar grátis",
+    "ctaSecondary": "Ver demo · 1 min",
+    "rating": "★★★★★  4.9 · App Store",
+    "users": "+ de 12.000 usuários"
+  },
+  "Recursos": {
+    "kicker": "Recursos",
+    "title1": "Pensado pra",
+    "title2": "fluir com você.",
+    "lead": "Liriun não é só um app de tarefas — é um agente que aprende seu ritmo, seu vocabulário e os contextos que importam pra você.",
+    "voz": {
+      "title": "Organização por voz",
+      "desc": "Fale como você pensa. Liriun extrai título, prazo, prioridade e categoria automaticamente — sem você abrir um teclado."
+    },
+    "agente": {
+      "title": "Agente personalizado",
+      "desc": "O assistente aprende seus hábitos: como você nomeia projetos, em quais horários você atua, e antecipa lembretes no momento certo."
+    },
+    "multi": {
+      "title": "Multi-plataforma",
+      "desc": "iOS, Android, web. Tudo sincronizado em tempo real, com a mesma experiência cuidada — independente do dispositivo que você abrir."
+    }
+  },
+  "Stats": {
+    "users": "usuários ativos",
+    "accuracy": "precisão de transcrição",
+    "latency": "latência média",
+    "lgpd": "dados criptografados"
+  },
+  "RecursosPage": {
+    "title": "Recursos",
+    "description": "Liriun escuta, entende e organiza. Um agente que devolve seu tempo.",
+    "kicker": "O que o Liriun faz",
+    "heroLine1": "Um app",
+    "heroLine2": "que escuta.",
+    "lead": "Sem comandos. Sem fricção. Você fala como pensa — Liriun cuida do resto.",
+    "voz": {
+      "kicker": "Voz",
+      "title": "Fale como pensa.",
+      "lead": "Liriun extrai título, prazo, prioridade e categoria do que você disse — sem você abrir teclado."
+    },
+    "agente": {
+      "kicker": "Agente",
+      "title": "Aprende seu ritmo.",
+      "lead": "Como você nomeia projetos, em quais horários atua, o que costuma adiar — tudo vira contexto pra te lembrar na hora certa."
+    },
+    "organizacao": {
+      "kicker": "Organização",
+      "title": "Sua agenda, três jeitos.",
+      "lead": "Lista, quadro ou semana. Categorias com cor. Recorrência em linguagem natural — \"toda terça\" basta."
+    },
+    "privacidade": {
+      "kicker": "Privacidade",
+      "title": "Seus dados são seus.",
+      "lead": "Não treinamos IA com seu conteúdo. Não vendemos. Não compartilhamos. Exportação JSON a um clique."
+    },
+    "ctaTitle": "Comece a falar.",
+    "ctaLead": "Beta aberto, gratuito.",
+    "ctaButton": "Criar conta"
+  },
+  "Precos": {
+    "title": "Preços",
+    "description": "Planos do Liriun — V1 gratuita pra todos durante o beta aberto.",
+    "kicker": "Planos",
+    "heroLine1": "Comece grátis.",
+    "heroLine2": "Sempre.",
+    "lead": "O Liriun é gratuito durante o beta aberto. Em 2027 lançaremos um plano Pro opcional — sem nunca tirar funcionalidade do plano grátis.",
+    "betaBadge": "Beta · maio 2026",
+    "tiers": {
+      "free": {
+        "name": "Beta",
+        "price": "R$ 0",
+        "period": "para sempre",
+        "tagline": "Tudo do Liriun, gratuito durante o beta aberto.",
+        "ctaLabel": "Começar grátis",
+        "features": [
+          "Tarefas ilimitadas",
+          "Captura por voz ilimitada",
+          "Modo Liriun (IA conversacional)",
+          "Categorias personalizadas",
+          "Sync iOS · Android · Web",
+          "Exportação JSON",
+          "Suporte por e-mail"
+        ]
+      },
+      "pro": {
+        "name": "Pro",
+        "price": "R$ 19",
+        "period": "/mês · em breve",
+        "tagline": "Mais contexto, mais memória, mais integração.",
+        "ctaLabel": "Avise-me",
+        "features": [
+          "Tudo do plano Beta",
+          "Histórico de contexto extenso",
+          "Integração Google Calendar e Apple Calendar",
+          "Integração Notion e Todoist (importação)",
+          "Wake word personalizada (Fase 3)",
+          "Resumo diário por e-mail",
+          "Suporte prioritário"
+        ]
+      }
+    },
+    "faq": {
+      "title": "Perguntas frequentes",
+      "items": {
+        "q1": {
+          "q": "O plano Beta é mesmo gratuito pra sempre?",
+          "a": "Sim. Quem entrar durante o beta mantém o plano Beta sem custo, sem prazo de expiração."
+        },
+        "q2": {
+          "q": "Quando o Pro será lançado?",
+          "a": "Estimamos início de 2027. Você pode entrar na lista de avisos sem se comprometer com nada."
+        },
+        "q3": {
+          "q": "Meus dados são meus?",
+          "a": "Sempre. Você pode exportar tudo em JSON a qualquer momento. Nada do seu conteúdo é usado pra treinar IA."
+        },
+        "q4": {
+          "q": "Tem garantia de devolução?",
+          "a": "Plano Beta é gratuito. Plano Pro terá 14 dias de garantia incondicional."
+        }
+      }
+    }
+  },
+  "FooterCTA": {
+    "title": "Comece a falar com o seu dia.",
+    "lead": "Sem cartão de crédito. Disponível em iOS, Android e na web.",
+    "primary": "Baixar app",
+    "secondary": "Ver no navegador"
+  },
+  "Footer": {
+    "tagline": "Companheiro digital de produtividade. Feito com cuidado em São Paulo pela ToMore.",
+    "produto": "Produto",
+    "empresa": "Empresa",
+    "suporte": "Suporte",
+    "legal": "Legal",
+    "links": {
+      "recursos": "Recursos",
+      "precos": "Preços",
+      "mobile": "Mobile",
+      "roadmap": "Roadmap",
+      "empresa": "Empresa",
+      "blog": "Blog",
+      "carreiras": "Carreiras",
+      "imprensa": "Imprensa",
+      "ajuda": "Ajuda",
+      "status": "Status",
+      "contato": "Contato",
+      "comunidade": "Comunidade",
+      "termos": "Termos",
+      "privacidade": "Privacidade",
+      "cookies": "Cookies",
+      "lgpd": "LGPD"
+    },
+    "copyright": "© 2026 ToMore · todos os direitos reservados",
+    "version": "liriun.com · v 1.0"
+  },
+  "Empresa": {
+    "title": "A empresa",
+    "description": "ToMore — a empresa por trás do Liriun. Fundada em 2026 por Lucas Moreira e Pedro Tozaki em São Paulo.",
+    "eyebrow": "A empresa por trás do Liriun",
+    "heroLine1": "Somos a",
+    "heroBrand": "ToMore",
+    "heroLine2": ".",
+    "lead": "Em um mundo de notificações infinitas, listas que nunca terminam e mentes esgotadas, a ToMore nasceu em 2026 com uma missão: provar que tecnologia bem desenhada pode cuidar da mente das pessoas — e não o contrário.",
+    "founders": {
+      "eyebrow": "Quem fundou",
+      "title": "Dois sócios. Uma obsessão por software bem feito.",
+      "role": "Co-founder",
+      "pedroBio": "Engenheiro de software, apaixonado por sistemas que somem na hora certa. Lidera produto e arquitetura.",
+      "lucasBio": "Designer e estrategista. Cuida da experiência, da marca e da relação com a comunidade.",
+      "formulaCaption": "Tozaki + Moreira = ToMore"
+    },
+    "missao": {
+      "eyebrow": "Por quê",
+      "title": "Devolver tempo às pessoas.",
+      "p1": "Acreditamos que produtividade não pode custar saúde mental. A maioria dos apps que usamos é desenhada pra prender atenção; queremos o oposto — software que some quando o trabalho está feito.",
+      "p2": "A ToMore é movida por uma convicção simples: facilitar a vida das pessoas é cuidar da mente delas. Cada decisão de produto começa pela pergunta — isso pesa ou alivia? Nada entra no Liriun se não estiver a serviço de menos atrito, menos ruído, menos carga.",
+      "p3": "Por isso construímos o Liriun como um companheiro discreto: ele escuta, organiza, lembra. Você volta a viver, não a gerenciar listas."
+    },
+    "produto": {
+      "eyebrow": "O que fazemos hoje",
+      "titlePrefix": "Hoje:",
+      "titleBrand": "Liriun",
+      "body": "O Liriun é nosso primeiro produto: um organizador pessoal de tarefas com IA conversacional. Mais do que um app de produtividade, é uma extensão calma da sua mente — e o primeiro passo da nossa missão de devolver tempo às pessoas.",
+      "ctaSobre": "Conhecer o Liriun",
+      "ctaSignup": "Criar conta grátis"
+    },
+    "valores": {
+      "eyebrow": "No que acreditamos",
+      "title": "Os princípios que guiam o que fazemos.",
+      "v1": {
+        "title": "Software leve, vida leve",
+        "body": "Tecnologia bem feita não compete por atenção. Você abre quando precisa, ela se afasta quando não precisa."
+      },
+      "v2": {
+        "title": "Conversa antes de comando",
+        "body": "A forma mais natural de organizar a vida é falando dela. Substituímos formulários por linguagem sempre que possível."
+      },
+      "v3": {
+        "title": "Privacidade é direito",
+        "body": "Seus dados são seus. Não vendemos, não treinamos IA com eles, não compartilhamos. Quando você sai, levamos tudo embora."
+      },
+      "v4": {
+        "title": "Pessoa antes do produto",
+        "body": "Medimos sucesso pelo que você sente — não pelo tempo que passou no app. Se aliviou, acertamos."
+      }
+    },
+    "contato": {
+      "eyebrow": "Falar com a gente",
+      "title": "Estamos aqui.",
+      "body": "Para parcerias, imprensa, sugestões ou apenas para dizer olá — estamos disponíveis em",
+      "cta": "Mandar e-mail",
+      "footer": "Lemos cada mensagem. Resposta em até 48h úteis."
+    }
+  },
+  "Termos": {
+    "title": "Termos de Uso",
+    "description": "Termos de Uso do Liriun — assistente pessoal de tarefas por voz da ToMore.",
+    "lastUpdate": "Última atualização: 9 de maio de 2026 · V1",
+    "notice": "Documento elaborado com base no Marco Civil da Internet (Lei 12.965/2014), CDC (Lei 8.078/1990) e LGPD (Lei 13.709/2018). Antes do cadastro público, será revisto por advogado especializado em direito digital.",
+    "doubts": "Dúvidas? Escreva para"
+  },
+  "Privacidade": {
+    "title": "Política de Privacidade",
+    "description": "Como o Liriun coleta, usa e protege seus dados pessoais — em conformidade com a LGPD.",
+    "lastUpdate": "Última atualização: 9 de maio de 2026 · V1",
+    "notice": "Documento elaborado com base na LGPD (Lei 13.709/2018), Marco Civil da Internet (Lei 12.965/2014) e orientações da ANPD. Antes do cadastro público, será revisto por advogado especializado em direito digital."
+  },
+  "LocaleSwitcher": {
+    "label": "Idioma",
+    "pt": "Português",
+    "en": "English"
+  },
+  "Auth": {
+    "kicker": "Beta · maio 2026",
+    "loginTitle": "Bom te ver",
+    "loginLead": "Sua próxima tarefa, na voz.",
+    "signupTitle": "Criar conta",
+    "signupLead": "Beta aberto · gratuito.",
+    "recoverTitle": "Recuperar senha",
+    "recoverLead": "Enviaremos um link pra você redefinir sua senha.",
+    "email": "E-mail",
+    "senha": "Senha",
+    "nome": "Nome",
+    "entrar": "Entrar",
+    "criarConta": "Criar conta",
+    "jaTemConta": "Já tenho conta — entrar",
+    "esqueciSenha": "Esqueci minha senha",
+    "enviarLink": "Enviar link",
+    "voltarLogin": "Voltar pro login",
+    "aceitarTermos": "Li e aceito os Termos de Uso e a Política de Privacidade.",
+    "aceitarTermosPrefixo": "Li e aceito os",
+    "termosLink": "Termos de Uso",
+    "aceitarTermosE": " e a",
+    "privacidadeLink": "Política de Privacidade",
+    "passwordReq": {
+      "aria": "Requisitos da senha",
+      "length": "No mínimo 8 caracteres",
+      "uppercase": "Pelo menos uma letra maiúscula",
+      "special": "Pelo menos um caractere especial"
+    },
+    "erroEmailInvalido": "E-mail inválido.",
+    "erroSenhaCurta": "Senha precisa atender todos os requisitos.",
+    "erroNomeObrigatorio": "Nome obrigatório.",
+    "erroAceiteTermos": "É preciso aceitar os Termos e a Política de Privacidade.",
+    "erroLogin": "Falha no login. Verifique e-mail e senha.",
+    "linkEnviado": "Link enviado. Confira seu e-mail."
+  },
+  "AppShell": {
+    "falar": "Falar",
+    "hoje": "Hoje",
+    "tarefas": "Tarefas",
+    "atividade": "Atividade",
+    "configuracoes": "Configurações",
+    "sair": "Sair",
+    "perfil": "Perfil"
+  },
+  "AppPlaceholder": {
+    "emConstrucao": "Em construção. Funcionalidade chega na próxima sprint.",
+    "voltarHome": "Voltar pra home"
+  },
+  "Onboarding": {
+    "kicker": "Vamos começar",
+    "title": "Como você organiza suas tarefas?",
+    "lead": "Categorias agrupam tarefas pelo contexto. Escolha as que fazem sentido — você ajusta depois.",
+    "templatesTitle": "Sugestões",
+    "customTitle": "Criar do zero",
+    "customPlaceholder": "Nome da categoria",
+    "adicionar": "Adicionar",
+    "selecionadas": "Selecionadas",
+    "remover": "Remover",
+    "continuar": "Continuar",
+    "salvando": "Salvando…",
+    "vazioErro": "Selecione ou crie pelo menos uma categoria.",
+    "salvarErro": "Não consegui salvar. Tenta de novo.",
+    "templates": {
+      "trabalho": "Trabalho",
+      "faculdade": "Faculdade",
+      "casa": "Casa",
+      "compras": "Compras",
+      "pessoal": "Pessoal"
+    }
+  }
+}

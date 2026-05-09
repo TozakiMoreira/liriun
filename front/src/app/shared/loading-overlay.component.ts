@@ -15,7 +15,7 @@ import { SpinnerComponent } from './spinner.component';
       aria-live="polite"
     >
       <div class="flex flex-col items-center gap-4 px-6 py-8">
-        <img src="/logo.png" alt="" class="w-12 h-12 object-contain animate-pulse-soft" aria-hidden="true" />
+        <img src="/liriun-assets/logo/liriun-icon.svg" alt="" class="w-12 h-12 object-contain animate-pulse-soft" aria-hidden="true" />
         <div class="text-[18px] font-semibold tracking-tight"><app-brand /></div>
         <div class="flex items-center gap-2 text-text-dim text-sm">
           <app-spinner tamanho="sm" />

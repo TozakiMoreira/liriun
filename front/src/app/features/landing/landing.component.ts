@@ -39,7 +39,7 @@ import { SiteFooterComponent } from '../../shared/site-footer.component';
         <div class="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between gap-3">
           <a routerLink="/" class="flex items-center gap-2.5" data-testid="landing-logo">
             <img
-              src="/logo.png"
+              src="/liriun-assets/logo/liriun-icon.svg"
               alt="Liriun"
               class="w-9 h-9 object-contain"
               aria-hidden="true"
@@ -407,7 +407,7 @@ import { SiteFooterComponent } from '../../shared/site-footer.component';
                 >
                     <!-- Chat header -->
                     <div class="flex items-center gap-2.5 px-4 md:px-5 py-3 md:py-4 border-b border-border">
-                      <img src="/logo.png" alt="Liriun" class="w-7 h-7 md:w-9 md:h-9 rounded object-contain" />
+                      <img src="/liriun-assets/logo/liriun-icon.svg" alt="Liriun" class="w-7 h-7 md:w-9 md:h-9 rounded object-contain" />
                       <div class="flex flex-col leading-tight flex-1 min-w-0">
                         <strong class="text-text font-semibold text-[13px] md:text-[15px]"><app-brand /></strong>
                         <span class="text-[10px] md:text-[11px] text-text-subtle flex items-center gap-1">
@@ -425,7 +425,7 @@ import { SiteFooterComponent } from '../../shared/site-footer.component';
                     <!-- Messages -->
                     <div class="px-4 md:px-5 py-4 md:py-5 flex flex-col gap-3 md:gap-4 min-h-[360px] md:min-h-[440px]">
                       <div class="flex items-start gap-2 md:gap-2.5">
-                        <img class="w-6 h-6 md:w-7 md:h-7 rounded object-contain shrink-0 mt-0.5" src="/logo.png" alt="Liriun" />
+                        <img class="w-6 h-6 md:w-7 md:h-7 rounded object-contain shrink-0 mt-0.5" src="/liriun-assets/logo/liriun-icon.svg" alt="Liriun" />
                         <div class="bg-bg-input border border-border rounded-lg rounded-tl-sm px-3 md:px-4 py-2 md:py-2.5 text-[12px] md:text-[14px] max-w-[85%] text-text-dim">
                           @if (locale.locale() === 'pt') {
                             Olá Lucas, no que posso te ajudar hoje?
@@ -446,7 +446,7 @@ import { SiteFooterComponent } from '../../shared/site-footer.component';
                       </div>
 
                       <div class="flex items-start gap-2 md:gap-2.5">
-                        <img class="w-6 h-6 md:w-7 md:h-7 rounded object-contain shrink-0 mt-0.5" src="/logo.png" alt="Liriun" />
+                        <img class="w-6 h-6 md:w-7 md:h-7 rounded object-contain shrink-0 mt-0.5" src="/liriun-assets/logo/liriun-icon.svg" alt="Liriun" />
                         <div class="bg-bg-input border border-border rounded-lg rounded-tl-sm px-3 md:px-4 py-2 md:py-2.5 text-[12px] md:text-[14px] max-w-[85%] text-text-dim">
                           @if (locale.locale() === 'pt') {
                             Anotado. Faltou só o local — ajustes se quiser.
@@ -457,7 +457,7 @@ import { SiteFooterComponent } from '../../shared/site-footer.component';
                       </div>
 
                       <div class="flex items-start gap-2 md:gap-2.5">
-                        <img class="w-6 h-6 md:w-7 md:h-7 rounded object-contain shrink-0 mt-0.5" src="/logo.png" alt="Liriun" />
+                        <img class="w-6 h-6 md:w-7 md:h-7 rounded object-contain shrink-0 mt-0.5" src="/liriun-assets/logo/liriun-icon.svg" alt="Liriun" />
                         <div class="flex-1 bg-bg-input border border-accent/40 rounded-lg overflow-hidden">
                           <div class="px-2.5 md:px-3 py-1 md:py-1.5 border-b border-border bg-accent/5 flex items-center gap-1.5 text-[9px] md:text-[10px] uppercase tracking-wider text-accent font-semibold">
                             <i class="fa-solid fa-clipboard-check text-[8px] md:text-[9px]"></i>
