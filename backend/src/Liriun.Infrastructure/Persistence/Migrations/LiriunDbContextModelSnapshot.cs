@@ -51,72 +51,6 @@ namespace Liriun.Infrastructure.Persistence.Migrations
                     b.ToTable("categorias", (string)null);
                 });
 
-            modelBuilder.Entity("Liriun.Infrastructure.Persistence.Models.LancamentoModel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasColumnName("id");
-
-                    b.Property<string>("AnexoBoleto")
-                        .HasColumnType("text")
-                        .HasColumnName("anexo_boleto");
-
-                    b.Property<short>("Categoria")
-                        .HasColumnType("smallint")
-                        .HasColumnName("categoria");
-
-                    b.Property<DateTime>("CriadoEm")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("criado_em");
-
-                    b.Property<DateTime>("DataReferencia")
-                        .HasColumnType("date")
-                        .HasColumnName("data_referencia");
-
-                    b.Property<string>("Descricao")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
-                        .HasColumnName("descricao");
-
-                    b.Property<string>("Observacoes")
-                        .HasColumnType("text")
-                        .HasColumnName("observacoes");
-
-                    b.Property<DateTime?>("PagoEm")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("pago_em");
-
-                    b.Property<short>("Recorrencia")
-                        .HasColumnType("smallint")
-                        .HasColumnName("recorrencia");
-
-                    b.Property<short>("Status")
-                        .HasColumnType("smallint")
-                        .HasColumnName("status");
-
-                    b.Property<short>("Tipo")
-                        .HasColumnType("smallint")
-                        .HasColumnName("tipo");
-
-                    b.Property<Guid>("UsuarioId")
-                        .HasColumnType("uuid")
-                        .HasColumnName("usuario_id");
-
-                    b.Property<decimal>("Valor")
-                        .HasColumnType("numeric(14,2)")
-                        .HasColumnName("valor");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UsuarioId", "DataReferencia");
-
-                    b.HasIndex("UsuarioId", "Tipo", "Status");
-
-                    b.ToTable("lancamentos", (string)null);
-                });
-
             modelBuilder.Entity("Liriun.Infrastructure.Persistence.Models.TarefaCategoriaModel", b =>
                 {
                     b.Property<Guid>("TarefaId")
@@ -246,15 +180,6 @@ namespace Liriun.Infrastructure.Persistence.Migrations
                 });
 
             modelBuilder.Entity("Liriun.Infrastructure.Persistence.Models.CategoriaModel", b =>
-                {
-                    b.HasOne("Liriun.Infrastructure.Persistence.Models.UsuarioModel", null)
-                        .WithMany()
-                        .HasForeignKey("UsuarioId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Liriun.Infrastructure.Persistence.Models.LancamentoModel", b =>
                 {
                     b.HasOne("Liriun.Infrastructure.Persistence.Models.UsuarioModel", null)
                         .WithMany()

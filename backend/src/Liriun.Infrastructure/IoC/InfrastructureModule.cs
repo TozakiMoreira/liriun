@@ -29,12 +29,10 @@ public static class InfrastructureModule
         services.AddScoped<IUsuarioRepository, UsuarioRepository>();
         services.AddScoped<ICategoriaRepository, CategoriaRepository>();
         services.AddScoped<ITarefaRepository, TarefaRepository>();
-        services.AddScoped<ILancamentoRepository, LancamentoRepository>();
 
         services.AddScoped<IUsuarioReadRepository, UsuarioReadRepository>();
         services.AddScoped<ICategoriaReadRepository, CategoriaReadRepository>();
         services.AddScoped<ITarefaReadRepository, TarefaReadRepository>();
-        services.AddScoped<ILancamentoReadRepository, LancamentoReadRepository>();
 
         JwtOptions jwtOptions = configuration.GetSection("Jwt").Get<JwtOptions>()
             ?? throw new InvalidOperationException("Secao 'Jwt' nao configurada");

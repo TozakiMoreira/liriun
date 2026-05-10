@@ -2,7 +2,6 @@ using FluentValidation;
 using Liriun.Application.UseCases.Auth;
 using Liriun.Application.UseCases.Categorias;
 using Liriun.Application.UseCases.Ia;
-using Liriun.Application.UseCases.Lancamentos;
 using Liriun.Application.UseCases.Tarefas;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -37,15 +36,6 @@ public static class ApplicationModule
         services.AddScoped<RemoverTarefaUseCase>();
 
         services.AddScoped<ConversarCapturaUseCase>();
-
-        services.AddScoped<ListarLancamentosUseCase>();
-        services.AddScoped<CriarLancamentoUseCase>();
-        services.AddScoped<AtualizarLancamentoUseCase>();
-        services.AddScoped<RemoverLancamentoUseCase>();
-        services.AddScoped<MarcarPagoUseCase>();
-        services.AddScoped<DesfazerPagamentoUseCase>();
-        services.AddScoped<ObterBalancoUseCase>();
-        services.AddScoped<ObterAnexoUseCase>();
 
         return services;
     }
