@@ -1,5 +1,7 @@
 "use client";
 
+export const runtime = "edge";
+
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { Modal } from "@/components/app/modal";

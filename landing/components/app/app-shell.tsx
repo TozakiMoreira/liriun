@@ -276,26 +276,27 @@ function MobileTabBar({
       className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-border backdrop-blur-md"
       style={{ background: "var(--liriun-bg-translucent)" }}
     >
-      <div className="flex items-end justify-around py-2 px-1">
+      <div className="grid grid-cols-5 items-end py-2 px-2 pb-[max(8px,env(safe-area-inset-bottom))]">
         {mobileItems.map((item) => {
           const active = pathname.startsWith(item.href);
           const Icon = item.icon;
 
           if ((item as { highlighted?: boolean }).highlighted) {
             return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="-mt-7 mb-1 w-14 h-14 rounded-pill grid place-items-center transition-transform active:scale-95"
-                aria-label={t(item.key)}
-                style={{
-                  background: "var(--liriun-grad-brand)",
-                  boxShadow:
-                    "0 12px 28px rgba(91,141,239,0.45), inset 0 1px 0 rgba(255,255,255,0.25)",
-                }}
-              >
-                <Icon active />
-              </Link>
+              <div key={item.href} className="flex justify-center">
+                <Link
+                  href={item.href}
+                  className="-mt-7 w-14 h-14 rounded-pill grid place-items-center transition-transform active:scale-95"
+                  aria-label={t(item.key)}
+                  style={{
+                    background: "var(--liriun-grad-brand)",
+                    boxShadow:
+                      "0 12px 28px rgba(91,141,239,0.45), inset 0 1px 0 rgba(255,255,255,0.25)",
+                  }}
+                >
+                  <Icon active />
+                </Link>
+              </div>
             );
           }
 
@@ -303,7 +304,7 @@ function MobileTabBar({
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center gap-1 px-3 py-1 ${
+              className={`flex flex-col items-center justify-end gap-1 py-1 ${
                 active ? "text-violet-300" : "text-muted"
               }`}
             >

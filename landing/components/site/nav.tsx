@@ -47,7 +47,7 @@ export function SiteNav() {
             </Link>
           ) : (
             <>
-              <Link href="/login" className="hidden md:inline text-sm text-muted font-medium hover:text-text">
+              <Link href="/login" className="text-sm text-muted font-medium hover:text-text">
                 {t("entrar")}
               </Link>
               <Link href="/cadastro">

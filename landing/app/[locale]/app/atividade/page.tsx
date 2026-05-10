@@ -1,5 +1,7 @@
 "use client";
 
+export const runtime = "edge";
+
 import { useMemo } from "react";
 
 import { AppPageHeader } from "@/components/app/page-header";
