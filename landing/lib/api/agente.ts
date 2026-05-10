@@ -31,4 +31,20 @@ export type ConversaResponse = {
 export const agenteApi = {
   conversar: (input: ConversarInput) =>
     api<ConversaResponse>("/captura/conversar", { method: "POST", body: input }),
+
+  conversarComAudio: (audio: Blob, historico: Mensagem[], idioma: "pt" | "en" = "pt") => {
+    const ext = audio.type.includes("mp4")
+      ? "m4a"
+      : audio.type.includes("ogg")
+        ? "ogg"
+        : "webm";
+    const form = new FormData();
+    form.append("audio", audio, `mensagem.${ext}`);
+    form.append("historico", JSON.stringify(historico));
+    form.append("idioma", idioma);
+    return api<ConversaResponse>("/captura/conversar-audio", {
+      method: "POST",
+      body: form,
+    });
+  },
 };

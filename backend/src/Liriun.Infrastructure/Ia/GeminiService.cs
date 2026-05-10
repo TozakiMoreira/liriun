@@ -269,7 +269,17 @@ REGRAS DE HORA:
 - HH:MM 24h apenas se mencionada ('19h'=19:00, '18h30'=18:30, 'manha'=09:00, 'tarde'=14:00, 'noite'=19:00, 'meio-dia'=12:00). null caso contrario.
 
 REGRAS DE CATEGORIA:
-- Use ids OBVIOS do texto (ex: 'comprar pao' + categoria 'Compras' existe -> use). [] em duvida.
+- SEMPRE escolha 1 categoria razoavel das disponiveis. NAO deixe [] por preguica nem por nao ser 'obvio' — pense em qual area da vida do usuario a tarefa pertence.
+- Heuristica: qual dessas categorias melhor agrupa essa tarefa no dia-a-dia?
+- Exemplos:
+  * 'comprar pao' + ['Compras','Casa','Trabalho'] -> 'Compras' (obvio).
+  * 'instalar linux no notebook' + ['Trabalho','Pessoal','Casa','Estudos'] -> 'Pessoal' (item tecnico do PC pessoal).
+  * 'reuniao com cliente' + ['Trabalho','Pessoal'] -> 'Trabalho'.
+  * 'lavar louca' + ['Casa','Trabalho'] -> 'Casa'.
+  * 'estudar matematica' + ['Faculdade','Estudos','Trabalho'] -> 'Faculdade' (se existir) ou 'Estudos'.
+  * 'consulta no dentista' + ['Saude','Pessoal'] -> 'Saude'.
+- So deixe [] quando NENHUMA categoria existente tiver minima relacao com a tarefa, ou quando o usuario disser explicitamente 'sem categoria'.
+- Maximo 1 categoria (a melhor). NAO marque varias por seguranca.
 
 REGRAS DE PRIORIDADE:
 - 1=Urgente (palavras 'urgente', 'agora', 'asap', 'emergencia')
@@ -283,7 +293,8 @@ OBSERVACOES:
 
 MENSAGEM:
 - 1 frase curta, primeira pessoa, sem emoji.
-- Se faltou data, hora, categoria ou local relevante, mencione SECO o que faltou pra ajustar.
+- Se faltou DATA ou HORA, mencione SECO o que faltou pra ajustar.
+- NUNCA mencione categoria na mensagem — voce ja escolheu uma das disponiveis (ou [] silencioso se nenhuma encaixa).
 - Exemplos: 'Anotado.' / 'Anotado. Faltou hora.' / 'Anotado. Sem data, ajusta se quiser.'
 - NUNCA 'Faltou o que fazer' se voce conseguiu inferir um titulo. So diga isso se titulo realmente ficou impossivel.
 
