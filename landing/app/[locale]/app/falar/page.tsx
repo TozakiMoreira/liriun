@@ -2,8 +2,19 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
+import { Modal } from "@/components/app/modal";
+import { TarefaForm } from "@/components/app/tarefa-form";
 import { useUsuarioAtual } from "@/components/auth/auth-provider";
-import { agenteApi, type Mensagem } from "@/lib/api/agente";
+import { agenteApi, type Mensagem, type SugestaoTarefa } from "@/lib/api/agente";
+import {
+  categoriasApi,
+  tarefasApi,
+  type Categoria,
+  type CriarTarefaInput,
+  type Prioridade,
+  type Tarefa,
+  type TarefaCategoria,
+} from "@/lib/api/tarefas";
 
 type ChatMessage = {
   id: string;
@@ -13,6 +24,8 @@ type ChatMessage = {
 };
 
 type Modo = "voz" | "texto";
+
+const MAX_DURACAO_MS = 60_000; // 60s — igual V1, backend aceita até 8MB (~60s opus)
 
 export default function FalarPage() {
   const usuario = useUsuarioAtual();
@@ -24,33 +37,47 @@ export default function FalarPage() {
   const [enviando, setEnviando] = useState(false);
   const [gravando, setGravando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
-  const [sttSuportado, setSttSuportado] = useState<boolean | null>(null);
+  const [audioSuportado, setAudioSuportado] = useState<boolean | null>(null);
+  const [sugestao, setSugestao] = useState<SugestaoTarefa | null>(null);
+  const [salvando, setSalvando] = useState(false);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [editandoAberto, setEditandoAberto] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const MAX_DURACAO_MS = 20_000; // 20s hard limit
-
-  // Detect Web Speech API support
+  // Detecta suporte a MediaRecorder + getUserMedia
   useEffect(() => {
-    const SR =
-      (typeof window !== "undefined" &&
-        ((window as unknown as { SpeechRecognition?: typeof SpeechRecognition })
-          .SpeechRecognition ||
-          (window as unknown as { webkitSpeechRecognition?: typeof SpeechRecognition })
-            .webkitSpeechRecognition)) ||
-      null;
-    setSttSuportado(SR !== null);
+    const ok =
+      typeof window !== "undefined" &&
+      typeof navigator !== "undefined" &&
+      !!navigator.mediaDevices?.getUserMedia &&
+      typeof MediaRecorder !== "undefined";
+    setAudioSuportado(ok);
+  }, []);
+
+  // Carrega categorias do usuário (pra mostrar nomes no card de sugestão)
+  useEffect(() => {
+    categoriasApi
+      .listar()
+      .then(setCategorias)
+      .catch(() => {
+        // silencia: card só não mostra nome de categoria
+      });
   }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
-  }, [mensagens]);
+  }, [mensagens, sugestao]);
 
   async function enviar(textoUsuario: string) {
     const texto = textoUsuario.trim();
     if (!texto || enviando) return;
+
+    const sugestaoAnterior = sugestao;
 
     const userMsg: ChatMessage = {
       id: `${Date.now()}-u`,
@@ -83,6 +110,10 @@ export default function FalarPage() {
           msg.id === agenteMsg.id ? { ...msg, conteudo: res.mensagem, pendente: false } : msg,
         ),
       );
+      setSugestao(res.tarefa);
+      if (deveAutoSalvar(sugestaoAnterior, res.tarefa, texto)) {
+        void salvarSugestao(res.tarefa);
+      }
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Falha ao falar com o agente");
       setMensagens((m) => m.filter((msg) => msg.id !== agenteMsg.id));
@@ -91,112 +122,197 @@ export default function FalarPage() {
     }
   }
 
-  async function startRecognition() {
-    if (gravando || enviando) return;
+  async function enviarAudio(blob: Blob) {
+    if (enviando) return;
 
-    const SR =
-      (window as unknown as { SpeechRecognition?: typeof SpeechRecognition }).SpeechRecognition ||
-      (window as unknown as { webkitSpeechRecognition?: typeof SpeechRecognition })
-        .webkitSpeechRecognition;
-    if (!SR) {
-      setErro("Reconhecimento de voz não suportado neste navegador. Use o modo texto.");
-      setModo("texto");
-      return;
-    }
+    const sugestaoAnterior = sugestao;
 
-    // Pede permissão explícita do mic via getUserMedia.
-    // Sem isso o Chrome às vezes bloqueia silenciosamente em localhost.
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      stream.getTracks().forEach((t) => t.stop()); // só pra obter permissão; SR abre próprio stream
-    } catch (err) {
-      setErro(
-        err instanceof Error
-          ? `Permissão de microfone negada (${err.message}). Habilite em Configurações do navegador.`
-          : "Permissão de microfone negada.",
-      );
-      return;
-    }
-
-    const recognition = new SR();
-    recognition.lang = "pt-BR";
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
-
-    recognition.onstart = () => {
-      console.log("[stt] iniciado");
+    const userMsg: ChatMessage = {
+      id: `${Date.now()}-u`,
+      papel: "usuario",
+      conteudo: "",
+      pendente: true,
     };
-    recognition.onaudiostart = () => console.log("[stt] capturando áudio");
-    recognition.onspeechstart = () => console.log("[stt] fala detectada");
-    recognition.onspeechend = () => console.log("[stt] fala terminou");
-    recognition.onnomatch = () => {
-      console.warn("[stt] nenhum resultado");
-      setErro("Não entendi. Tente falar de novo, mais claro.");
-    };
-    recognition.onresult = (e: SpeechRecognitionEvent) => {
-      const result = e.results[0]?.[0]?.transcript;
-      console.log("[stt] resultado:", result);
-      if (result) void enviar(result);
-    };
-    recognition.onerror = (e: SpeechRecognitionErrorEvent) => {
-      console.error("[stt] erro:", e.error, e);
-      const msgs: Record<string, string> = {
-        "not-allowed": "Permissão de microfone negada. Habilite no navegador.",
-        "service-not-allowed": "Serviço de voz indisponível. Tente outro navegador.",
-        "no-speech": "Nada foi dito. Tente de novo.",
-        "audio-capture": "Microfone não encontrado.",
-        network: "Falha de rede. Web Speech API exige internet (envia áudio pro Google).",
-        aborted: "Cancelado.",
-      };
-      setErro(msgs[e.error] ?? `Erro no microfone: ${e.error}`);
-      setGravando(false);
-    };
-    recognition.onend = () => {
-      console.log("[stt] encerrado");
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-      setGravando(false);
+    const agenteMsg: ChatMessage = {
+      id: `${Date.now()}-a`,
+      papel: "liriun",
+      conteudo: "…",
+      pendente: true,
     };
 
-    recognitionRef.current = recognition;
-    setGravando(true);
+    setMensagens((m) => [...m, userMsg, agenteMsg]);
+    setEnviando(true);
     setErro(null);
 
-    // Hard timeout — para mesmo se browser não detectar silêncio
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    timeoutRef.current = setTimeout(() => {
-      console.log("[stt] timeout 20s atingido");
-      try {
-        recognition.stop();
-      } catch (e) {
-        console.error("[stt] stop após timeout falhou:", e);
-      }
-      setGravando(false);
-    }, MAX_DURACAO_MS);
-
     try {
-      recognition.start();
+      const historico: Mensagem[] = mensagens.map((m) => ({
+        papel: m.papel,
+        texto: m.conteudo,
+      }));
+      const res = await agenteApi.conversarComAudio(blob, historico, "pt");
+      const transcricao = (res.transcricaoUsuario ?? "").trim() || "(áudio sem transcrição)";
+      setMensagens((m) =>
+        m.map((msg) => {
+          if (msg.id === userMsg.id) return { ...msg, conteudo: transcricao, pendente: false };
+          if (msg.id === agenteMsg.id) return { ...msg, conteudo: res.mensagem, pendente: false };
+          return msg;
+        }),
+      );
+      setSugestao(res.tarefa);
+      if (deveAutoSalvar(sugestaoAnterior, res.tarefa, transcricao)) {
+        void salvarSugestao(res.tarefa);
+      }
     } catch (err) {
-      console.error("[stt] start falhou:", err);
-      setErro("Falha ao iniciar gravação.");
-      setGravando(false);
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      console.error("[audio] falha ao processar:", err);
+      setErro(err instanceof Error ? err.message : "Falha ao processar áudio");
+      // Mantém a bolha do usuário com indicador de erro e remove só a placeholder do agente.
+      // Limpar as duas faria a tela voltar pro welcome (mensagens.length === 0) e esconde o feedback.
+      setMensagens((m) =>
+        m
+          .filter((msg) => msg.id !== agenteMsg.id)
+          .map((msg) =>
+            msg.id === userMsg.id
+              ? { ...msg, conteudo: "(áudio com erro)", pendente: false }
+              : msg,
+          ),
+      );
+    } finally {
+      setEnviando(false);
     }
   }
 
-  function stopRecognition() {
+  function aposSalvar() {
+    const proxPrompt = primeiroNome
+      ? `Anotado, ${primeiroNome}. Tem mais alguma pra eu registrar?`
+      : "Anotado. Tem mais alguma pra eu registrar?";
+    setSugestao(null);
+    setMensagens([
+      {
+        id: `${Date.now()}-saved`,
+        papel: "liriun",
+        conteudo: proxPrompt,
+      },
+    ]);
+  }
+
+  async function handleEditarSubmit(input: CriarTarefaInput) {
+    await tarefasApi.criar(input);
+    setEditandoAberto(false);
+    aposSalvar();
+  }
+
+  async function salvarSugestao(s: SugestaoTarefa | null) {
+    if (!s || !s.dataPrazo || salvando) return;
+
+    setSalvando(true);
+    setErro(null);
+
+    const payload: CriarTarefaInput = {
+      nome: s.titulo,
+      prioridade: ((s.prioridade ?? 3) as Prioridade),
+      dataPrazo: s.dataPrazo,
+      categoriaIds: s.categoriaIds,
+      horarioFinal: s.horarioFinal ? `${s.horarioFinal}:00` : null,
+      observacoes: s.observacoes,
+    };
+
+    try {
+      await tarefasApi.criar(payload);
+      aposSalvar();
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Falha ao salvar a tarefa");
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  async function iniciarGravacao() {
+    if (gravando || enviando || audioSuportado === false) return;
+    setErro(null);
+
+    let stream: MediaStream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (e) {
+      setErro(mensagemErroPermissao(e));
+      return;
+    }
+
+    const mime = detectarMimeGravacao();
+    let recorder: MediaRecorder;
+    try {
+      recorder = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+    } catch {
+      stream.getTracks().forEach((t) => t.stop());
+      setErro("Não consegui iniciar a gravação no seu navegador.");
+      return;
+    }
+
+    streamRef.current = stream;
+    recorderRef.current = recorder;
+    chunksRef.current = [];
+
+    recorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) chunksRef.current.push(e.data);
+    };
+    recorder.onstop = () => {
+      const tipo = recorder.mimeType || mime || "audio/webm";
+      const chunks = chunksRef.current;
+      chunksRef.current = [];
+      streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
+      recorderRef.current = null;
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+      setGravando(false);
+
+      if (chunks.length > 0) {
+        const blob = new Blob(chunks, { type: tipo });
+        if (blob.size > 0) void enviarAudio(blob);
+      }
+    };
+
+    setGravando(true);
+    recorder.start();
+
+    timeoutRef.current = setTimeout(() => {
+      const r = recorderRef.current;
+      if (r && r.state !== "inactive") {
+        try {
+          r.stop();
+        } catch (e) {
+          console.error("[audio] stop após timeout falhou:", e);
+        }
+      }
+    }, MAX_DURACAO_MS);
+  }
+
+  function pararGravacao() {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = null;
-    recognitionRef.current?.stop();
-    setGravando(false);
+    const recorder = recorderRef.current;
+    if (recorder && recorder.state !== "inactive") {
+      try {
+        recorder.stop();
+      } catch (e) {
+        console.error("[audio] erro ao parar:", e);
+      }
+    }
   }
 
   // Cleanup no unmount
   useEffect(() => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      recognitionRef.current?.stop();
+      const r = recorderRef.current;
+      if (r && r.state !== "inactive") {
+        try {
+          r.stop();
+        } catch {
+          // ignore
+        }
+      }
+      streamRef.current?.getTracks().forEach((t) => t.stop());
     };
   }, []);
 
@@ -256,8 +372,8 @@ export default function FalarPage() {
                   )}
                   <button
                     type="button"
-                    onClick={gravando ? stopRecognition : startRecognition}
-                    disabled={enviando || sttSuportado === false}
+                    onClick={gravando ? pararGravacao : iniciarGravacao}
+                    disabled={enviando || audioSuportado === false}
                     aria-label={gravando ? "Parar gravação" : "Falar"}
                     className="relative w-[120px] h-[120px] rounded-pill grid place-items-center transition-transform active:scale-95 disabled:opacity-50"
                     style={{
@@ -270,7 +386,11 @@ export default function FalarPage() {
                   </button>
                 </div>
                 <span className="font-mono text-[11px] uppercase tracking-[1.2px] text-faint">
-                  {gravando ? "Ouvindo… toque pra parar" : "Toque pra falar"}
+                  {gravando
+                    ? "Ouvindo… toque pra parar"
+                    : enviando
+                      ? "Transcrevendo…"
+                      : "Toque pra falar"}
                 </span>
                 <button
                   type="button"
@@ -332,6 +452,7 @@ export default function FalarPage() {
             setMensagens([]);
             setInput("");
             setErro(null);
+            setSugestao(null);
           }}
           aria-label="Nova conversa"
           title="Nova conversa"
@@ -352,13 +473,37 @@ export default function FalarPage() {
         <div className="max-w-[760px] mx-auto py-8 flex flex-col gap-4">
           {mensagens.map((m) =>
             m.papel === "usuario" ? (
-              <UserBubble key={m.id} text={m.conteudo} />
+              <UserBubble key={m.id} text={m.conteudo} pendente={m.pendente} />
             ) : (
               <AgenteBubble key={m.id} text={m.conteudo} pendente={m.pendente} />
             ),
           )}
+          {sugestao && (
+            <SugestaoCard
+              sugestao={sugestao}
+              categorias={categorias}
+              salvando={salvando}
+              onSalvar={() => void salvarSugestao(sugestao)}
+              onEditar={() => setEditandoAberto(true)}
+            />
+          )}
         </div>
       </section>
+
+      <Modal
+        open={editandoAberto}
+        onClose={() => setEditandoAberto(false)}
+        title="Editar tarefa"
+        size="md"
+      >
+        {sugestao && (
+          <TarefaForm
+            tarefa={sugestaoToTarefa(sugestao, categorias)}
+            onSubmit={handleEditarSubmit}
+            onCancel={() => setEditandoAberto(false)}
+          />
+        )}
+      </Modal>
 
       <footer className="px-6 md:px-12 pb-6 md:pb-10 border-t border-border bg-bg/60 backdrop-blur-md">
         <div className="max-w-[760px] mx-auto pt-4">
@@ -378,8 +523,8 @@ export default function FalarPage() {
             />
             <button
               type="button"
-              onClick={gravando ? stopRecognition : startRecognition}
-              disabled={enviando || sttSuportado === false}
+              onClick={gravando ? pararGravacao : iniciarGravacao}
+              disabled={enviando || audioSuportado === false}
               aria-label={gravando ? "Parar gravação" : "Falar"}
               className={`w-12 h-12 rounded-pill grid place-items-center text-white transition-all disabled:opacity-50 ${
                 gravando ? "" : "border border-border-hi text-muted hover:text-text"
@@ -416,55 +561,234 @@ export default function FalarPage() {
   );
 }
 
-function ModoToggle({
-  modo,
-  setModo,
-  sttSuportado,
+function detectarMimeGravacao(): string {
+  if (typeof MediaRecorder === "undefined" || typeof MediaRecorder.isTypeSupported !== "function") {
+    return "";
+  }
+  // Ordem importa: webm/opus é o mais leve e universal em Chromium;
+  // mp4 é o único aceito pelo Safari iOS; ogg é fallback Firefox.
+  const candidatos = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4", "audio/ogg;codecs=opus"];
+  for (const c of candidatos) {
+    if (MediaRecorder.isTypeSupported(c)) return c;
+  }
+  return "";
+}
+
+function mensagemErroPermissao(e: unknown): string {
+  const nome = (e as { name?: string } | null)?.name ?? "";
+  if (nome === "NotAllowedError" || nome === "SecurityError") {
+    return "Microfone bloqueado. Libera no cadeado ao lado da URL e tenta de novo.";
+  }
+  if (nome === "NotFoundError" || nome === "OverconstrainedError") {
+    return "Não encontrei microfone no seu dispositivo.";
+  }
+  if (nome === "NotReadableError") {
+    return "Microfone ocupado por outro app. Fecha e tenta de novo.";
+  }
+  return "Não consegui acessar o microfone.";
+}
+
+// Auto-save: dispara quando o usuário confirma uma sugestão que já estava na tela.
+// Gating em `anterior` evita auto-save no primeiro turno (usuário precisa ter visto o card antes).
+function deveAutoSalvar(
+  anterior: SugestaoTarefa | null,
+  nova: SugestaoTarefa | null,
+  textoUsuario: string,
+): boolean {
+  if (!anterior) return false;
+  if (!nova) return false;
+  if (!nova.dataPrazo) return false;
+  return ehConfirmacao(textoUsuario);
+}
+
+const CONFIRMACOES_CURTAS = new Set([
+  "sim", "ok", "beleza", "pode", "isso", "isso mesmo", "fechou",
+  "salva", "salvar", "salve", "pode salvar", "pode anotar",
+  "anota", "anote", "anotar", "confirma", "confirmo", "confirmado",
+  "manda", "manda ver", "tudo certo", "tudo ok", "exatamente",
+  "pode anotar sim", "pode salvar sim",
+]);
+
+function ehConfirmacao(texto: string): boolean {
+  if (!texto) return false;
+  const norm = texto
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/[.!?,;]+$/g, "")
+    .trim();
+  if (norm.length === 0 || norm.length > 30) return false;
+  if (CONFIRMACOES_CURTAS.has(norm)) return true;
+  return /^(salv[ae]\b|pode salvar\b|pode anotar\b|confirma\b|anota\b|manda\b)/.test(norm);
+}
+
+const PRIORIDADE_LABEL: Record<number, string> = {
+  1: "Urgente",
+  2: "Importante",
+  3: "Normal",
+  4: "Baixa",
+};
+
+function rotuloPrioridade(p: number | null): string {
+  if (p === null) return "Normal";
+  return PRIORIDADE_LABEL[p] ?? "Normal";
+}
+
+function formatarData(iso: string | null): string {
+  if (!iso) return "sem data";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return iso;
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+  const alvo = new Date(d);
+  alvo.setHours(0, 0, 0, 0);
+  const diff = Math.round((alvo.getTime() - hoje.getTime()) / 86400000);
+  if (diff === 0) return "hoje";
+  if (diff === 1) return "amanhã";
+  const dd = String(d.getUTCDate()).padStart(2, "0");
+  const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+  return `${dd}/${mm}/${d.getUTCFullYear()}`;
+}
+
+function categoriasNomes(ids: string[], categorias: Categoria[]): string[] {
+  if (!ids?.length || !categorias.length) return [];
+  const map = new Map(categorias.map((c) => [c.id, c.nome]));
+  return ids.map((i) => map.get(i)).filter((n): n is string => !!n);
+}
+
+// Converte SugestaoTarefa (vinda do Gemini) num Tarefa-like pra prefilar o TarefaForm.
+// O form usa initial state — quando dataPrazo é null, defaulta pra hoje (já que prazo é obrigatório no form).
+function sugestaoToTarefa(s: SugestaoTarefa, categorias: Categoria[]): Tarefa {
+  const cats: TarefaCategoria[] = s.categoriaIds
+    .map((id) => categorias.find((c) => c.id === id))
+    .filter((c): c is Categoria => !!c)
+    .map((c) => ({ id: c.id, nome: c.nome }));
+  const agora = new Date().toISOString();
+  return {
+    id: "",
+    nome: s.titulo,
+    prioridade: (s.prioridade ?? 3) as Prioridade,
+    status: 1,
+    dataPrazo: s.dataPrazo ?? agora,
+    horarioFinal: s.horarioFinal ? `${s.horarioFinal}:00` : null,
+    observacoes: s.observacoes,
+    recorrencia: 0,
+    recorrenciaQuantidade: 1,
+    criadaEm: agora,
+    concluidaEm: null,
+    categorias: cats,
+  };
+}
+
+function SugestaoCard({
+  sugestao,
+  categorias,
+  salvando,
+  onSalvar,
+  onEditar,
 }: {
-  modo: Modo;
-  setModo: (m: Modo) => void;
-  sttSuportado: boolean | null;
+  sugestao: SugestaoTarefa;
+  categorias: Categoria[];
+  salvando: boolean;
+  onSalvar: () => void;
+  onEditar: () => void;
 }) {
-  const opts: { id: Modo; label: string; disabled?: boolean }[] = [
-    { id: "voz", label: "Voz", disabled: sttSuportado === false },
-    { id: "texto", label: "Texto" },
-  ];
+  const nomes = categoriasNomes(sugestao.categoriaIds, categorias);
+  const podeSalvar = !!sugestao.dataPrazo && !salvando;
 
   return (
-    <div
-      className="inline-flex p-[3px] rounded-pill border border-border-hi"
-      style={{ background: "rgba(255,255,255,0.04)" }}
-    >
-      {opts.map((o) => {
-        const active = modo === o.id;
-        return (
+    <div className="flex flex-col gap-2 max-w-[78%]">
+      <div className="flex items-center gap-2 font-mono text-[11px] uppercase tracking-[1.2px] text-faint">
+        <span
+          className="w-4 h-4 rounded-pill grid place-items-center"
+          style={{ background: "var(--liriun-grad-brand)" }}
+        >
+          <SparkleIcon size={10} />
+        </span>
+        Tarefa pronta
+      </div>
+      <div
+        className="rounded-[20px_20px_20px_4px] overflow-hidden"
+        style={{
+          background: "rgba(156,123,255,0.08)",
+          border: "1px solid rgba(156,123,255,0.40)",
+          boxShadow: "0 8px 24px rgba(91,141,239,0.18)",
+        }}
+      >
+        <div className="px-4 py-3 flex flex-col gap-2">
+          <div className="text-base font-semibold leading-snug">{sugestao.titulo}</div>
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-sm text-muted">
+            <div>
+              <span className="text-faint">Data: </span>
+              <span className="text-text">{formatarData(sugestao.dataPrazo)}</span>
+              {sugestao.horarioFinal && (
+                <span className="ml-1 text-text">{sugestao.horarioFinal}</span>
+              )}
+            </div>
+            <div>
+              <span className="text-faint">Prioridade: </span>
+              <span className="text-text">{rotuloPrioridade(sugestao.prioridade)}</span>
+            </div>
+          </div>
+          {nomes.length > 0 && (
+            <div className="flex gap-1.5 flex-wrap">
+              {nomes.map((n) => (
+                <span
+                  key={n}
+                  className="text-xs px-2 py-0.5 rounded-pill border border-border-hi text-muted"
+                  style={{ background: "rgba(255,255,255,0.04)" }}
+                >
+                  {n}
+                </span>
+              ))}
+            </div>
+          )}
+          {sugestao.observacoes && (
+            <div
+              className="text-sm text-muted whitespace-pre-wrap pl-3 mt-1 leading-snug"
+              style={{ borderLeft: "2px solid rgba(156,123,255,0.4)" }}
+            >
+              {sugestao.observacoes}
+            </div>
+          )}
+        </div>
+        <div
+          className="px-4 py-2.5 flex justify-end items-center gap-2"
+          style={{
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            background: "rgba(0,0,0,0.18)",
+          }}
+        >
           <button
-            key={o.id}
             type="button"
-            onClick={() => !o.disabled && setModo(o.id)}
-            disabled={o.disabled}
-            className={`px-3 py-1.5 rounded-pill font-mono text-[11px] uppercase tracking-[1px] transition-colors ${
-              active ? "text-white" : "text-muted hover:text-text disabled:text-dim"
-            }`}
-            style={
-              active
-                ? {
-                    background: "var(--liriun-grad-brand)",
-                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.18), 0 4px 12px rgba(91,141,239,0.28)",
-                  }
-                : undefined
-            }
-            title={o.disabled ? "Reconhecimento de voz indisponível neste navegador" : undefined}
+            onClick={onEditar}
+            disabled={salvando}
+            className="px-4 py-2 rounded-pill text-sm font-medium border border-border-hi text-muted hover:text-text transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ background: "rgba(255,255,255,0.04)" }}
           >
-            {o.label}
+            Editar
           </button>
-        );
-      })}
+          <button
+            type="button"
+            disabled={!podeSalvar}
+            onClick={onSalvar}
+            className="px-4 py-2 rounded-pill text-white text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{
+              background: podeSalvar ? "var(--liriun-grad-brand)" : "rgba(255,255,255,0.06)",
+              boxShadow: podeSalvar
+                ? "0 8px 22px rgba(91,141,239,0.35), inset 0 1px 0 rgba(255,255,255,0.22)"
+                : undefined,
+            }}
+          >
+            {salvando ? "Salvando…" : sugestao.dataPrazo ? "Salvar tarefa" : "Faltou data"}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
 
-function UserBubble({ text }: { text: string }) {
+function UserBubble({ text, pendente }: { text: string; pendente?: boolean }) {
   return (
     <div className="flex justify-end">
       <div
@@ -474,7 +798,7 @@ function UserBubble({ text }: { text: string }) {
           boxShadow: "0 8px 24px rgba(91,141,239,0.25), inset 0 1px 0 rgba(255,255,255,0.18)",
         }}
       >
-        {text}
+        {pendente ? <Loader /> : text}
       </div>
     </div>
   );
@@ -535,14 +859,6 @@ function MicIcon({ size = 22 }: { size?: number }) {
       <rect x="9" y="3" width="6" height="12" rx="3" />
       <path d="M5 11a7 7 0 0 0 14 0" />
       <path d="M12 18v3" />
-    </svg>
-  );
-}
-
-function StopIcon() {
-  return (
-    <svg width="26" height="26" viewBox="0 0 24 24" fill="#fff" aria-hidden>
-      <rect x="6" y="6" width="12" height="12" rx="2" />
     </svg>
   );
 }
