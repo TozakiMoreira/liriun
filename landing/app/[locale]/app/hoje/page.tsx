@@ -2,18 +2,32 @@
 
 export const runtime = "edge";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
+import { Modal } from "@/components/app/modal";
+import { TarefaForm } from "@/components/app/tarefa-form";
 import { TarefaRow } from "@/components/app/tarefa-row";
 import { useUsuarioAtual } from "@/components/auth/auth-provider";
 import { useTarefas } from "@/lib/api/hooks/use-tarefas";
 import { ehHoje, paraDataLocal } from "@/lib/datetime";
-import type { Tarefa } from "@/lib/api/tarefas";
+import type { CriarTarefaInput, Tarefa } from "@/lib/api/tarefas";
 
 export default function HojePage() {
-  const { pendentes, concluidas, loading, concluir, reabrir } = useTarefas();
+  const { pendentes, concluidas, loading, concluir, reabrir, atualizar } = useTarefas();
   const usuario = useUsuarioAtual();
   const primeiroNome = usuario?.nome.split(" ")[0] ?? "";
+  const [tarefaEditando, setTarefaEditando] = useState<Tarefa | null>(null);
+
+  function abrirEditar(t: Tarefa) {
+    setTarefaEditando(t);
+  }
+
+  async function handleSubmitForm(input: CriarTarefaInput) {
+    if (tarefaEditando) {
+      await atualizar(tarefaEditando.id, input);
+    }
+    setTarefaEditando(null);
+  }
 
   const tarefasHoje = useMemo<Tarefa[]>(
     () =>
@@ -91,6 +105,7 @@ export default function HojePage() {
                 key={t.id}
                 tarefa={t}
                 onToggle={() => (t.status === 2 ? reabrir(t.id) : concluir(t.id))}
+                onEdit={() => abrirEditar(t)}
               />
             ))}
           </div>
@@ -107,11 +122,27 @@ export default function HojePage() {
                 key={t.id}
                 tarefa={t}
                 onToggle={() => reabrir(t.id)}
+                onEdit={() => abrirEditar(t)}
               />
             ))}
           </div>
         </section>
       )}
+
+      <Modal
+        open={tarefaEditando !== null}
+        onClose={() => setTarefaEditando(null)}
+        title="Editar tarefa"
+        size="md"
+      >
+        {tarefaEditando && (
+          <TarefaForm
+            tarefa={tarefaEditando}
+            onSubmit={handleSubmitForm}
+            onCancel={() => setTarefaEditando(null)}
+          />
+        )}
+      </Modal>
     </div>
   );
 }
@@ -127,13 +158,30 @@ function Stat({
 }) {
   const accent =
     tone === "warning" ? "text-warning" : tone === "success" ? "text-success" : "text-text";
+  // Background e borda sutilmente coloridos por tone — semáforo visual sem agredir.
+  const bg =
+    tone === "warning"
+      ? "rgba(255,185,154,0.06)"
+      : tone === "success"
+        ? "rgba(123,215,176,0.06)"
+        : "rgba(255,255,255,0.035)";
+  const borderColor =
+    tone === "warning"
+      ? "rgba(255,185,154,0.22)"
+      : tone === "success"
+        ? "rgba(123,215,176,0.22)"
+        : "var(--liriun-border-hi)";
   return (
     <div
-      className="rounded-2xl border border-border-hi p-5"
-      style={{ background: "rgba(255,255,255,0.035)" }}
+      className="rounded-2xl border p-4 md:p-5 text-center"
+      style={{ background: bg, borderColor }}
     >
-      <div className="font-mono text-xs uppercase tracking-[1.4px] text-faint mb-3">{label}</div>
-      <div className={`text-3xl font-semibold tracking-[-0.6px] ${accent}`}>{value}</div>
+      <div className="font-mono text-[10px] md:text-xs uppercase tracking-[1.2px] md:tracking-[1.4px] text-faint mb-2 md:mb-3">
+        {label}
+      </div>
+      <div className={`text-2xl md:text-3xl font-semibold tracking-[-0.4px] md:tracking-[-0.6px] ${accent}`}>
+        {value}
+      </div>
     </div>
   );
 }

@@ -44,12 +44,14 @@ export default function FalarPage() {
   const [salvando, setSalvando] = useState(false);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [editandoAberto, setEditandoAberto] = useState(false);
+  const [duracaoMs, setDuracaoMs] = useState(0);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Detecta suporte a MediaRecorder + getUserMedia
   useEffect(() => {
@@ -266,7 +268,10 @@ export default function FalarPage() {
       recorderRef.current = null;
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
+      if (intervalRef.current) clearInterval(intervalRef.current);
+      intervalRef.current = null;
       setGravando(false);
+      setDuracaoMs(0);
 
       if (chunks.length > 0) {
         const blob = new Blob(chunks, { type: tipo });
@@ -275,7 +280,15 @@ export default function FalarPage() {
     };
 
     setGravando(true);
+    setDuracaoMs(0);
     recorder.start();
+
+    // Timer visível: atualiza a cada 250ms baseado em Date.now() pra não acumular drift.
+    const startedAt = Date.now();
+    intervalRef.current = setInterval(() => {
+      const elapsed = Date.now() - startedAt;
+      setDuracaoMs(Math.min(elapsed, MAX_DURACAO_MS));
+    }, 250);
 
     timeoutRef.current = setTimeout(() => {
       const r = recorderRef.current;
@@ -306,6 +319,7 @@ export default function FalarPage() {
   useEffect(() => {
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      if (intervalRef.current) clearInterval(intervalRef.current);
       const r = recorderRef.current;
       if (r && r.state !== "inactive") {
         try {
@@ -387,13 +401,28 @@ export default function FalarPage() {
                     {gravando ? <RecordingWaveform /> : <MicIcon size={44} />}
                   </button>
                 </div>
-                <span className="font-mono text-[11px] uppercase tracking-[1.2px] text-faint">
-                  {gravando
-                    ? "Ouvindo… toque pra parar"
-                    : enviando
-                      ? "Transcrevendo…"
-                      : "Toque pra falar"}
-                </span>
+                {gravando ? (
+                  <div className="flex flex-col items-center gap-1">
+                    <span
+                      className={`font-mono text-base tracking-[1px] tabular-nums transition-colors ${
+                        duracaoMs >= 55_000
+                          ? "text-danger"
+                          : duracaoMs >= 45_000
+                            ? "text-warning"
+                            : "text-violet-300"
+                      }`}
+                    >
+                      {formatarTempo(duracaoMs)} / {formatarTempo(MAX_DURACAO_MS)}
+                    </span>
+                    <span className="font-mono text-[10px] uppercase tracking-[1.2px] text-faint">
+                      toque pra parar
+                    </span>
+                  </div>
+                ) : (
+                  <span className="font-mono text-[11px] uppercase tracking-[1.2px] text-faint">
+                    {enviando ? "Transcrevendo…" : "Toque pra falar"}
+                  </span>
+                )}
                 <button
                   type="button"
                   onClick={() => setModo("texto")}
@@ -514,6 +543,34 @@ export default function FalarPage() {
               {erro}
             </div>
           )}
+          {gravando && (
+            <div
+              className={`mb-3 flex items-center gap-2 px-3 py-2 rounded-md border transition-colors ${
+                duracaoMs >= 55_000
+                  ? "border-danger/40 bg-danger/10"
+                  : duracaoMs >= 45_000
+                    ? "border-warning/40 bg-warning/10"
+                    : "border-violet-500/30 bg-violet-500/10"
+              }`}
+            >
+              <span
+                aria-hidden
+                className={`w-2 h-2 rounded-pill animate-pulse ${
+                  duracaoMs >= 55_000
+                    ? "bg-danger"
+                    : duracaoMs >= 45_000
+                      ? "bg-warning"
+                      : "bg-violet-400"
+                }`}
+              />
+              <span className="font-mono text-xs tracking-[0.5px] tabular-nums">
+                Gravando · {formatarTempo(duracaoMs)} / {formatarTempo(MAX_DURACAO_MS)}
+              </span>
+              <span className="ml-auto font-mono text-[10px] uppercase tracking-[1px] text-faint">
+                toque no mic pra parar
+              </span>
+            </div>
+          )}
           <form onSubmit={handleSubmitTexto} className="flex items-center gap-2">
             <input
               type="text"
@@ -561,6 +618,13 @@ export default function FalarPage() {
       </footer>
     </div>
   );
+}
+
+function formatarTempo(ms: number): string {
+  const totalSec = Math.floor(ms / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
 function detectarMimeGravacao(): string {

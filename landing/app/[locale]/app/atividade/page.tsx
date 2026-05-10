@@ -56,10 +56,15 @@ export default function AtividadePage() {
       />
 
       <div className="max-w-[1080px] mx-auto px-6 md:px-12 pt-10 grid grid-cols-3 gap-4">
-        <Stat label="Concluídas (total)" value={loading ? "—" : stats.total.toString()} />
+        <Stat
+          label="Concluídas"
+          value={loading ? "—" : stats.total.toString()}
+          sub="total"
+        />
         <Stat
           label="Streak atual"
-          value={loading ? "—" : `${stats.streak} ${stats.streak === 1 ? "dia" : "dias"}`}
+          value={loading ? "—" : stats.streak.toString()}
+          sub={loading ? undefined : stats.streak === 1 ? "dia" : "dias"}
           tone="violet"
         />
         <Stat
@@ -146,18 +151,25 @@ function Stat({
 }) {
   return (
     <div
-      className="rounded-2xl border border-border-hi p-6"
+      className="rounded-2xl border border-border-hi p-4 md:p-6 text-center flex flex-col items-center"
       style={{ background: "var(--liriun-overlay-soft)" }}
     >
-      <div className="font-mono text-xs uppercase tracking-[1.4px] text-faint mb-3">{label}</div>
+      {/* Zona 1 — label: sempre reserva 2 linhas (lida com label de 1 ou 2 linhas em qualquer viewport) */}
+      <div className="font-mono text-[10px] md:text-xs uppercase tracking-[1.2px] md:tracking-[1.4px] text-faint min-h-[2lh] flex items-center justify-center leading-tight">
+        {label}
+      </div>
+      {/* Zona 2 — valor: número grande, sempre presente */}
       <div
-        className={`text-3xl font-semibold tracking-[-0.6px] ${
+        className={`text-2xl md:text-3xl font-semibold tracking-[-0.4px] md:tracking-[-0.6px] truncate my-2 md:my-3 ${
           tone === "violet" ? "bg-grad-brand bg-clip-text text-transparent" : "text-text"
         }`}
       >
         {value}
       </div>
-      {sub && <div className="font-mono text-[11px] text-faint mt-2">{sub}</div>}
+      {/* Zona 3 — sub: sempre reserva 1 linha (nbsp como placeholder se não tiver sub) */}
+      <div className="font-mono text-[10px] md:text-[11px] text-faint truncate min-h-[1lh]">
+        {sub ?? " "}
+      </div>
     </div>
   );
 }

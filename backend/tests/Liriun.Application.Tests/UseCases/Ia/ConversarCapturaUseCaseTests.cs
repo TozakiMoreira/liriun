@@ -21,6 +21,7 @@ public class ConversarCapturaUseCaseTests
 {
     private readonly Mock<IGeminiService> _gemini = new();
     private readonly Mock<ICategoriaReadRepository> _categoriaRead = new();
+    private readonly Mock<ITarefaReadRepository> _tarefaRead = new();
     private readonly Mock<IUsuarioRepository> _usuarios = new();
     private readonly Mock<IUsuarioLogado> _usuarioLogado = new();
     private readonly Mock<IValidator<ConversarCapturaInput>> _validator = new();
@@ -40,10 +41,12 @@ public class ConversarCapturaUseCaseTests
             {
                 new CategoriaReadModel(_categoriaTrabalho, "Trabalho", DateTime.UtcNow),
             });
+        _tarefaRead.Setup(r => r.ListarPendentesAsync(_usuario.Id, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<TarefaReadModel>());
     }
 
     private ConversarCapturaUseCase Criar()
-        => new(_gemini.Object, _categoriaRead.Object, _usuarios.Object, _usuarioLogado.Object, _validator.Object);
+        => new(_gemini.Object, _categoriaRead.Object, _tarefaRead.Object, _usuarios.Object, _usuarioLogado.Object, _validator.Object);
 
     private static ConversarCapturaInput Mensagens(params (string papel, string texto)[] msgs)
         => new(msgs.Select(m => new MensagemInput(m.papel, m.texto)).ToList());
@@ -53,7 +56,7 @@ public class ConversarCapturaUseCaseTests
     {
         _gemini.Setup(g => g.ConversarAsync(It.IsAny<ContextoConversa>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<RespostaConversa>.Success(
-                new RespostaConversa("Pra que dia?", null, false)));
+                new RespostaConversa("Pra que dia?", new AcaoConversar(), false)));
 
         Result<ConversaCapturaViewModel> result = await Criar().ExecuteAsync(
             Mensagens(("usuario", "preciso reunir com pedro")), CancellationToken.None);
@@ -71,13 +74,13 @@ public class ConversarCapturaUseCaseTests
         _gemini.Setup(g => g.ConversarAsync(It.IsAny<ContextoConversa>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<RespostaConversa>.Success(new RespostaConversa(
                 "Anotado.",
-                new AnaliseTarefa(
+                new AcaoCriar(new AnaliseTarefa(
                     "Reunir com Pedro",
                     new[] { _categoriaTrabalho },
                     amanha,
                     new TimeSpan(18, 0, 0),
                     null,
-                    null),
+                    null)),
                 true)));
 
         Result<ConversaCapturaViewModel> result = await Criar().ExecuteAsync(
@@ -99,7 +102,7 @@ public class ConversarCapturaUseCaseTests
         _gemini.Setup(g => g.ConversarAsync(It.IsAny<ContextoConversa>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<RespostaConversa>.Success(new RespostaConversa(
                 "Anotado.",
-                new AnaliseTarefa("X", new[] { intrusa }, DateTime.UtcNow.Date.AddDays(1), null, null, null),
+                new AcaoCriar(new AnaliseTarefa("X", new[] { intrusa }, DateTime.UtcNow.Date.AddDays(1), null, null, null)),
                 true)));
 
         Result<ConversaCapturaViewModel> result = await Criar().ExecuteAsync(
@@ -115,7 +118,7 @@ public class ConversarCapturaUseCaseTests
         _gemini.Setup(g => g.ConversarAsync(It.IsAny<ContextoConversa>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<RespostaConversa>.Success(new RespostaConversa(
                 "Anotado.",
-                new AnaliseTarefa("X", Array.Empty<Guid>(), ontem, null, null, null),
+                new AcaoCriar(new AnaliseTarefa("X", Array.Empty<Guid>(), ontem, null, null, null)),
                 true)));
 
         Result<ConversaCapturaViewModel> result = await Criar().ExecuteAsync(

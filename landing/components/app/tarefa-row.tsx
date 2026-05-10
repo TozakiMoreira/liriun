@@ -78,7 +78,7 @@ export function TarefaRow({
         >
           {tarefa.nome}
         </div>
-        <div className="flex items-center gap-3 mt-1.5 font-mono text-xs text-faint tracking-[0.3px]">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 font-mono text-xs text-faint tracking-[0.3px]">
           {/* Categorias */}
           {tarefa.categorias.slice(0, 2).map((c) => {
             const color = colorFromName(c.nome);

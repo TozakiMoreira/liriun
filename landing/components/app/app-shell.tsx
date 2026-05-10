@@ -32,7 +32,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const t = useTranslations("AppShell");
   const pathname = usePathname();
   const router = useRouter();
-  const { state, sair } = useAuth();
+  const { state } = useAuth();
 
   const [collapsed, setCollapsed] = useState(false);
 
@@ -173,42 +173,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           )}
           {!collapsed && (
-            <>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-medium text-text truncate">{usuario.nome}</div>
-                <div className="text-xs text-muted truncate">{usuario.email}</div>
-              </div>
-              <button
-                type="button"
-                onClick={() => void sair()}
-                aria-label={t("sair")}
-                title={t("sair")}
-                className="w-9 h-9 rounded-md grid place-items-center transition-colors shrink-0"
-                style={{
-                  color: "var(--liriun-danger)",
-                  background: "rgba(238,122,142,0.08)",
-                  border: "1px solid rgba(238,122,142,0.25)",
-                }}
-              >
-                <LogoutIcon />
-              </button>
-            </>
-          )}
-          {collapsed && (
-            <button
-              type="button"
-              onClick={() => void sair()}
-              aria-label={t("sair")}
-              title={t("sair")}
-              className="w-8 h-8 rounded-md grid place-items-center mt-2 transition-colors"
-              style={{
-                color: "var(--liriun-danger)",
-                background: "rgba(238,122,142,0.08)",
-                border: "1px solid rgba(238,122,142,0.25)",
-              }}
-            >
-              <LogoutIcon />
-            </button>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium text-text truncate">{usuario.nome}</div>
+              <div className="text-xs text-muted truncate">{usuario.email}</div>
+            </div>
           )}
         </div>
       </aside>
@@ -304,14 +272,13 @@ function MobileTabBar({
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-end gap-1 py-1 ${
-                active ? "text-violet-300" : "text-muted"
+              aria-label={t(item.key)}
+              title={t(item.key)}
+              className={`flex items-center justify-center py-1.5 min-w-0 transition-colors ${
+                active ? "text-violet-300" : "text-muted hover:text-text"
               }`}
             >
               <Icon active={active} />
-              <span className="font-mono text-[10px] uppercase tracking-[1px]">
-                {t(item.key)}
-              </span>
             </Link>
           );
         })}
@@ -363,8 +330,8 @@ function GearIcon({ active }: { active: boolean }) {
   const c = active ? "#B79CFF" : "currentColor";
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
       <circle cx="12" cy="12" r="3" />
-      <path d="M12 2v3M12 19v3M4.93 4.93l2.12 2.12M16.95 16.95l2.12 2.12M2 12h3M19 12h3M4.93 19.07l2.12-2.12M16.95 7.05l2.12-2.12" />
     </svg>
   );
 }
@@ -386,15 +353,6 @@ function PlusIcon() {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round">
       <path d="M12 5v14M5 12h14" />
-    </svg>
-  );
-}
-function LogoutIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-      <path d="M16 17l5-5-5-5" />
-      <path d="M21 12H9" />
     </svg>
   );
 }

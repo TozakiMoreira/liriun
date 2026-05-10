@@ -229,21 +229,44 @@ public class GeminiService : IGeminiService
             sb.Append("Sem categorias cadastradas. categoriaIds = [].\n");
         }
 
+        if (contexto.TarefasPendentes.Count > 0)
+        {
+            sb.Append("\nTarefas pendentes do usuario (use estes IDs quando precisar referenciar uma tarefa existente):\n");
+            foreach (TarefaContexto t in contexto.TarefasPendentes)
+            {
+                string statusLabel = t.Status == 3 ? "atrasada" : "pendente";
+                string prioLabel = t.Prioridade switch { 1 => "urgente", 2 => "importante", 4 => "baixa", _ => "normal" };
+                string catLabel = t.CategoriaNome is null ? "sem categoria" : t.CategoriaNome;
+                sb.Append($"  {t.Id} = \"{t.Titulo}\" - {t.DataPrazo:yyyy-MM-dd} - {prioLabel} - {statusLabel} - {catLabel}\n");
+            }
+        }
+
         sb.Append(@"
 Modo ONE-SHOT. NAO faca perguntas pra coletar campos de tarefa.
 
-CLASSIFICACAO DO TURNO (SEMPRE faca isso primeiro):
-1. NOVA TAREFA: usuario descreveu uma coisa pra fazer/lembrar. -> Cria tarefa nova preenchendo campos. completo=true.
-2. AJUSTE: usuario quer mudar algo da tarefa anterior ('muda data pra sexta', 'sem categoria', 'na verdade e amanha'). -> Reaproveita campos da tarefa anterior, ajusta o que mudou. completo=true.
-3. CONFIRMACAO: usuario disse 'salva', 'ok', 'pode salvar', 'sim', 'manda ver'. -> Mantem tarefa anterior intacta. completo=true. mensagem: 'Salvando.' ou 'Anotado.'.
-4. PERGUNTA/CONVERSA: usuario pergunta algo, pede recomendacao, faz papo, pede ajuda externa. -> tarefa=null. completo=true. mensagem responde curto e seco em primeira pessoa.
+VOCE SEMPRE retorna o campo 'acao' com a classificacao do turno. Nas Fases atuais
+do produto, voce pode emitir SOMENTE dois tipos de acao:
+  - 'criar'    -> nova tarefa (ou ajuste/confirmacao de tarefa pre-save)
+  - 'conversar' -> sem acao, so resposta textual
 
-REGRA PRA PERGUNTA/CONVERSA (caso 4):
+OUTROS tipos (concluir/editar/consultar) sao mencionados na lista acima APENAS pra
+voce desambiguar a fala do usuario, mas NAO emita ainda — esses fluxos serao
+liberados em fases futuras. Se o usuario tentar concluir/editar/consultar,
+responda com acao=conversar e mensagem: 'Ainda nao consigo fazer isso por voz, mas em breve.'
+
+CLASSIFICACAO DO TURNO (SEMPRE faca isso primeiro):
+1. NOVA TAREFA: usuario descreveu uma coisa pra fazer/lembrar. -> acao=criar com tarefa preenchida. completo=true.
+2. AJUSTE PRE-SAVE: usuario quer mudar algo da tarefa anterior que ainda NAO foi salva ('muda data pra sexta', 'sem categoria', 'na verdade e amanha'). -> acao=criar reaproveitando campos do turno anterior + mudancas. completo=true.
+3. CONFIRMACAO de save: usuario disse 'salva', 'ok', 'pode salvar', 'sim', 'manda ver'. -> acao=criar mantem tarefa anterior intacta. completo=true. mensagem: 'Salvando.' ou 'Anotado.'.
+4. CONCLUIR/EDITAR/CONSULTAR tarefa existente (na lista acima): -> acao=conversar. mensagem: 'Ainda nao consigo fazer isso por voz, mas em breve.'.
+5. PERGUNTA/CONVERSA: usuario pergunta algo, pede recomendacao, faz papo, pede ajuda externa. -> acao=conversar. completo=true. mensagem responde curto e seco em primeira pessoa.
+
+REGRA PRA PERGUNTA/CONVERSA (caso 5):
 - Responda na 'mensagem' em ate 2 frases curtas, primeira pessoa, sem emoji.
 - Pode citar NOMES de sites/apps/servicos conhecidos quando seguro ('Booking, Decolar, Trivago pra hospedagem'; 'Uber/99 pra carro'; 'iFood pra comida').
 - NUNCA invente URLs ou links — so cite nomes.
 - Se nao souber ou for fora do seu escopo (financeiro pessoal, medico especifico, juridico): seja honesto seco ('Nao posso indicar com seguranca, da uma busca rapida').
-- NAO modifique nem crie tarefa por causa da pergunta. tarefa=null.
+- NAO modifique nem crie tarefa por causa da pergunta. acao=conversar.
 
 Extraia o que o usuario DISSE NESTE TURNO. Campos sem informacao = null (NAO chute, NAO invente).
 
@@ -300,22 +323,25 @@ MENSAGEM:
 
 EXEMPLOS:
 Input: 'tenho psi amanha'
--> tarefa: { titulo: 'Sessao de psicologia', data: '<amanha>', hora: null, observacoes: null }, mensagem: 'Anotado. Sem hora, ajusta se quiser.'
+-> acao: { tipo: 'criar', tarefa: { titulo: 'Sessao de psicologia', data: '<amanha>', hora: null, observacoes: null } }, mensagem: 'Anotado. Sem hora, ajusta se quiser.'
 
 Input: 'comprar pao'
--> tarefa: { titulo: 'Comprar pao', data: null }, mensagem: 'Anotado. Sem prazo definido.'
+-> acao: { tipo: 'criar', tarefa: { titulo: 'Comprar pao', data: null } }, mensagem: 'Anotado. Sem prazo definido.'
 
 Input: 'reuniao com cliente sexta 14h sobre proposta'
--> tarefa: { titulo: 'Reuniao com cliente', data: '<sexta>', hora: '14:00', observacoes: 'sobre proposta' }, mensagem: 'Anotado.'
+-> acao: { tipo: 'criar', tarefa: { titulo: 'Reuniao com cliente', data: '<sexta>', hora: '14:00', observacoes: 'sobre proposta' } }, mensagem: 'Anotado.'
 
 Input (turno seguinte a 'comprar hospedagem pra madrid amanha'): 'pode me indicar sites pra isso?'
--> tarefa: null, mensagem: 'Booking, Decolar e Trivago costumam funcionar pra hospedagem. Pra Madrid tambem da pra olhar Airbnb.'
+-> acao: { tipo: 'conversar' }, mensagem: 'Booking, Decolar e Trivago costumam funcionar pra hospedagem. Pra Madrid tambem da pra olhar Airbnb.'
 
 Input (turno seguinte a uma tarefa): 'salva'
--> tarefa: <mantem campos do turno anterior>, mensagem: 'Salvando.'
+-> acao: { tipo: 'criar', tarefa: <mantem campos do turno anterior> }, mensagem: 'Salvando.'
 
 Input: 'qual a previsao do tempo amanha?'
--> tarefa: null, mensagem: 'Nao tenho acesso a clima. Olha no Google ou Climatempo.'
+-> acao: { tipo: 'conversar' }, mensagem: 'Nao tenho acesso a clima. Olha no Google ou Climatempo.'
+
+Input (com tarefa 'Comprar pao' na lista de pendentes): 'concluí o pao'
+-> acao: { tipo: 'conversar' }, mensagem: 'Ainda nao consigo concluir tarefas por voz, mas em breve.'
 
 completo: SEMPRE true.
 ");
@@ -407,6 +433,9 @@ V: {completo:true, mensagem:'Anotado. Coloquei o que falta nas observacoes.', ta
 
     private static object ConstruirResponseSchema(bool audio)
     {
+        // Schema da resposta. Acao e polimorfica via discriminador `tipo`. Campos
+        // nested (tarefa, tarefaId, mudancas, filtros) sao opcionais e usados conforme
+        // o tipo. Fase 1: prompt instrui Gemini a so emitir `criar` ou `conversar`.
         return new
         {
             type = "OBJECT",
@@ -415,26 +444,36 @@ V: {completo:true, mensagem:'Anotado. Coloquei o que falta nas observacoes.', ta
                 completo = new { type = "BOOLEAN" },
                 mensagem = new { type = "STRING" },
                 transcricaoUsuario = new { type = "STRING", description = "Transcricao literal, em portugues, do audio enviado pelo usuario neste turno." },
-                tarefa = new
+                acao = new
                 {
                     type = "OBJECT",
-                    nullable = true,
                     properties = new
                     {
-                        titulo = new { type = "STRING" },
-                        categoriaIds = new
+                        tipo = new { type = "STRING", description = "criar | conversar (Fase 1). Reservados pra fases futuras: concluir | editar | consultar." },
+                        tarefa = new
                         {
-                            type = "ARRAY",
-                            items = new { type = "STRING" },
+                            type = "OBJECT",
+                            nullable = true,
+                            description = "Preenchido quando tipo=criar. Os campos da nova tarefa.",
+                            properties = new
+                            {
+                                titulo = new { type = "STRING" },
+                                categoriaIds = new
+                                {
+                                    type = "ARRAY",
+                                    items = new { type = "STRING" },
+                                },
+                                data = new { type = "STRING", description = "YYYY-MM-DD" },
+                                hora = new { type = "STRING", description = "HH:MM 24h" },
+                                prioridade = new { type = "INTEGER", description = "1, 2, 3 ou 4" },
+                                observacoes = new { type = "STRING" },
+                            },
                         },
-                        data = new { type = "STRING", description = "YYYY-MM-DD" },
-                        hora = new { type = "STRING", description = "HH:MM 24h" },
-                        prioridade = new { type = "INTEGER", description = "1, 2, 3 ou 4" },
-                        observacoes = new { type = "STRING" },
                     },
+                    required = new[] { "tipo" },
                 },
             },
-            required = new[] { "completo", "mensagem" },
+            required = new[] { "completo", "mensagem", "acao" },
         };
     }
 
@@ -468,12 +507,6 @@ V: {completo:true, mensagem:'Anotado. Coloquei o que falta nas observacoes.', ta
             bool completo = root.TryGetProperty("completo", out JsonElement c)
                 && c.ValueKind == JsonValueKind.True;
 
-            AnaliseTarefa? tarefa = null;
-            if (root.TryGetProperty("tarefa", out JsonElement t) && t.ValueKind == JsonValueKind.Object)
-            {
-                tarefa = ParsearTarefa(t);
-            }
-
             string? transcricao = null;
             if (audio && root.TryGetProperty("transcricaoUsuario", out JsonElement tr) && tr.ValueKind == JsonValueKind.String)
             {
@@ -482,15 +515,63 @@ V: {completo:true, mensagem:'Anotado. Coloquei o que falta nas observacoes.', ta
                     transcricao = raw.Trim();
             }
 
-            if (string.IsNullOrWhiteSpace(mensagem) && tarefa is null)
+            // Parse acao (polimorfica via discriminador `tipo`).
+            // Compat: se vier o formato antigo com `tarefa` direto na raiz, trata como AcaoCriar.
+            AcaoIA acao = ParsearAcao(root);
+
+            if (string.IsNullOrWhiteSpace(mensagem) && acao is AcaoConversar)
                 return null;
 
-            return new RespostaConversa(mensagem, tarefa, completo, transcricao);
+            return new RespostaConversa(mensagem, acao, completo, transcricao);
         }
         catch (JsonException)
         {
             return null;
         }
+    }
+
+    private static AcaoIA ParsearAcao(JsonElement root)
+    {
+        // Formato novo: campo top-level `acao` com `tipo` discriminador.
+        if (root.TryGetProperty("acao", out JsonElement acao) && acao.ValueKind == JsonValueKind.Object)
+        {
+            string tipo = acao.TryGetProperty("tipo", out JsonElement tipoEl) && tipoEl.ValueKind == JsonValueKind.String
+                ? (tipoEl.GetString() ?? string.Empty).Trim().ToLowerInvariant()
+                : string.Empty;
+
+            switch (tipo)
+            {
+                case "criar":
+                    if (acao.TryGetProperty("tarefa", out JsonElement tarefaCriar) && tarefaCriar.ValueKind == JsonValueKind.Object)
+                    {
+                        AnaliseTarefa? t = ParsearTarefa(tarefaCriar);
+                        if (t is not null) return new AcaoCriar(t);
+                    }
+                    // Tipo criar mas sem dados aproveitaveis — degrade graceful pra conversar.
+                    return new AcaoConversar();
+
+                case "conversar":
+                    return new AcaoConversar();
+
+                // Reservadas pra futuras fases. Por enquanto vira conversar (fallback seguro).
+                case "concluir":
+                case "editar":
+                case "consultar":
+                    return new AcaoConversar();
+
+                default:
+                    return new AcaoConversar();
+            }
+        }
+
+        // Compat: formato antigo (apenas `tarefa` na raiz, sem `acao`).
+        if (root.TryGetProperty("tarefa", out JsonElement tarefaLegado) && tarefaLegado.ValueKind == JsonValueKind.Object)
+        {
+            AnaliseTarefa? t = ParsearTarefa(tarefaLegado);
+            if (t is not null) return new AcaoCriar(t);
+        }
+
+        return new AcaoConversar();
     }
 
     private static AnaliseTarefa? ParsearTarefa(JsonElement t)

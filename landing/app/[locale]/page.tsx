@@ -29,30 +29,30 @@ function HomeContent() {
 
       {/* ─── Hero ────────────────────────────────────────────────── */}
       <section
-        className="relative pt-2 pb-14"
+        className="relative pt-2 pb-10 md:pb-14"
         style={{
           background:
             "radial-gradient(80% 60% at 80% 0%, rgba(156,123,255,0.18) 0%, transparent 60%), radial-gradient(70% 60% at 10% 80%, rgba(91,141,239,0.14) 0%, transparent 60%), var(--liriun-surface)",
         }}
       >
-        <div className="max-w-[1280px] mx-auto px-14">
-          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-12 items-center pt-10">
+        <div className="max-w-[1280px] mx-auto px-6 md:px-14">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_1fr] gap-8 md:gap-12 items-center pt-8 md:pt-10">
             <div>
               <Badge>
                 <SparkleIcon />
                 {tHero("badge")}
               </Badge>
-              <h1 className="text-[76px] font-semibold tracking-[-2.4px] leading-[1.0] mt-[22px]">
+              <h1 className="text-[40px] sm:text-[56px] md:text-[76px] font-semibold tracking-[-1.2px] md:tracking-[-2.4px] leading-[1.05] md:leading-[1.0] mt-[18px] md:mt-[22px]">
                 {tHero("title1")}
                 <br />
                 <span className="bg-grad-brand bg-clip-text text-transparent">
                   {tHero("title2")}
                 </span>
               </h1>
-              <p className="text-[19px] text-muted leading-[1.5] tracking-[-0.1px] max-w-[480px] mt-[22px]">
+              <p className="text-base md:text-[19px] text-muted leading-[1.5] tracking-[-0.1px] max-w-[480px] mt-5 md:mt-[22px]">
                 {tHero("lead")}
               </p>
-              <div className="flex gap-3 mt-8">
+              <div className="flex flex-wrap gap-3 mt-6 md:mt-8">
                 <Button>
                   {tHero("ctaPrimary")}
                   <ArrowIcon />
@@ -62,7 +62,7 @@ function HomeContent() {
                   {tHero("ctaSecondary")}
                 </Button>
               </div>
-              <div className="flex gap-6 mt-8 font-mono text-xs text-faint tracking-[0.3px]">
+              <div className="flex flex-wrap gap-x-6 gap-y-2 mt-6 md:mt-8 font-mono text-xs text-faint tracking-[0.3px]">
                 <span>{tHero("rating")}</span>
                 <span>{tHero("users")}</span>
               </div>
@@ -75,13 +75,13 @@ function HomeContent() {
 
 
       {/* ─── Recursos ───────────────────────────────────────────── */}
-      <section id="recursos" className="max-w-[1280px] mx-auto px-14 pt-[72px] pb-10">
-        <div className="flex items-end justify-between gap-10 mb-10">
+      <section id="recursos" className="max-w-[1280px] mx-auto px-6 md:px-14 pt-12 md:pt-[72px] pb-10">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 md:gap-10 mb-8 md:mb-10">
           <div>
             <div className="font-mono text-xs font-medium uppercase tracking-[1.4px] text-violet-300">
               {tRec("kicker")}
             </div>
-            <h2 className="text-[52px] font-semibold tracking-[-1.4px] leading-[1.05] mt-[14px]">
+            <h2 className="text-[32px] md:text-[52px] font-semibold tracking-[-0.8px] md:tracking-[-1.4px] leading-[1.1] md:leading-[1.05] mt-3 md:mt-[14px]">
               {tRec("title1")}
               <br />
               {tRec("title2")}
@@ -112,7 +112,7 @@ function HomeContent() {
         </div>
 
         <div
-          className="mt-7 p-8 rounded-2xl border border-border-hi grid grid-cols-2 md:grid-cols-4 gap-7"
+          className="mt-7 p-5 md:p-8 rounded-2xl border border-border-hi grid grid-cols-2 md:grid-cols-4 gap-y-5 gap-x-4 md:gap-7"
           style={{ background: "rgba(255,255,255,0.035)" }}
         >
           {[
@@ -121,11 +121,11 @@ function HomeContent() {
             ["< 800ms", tStats("latency")],
             ["LGPD", tStats("lgpd")],
           ].map(([n, label]) => (
-            <div key={label} className="not-first:pl-6 not-first:border-l border-border">
-              <div className="text-[36px] font-semibold tracking-[-1px] leading-none bg-grad-brand bg-clip-text text-transparent">
+            <div key={label} className="md:not-first:pl-6 md:not-first:border-l border-border">
+              <div className="text-[26px] md:text-[36px] font-semibold tracking-[-0.6px] md:tracking-[-1px] leading-none bg-grad-brand bg-clip-text text-transparent">
                 {n}
               </div>
-              <div className="font-mono text-xs text-muted mt-2 tracking-[0.3px] uppercase">{label}</div>
+              <div className="font-mono text-[10px] md:text-xs text-muted mt-2 tracking-[0.3px] uppercase">{label}</div>
             </div>
           ))}
         </div>
@@ -150,7 +150,7 @@ function FeatureCard({
 }) {
   return (
     <div
-      className="p-7 rounded-2xl backdrop-blur-md"
+      className="p-5 md:p-7 rounded-2xl backdrop-blur-md"
       style={{
         background: accent
           ? "linear-gradient(180deg, rgba(156,123,255,0.10), rgba(91,141,239,0.04))"
@@ -159,7 +159,7 @@ function FeatureCard({
       }}
     >
       <div
-        className="w-12 h-12 rounded-md grid place-items-center mb-6"
+        className="w-12 h-12 rounded-md grid place-items-center mb-5 md:mb-6"
         style={{
           background: accent ? "var(--liriun-grad-brand)" : "rgba(255,255,255,0.06)",
           border: "1px solid var(--liriun-border-hi)",
@@ -168,7 +168,7 @@ function FeatureCard({
       >
         {icon}
       </div>
-      <h3 className="text-[22px] font-semibold tracking-[-0.4px] leading-[1.2] m-0">{title}</h3>
+      <h3 className="text-xl md:text-[22px] font-semibold tracking-[-0.4px] leading-[1.2] m-0">{title}</h3>
       <p className="text-sm text-muted mt-[10px] leading-[1.55] tracking-[-0.1px]">{desc}</p>
     </div>
   );

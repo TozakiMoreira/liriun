@@ -5,4 +5,5 @@ public sealed record ContextoConversa(
     string NomeUsuario,
     DateTime HojeUtc,
     IReadOnlyList<CategoriaContexto> Categorias,
+    IReadOnlyList<TarefaContexto> TarefasPendentes,
     string Idioma = "pt");

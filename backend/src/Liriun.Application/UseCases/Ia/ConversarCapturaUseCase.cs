@@ -16,6 +16,7 @@ public class ConversarCapturaUseCase
 {
     private readonly IGeminiService _gemini;
     private readonly ICategoriaReadRepository _categoriaRead;
+    private readonly ITarefaReadRepository _tarefaRead;
     private readonly IUsuarioRepository _usuarios;
     private readonly IUsuarioLogado _usuarioLogado;
     private readonly IValidator<ConversarCapturaInput> _validator;
@@ -23,12 +24,14 @@ public class ConversarCapturaUseCase
     public ConversarCapturaUseCase(
         IGeminiService gemini,
         ICategoriaReadRepository categoriaRead,
+        ITarefaReadRepository tarefaRead,
         IUsuarioRepository usuarios,
         IUsuarioLogado usuarioLogado,
         IValidator<ConversarCapturaInput> validator)
     {
         _gemini = gemini;
         _categoriaRead = categoriaRead;
+        _tarefaRead = tarefaRead;
         _usuarios = usuarios;
         _usuarioLogado = usuarioLogado;
         _validator = validator;
@@ -103,12 +106,29 @@ public class ConversarCapturaUseCase
     {
         var usuario = await _usuarios.ObterPorIdAsync(_usuarioLogado.Id, ct);
         IReadOnlyList<CategoriaReadModel> categorias = await _categoriaRead.ListarPorUsuarioAsync(_usuarioLogado.Id, ct);
+        IReadOnlyList<TarefaReadModel> pendentes = await _tarefaRead.ListarPendentesAsync(_usuarioLogado.Id, ct);
+
+        // Limita o que vai pro prompt: 30 tarefas mais recentes/atrasadas pra controlar
+        // tamanho do contexto (uma tarefa = ~80-120 chars no prompt).
+        IReadOnlyList<TarefaContexto> tarefasContexto = pendentes
+            .OrderBy(t => t.Status == Core.Enums.StatusTarefa.Atrasada ? 0 : 1)
+            .ThenBy(t => t.DataPrazo)
+            .Take(30)
+            .Select(t => new TarefaContexto(
+                t.Id,
+                t.Nome,
+                t.DataPrazo,
+                (int)t.Prioridade,
+                (int)t.Status,
+                t.Categorias.FirstOrDefault()?.Nome))
+            .ToList();
 
         ContextoConversa contexto = new(
             mensagens,
             usuario?.Nome ?? string.Empty,
             DateTime.UtcNow,
             categorias.Select(c => new CategoriaContexto(c.Id, c.Nome)).ToList(),
+            tarefasContexto,
             idioma);
 
         return (contexto, categorias);
@@ -124,9 +144,11 @@ public class ConversarCapturaUseCase
         RespostaConversa resposta = respostaResult.Value!;
         SugestaoTarefaViewModel? tarefa = null;
 
-        if (resposta.Tarefa is not null)
+        // Fase 1: só Criar é executado/exposto. Outras ações (Concluir/Editar/Consultar)
+        // chegam aqui mas o use case ainda nao age — feature flag implícita via prompt.
+        if (resposta.Acao is AcaoCriar criar)
         {
-            AnaliseTarefa a = resposta.Tarefa;
+            AnaliseTarefa a = criar.Tarefa;
 
             // Filtros defensivos contra alucinacao
             DateTime hoje = DateTime.UtcNow.Date;

@@ -11,26 +11,13 @@ const groups: { title: string; items: FooterItem[] }[] = [
     items: [
       { key: "recursos", href: "/recursos" },
       { key: "precos", href: "/precos" },
-      { key: "mobile", href: "/mobile" },
-      { key: "roadmap", href: "/roadmap" },
     ],
   },
   {
     title: "empresa",
     items: [
       { key: "empresa", href: "/empresa" },
-      { key: "blog", href: "/blog" },
-      { key: "carreiras", href: "/carreiras" },
-      { key: "imprensa", href: "/imprensa" },
-    ],
-  },
-  {
-    title: "suporte",
-    items: [
-      { key: "ajuda", href: "/ajuda" },
-      { key: "status", href: "/status" },
       { key: "contato", href: "mailto:contato@liriun.com", external: true },
-      { key: "comunidade", href: "/comunidade" },
     ],
   },
   {
@@ -38,8 +25,6 @@ const groups: { title: string; items: FooterItem[] }[] = [
     items: [
       { key: "termos", href: "/termos" },
       { key: "privacidade", href: "/privacidade" },
-      { key: "cookies", href: "/cookies" },
-      { key: "lgpd", href: "/lgpd" },
     ],
   },
 ];
