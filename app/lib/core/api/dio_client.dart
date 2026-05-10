@@ -23,7 +23,7 @@ final dioProvider = Provider<Dio>((ref) {
     );
   }
 
-  final storage = ref.watch(secureStorageProvider);
+  final storage = ref.read(secureStorageProvider);
 
   final dio = Dio(BaseOptions(
     baseUrl: apiBaseUrl,

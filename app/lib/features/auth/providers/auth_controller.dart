@@ -33,7 +33,7 @@ class AuthController {
 }
 
 final authControllerProvider = Provider<AuthController>((ref) {
-  final api = ref.watch(authApiProvider);
+  final api = ref.read(authApiProvider);
   final session = ref.read(sessionControllerProvider.notifier);
   return AuthController(api, session);
 });

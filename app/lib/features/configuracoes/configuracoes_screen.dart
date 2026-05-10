@@ -7,6 +7,17 @@ import "../auth/providers/auth_controller.dart";
 class ConfiguracoesScreen extends ConsumerWidget {
   const ConfiguracoesScreen({super.key});
 
+  void _emBreve(BuildContext context, String label) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text("$label — em breve."),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
@@ -16,22 +27,26 @@ class ConfiguracoesScreen extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.person_outline),
             title: const Text("Perfil"),
-            onTap: () {},
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _emBreve(context, "Perfil"),
           ),
           ListTile(
             leading: const Icon(Icons.label_outline),
             title: const Text("Categorias"),
-            onTap: () {},
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _emBreve(context, "Categorias"),
           ),
           ListTile(
             leading: const Icon(Icons.translate),
             title: const Text("Idioma"),
-            onTap: () {},
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _emBreve(context, "Idioma"),
           ),
           ListTile(
             leading: const Icon(Icons.dark_mode_outlined),
             title: const Text("Tema"),
-            onTap: () {},
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => _emBreve(context, "Tema"),
           ),
           const Divider(),
           ListTile(

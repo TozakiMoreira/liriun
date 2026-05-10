@@ -33,7 +33,6 @@ export default function LoginPage() {
       router.replace("/app/falar");
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      console.error("[login] falha:", err);
       setErro(`${t("erroLogin")} (${msg})`);
     } finally {
       setLoading(false);

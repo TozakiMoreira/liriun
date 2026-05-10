@@ -167,7 +167,6 @@ export default function FalarPage() {
         void salvarSugestao(res.tarefa);
       }
     } catch (err) {
-      console.error("[audio] falha ao processar:", err);
       setErro(err instanceof Error ? err.message : "Falha ao processar áudio");
       // Mantém a bolha do usuário com indicador de erro e remove só a placeholder do agente.
       // Limpar as duas faria a tela voltar pro welcome (mensagens.length === 0) e esconde o feedback.
@@ -295,8 +294,8 @@ export default function FalarPage() {
       if (r && r.state !== "inactive") {
         try {
           r.stop();
-        } catch (e) {
-          console.error("[audio] stop após timeout falhou:", e);
+        } catch {
+          // best-effort: timeout já encerrou a captura
         }
       }
     }, MAX_DURACAO_MS);
@@ -309,8 +308,8 @@ export default function FalarPage() {
     if (recorder && recorder.state !== "inactive") {
       try {
         recorder.stop();
-      } catch (e) {
-        console.error("[audio] erro ao parar:", e);
+      } catch {
+        // best-effort: recorder pode já ter encerrado
       }
     }
   }

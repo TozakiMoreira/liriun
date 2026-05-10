@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import "package:go_router/go_router.dart";
 
+import "../../../core/api/error_message.dart";
 import "../../../core/theme/liriun_tokens.dart";
 import "../providers/auth_controller.dart";
 
@@ -47,7 +48,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           );
       if (mounted) context.go("/falar");
     } catch (err) {
-      setState(() => _erro = err.toString());
+      setState(() => _erro = errorMessage(err, "Falha no cadastro. Tenta de novo."));
     } finally {
       if (mounted) setState(() => _loading = false);
     }

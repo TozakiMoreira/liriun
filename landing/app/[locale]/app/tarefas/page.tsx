@@ -3,10 +3,10 @@
 export const runtime = "edge";
 
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
 
 import { AppPageHeader } from "@/components/app/page-header";
 import { CategoriasModal } from "@/components/app/categorias-modal";
+import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { Modal } from "@/components/app/modal";
 import { TarefaForm } from "@/components/app/tarefa-form";
 import { TarefaRow } from "@/components/app/tarefa-row";
@@ -43,7 +43,6 @@ const FILTROS: { id: Filtro; label: string; group: string }[] = [
 export default function TarefasPage() {
   const { pendentes, concluidas, loading, error, criar, atualizar, concluir, reabrir, excluir } =
     useTarefas();
-  const searchParams = useSearchParams();
 
   const [modo, setModo] = useState<Modo>("lista");
   const [filtro, setFiltro] = useState<Filtro>("pendentes");
@@ -53,14 +52,18 @@ export default function TarefasPage() {
   const [modalAberto, setModalAberto] = useState(false);
   const [tarefaEditando, setTarefaEditando] = useState<Tarefa | null>(null);
   const [categoriasAberto, setCategoriasAberto] = useState(false);
+  const [confirmarExclusao, setConfirmarExclusao] = useState<Tarefa | null>(null);
+  const [excluindo, setExcluindo] = useState(false);
 
   // Auto-abrir modal "Nova" via querystring (?novo=1) — vindo do FAB mobile
   useEffect(() => {
-    if (searchParams.get("novo") === "1") {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("novo") === "1") {
       setTarefaEditando(null);
       setModalAberto(true);
     }
-  }, [searchParams]);
+  }, []);
 
   const todas = useMemo(() => [...pendentes, ...concluidas], [pendentes, concluidas]);
 
@@ -108,9 +111,18 @@ export default function TarefasPage() {
     }
   }
 
-  async function handleDelete(t: Tarefa) {
-    if (confirm(`Excluir "${t.nome}"?`)) {
-      await excluir(t.id);
+  function handleDelete(t: Tarefa) {
+    setConfirmarExclusao(t);
+  }
+
+  async function confirmarExcluir() {
+    if (!confirmarExclusao) return;
+    setExcluindo(true);
+    try {
+      await excluir(confirmarExclusao.id);
+      setConfirmarExclusao(null);
+    } finally {
+      setExcluindo(false);
     }
   }
 
@@ -201,6 +213,17 @@ export default function TarefasPage() {
       </Modal>
 
       <CategoriasModal open={categoriasAberto} onClose={() => setCategoriasAberto(false)} />
+
+      <ConfirmDialog
+        open={confirmarExclusao !== null}
+        title="Excluir tarefa?"
+        message={`A tarefa "${confirmarExclusao?.nome ?? ""}" será removida. Não pode ser desfeito.`}
+        confirmLabel="Excluir"
+        destructive
+        loading={excluindo}
+        onConfirm={() => void confirmarExcluir()}
+        onCancel={() => setConfirmarExclusao(null)}
+      />
     </div>
   );
 }
