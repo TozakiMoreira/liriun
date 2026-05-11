@@ -244,22 +244,42 @@ public class GeminiService : IGeminiService
         sb.Append(@"
 Modo ONE-SHOT. NAO faca perguntas pra coletar campos de tarefa.
 
-VOCE SEMPRE retorna o campo 'acao' com a classificacao do turno. Nas Fases atuais
-do produto, voce pode emitir SOMENTE dois tipos de acao:
-  - 'criar'    -> nova tarefa (ou ajuste/confirmacao de tarefa pre-save)
-  - 'conversar' -> sem acao, so resposta textual
+VOCE SEMPRE retorna o campo 'acao' com a classificacao do turno. Tipos validos:
+  - 'criar'     -> nova tarefa (ou ajuste/confirmacao de tarefa pre-save)
+  - 'conversar' -> sem acao, so resposta textual (inclui CONSULTA sobre tarefas existentes)
+  - 'concluir'  -> marcar tarefa da lista como feita
+  - 'editar'    -> mudar campos de tarefa existente
+  - 'excluir'   -> apagar tarefa da lista
 
-OUTROS tipos (concluir/editar/consultar) sao mencionados na lista acima APENAS pra
-voce desambiguar a fala do usuario, mas NAO emita ainda — esses fluxos serao
-liberados em fases futuras. Se o usuario tentar concluir/editar/consultar,
-responda com acao=conversar e mensagem: 'Ainda nao consigo fazer isso por voz, mas em breve.'
+IMPORTANTE: concluir/editar/excluir NAO sao executados direto — o front mostra um card
+de confirmacao pro usuario aprovar. SEMPRE seja CONSERVADOR: so emita essas acoes
+quando o usuario for EXPLICITO. Se houver duvida, vire acao=conversar e pergunte qual
+tarefa, ou explique o que voce entendeu.
 
 CLASSIFICACAO DO TURNO (SEMPRE faca isso primeiro):
 1. NOVA TAREFA: usuario descreveu uma coisa pra fazer/lembrar. -> acao=criar com tarefa preenchida. completo=true.
 2. AJUSTE PRE-SAVE: usuario quer mudar algo da tarefa anterior que ainda NAO foi salva ('muda data pra sexta', 'sem categoria', 'na verdade e amanha'). -> acao=criar reaproveitando campos do turno anterior + mudancas. completo=true.
 3. CONFIRMACAO de save: usuario disse 'salva', 'ok', 'pode salvar', 'sim', 'manda ver'. -> acao=criar mantem tarefa anterior intacta. completo=true. mensagem: 'Salvando.' ou 'Anotado.'.
-4. CONCLUIR/EDITAR/CONSULTAR tarefa existente (na lista acima): -> acao=conversar. mensagem: 'Ainda nao consigo fazer isso por voz, mas em breve.'.
-5. PERGUNTA/CONVERSA: usuario pergunta algo, pede recomendacao, faz papo, pede ajuda externa. -> acao=conversar. completo=true. mensagem responde curto e seco em primeira pessoa.
+4. CONSULTA sobre tarefas existentes: usuario pergunta sobre algo que ele JA tem na lista acima ('pra onde eu ia viajar mesmo?', 'qual e meu proximo medico?', 'tenho algo pra fazer hoje?', 'o que ta atrasado?', 'me lembra o que falta da viagem'). -> acao=conversar. completo=true. Olhe a LISTA DE TAREFAS acima, encontre as relevantes e responda no mensagem.
+   - Cite o(s) titulo(s) + data quando relevante (formato curto: 'sexta', '15 de jun', 'amanha').
+   - Se achar UMA tarefa relacionada, responda direto: 'Voce tem reuniao com cliente na sexta, 14h.'
+   - Se achar VARIAS (2-4), liste resumido: 'Voce tem 3 coisas hoje: dentista 14h, mercado, reuniao 18h.'
+   - Se achar MUITAS (5+), agrupe: 'Voce tem 7 pendentes essa semana. Quer que eu detalhe algum grupo?'
+   - Se NAO achar nada relacionado, seja honesto: 'Nao achei nada sobre isso na sua lista.' (NAO invente tarefa).
+   - NUNCA emita acao=criar pra consulta. NUNCA crie tarefa nova num turno de consulta.
+   - SEMPRE preencha 'tarefasReferenciadas' com os IDs (UUIDs) das tarefas que voce citou na mensagem (max 6, na ordem em que aparecem na resposta). Vazio se NAO achou nada relacionado.
+5. CONCLUIR tarefa existente ('pode concluir essa', 'feito, marca como feita', 'ja terminei o mercado', 'concluida'): -> acao=concluir com tarefaId apontando pra tarefa da lista. mensagem: 'Concluir [titulo]?' (curto, confirmando). completo=true.
+6. EXCLUIR/APAGAR tarefa existente ('pode apagar', 'remove essa', 'deleta a reuniao', 'tira da lista'): -> acao=excluir com tarefaId. mensagem: 'Excluir [titulo]?'. completo=true. Use EXCLUIR pra remover totalmente (sem virar 'concluida').
+7. EDITAR tarefa existente ('muda a data pra sexta', 'troca a categoria pra trabalho', 'remarca a reuniao pras 16h'): -> acao=editar com tarefaId + mudancas (so os campos que mudam, resto null). mensagem: 'Editar [titulo]: [resumo das mudancas]?'. completo=true.
+   - Em mudancas, deixe campos NAO mencionados como null. NAO repita valores existentes.
+   - Ex: usuario diz 'muda a reuniao com cliente pra terca' -> mudancas={ data:'2026-XX-XX' }, todos os outros campos null.
+8. PERGUNTA/CONVERSA: usuario pergunta algo de fora da lista, pede recomendacao, faz papo, pede ajuda externa. -> acao=conversar. completo=true. mensagem responde curto e seco em primeira pessoa.
+
+REGRAS PRA CONCLUIR/EXCLUIR/EDITAR (importante):
+- tarefaId DEVE ser um UUID que aparece na LISTA DE TAREFAS acima. NUNCA invente UUIDs.
+- Se o usuario falar de uma tarefa que NAO esta na lista, vire acao=conversar e diga 'Nao achei essa tarefa na sua lista.'
+- Se houver AMBIGUIDADE (2+ tarefas com nomes parecidos), vire acao=conversar e pergunte qual: 'Tem 2 com esse nome: [a] sexta 14h, [b] segunda 18h. Qual?'
+- USE o contexto do turno anterior pra desambiguar (se usuario citou uma tarefa recente e disse 'apaga essa', 'concluir essa', refere-se a ela).
 
 REGRA PRA PERGUNTA/CONVERSA (caso 5):
 - Responda na 'mensagem' em ate 2 frases curtas, primeira pessoa, sem emoji.
@@ -444,12 +464,19 @@ V: {completo:true, mensagem:'Anotado. Coloquei o que falta nas observacoes.', ta
                 completo = new { type = "BOOLEAN" },
                 mensagem = new { type = "STRING" },
                 transcricaoUsuario = new { type = "STRING", description = "Transcricao literal, em portugues, do audio enviado pelo usuario neste turno." },
+                tarefasReferenciadas = new
+                {
+                    type = "ARRAY",
+                    description = "IDs das tarefas da LISTA acima que voce citou/referenciou na mensagem (consultas). Vazio quando nao for consulta. Max 6 IDs.",
+                    items = new { type = "STRING" },
+                },
                 acao = new
                 {
                     type = "OBJECT",
                     properties = new
                     {
-                        tipo = new { type = "STRING", description = "criar | conversar (Fase 1). Reservados pra fases futuras: concluir | editar | consultar." },
+                        tipo = new { type = "STRING", description = "criar | conversar | concluir | editar | excluir" },
+                        tarefaId = new { type = "STRING", nullable = true, description = "UUID da tarefa-alvo (concluir/editar/excluir). Null nos outros tipos." },
                         tarefa = new
                         {
                             type = "OBJECT",
@@ -466,6 +493,25 @@ V: {completo:true, mensagem:'Anotado. Coloquei o que falta nas observacoes.', ta
                                 data = new { type = "STRING", description = "YYYY-MM-DD" },
                                 hora = new { type = "STRING", description = "HH:MM 24h" },
                                 prioridade = new { type = "INTEGER", description = "1, 2, 3 ou 4" },
+                                observacoes = new { type = "STRING" },
+                            },
+                        },
+                        mudancas = new
+                        {
+                            type = "OBJECT",
+                            nullable = true,
+                            description = "Preenchido quando tipo=editar. SOMENTE campos a alterar (resto null).",
+                            properties = new
+                            {
+                                titulo = new { type = "STRING" },
+                                categoriaIds = new
+                                {
+                                    type = "ARRAY",
+                                    items = new { type = "STRING" },
+                                },
+                                data = new { type = "STRING", description = "YYYY-MM-DD" },
+                                hora = new { type = "STRING", description = "HH:MM 24h" },
+                                prioridade = new { type = "INTEGER" },
                                 observacoes = new { type = "STRING" },
                             },
                         },
@@ -519,10 +565,26 @@ V: {completo:true, mensagem:'Anotado. Coloquei o que falta nas observacoes.', ta
             // Compat: se vier o formato antigo com `tarefa` direto na raiz, trata como AcaoCriar.
             AcaoIA acao = ParsearAcao(root);
 
+            // Lista de IDs de tarefas que o agente referenciou na mensagem (consultas).
+            List<Guid>? referencias = null;
+            if (root.TryGetProperty("tarefasReferenciadas", out JsonElement refsEl) && refsEl.ValueKind == JsonValueKind.Array)
+            {
+                foreach (JsonElement item in refsEl.EnumerateArray())
+                {
+                    if (item.ValueKind != JsonValueKind.String) continue;
+                    if (Guid.TryParse(item.GetString(), out Guid id))
+                    {
+                        referencias ??= new List<Guid>();
+                        if (!referencias.Contains(id)) referencias.Add(id);
+                        if (referencias.Count >= 6) break;
+                    }
+                }
+            }
+
             if (string.IsNullOrWhiteSpace(mensagem) && acao is AcaoConversar)
                 return null;
 
-            return new RespostaConversa(mensagem, acao, completo, transcricao);
+            return new RespostaConversa(mensagem, acao, completo, transcricao, referencias);
         }
         catch (JsonException)
         {
@@ -551,12 +613,37 @@ V: {completo:true, mensagem:'Anotado. Coloquei o que falta nas observacoes.', ta
                     return new AcaoConversar();
 
                 case "conversar":
+                case "consultar":
                     return new AcaoConversar();
 
-                // Reservadas pra futuras fases. Por enquanto vira conversar (fallback seguro).
                 case "concluir":
+                    if (acao.TryGetProperty("tarefaId", out JsonElement tIdConc) &&
+                        tIdConc.ValueKind == JsonValueKind.String &&
+                        Guid.TryParse(tIdConc.GetString(), out Guid idConc))
+                    {
+                        return new AcaoConcluir(idConc);
+                    }
+                    return new AcaoConversar();
+
+                case "excluir":
+                    if (acao.TryGetProperty("tarefaId", out JsonElement tIdExc) &&
+                        tIdExc.ValueKind == JsonValueKind.String &&
+                        Guid.TryParse(tIdExc.GetString(), out Guid idExc))
+                    {
+                        return new AcaoExcluir(idExc);
+                    }
+                    return new AcaoConversar();
+
                 case "editar":
-                case "consultar":
+                    if (acao.TryGetProperty("tarefaId", out JsonElement tIdEd) &&
+                        tIdEd.ValueKind == JsonValueKind.String &&
+                        Guid.TryParse(tIdEd.GetString(), out Guid idEd) &&
+                        acao.TryGetProperty("mudancas", out JsonElement mud) &&
+                        mud.ValueKind == JsonValueKind.Object)
+                    {
+                        AnaliseTarefa? mudancas = ParsearTarefa(mud);
+                        if (mudancas is not null) return new AcaoEditar(idEd, mudancas);
+                    }
                     return new AcaoConversar();
 
                 default:

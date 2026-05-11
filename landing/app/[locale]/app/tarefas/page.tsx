@@ -2,11 +2,14 @@
 
 export const runtime = "edge";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { motion } from "framer-motion";
 
 import { AppPageHeader } from "@/components/app/page-header";
 import { CategoriasModal } from "@/components/app/categorias-modal";
 import { ConfirmDialog } from "@/components/app/confirm-dialog";
+import { LiriunLoader } from "@/components/app/liriun-loader";
 import { Modal } from "@/components/app/modal";
 import { TarefaForm } from "@/components/app/tarefa-form";
 import { TarefaRow } from "@/components/app/tarefa-row";
@@ -41,8 +44,23 @@ const FILTROS: { id: Filtro; label: string; group: string }[] = [
 ];
 
 export default function TarefasPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="pt-24 grid place-items-center">
+          <LiriunLoader label="Carregando" />
+        </div>
+      }
+    >
+      <TarefasInner />
+    </Suspense>
+  );
+}
+
+function TarefasInner() {
   const { pendentes, concluidas, loading, error, criar, atualizar, concluir, reabrir, excluir } =
     useTarefas();
+  const searchParams = useSearchParams();
 
   const [modo, setModo] = useState<Modo>("lista");
   const [filtro, setFiltro] = useState<Filtro>("pendentes");
@@ -55,14 +73,22 @@ export default function TarefasPage() {
   const [confirmarExclusao, setConfirmarExclusao] = useState<Tarefa | null>(null);
   const [excluindo, setExcluindo] = useState(false);
 
-  // Auto-abrir modal "Nova" via querystring (?novo=1) — vindo do FAB mobile
+  // Auto-abrir modal "Nova" via querystring (?novo=1) — vindo do FAB mobile na primeira navegação
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("novo") === "1") {
+    if (searchParams.get("novo") === "1") {
       setTarefaEditando(null);
       setModalAberto(true);
     }
+  }, [searchParams]);
+
+  // FAB mobile dispara CustomEvent quando já está na rota (sem nav)
+  useEffect(() => {
+    function handler() {
+      setTarefaEditando(null);
+      setModalAberto(true);
+    }
+    window.addEventListener("liriun:nova-tarefa", handler);
+    return () => window.removeEventListener("liriun:nova-tarefa", handler);
   }, []);
 
   const todas = useMemo(() => [...pendentes, ...concluidas], [pendentes, concluidas]);
@@ -70,7 +96,7 @@ export default function TarefasPage() {
   const filtradas = useMemo(() => {
     return todas
       .filter((t) => {
-        if (filtro === "pendentes" && t.status !== 1) return false;
+        if (filtro === "pendentes" && t.status === 2) return false;
         if (filtro === "concluidas" && t.status !== 2) return false;
         if (filtro === "atrasadas" && t.status !== 3) return false;
         if (filtro === "urgente" && t.prioridade !== 1) return false;
@@ -146,7 +172,7 @@ export default function TarefasPage() {
 
       <div className="max-w-[1080px] mx-auto px-6 md:px-12 pt-8">
         {/* Modo + Filtro + Busca */}
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="flex flex-col gap-3 items-start md:flex-row md:items-center md:justify-between">
           <ModoSwitcher value={modo} onChange={setModo} />
           <div className="flex gap-2 items-center">
             <FiltroDropdown
@@ -236,7 +262,7 @@ function ModoSwitcher({ value, onChange }: { value: Modo; onChange: (m: Modo) =>
   ];
   return (
     <div
-      className="inline-flex p-[3px] rounded-pill border border-border-hi"
+      className="relative inline-flex p-[3px] rounded-pill border border-border-hi"
       style={{ background: "rgba(255,255,255,0.04)" }}
     >
       {opts.map((o) => {
@@ -246,19 +272,24 @@ function ModoSwitcher({ value, onChange }: { value: Modo; onChange: (m: Modo) =>
             key={o.id}
             type="button"
             onClick={() => onChange(o.id)}
-            className={`px-4 py-1.5 rounded-pill font-mono text-xs uppercase tracking-[1px] transition-colors ${
+            className={`relative px-4 py-1.5 rounded-pill font-mono text-xs uppercase tracking-[1px] transition-colors ${
               active ? "text-white" : "text-muted hover:text-text"
             }`}
-            style={
-              active
-                ? {
-                    background: "var(--liriun-grad-brand)",
-                    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.18), 0 4px 12px rgba(91,141,239,0.28)",
-                  }
-                : undefined
-            }
           >
-            {o.label}
+            {active && (
+              <motion.span
+                layoutId="modo-indicator"
+                aria-hidden
+                className="absolute inset-0 rounded-pill"
+                style={{
+                  background: "var(--liriun-grad-brand)",
+                  boxShadow:
+                    "inset 0 1px 0 rgba(255,255,255,0.18), 0 4px 12px rgba(91,141,239,0.28)",
+                }}
+                transition={{ type: "spring", bounce: 0.2, duration: 0.45 }}
+              />
+            )}
+            <span className="relative z-10">{o.label}</span>
           </button>
         );
       })}
@@ -293,58 +324,96 @@ function FiltroDropdown({
 
       {aberto && (
         <>
-          <div className="fixed inset-0 z-30" onClick={() => setAberto(false)} />
+          {/* Backdrop — mobile cobre tela, desktop transparente (popover) */}
           <div
-            className="absolute right-0 top-full mt-2 z-40 w-[240px] rounded-md overflow-hidden"
+            className="fixed inset-0 z-40 md:z-30 md:bg-transparent animate-fade-in"
+            style={{ background: "rgba(8,10,14,0.55)", backdropFilter: "blur(2px)" }}
+            onClick={() => setAberto(false)}
+          />
+
+          <div
+            className="z-50 md:z-40 overflow-hidden border border-border-hi flex flex-col
+              fixed inset-x-0 bottom-0 max-h-[78vh] rounded-t-[28px] animate-slide-up
+              md:absolute md:inset-x-auto md:left-auto md:right-0 md:bottom-auto md:top-full md:mt-2 md:max-h-none md:w-[260px] md:rounded-2xl md:animate-scale-in"
             style={{
               background: "rgba(20,22,28,0.96)",
-              border: "1px solid var(--liriun-border-hi)",
-              boxShadow: "0 16px 40px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.06)",
+              boxShadow: "0 -20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07)",
               backdropFilter: "blur(20px)",
             }}
           >
-            {groups.map((g, idx) => (
-              <div
-                key={g}
-                style={idx > 0 ? { borderTop: "1px solid var(--liriun-border-hi)" } : undefined}
-              >
-                <div
-                  className="px-3 pt-3 pb-2 font-mono text-[11px] font-semibold uppercase tracking-[1.6px]"
-                  style={{
-                    color: "var(--liriun-violet-300)",
-                    background: "rgba(156,123,255,0.06)",
-                  }}
-                >
-                  {g}
-                </div>
-                <div className="py-1">
-                  {FILTROS.filter((f) => f.group === g).map((f) => {
-                    const active = filtroAtivo.id === f.id;
-                    return (
-                      <button
-                        key={f.id}
-                        type="button"
-                        onClick={() => onChange(f.id)}
-                        className={`w-full text-left px-4 py-2 text-sm transition-colors flex items-center gap-2 ${
-                          active
-                            ? "bg-white/[0.06] text-text font-medium"
-                            : "text-muted hover:text-text hover:bg-white/[0.03]"
-                        }`}
-                      >
-                        {active ? (
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--liriun-violet-300)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
-                            <path d="M5 12.5l4.5 4.5L19 7" />
-                          </svg>
-                        ) : (
-                          <span className="w-3 shrink-0" aria-hidden />
-                        )}
-                        <span>{f.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+            {/* Header mobile: drag handle + título + close */}
+            <div className="md:hidden">
+              <div className="flex justify-center pt-3 pb-1">
+                <div className="w-10 h-1 rounded-pill" style={{ background: "rgba(255,255,255,0.18)" }} />
               </div>
-            ))}
+              <div className="flex items-center justify-between px-6 pt-2 pb-3">
+                <h3 className="text-base font-semibold tracking-[-0.2px]">Filtrar</h3>
+                <button
+                  type="button"
+                  onClick={() => setAberto(false)}
+                  aria-label="Fechar"
+                  className="w-8 h-8 rounded-md grid place-items-center text-muted hover:text-text hover:bg-white/[0.06]"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                    <path d="M6 6l12 12M18 6L6 18" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            {/* Conteúdo scrollável — pb generoso pra evitar última opção colada na borda + safe-area */}
+            <div className="flex-1 overflow-y-auto pb-[max(28px,env(safe-area-inset-bottom))] md:pb-0">
+              {groups.map((g, idx) => (
+                <div key={g} className={idx > 0 ? "mt-4 md:mt-2" : "mt-1 md:mt-1"}>
+                  <div className="px-6 md:px-4 font-mono text-[10px] uppercase tracking-[1.8px] text-faint mb-1">
+                    {g}
+                  </div>
+                  <div className="px-3 md:px-2 flex flex-col gap-0.5">
+                    {FILTROS.filter((f) => f.group === g).map((f) => {
+                      const active = filtroAtivo.id === f.id;
+                      return (
+                        <button
+                          key={f.id}
+                          type="button"
+                          onClick={() => onChange(f.id)}
+                          className={`w-full text-left px-3 py-2.5 md:py-2 rounded-md text-sm transition-colors flex items-center gap-3 ${
+                            active
+                              ? "text-text font-medium"
+                              : "text-muted hover:text-text hover:bg-white/[0.03]"
+                          }`}
+                          style={
+                            active
+                              ? {
+                                  background: "rgba(156,123,255,0.10)",
+                                  boxShadow: "inset 2px 0 0 var(--liriun-violet-300)",
+                                }
+                              : undefined
+                          }
+                        >
+                          <span className="flex-1">{f.label}</span>
+                          {active && (
+                            <svg
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="var(--liriun-violet-300)"
+                              strokeWidth="2.5"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="shrink-0"
+                            >
+                              <path d="M5 12.5l4.5 4.5L19 7" />
+                            </svg>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              <div className="h-3" />
+            </div>
           </div>
         </>
       )}
