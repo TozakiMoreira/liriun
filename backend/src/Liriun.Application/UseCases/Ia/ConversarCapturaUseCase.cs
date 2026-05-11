@@ -55,10 +55,10 @@ public class ConversarCapturaUseCase
                 m.Texto.Trim()))
             .ToList();
 
-        (ContextoConversa contexto, IReadOnlyList<CategoriaReadModel> categorias) = await MontarContextoAsync(mensagens, NormalizarIdioma(input.Idioma), ct);
+        (ContextoConversa contexto, IReadOnlyList<CategoriaReadModel> categorias, HashSet<Guid> tarefaIdsValidos) = await MontarContextoAsync(mensagens, NormalizarIdioma(input.Idioma), ct);
 
         Result<RespostaConversa> respostaResult = await _gemini.ConversarAsync(contexto, ct);
-        return MapearResposta(respostaResult, categorias);
+        return MapearResposta(respostaResult, categorias, tarefaIdsValidos);
     }
 
     public async Task<Result<ConversaCapturaViewModel>> ExecuteComAudioAsync(
@@ -88,10 +88,10 @@ public class ConversarCapturaUseCase
                 m.Texto.Trim()))
             .ToList();
 
-        (ContextoConversa contexto, IReadOnlyList<CategoriaReadModel> categorias) = await MontarContextoAsync(mensagens, NormalizarIdioma(idioma), ct);
+        (ContextoConversa contexto, IReadOnlyList<CategoriaReadModel> categorias, HashSet<Guid> tarefaIdsValidos) = await MontarContextoAsync(mensagens, NormalizarIdioma(idioma), ct);
 
         Result<RespostaConversa> respostaResult = await _gemini.ConversarComAudioAsync(contexto, audio, mimeType, ct);
-        return MapearResposta(respostaResult, categorias);
+        return MapearResposta(respostaResult, categorias, tarefaIdsValidos);
     }
 
     private static string NormalizarIdioma(string? idioma)
@@ -101,7 +101,7 @@ public class ConversarCapturaUseCase
         return lower == "en" ? "en" : "pt";
     }
 
-    private async Task<(ContextoConversa, IReadOnlyList<CategoriaReadModel>)> MontarContextoAsync(
+    private async Task<(ContextoConversa, IReadOnlyList<CategoriaReadModel>, HashSet<Guid>)> MontarContextoAsync(
         IReadOnlyList<MensagemConversa> mensagens, string idioma, CancellationToken ct)
     {
         var usuario = await _usuarios.ObterPorIdAsync(_usuarioLogado.Id, ct);
@@ -131,21 +131,23 @@ public class ConversarCapturaUseCase
             tarefasContexto,
             idioma);
 
-        return (contexto, categorias);
+        HashSet<Guid> tarefaIdsValidos = tarefasContexto.Select(t => t.Id).ToHashSet();
+
+        return (contexto, categorias, tarefaIdsValidos);
     }
 
     private static Result<ConversaCapturaViewModel> MapearResposta(
         Result<RespostaConversa> respostaResult,
-        IReadOnlyList<CategoriaReadModel> categorias)
+        IReadOnlyList<CategoriaReadModel> categorias,
+        HashSet<Guid> tarefaIdsValidos)
     {
         if (respostaResult.IsFailure)
             return Result<ConversaCapturaViewModel>.Failure(respostaResult.Error!);
 
         RespostaConversa resposta = respostaResult.Value!;
         SugestaoTarefaViewModel? tarefa = null;
+        AcaoSugeridaViewModel? acaoSugerida = null;
 
-        // Fase 1: só Criar é executado/exposto. Outras ações (Concluir/Editar/Consultar)
-        // chegam aqui mas o use case ainda nao age — feature flag implícita via prompt.
         if (resposta.Acao is AcaoCriar criar)
         {
             AnaliseTarefa a = criar.Tarefa;
@@ -182,8 +184,59 @@ public class ConversarCapturaUseCase
                 prioridadeValida,
                 observacoesValidas);
         }
+        else if (resposta.Acao is AcaoConcluir conc && tarefaIdsValidos.Contains(conc.TarefaId))
+        {
+            acaoSugerida = new AcaoSugeridaViewModel("concluir", conc.TarefaId, null);
+        }
+        else if (resposta.Acao is AcaoExcluir exc && tarefaIdsValidos.Contains(exc.TarefaId))
+        {
+            acaoSugerida = new AcaoSugeridaViewModel("excluir", exc.TarefaId, null);
+        }
+        else if (resposta.Acao is AcaoEditar ed && tarefaIdsValidos.Contains(ed.TarefaId))
+        {
+            AnaliseTarefa m = ed.Mudancas;
+
+            DateTime hojeEdit = DateTime.UtcNow.Date;
+            DateTime? dataMud = m.DataPrazo?.Date >= hojeEdit ? m.DataPrazo?.Date : null;
+
+            HashSet<Guid> categoriasSet = categorias.Select(c => c.Id).ToHashSet();
+            IReadOnlyList<Guid> categoriasMud = m.CategoriaIds
+                .Where(id => categoriasSet.Contains(id))
+                .Distinct()
+                .ToList();
+
+            int? prioMud = m.Prioridade is >= 1 and <= 4 ? m.Prioridade : null;
+
+            string? horaMud = null;
+            if (m.HorarioFinal.HasValue)
+            {
+                TimeSpan h = m.HorarioFinal.Value;
+                if (h >= TimeSpan.Zero && h < TimeSpan.FromDays(1))
+                    horaMud = $"{h.Hours:D2}:{h.Minutes:D2}";
+            }
+
+            string? obsMud = string.IsNullOrWhiteSpace(m.Observacoes)
+                ? null
+                : m.Observacoes.Length > 4000 ? m.Observacoes[..4000] : m.Observacoes;
+
+            SugestaoTarefaViewModel mudancas = new(
+                m.Titulo ?? string.Empty,
+                categoriasMud,
+                dataMud,
+                horaMud,
+                prioMud,
+                obsMud);
+
+            acaoSugerida = new AcaoSugeridaViewModel("editar", ed.TarefaId, mudancas);
+        }
 
         return Result<ConversaCapturaViewModel>.Success(
-            new ConversaCapturaViewModel(resposta.Mensagem, tarefa, resposta.Completo, resposta.TranscricaoUsuario));
+            new ConversaCapturaViewModel(
+                resposta.Mensagem,
+                tarefa,
+                resposta.Completo,
+                resposta.TranscricaoUsuario,
+                resposta.TarefasReferenciadas,
+                acaoSugerida));
     }
 }

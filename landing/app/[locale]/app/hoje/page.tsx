@@ -2,7 +2,7 @@
 
 export const runtime = "edge";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { Modal } from "@/components/app/modal";
 import { TarefaForm } from "@/components/app/tarefa-form";
@@ -17,6 +17,11 @@ export default function HojePage() {
   const usuario = useUsuarioAtual();
   const primeiroNome = usuario?.nome.split(" ")[0] ?? "";
   const [tarefaEditando, setTarefaEditando] = useState<Tarefa | null>(null);
+  const [saudacao, setSaudacao] = useState("Olá");
+  useEffect(() => {
+    const h = new Date().getHours();
+    setSaudacao(h >= 5 && h < 12 ? "Bom dia" : h >= 12 && h < 18 ? "Boa tarde" : "Boa noite");
+  }, []);
 
   function abrirEditar(t: Tarefa) {
     setTarefaEditando(t);
@@ -44,7 +49,7 @@ export default function HojePage() {
   );
 
   const stats = {
-    pendentes: pendentes.filter((t) => t.status === 1 && ehHoje(t.dataPrazo)).length,
+    pendentes: pendentes.filter((t) => ehHoje(t.dataPrazo)).length,
     atrasadas: pendentes.filter((t) => t.status === 3).length,
     concluidas: concluidasHoje.length,
   };
@@ -76,7 +81,7 @@ export default function HojePage() {
                 {hoje()}
               </div>
               <h1 className="text-3xl md:text-[44px] font-semibold tracking-[-1.2px] leading-[1.1]">
-                {primeiroNome ? `Olá, ${primeiroNome}.` : "Hoje"}
+                {primeiroNome ? `${saudacao}, ${primeiroNome}.` : "Hoje"}
               </h1>
               <p className="text-base text-muted leading-[1.55] mt-2">
                 Tarefas com prazo hoje, próximas e atrasadas.

@@ -12,7 +12,9 @@ public sealed record ConversaCapturaViewModel(
     string Mensagem,
     SugestaoTarefaViewModel? Tarefa,
     bool Completo,
-    string? TranscricaoUsuario = null);
+    string? TranscricaoUsuario = null,
+    IReadOnlyList<Guid>? TarefasReferenciadas = null,
+    AcaoSugeridaViewModel? AcaoSugerida = null);
 
 public sealed record SugestaoTarefaViewModel(
     string Titulo,
@@ -21,3 +23,12 @@ public sealed record SugestaoTarefaViewModel(
     string? HorarioFinal,
     int? Prioridade,
     string? Observacoes);
+
+/// <summary>
+/// Ação destrutiva/mutativa que o agente sugeriu. O front renderiza um card
+/// de confirmação ([Confirmar]/[Cancelar]). Só executa via API após user aprovar.
+/// </summary>
+public sealed record AcaoSugeridaViewModel(
+    string Tipo,                  // "concluir" | "excluir" | "editar"
+    Guid TarefaId,
+    SugestaoTarefaViewModel? Mudancas);

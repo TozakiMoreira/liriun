@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 
 import { useRouter } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
+import { LiriunLoader } from "@/components/app/liriun-loader";
 import { useAuth } from "@/components/auth/auth-provider";
 import { categoriasApi } from "@/lib/api/tarefas";
 
@@ -82,11 +83,7 @@ export default function OnboardingPage() {
   }
 
   if (verificando) {
-    return (
-      <div className="min-h-screen grid place-items-center text-muted">
-        <span className="font-mono text-xs uppercase tracking-[1.4px]">…</span>
-      </div>
-    );
+    return <LiriunLoader fullscreen label="Carregando" />;
   }
 
   return (

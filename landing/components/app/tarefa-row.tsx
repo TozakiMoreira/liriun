@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { formatarDataCurta, formatarHorario } from "@/lib/datetime";
+import { descricaoRelativa, formatarDataCurta, formatarHorario } from "@/lib/datetime";
 import {
   PRIORIDADE_LABEL,
   type Prioridade,
@@ -36,6 +36,7 @@ export function TarefaRow({
 
   const horario = formatarHorario(tarefa.horarioFinal);
   const dataCurta = formatarDataCurta(tarefa.dataPrazo);
+  const quando = descricaoRelativa(tarefa.dataPrazo);
 
   return (
     <div
@@ -93,16 +94,18 @@ export function TarefaRow({
             );
           })}
 
-          {/* Horário ou data + horário */}
-          {(horario || atrasada) && (
-            <span
-              className="inline-flex items-center gap-1"
-              style={{ color: atrasada ? "#FFB99A" : undefined }}
-            >
-              <ClockIcon size={11} color={atrasada ? "#FFB99A" : "currentColor"} />
-              {atrasada ? `Atrasada · ${dataCurta}` : horario ?? dataCurta}
-            </span>
-          )}
+          {/* Quando: atrasada / hoje / amanhã / em N dias (+ horário opcional) */}
+          <span
+            className="inline-flex items-center gap-1"
+            style={{ color: atrasada ? "#FFB99A" : undefined }}
+          >
+            <ClockIcon size={11} color={atrasada ? "#FFB99A" : "currentColor"} />
+            {atrasada
+              ? `Atrasada · ${dataCurta}`
+              : horario
+                ? `${quando} · ${horario}`
+                : quando}
+          </span>
 
           {/* Prioridade alta */}
           {tarefa.prioridade === 1 && (

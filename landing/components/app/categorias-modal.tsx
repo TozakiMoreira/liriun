@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/app/modal";
+import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { categoriasApi } from "@/lib/api/tarefas";
 import { useCategorias } from "@/lib/api/hooks/use-categorias";
 
@@ -14,6 +15,7 @@ export function CategoriasModal({ open, onClose }: { open: boolean; onClose: () 
   const [valorEdit, setValorEdit] = useState("");
   const [erro, setErro] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [confirmar, setConfirmar] = useState<{ id: string; nome: string } | null>(null);
 
   async function criar() {
     const nome = nova.trim();
@@ -47,13 +49,18 @@ export function CategoriasModal({ open, onClose }: { open: boolean; onClose: () 
     }
   }
 
-  async function excluir(id: string, nome: string) {
-    if (!confirm(`Excluir categoria "${nome}"?`)) return;
+  function pedirExclusao(id: string, nome: string) {
+    setConfirmar({ id, nome });
+  }
+
+  async function excluirConfirmado() {
+    if (!confirmar) return;
     setBusy(true);
     setErro(null);
     try {
-      await categoriasApi.excluir(id);
+      await categoriasApi.excluir(confirmar.id);
       await refresh();
+      setConfirmar(null);
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Erro ao excluir");
     } finally {
@@ -62,6 +69,7 @@ export function CategoriasModal({ open, onClose }: { open: boolean; onClose: () 
   }
 
   return (
+    <>
     <Modal open={open} onClose={onClose} title="Categorias" size="md">
       <div className="flex flex-col gap-4">
         {/* Criar nova */}
@@ -140,7 +148,7 @@ export function CategoriasModal({ open, onClose }: { open: boolean; onClose: () 
                     </button>
                     <button
                       type="button"
-                      onClick={() => void excluir(c.id, c.nome)}
+                      onClick={() => pedirExclusao(c.id, c.nome)}
                       className="text-xs font-mono uppercase tracking-[1px] text-faint hover:text-danger px-2"
                     >
                       Excluir
@@ -159,5 +167,17 @@ export function CategoriasModal({ open, onClose }: { open: boolean; onClose: () 
         </div>
       </div>
     </Modal>
+
+    <ConfirmDialog
+      open={confirmar !== null}
+      title="Excluir categoria?"
+      message={`A categoria "${confirmar?.nome ?? ""}" será removida. Não pode ser desfeito.`}
+      confirmLabel="Excluir"
+      destructive
+      loading={busy}
+      onConfirm={() => void excluirConfirmado()}
+      onCancel={() => setConfirmar(null)}
+    />
+    </>
   );
 }

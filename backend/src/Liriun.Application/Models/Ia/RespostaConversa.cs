@@ -14,4 +14,5 @@ public sealed record RespostaConversa(
     string Mensagem,
     AcaoIA Acao,
     bool Completo,
-    string? TranscricaoUsuario = null);
+    string? TranscricaoUsuario = null,
+    IReadOnlyList<Guid>? TarefasReferenciadas = null);

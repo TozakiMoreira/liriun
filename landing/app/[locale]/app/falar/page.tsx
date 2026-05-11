@@ -4,10 +4,13 @@ export const runtime = "edge";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
+import { AcaoConfirmCard } from "@/components/app/acao-confirm-card";
 import { Modal } from "@/components/app/modal";
 import { TarefaForm } from "@/components/app/tarefa-form";
+import { TaskCardMini } from "@/components/app/task-card-mini";
 import { useUsuarioAtual } from "@/components/auth/auth-provider";
-import { agenteApi, type Mensagem, type SugestaoTarefa } from "@/lib/api/agente";
+import { useTarefas } from "@/lib/api/hooks/use-tarefas";
+import { agenteApi, type AcaoSugerida, type Mensagem, type SugestaoTarefa } from "@/lib/api/agente";
 import {
   categoriasApi,
   tarefasApi,
@@ -23,6 +26,9 @@ type ChatMessage = {
   papel: "usuario" | "liriun";
   conteudo: string;
   pendente?: boolean;
+  tarefasReferenciadas?: string[];
+  acaoSugerida?: AcaoSugerida;
+  acaoExecutada?: "ok" | "cancelada";
 };
 
 type Modo = "voz" | "texto";
@@ -32,6 +38,18 @@ const MAX_DURACAO_MS = 60_000; // 60s — igual V1, backend aceita até 8MB (~60
 export default function FalarPage() {
   const usuario = useUsuarioAtual();
   const primeiroNome = usuario?.nome.split(" ")[0] ?? "";
+  const {
+    pendentes: tarefasPendentes,
+    concluidas: tarefasConcluidas,
+    refresh: refreshTarefas,
+  } = useTarefas();
+
+  // Saudação baseada na hora local — useState + useEffect pra evitar hydration mismatch
+  const [saudacao, setSaudacao] = useState("Olá");
+  useEffect(() => {
+    const h = new Date().getHours();
+    setSaudacao(h >= 5 && h < 12 ? "Bom dia" : h >= 12 && h < 18 ? "Boa tarde" : "Boa noite");
+  }, []);
 
   const [modo, setModo] = useState<Modo>("voz");
   const [mensagens, setMensagens] = useState<ChatMessage[]>([]);
@@ -111,7 +129,15 @@ export default function FalarPage() {
       });
       setMensagens((m) =>
         m.map((msg) =>
-          msg.id === agenteMsg.id ? { ...msg, conteudo: res.mensagem, pendente: false } : msg,
+          msg.id === agenteMsg.id
+            ? {
+                ...msg,
+                conteudo: res.mensagem,
+                pendente: false,
+                tarefasReferenciadas: res.tarefasReferenciadas ?? undefined,
+                acaoSugerida: res.acaoSugerida ?? undefined,
+              }
+            : msg,
         ),
       );
       setSugestao(res.tarefa);
@@ -158,7 +184,14 @@ export default function FalarPage() {
       setMensagens((m) =>
         m.map((msg) => {
           if (msg.id === userMsg.id) return { ...msg, conteudo: transcricao, pendente: false };
-          if (msg.id === agenteMsg.id) return { ...msg, conteudo: res.mensagem, pendente: false };
+          if (msg.id === agenteMsg.id)
+            return {
+              ...msg,
+              conteudo: res.mensagem,
+              pendente: false,
+              tarefasReferenciadas: res.tarefasReferenciadas ?? undefined,
+              acaoSugerida: res.acaoSugerida ?? undefined,
+            };
           return msg;
         }),
       );
@@ -167,7 +200,6 @@ export default function FalarPage() {
         void salvarSugestao(res.tarefa);
       }
     } catch (err) {
-      console.error("[audio] falha ao processar:", err);
       setErro(err instanceof Error ? err.message : "Falha ao processar áudio");
       // Mantém a bolha do usuário com indicador de erro e remove só a placeholder do agente.
       // Limpar as duas faria a tela voltar pro welcome (mensagens.length === 0) e esconde o feedback.
@@ -228,6 +260,42 @@ export default function FalarPage() {
     } finally {
       setSalvando(false);
     }
+  }
+
+  async function executarAcaoSugerida(msgId: string, acao: AcaoSugerida) {
+    try {
+      if (acao.tipo === "concluir") {
+        await tarefasApi.concluir(acao.tarefaId);
+      } else if (acao.tipo === "excluir") {
+        await tarefasApi.excluir(acao.tarefaId);
+      } else if (acao.tipo === "editar") {
+        const atual =
+          tarefasPendentes.find((t) => t.id === acao.tarefaId) ??
+          tarefasConcluidas.find((t) => t.id === acao.tarefaId);
+        if (!atual) throw new Error("Tarefa não encontrada");
+        const mud = acao.mudancas;
+        await tarefasApi.atualizar(acao.tarefaId, {
+          nome: mud?.titulo?.trim() ? mud.titulo : atual.nome,
+          categoriaIds: mud?.categoriaIds.length ? mud.categoriaIds : atual.categorias.map((c) => c.id),
+          dataPrazo: mud?.dataPrazo ?? atual.dataPrazo,
+          horarioFinal: mud?.horarioFinal ?? atual.horarioFinal,
+          prioridade: ((mud?.prioridade ?? atual.prioridade) as Prioridade),
+          observacoes: mud?.observacoes ?? atual.observacoes,
+        });
+      }
+      await refreshTarefas();
+      setMensagens((m) =>
+        m.map((msg) => (msg.id === msgId ? { ...msg, acaoExecutada: "ok" } : msg)),
+      );
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : "Falha ao executar ação");
+    }
+  }
+
+  function cancelarAcaoSugerida(msgId: string) {
+    setMensagens((m) =>
+      m.map((msg) => (msg.id === msgId ? { ...msg, acaoExecutada: "cancelada" } : msg)),
+    );
   }
 
   async function iniciarGravacao() {
@@ -295,8 +363,8 @@ export default function FalarPage() {
       if (r && r.state !== "inactive") {
         try {
           r.stop();
-        } catch (e) {
-          console.error("[audio] stop após timeout falhou:", e);
+        } catch {
+          // best-effort: timeout já encerrou a captura
         }
       }
     }, MAX_DURACAO_MS);
@@ -309,8 +377,8 @@ export default function FalarPage() {
     if (recorder && recorder.state !== "inactive") {
       try {
         recorder.stop();
-      } catch (e) {
-        console.error("[audio] erro ao parar:", e);
+      } catch {
+        // best-effort: recorder pode já ter encerrado
       }
     }
   }
@@ -357,7 +425,7 @@ export default function FalarPage() {
         >
           <div className="text-center max-w-[640px] w-full">
             <h1 className="text-[44px] md:text-[72px] font-semibold tracking-[-2px] leading-[1.0]">
-              {primeiroNome ? `Bom dia, ${primeiroNome}.` : "Bom dia."}
+              {primeiroNome ? `${saudacao}, ${primeiroNome}.` : `${saudacao}.`}
               <br />
               <span className="bg-grad-brand bg-clip-text text-transparent">
                 Como posso ajudar?
@@ -473,10 +541,11 @@ export default function FalarPage() {
     );
   }
 
-  // Com conversa: chat scroll + input fixo embaixo
+  // Com conversa: header + footer ficam ancorados no container, só section scrolla.
+  // Container altura = viewport - tabbar mobile (72px). Body NAO scrolla.
   return (
-    <div className="min-h-screen flex flex-col">
-      <div className="flex items-center gap-3 px-6 md:px-12 pt-8 pb-4">
+    <div className="flex flex-col h-[calc(100dvh-72px)] md:h-screen overflow-hidden">
+      <div className="shrink-0 flex items-center gap-3 px-6 md:px-12 pt-8 pb-4">
         <button
           type="button"
           onClick={() => {
@@ -502,13 +571,53 @@ export default function FalarPage() {
 
       <section ref={scrollRef} className="flex-1 overflow-y-auto px-6 md:px-12">
         <div className="max-w-[760px] mx-auto py-8 flex flex-col gap-4">
-          {mensagens.map((m) =>
-            m.papel === "usuario" ? (
-              <UserBubble key={m.id} text={m.conteudo} pendente={m.pendente} />
-            ) : (
-              <AgenteBubble key={m.id} text={m.conteudo} pendente={m.pendente} />
-            ),
-          )}
+          {mensagens.map((m) => {
+            if (m.papel === "usuario") {
+              return <UserBubble key={m.id} text={m.conteudo} pendente={m.pendente} />;
+            }
+            const refs = (m.tarefasReferenciadas ?? [])
+              .map((id) =>
+                tarefasPendentes.find((t) => t.id === id) ??
+                tarefasConcluidas.find((t) => t.id === id),
+              )
+              .filter((t): t is Tarefa => !!t);
+            const acaoAlvo = m.acaoSugerida
+              ? tarefasPendentes.find((t) => t.id === m.acaoSugerida!.tarefaId) ??
+                tarefasConcluidas.find((t) => t.id === m.acaoSugerida!.tarefaId)
+              : undefined;
+            return (
+              <div key={m.id} className="flex flex-col gap-2.5">
+                <AgenteBubble text={m.conteudo} pendente={m.pendente} />
+                {refs.length > 0 && (
+                  <div className="flex flex-col gap-2 pl-1 max-w-[85%] animate-fade-in">
+                    {refs.map((t) => (
+                      <TaskCardMini key={t.id} tarefa={t} />
+                    ))}
+                  </div>
+                )}
+                {m.acaoSugerida && acaoAlvo && !m.acaoExecutada && (
+                  <div className="pl-1 max-w-[85%]">
+                    <AcaoConfirmCard
+                      acao={m.acaoSugerida}
+                      tarefa={acaoAlvo}
+                      onConfirm={() => executarAcaoSugerida(m.id, m.acaoSugerida!)}
+                      onCancel={() => cancelarAcaoSugerida(m.id)}
+                    />
+                  </div>
+                )}
+                {m.acaoExecutada === "ok" && (
+                  <div className="pl-1 font-mono text-[10px] uppercase tracking-[1.4px] text-violet-300 animate-fade-in">
+                    ✓ Feito
+                  </div>
+                )}
+                {m.acaoExecutada === "cancelada" && (
+                  <div className="pl-1 font-mono text-[10px] uppercase tracking-[1.4px] text-faint animate-fade-in">
+                    Cancelado
+                  </div>
+                )}
+              </div>
+            );
+          })}
           {sugestao && (
             <SugestaoCard
               sugestao={sugestao}
@@ -536,7 +645,7 @@ export default function FalarPage() {
         )}
       </Modal>
 
-      <footer className="px-6 md:px-12 pb-6 md:pb-10 border-t border-border bg-bg/60 backdrop-blur-md">
+      <footer className="shrink-0 px-6 md:px-12 pt-3 pb-3 md:pt-4 md:pb-10 border-t border-border bg-bg/60 backdrop-blur-md">
         <div className="max-w-[760px] mx-auto pt-4">
           {erro && (
             <div className="mb-3 text-sm text-danger px-3 py-2 rounded-md border border-danger/30 bg-danger/10">
@@ -858,7 +967,7 @@ function UserBubble({ text, pendente }: { text: string; pendente?: boolean }) {
   return (
     <div className="flex justify-end">
       <div
-        className="max-w-[78%] px-4 py-3 rounded-[20px_20px_4px_20px] text-base text-white"
+        className="max-w-[78%] px-4 py-3 rounded-[20px_20px_4px_20px] text-base text-white [overflow-wrap:anywhere]"
         style={{
           background: "var(--liriun-grad-brand)",
           boxShadow: "0 8px 24px rgba(91,141,239,0.25), inset 0 1px 0 rgba(255,255,255,0.18)",
@@ -883,7 +992,7 @@ function AgenteBubble({ text, pendente }: { text: string; pendente?: boolean }) 
         Liriun
       </div>
       <div
-        className="px-4 py-3 rounded-[20px_20px_20px_4px] text-base text-text leading-[1.45]"
+        className="px-4 py-3 rounded-[20px_20px_20px_4px] text-base text-text leading-[1.45] [overflow-wrap:anywhere]"
         style={{
           background: "rgba(255,255,255,0.05)",
           border: "1px solid var(--liriun-border)",

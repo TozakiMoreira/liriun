@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 import { LiriunIcon } from "@/components/brand/liriun-icon";
 import { LiriunLockup } from "@/components/brand/liriun-lockup";
+import { LiriunLoader } from "@/components/app/liriun-loader";
 import { useAuth } from "@/components/auth/auth-provider";
 import { categoriasApi } from "@/lib/api/tarefas";
 
@@ -74,11 +75,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [state.status, router]);
 
   if (state.status !== "authenticated" || !onboardingChecado) {
-    return (
-      <div className="min-h-screen grid place-items-center text-muted">
-        <span className="font-mono text-xs uppercase tracking-[1.4px]">…</span>
-      </div>
-    );
+    return <LiriunLoader fullscreen label="Carregando" />;
   }
 
   const usuario = state.usuario;
@@ -182,23 +179,29 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Conteúdo */}
-      <main className="flex-1 min-w-0 pb-24 md:pb-0">{children}</main>
+      <main className={`flex-1 min-w-0 ${pathname.startsWith("/app/falar") ? "" : "pb-24 md:pb-0"}`}>{children}</main>
 
       {/* Mobile bottom tabbar */}
       <MobileTabBar pathname={pathname} t={t} />
 
-      {/* Mobile FAB nova tarefa */}
-      <Link
-        href="/app/tarefas?novo=1"
-        className="md:hidden fixed bottom-24 right-5 z-30 w-14 h-14 rounded-pill grid place-items-center"
-        aria-label="Nova tarefa"
-        style={{
-          background: "var(--liriun-grad-brand)",
-          boxShadow: "0 12px 28px rgba(91,141,239,0.45), inset 0 1px 0 rgba(255,255,255,0.25)",
-        }}
-      >
-        <PlusIcon />
-      </Link>
+      {/* Mobile FAB nova tarefa — só na seção de tarefas */}
+      {pathname.startsWith("/app/tarefas") && (
+        <button
+          type="button"
+          onClick={() => {
+            // dispatch CustomEvent pra TarefasPage abrir modal (mesma rota → sem nav)
+            window.dispatchEvent(new CustomEvent("liriun:nova-tarefa"));
+          }}
+          className="md:hidden fixed bottom-24 right-5 z-30 w-14 h-14 rounded-pill grid place-items-center"
+          aria-label="Nova tarefa"
+          style={{
+            background: "var(--liriun-grad-brand)",
+            boxShadow: "0 12px 28px rgba(91,141,239,0.45), inset 0 1px 0 rgba(255,255,255,0.25)",
+          }}
+        >
+          <PlusIcon />
+        </button>
+      )}
     </div>
   );
 }

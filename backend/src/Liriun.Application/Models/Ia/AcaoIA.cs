@@ -20,6 +20,7 @@ public enum TipoAcaoIA
     Concluir = 2,
     Editar = 3,
     Consultar = 4,
+    Excluir = 5,
 }
 
 /// <summary>Sem ação — só conversa/resposta textual.</summary>
@@ -50,6 +51,12 @@ public sealed record AcaoEditar(Guid TarefaId, AnaliseTarefa Mudancas) : AcaoIA
 public sealed record AcaoConsultar(FiltrosConsulta Filtros) : AcaoIA
 {
     public override TipoAcaoIA Tipo => TipoAcaoIA.Consultar;
+}
+
+/// <summary>Excluir uma tarefa existente (delete). Requer confirmação no front antes de executar.</summary>
+public sealed record AcaoExcluir(Guid TarefaId) : AcaoIA
+{
+    public override TipoAcaoIA Tipo => TipoAcaoIA.Excluir;
 }
 
 public sealed record FiltrosConsulta(

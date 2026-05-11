@@ -21,11 +21,19 @@ export type SugestaoTarefa = {
   observacoes: string | null;
 };
 
+export type AcaoSugerida = {
+  tipo: "concluir" | "excluir" | "editar";
+  tarefaId: string;
+  mudancas: SugestaoTarefa | null;
+};
+
 export type ConversaResponse = {
   mensagem: string;
   tarefa: SugestaoTarefa | null;
   completo: boolean;
   transcricaoUsuario?: string | null;
+  tarefasReferenciadas?: string[] | null;
+  acaoSugerida?: AcaoSugerida | null;
 };
 
 export const agenteApi = {

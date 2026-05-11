@@ -38,12 +38,12 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-6"
+      className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-6 animate-fade-in"
       style={{ background: "rgba(8,10,14,0.65)", backdropFilter: "blur(2px)" }}
       onClick={onClose}
     >
       <div
-        className={`w-full ${widths[size]} max-h-[92vh] overflow-y-auto rounded-t-[28px] md:rounded-2xl p-6 md:p-7`}
+        className={`w-full ${widths[size]} max-h-[92vh] overflow-y-auto rounded-t-[28px] md:rounded-2xl p-6 md:p-7 animate-slide-up md:animate-scale-in`}
         style={{
           background: "rgba(20,22,28,0.96)",
           border: "1px solid var(--liriun-border-hi)",
