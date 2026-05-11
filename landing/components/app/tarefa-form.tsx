@@ -100,7 +100,6 @@ export function TarefaForm({ tarefa, onSubmit, onCancel }: TarefaFormProps) {
           onChange={(e) => setNome(e.target.value)}
           placeholder="Ex: Reunião com a equipe de design"
           className={inputCls}
-          autoFocus
         />
       </div>
 
