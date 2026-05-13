@@ -3,6 +3,7 @@
 import { useRef, useState, type ChangeEvent } from "react";
 
 import { Button } from "@/components/ui/button";
+import { BtnSpinner } from "@/components/ui/btn-spinner";
 import { Modal } from "@/components/app/modal";
 import { useAuth } from "@/components/auth/auth-provider";
 import {
@@ -157,7 +158,7 @@ export function EditarPerfilModal({
             Cancelar
           </Button>
           <Button onClick={() => void salvar()} disabled={busy}>
-            {busy ? "…" : "Salvar"}
+            {busy ? <BtnSpinner /> : "Salvar"}
           </Button>
         </div>
       </div>

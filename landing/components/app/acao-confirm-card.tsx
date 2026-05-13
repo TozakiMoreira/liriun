@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { BtnSpinner } from "@/components/ui/btn-spinner";
 import { descricaoRelativa, formatarHorario } from "@/lib/datetime";
 import type { Tarefa } from "@/lib/api/tarefas";
 import type { AcaoSugerida } from "@/lib/api/agente";
@@ -137,7 +138,7 @@ export function AcaoConfirmCard({ acao, tarefa, onConfirm, onCancel, disabled }:
                 : "0 4px 12px rgba(91,141,239,0.28), inset 0 1px 0 rgba(255,255,255,0.18)",
             }}
           >
-            {executando ? "…" : cfg.verb}
+            {executando ? <BtnSpinner /> : cfg.verb}
           </button>
         </div>
       </div>

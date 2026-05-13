@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
 import { AuthCard } from "@/components/auth/auth-card";
 import { Button } from "@/components/ui/button";
+import { BtnSpinner } from "@/components/ui/btn-spinner";
 import { useAuth } from "@/components/auth/auth-provider";
 import { login } from "@/lib/api/auth";
 
@@ -59,7 +60,7 @@ export default function LoginPage() {
         />
         {erro && <p className="text-sm text-danger">{erro}</p>}
         <Button type="submit" disabled={loading} className="w-full justify-center mt-2">
-          {loading ? "…" : t("entrar")}
+          {loading ? <BtnSpinner /> : t("entrar")}
         </Button>
         <div className="flex justify-between mt-3 text-sm">
           <Link href="/esqueci-senha" className="text-muted hover:text-text">

@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { BtnSpinner } from "@/components/ui/btn-spinner";
 import { Modal } from "@/components/app/modal";
 import { useAuth } from "@/components/auth/auth-provider";
 import { excluirConta } from "@/lib/api/auth";
@@ -86,7 +87,7 @@ export function ExcluirContaModal({
             disabled={busy || !podeExcluir}
             className="text-sm font-semibold text-danger bg-danger/10 border border-danger/30 rounded-md px-4 py-2.5 hover:bg-danger/15 transition-colors disabled:opacity-50"
           >
-            {busy ? "…" : "Excluir conta"}
+            {busy ? <BtnSpinner /> : "Excluir conta"}
           </button>
         </div>
       </div>

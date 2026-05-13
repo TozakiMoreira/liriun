@@ -3,6 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
+import { BtnSpinner } from "@/components/ui/btn-spinner";
 import { DatePicker } from "@/components/app/date-picker";
 import { TimePicker } from "@/components/app/time-picker";
 import {
@@ -229,7 +230,7 @@ export function TarefaForm({ tarefa, onSubmit, onCancel }: TarefaFormProps) {
           Cancelar
         </Button>
         <Button type="submit" disabled={submitting}>
-          {submitting ? "…" : editando ? "Salvar" : "Criar tarefa"}
+          {submitting ? <BtnSpinner /> : editando ? "Salvar" : "Criar tarefa"}
         </Button>
       </div>
     </form>

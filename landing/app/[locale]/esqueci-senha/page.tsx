@@ -8,6 +8,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { AuthCard } from "@/components/auth/auth-card";
 import { Button } from "@/components/ui/button";
+import { BtnSpinner } from "@/components/ui/btn-spinner";
 import { esqueciSenha } from "@/lib/api/auth";
 
 export default function EsqueciSenhaPage() {
@@ -49,7 +50,7 @@ export default function EsqueciSenhaPage() {
           />
           {erro && <p className="text-sm text-danger">{erro}</p>}
           <Button type="submit" disabled={loading} className="w-full justify-center mt-2">
-            {loading ? "…" : t("enviarLink")}
+            {loading ? <BtnSpinner /> : t("enviarLink")}
           </Button>
         </form>
       )}
