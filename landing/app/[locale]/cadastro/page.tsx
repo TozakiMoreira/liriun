@@ -8,7 +8,6 @@ import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
 import { AuthCard } from "@/components/auth/auth-card";
 import { Button } from "@/components/ui/button";
-import { BtnSpinner } from "@/components/ui/btn-spinner";
 import { useAuth } from "@/components/auth/auth-provider";
 import { PasswordRequirements } from "@/components/auth/password-requirements";
 import { cadastrar } from "@/lib/api/auth";
@@ -96,8 +95,8 @@ export default function CadastroPage() {
           </label>
         </div>
         {erro && <p className="text-sm text-danger">{erro}</p>}
-        <Button type="submit" disabled={loading} className="w-full justify-center mt-3">
-          {loading ? <BtnSpinner /> : t("criarConta")}
+        <Button type="submit" loading={loading} className="w-full justify-center mt-3">
+          {t("criarConta")}
         </Button>
         <div className="text-center mt-3 text-sm">
           <Link href="/login" className="text-violet-300 hover:text-violet-200">

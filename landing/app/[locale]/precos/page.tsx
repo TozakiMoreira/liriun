@@ -147,7 +147,7 @@ function PricingTier({
 }) {
   return (
     <div
-      className="rounded-2xl p-8 flex flex-col gap-5"
+      className="rounded-2xl p-8 flex flex-col gap-5 transition-transform duration-base ease-standard hover:-translate-y-0.5"
       style={{
         background: highlight
           ? "linear-gradient(180deg, rgba(156,123,255,0.10), rgba(91,141,239,0.04))"

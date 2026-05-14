@@ -219,15 +219,28 @@ public class ConversarCapturaUseCase
                 ? null
                 : m.Observacoes.Length > 4000 ? m.Observacoes[..4000] : m.Observacoes;
 
-            SugestaoTarefaViewModel mudancas = new(
-                m.Titulo ?? string.Empty,
-                categoriasMud,
-                dataMud,
-                horaMud,
-                prioMud,
-                obsMud);
+            bool temAlgumaMudanca =
+                !string.IsNullOrWhiteSpace(m.Titulo) ||
+                categoriasMud.Count > 0 ||
+                dataMud.HasValue ||
+                horaMud != null ||
+                prioMud.HasValue ||
+                obsMud != null;
 
-            acaoSugerida = new AcaoSugeridaViewModel("editar", ed.TarefaId, mudancas);
+            if (temAlgumaMudanca)
+            {
+                SugestaoTarefaViewModel mudancas = new(
+                    m.Titulo ?? string.Empty,
+                    categoriasMud,
+                    dataMud,
+                    horaMud,
+                    prioMud,
+                    obsMud);
+
+                acaoSugerida = new AcaoSugeridaViewModel("editar", ed.TarefaId, mudancas);
+            }
+            // Mudancas vazias = Gemini emitiu editar sem dados úteis. Cai como conversa
+            // (a mensagem dele já deve estar pedindo o que mudar).
         }
 
         return Result<ConversaCapturaViewModel>.Success(

@@ -148,6 +148,13 @@
     background: rgba(156, 123, 255, 0.25);
     color: var(--liriun-text);
   }
+
+  /* Focus visível brand em qualquer interativo */
+  *:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(156, 123, 255, 0.32);
+    border-radius: inherit;
+  }
 }
 
 @layer utilities {

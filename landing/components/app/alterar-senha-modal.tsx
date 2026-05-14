@@ -3,7 +3,6 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { BtnSpinner } from "@/components/ui/btn-spinner";
 import { Modal } from "@/components/app/modal";
 import { PasswordRequirements } from "@/components/auth/password-requirements";
 import { alterarSenha } from "@/lib/api/auth";
@@ -64,8 +63,8 @@ export function AlterarSenhaModal({
             <Button variant="secondary" onClick={onClose} disabled={busy}>
               Cancelar
             </Button>
-            <Button onClick={() => void salvar()} disabled={busy}>
-              {busy ? <BtnSpinner /> : "Salvar"}
+            <Button onClick={() => void salvar()} loading={busy}>
+              Salvar
             </Button>
           </div>
         </div>

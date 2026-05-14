@@ -2,6 +2,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { LiriunLockup } from "@/components/brand/liriun-lockup";
 import { Button } from "@/components/ui/button";
+import { FooterWidget } from "@/components/site/footer-widget";
 
 type FooterItem = { key: string; href: string; external?: boolean };
 
@@ -59,6 +60,10 @@ export function SiteFooter({ showCta = true }: { showCta?: boolean }) {
             </div>
           </div>
         )}
+
+        <div className="mb-12 hidden md:block">
+          <FooterWidget />
+        </div>
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
           <div className="col-span-2">

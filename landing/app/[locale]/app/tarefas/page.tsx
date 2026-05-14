@@ -27,21 +27,31 @@ type Filtro =
   | "concluidas"
   | "urgente"
   | "importante"
-  | "hoje"
-  | "amanha"
-  | "proximas";
+  | "normal"
+  | "baixa";
 
 const FILTROS: { id: Filtro; label: string; group: string }[] = [
   { id: "pendentes", label: "Pendentes", group: "Status" },
   { id: "atrasadas", label: "Atrasadas", group: "Status" },
   { id: "concluidas", label: "Concluídas", group: "Status" },
   { id: "todas", label: "Todas", group: "Status" },
-  { id: "hoje", label: "Hoje", group: "Período" },
-  { id: "amanha", label: "Amanhã", group: "Período" },
-  { id: "proximas", label: "Próximas", group: "Período" },
   { id: "urgente", label: "Urgentes", group: "Prioridade" },
   { id: "importante", label: "Importantes", group: "Prioridade" },
+  { id: "normal", label: "Normais", group: "Prioridade" },
+  { id: "baixa", label: "Baixas", group: "Prioridade" },
 ];
+
+// Grupos relevantes por modo: no Quadro/Semana as colunas/dias já mostram status,
+// então só prioridade faz sentido. Lista mostra ambos.
+function gruposParaModo(modo: Modo): readonly ("Status" | "Prioridade")[] {
+  if (modo === "lista") return ["Status", "Prioridade"] as const;
+  return ["Prioridade"] as const;
+}
+
+function filtroDefaultParaModo(modo: Modo): Filtro {
+  if (modo === "quadro" || modo === "semana") return "todas";
+  return "pendentes";
+}
 
 export default function TarefasPage() {
   return (
@@ -66,6 +76,16 @@ function TarefasInner() {
   const [filtro, setFiltro] = useState<Filtro>("pendentes");
   const [busca, setBusca] = useState("");
   const [filtroAberto, setFiltroAberto] = useState(false);
+
+  // Reseta filtro quando muda de modo, caso o grupo atual não exista no novo modo
+  useEffect(() => {
+    const grupoAtual = FILTROS.find((f) => f.id === filtro)?.group;
+    const gruposVisiveis = gruposParaModo(modo);
+    if (grupoAtual && !gruposVisiveis.includes(grupoAtual as "Status" | "Prioridade")) {
+      setFiltro(filtroDefaultParaModo(modo));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [modo]);
 
   const [modalAberto, setModalAberto] = useState(false);
   const [tarefaEditando, setTarefaEditando] = useState<Tarefa | null>(null);
@@ -101,9 +121,8 @@ function TarefasInner() {
         if (filtro === "atrasadas" && t.status !== 3) return false;
         if (filtro === "urgente" && t.prioridade !== 1) return false;
         if (filtro === "importante" && t.prioridade !== 2) return false;
-        if (filtro === "hoje" && !ehHoje(t.dataPrazo)) return false;
-        if (filtro === "amanha" && !ehAmanha(t.dataPrazo)) return false;
-        if (filtro === "proximas" && (ehHoje(t.dataPrazo) || ehAmanha(t.dataPrazo) || t.status === 2)) return false;
+        if (filtro === "normal" && t.prioridade !== 3) return false;
+        if (filtro === "baixa" && t.prioridade !== 4) return false;
         if (busca && !t.nome.toLowerCase().includes(busca.toLowerCase())) return false;
         return true;
       })
@@ -179,6 +198,7 @@ function TarefasInner() {
               aberto={filtroAberto}
               setAberto={setFiltroAberto}
               filtroAtivo={filtroAtivo}
+              modo={modo}
               onChange={(f) => {
                 setFiltro(f);
                 setFiltroAberto(false);
@@ -214,7 +234,9 @@ function TarefasInner() {
             />
           ) : modo === "quadro" ? (
             <QuadroView
-              tarefas={filtradas}
+              tarefas={todas}
+              filtro={filtro}
+              busca={busca}
               onToggle={handleToggle}
               onEdit={abrirEditar}
               onDelete={handleDelete}
@@ -301,21 +323,38 @@ function FiltroDropdown({
   aberto,
   setAberto,
   filtroAtivo,
+  modo,
   onChange,
 }: {
   aberto: boolean;
   setAberto: (b: boolean) => void;
   filtroAtivo: { id: Filtro; label: string };
+  modo: Modo;
   onChange: (f: Filtro) => void;
 }) {
-  const groups = ["Status", "Período", "Prioridade"] as const;
+  const groups = gruposParaModo(modo);
+  const filtroPadrao = filtroDefaultParaModo(modo);
+  const ativo = filtroAtivo.id !== filtroPadrao;
+
   return (
     <div className="relative">
       <button
         type="button"
         onClick={() => setAberto(!aberto)}
-        className="inline-flex items-center gap-2 px-3 py-2 rounded-md border border-border-hi text-sm font-medium text-text hover:bg-white/[0.04] transition-colors"
-        style={{ background: "rgba(255,255,255,0.04)" }}
+        className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-pill text-sm font-medium transition-all duration-base ${
+          ativo
+            ? "text-white"
+            : "text-text border border-border-hi hover:bg-white/[0.06]"
+        }`}
+        style={
+          ativo
+            ? {
+                background: "var(--liriun-grad-brand)",
+                boxShadow:
+                  "inset 0 1px 0 rgba(255,255,255,0.18), 0 4px 12px rgba(91,141,239,0.28)",
+              }
+            : { background: "rgba(255,255,255,0.04)" }
+        }
       >
         <FilterIcon />
         <span>{filtroAtivo.label}</span>
@@ -327,24 +366,37 @@ function FiltroDropdown({
           {/* Backdrop — mobile cobre tela, desktop transparente (popover) */}
           <div
             className="fixed inset-0 z-40 md:z-30 md:bg-transparent animate-fade-in"
-            style={{ background: "rgba(8,10,14,0.55)", backdropFilter: "blur(2px)" }}
+            style={{ background: "rgba(8,10,14,0.55)", backdropFilter: "blur(3px)" }}
             onClick={() => setAberto(false)}
           />
 
           <div
-            className="z-50 md:z-40 overflow-hidden border border-border-hi flex flex-col
+            className="z-50 md:z-40 overflow-hidden flex flex-col
               fixed inset-x-0 bottom-0 max-h-[78vh] rounded-t-[28px] animate-slide-up
-              md:absolute md:inset-x-auto md:left-auto md:right-0 md:bottom-auto md:top-full md:mt-2 md:max-h-none md:w-[260px] md:rounded-2xl md:animate-scale-in"
+              md:absolute md:inset-x-auto md:left-auto md:right-0 md:bottom-auto md:top-full md:mt-2 md:max-h-none md:w-[272px] md:rounded-[20px] md:animate-scale-in"
             style={{
-              background: "rgba(20,22,28,0.96)",
-              boxShadow: "0 -20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07)",
-              backdropFilter: "blur(20px)",
+              background:
+                "linear-gradient(180deg, rgba(28,30,38,0.96) 0%, rgba(18,20,26,0.96) 100%)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              boxShadow:
+                "0 -24px 60px rgba(0,0,0,0.55), 0 24px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.08)",
+              backdropFilter: "blur(24px)",
             }}
           >
+            {/* Glow sutil topo (gradient brand) */}
+            <div
+              aria-hidden
+              className="absolute inset-x-0 top-0 h-px"
+              style={{
+                background:
+                  "linear-gradient(90deg, transparent 0%, rgba(156,123,255,0.5) 30%, rgba(91,141,239,0.5) 70%, transparent 100%)",
+              }}
+            />
+
             {/* Header mobile: drag handle + título + close */}
             <div className="md:hidden">
               <div className="flex justify-center pt-3 pb-1">
-                <div className="w-10 h-1 rounded-pill" style={{ background: "rgba(255,255,255,0.18)" }} />
+                <div className="w-10 h-1 rounded-pill" style={{ background: "rgba(255,255,255,0.20)" }} />
               </div>
               <div className="flex items-center justify-between px-6 pt-2 pb-3">
                 <h3 className="text-base font-semibold tracking-[-0.2px]">Filtrar</h3>
@@ -352,7 +404,7 @@ function FiltroDropdown({
                   type="button"
                   onClick={() => setAberto(false)}
                   aria-label="Fechar"
-                  className="w-8 h-8 rounded-md grid place-items-center text-muted hover:text-text hover:bg-white/[0.06]"
+                  className="w-8 h-8 rounded-pill grid place-items-center text-muted hover:text-text hover:bg-white/[0.08] transition-colors"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
                     <path d="M6 6l12 12M18 6L6 18" />
@@ -361,11 +413,14 @@ function FiltroDropdown({
               </div>
             </div>
 
-            {/* Conteúdo scrollável — pb generoso pra evitar última opção colada na borda + safe-area */}
-            <div className="flex-1 overflow-y-auto pb-[max(28px,env(safe-area-inset-bottom))] md:pb-0">
+            {/* Conteúdo scrollável */}
+            <div className="flex-1 overflow-y-auto pt-2 pb-[max(20px,env(safe-area-inset-bottom))] md:pt-3 md:pb-3">
               {groups.map((g, idx) => (
-                <div key={g} className={idx > 0 ? "mt-4 md:mt-2" : "mt-1 md:mt-1"}>
-                  <div className="px-6 md:px-4 font-mono text-[10px] uppercase tracking-[1.8px] text-faint mb-1">
+                <div key={g} className={idx > 0 ? "mt-5 md:mt-4" : ""}>
+                  <div
+                    className="px-6 md:px-5 font-mono text-[9px] font-semibold uppercase tracking-[2px] mb-2"
+                    style={{ color: "var(--liriun-violet-300)" }}
+                  >
                     {g}
                   </div>
                   <div className="px-3 md:px-2 flex flex-col gap-0.5">
@@ -376,20 +431,30 @@ function FiltroDropdown({
                           key={f.id}
                           type="button"
                           onClick={() => onChange(f.id)}
-                          className={`w-full text-left px-3 py-2.5 md:py-2 rounded-md text-sm transition-colors flex items-center gap-3 ${
+                          className={`group relative w-full text-left px-3.5 py-2.5 md:py-2 rounded-xl text-sm transition-all duration-base flex items-center gap-3 ${
                             active
                               ? "text-text font-medium"
-                              : "text-muted hover:text-text hover:bg-white/[0.03]"
+                              : "text-muted hover:text-text hover:bg-white/[0.04]"
                           }`}
                           style={
                             active
                               ? {
-                                  background: "rgba(156,123,255,0.10)",
-                                  boxShadow: "inset 2px 0 0 var(--liriun-violet-300)",
+                                  background:
+                                    "linear-gradient(90deg, rgba(156,123,255,0.18) 0%, rgba(91,141,239,0.10) 60%, transparent 100%)",
                                 }
                               : undefined
                           }
                         >
+                          {active && (
+                            <span
+                              aria-hidden
+                              className="absolute left-1 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-pill"
+                              style={{
+                                background: "var(--liriun-grad-brand)",
+                                boxShadow: "0 0 8px rgba(156,123,255,0.6)",
+                              }}
+                            />
+                          )}
                           <span className="flex-1">{f.label}</span>
                           {active && (
                             <svg
@@ -412,8 +477,39 @@ function FiltroDropdown({
                   </div>
                 </div>
               ))}
-              <div className="h-3" />
             </div>
+
+            {/* Limpar filtro — só aparece quando não está no default do modo */}
+            {ativo && (
+              <div
+                className="shrink-0 px-3 md:px-2 py-2"
+                style={{
+                  borderTop: "1px solid rgba(255,255,255,0.06)",
+                  background: "rgba(0,0,0,0.20)",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => onChange(filtroPadrao)}
+                  className="w-full text-left px-3.5 py-2.5 md:py-2 rounded-xl text-sm font-medium text-muted hover:text-text hover:bg-white/[0.04] transition-colors flex items-center gap-2.5"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="shrink-0"
+                  >
+                    <path d="M19 7L5 7M10 11v6M14 11v6M5 7l1.5 13a2 2 0 0 0 2 2h7a2 2 0 0 0 2-2L19 7M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3" />
+                  </svg>
+                  Limpar filtro
+                </button>
+              </div>
+            )}
           </div>
         </>
       )}
@@ -494,7 +590,14 @@ function ListaView({
   );
 }
 
-function QuadroView({ tarefas, onToggle, onEdit, onDelete }: ViewProps) {
+function QuadroView({
+  tarefas,
+  filtro,
+  busca,
+  onToggle,
+  onEdit,
+  onDelete,
+}: ViewProps & { filtro: Filtro; busca: string }) {
   const cols: {
     status: StatusTarefa;
     label: string;
@@ -528,7 +631,15 @@ function QuadroView({ tarefas, onToggle, onEdit, onDelete }: ViewProps) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {cols.map((col) => {
-        const items = tarefas.filter((t) => t.status === col.status);
+        const items = tarefas.filter((t) => {
+          if (t.status !== col.status) return false;
+          if (busca && !t.nome.toLowerCase().includes(busca.toLowerCase())) return false;
+          if (filtro === "urgente" && t.prioridade !== 1) return false;
+          if (filtro === "importante" && t.prioridade !== 2) return false;
+          if (filtro === "normal" && t.prioridade !== 3) return false;
+          if (filtro === "baixa" && t.prioridade !== 4) return false;
+          return true;
+        });
         return (
           <div
             key={col.label}

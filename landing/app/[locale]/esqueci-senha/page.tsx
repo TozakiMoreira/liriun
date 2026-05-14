@@ -8,7 +8,6 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { AuthCard } from "@/components/auth/auth-card";
 import { Button } from "@/components/ui/button";
-import { BtnSpinner } from "@/components/ui/btn-spinner";
 import { esqueciSenha } from "@/lib/api/auth";
 
 export default function EsqueciSenhaPage() {
@@ -49,8 +48,8 @@ export default function EsqueciSenhaPage() {
             className="w-full bg-white/[0.05] border border-border-hi rounded-md px-4 py-3 text-base text-text placeholder:text-faint focus:outline-none focus:border-violet-500/60"
           />
           {erro && <p className="text-sm text-danger">{erro}</p>}
-          <Button type="submit" disabled={loading} className="w-full justify-center mt-2">
-            {loading ? <BtnSpinner /> : t("enviarLink")}
+          <Button type="submit" loading={loading} className="w-full justify-center mt-2">
+            {t("enviarLink")}
           </Button>
         </form>
       )}

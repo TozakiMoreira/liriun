@@ -2,7 +2,6 @@
 
 import { Modal } from "./modal";
 import { Button } from "@/components/ui/button";
-import { BtnSpinner } from "@/components/ui/btn-spinner";
 
 export function ConfirmDialog({
   open,
@@ -35,10 +34,10 @@ export function ConfirmDialog({
         <Button
           type="button"
           onClick={onConfirm}
-          disabled={loading}
+          loading={loading}
           className={destructive ? "!bg-danger !text-white !border-transparent" : ""}
         >
-          {loading ? <BtnSpinner /> : confirmLabel}
+          {confirmLabel}
         </Button>
       </div>
     </Modal>

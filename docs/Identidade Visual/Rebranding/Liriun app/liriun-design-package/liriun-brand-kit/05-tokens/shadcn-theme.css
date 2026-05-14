@@ -1,0 +1,62 @@
+/* ════════════════════════════════════════════════════════════════
+   Liriun · shadcn/ui theme — CSS variables in HSL
+   Cole no apps/web/app/globals.css APÓS o tokens.css.
+   shadcn/ui consome essas variáveis automaticamente nos componentes.
+   ══════════════════════════════════════════════════════════════════ */
+
+@layer base {
+  :root {
+    --background: 225 22% 4%;            /* #07080B */
+    --foreground: 222 33% 97%;           /* near-white */
+    --card: 222 18% 7%;                  /* #0E1014 */
+    --card-foreground: 222 33% 97%;
+    --popover: 222 18% 7%;
+    --popover-foreground: 222 33% 97%;
+
+    --primary: 256 100% 75%;             /* violet-400 #A88BFF */
+    --primary-foreground: 222 33% 97%;
+    --secondary: 222 18% 11%;            /* surface-hi */
+    --secondary-foreground: 222 33% 97%;
+
+    --muted: 222 18% 11%;
+    --muted-foreground: 222 12% 65%;
+    --accent: 222 18% 11%;
+    --accent-foreground: 222 33% 97%;
+
+    --destructive: 0 88% 70%;            /* danger #F87171 */
+    --destructive-foreground: 222 33% 97%;
+
+    --border: 0 0% 100% / 0.10;
+    --input: 0 0% 100% / 0.10;
+    --ring: 256 100% 75%;                /* violet ring */
+
+    --radius: 0.875rem;                  /* 14 px — md radius default */
+  }
+
+  /* Light mode — opt-in via [data-theme="light"] */
+  [data-theme="light"] {
+    --background: 60 11% 97%;
+    --foreground: 222 18% 7%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 18% 7%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 18% 7%;
+
+    --primary: 252 87% 65%;
+    --primary-foreground: 60 11% 97%;
+    --secondary: 60 6% 95%;
+    --secondary-foreground: 222 18% 7%;
+
+    --muted: 60 6% 95%;
+    --muted-foreground: 222 12% 35%;
+    --accent: 60 6% 95%;
+    --accent-foreground: 222 18% 7%;
+
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 60 11% 97%;
+
+    --border: 222 18% 7% / 0.08;
+    --input: 222 18% 7% / 0.10;
+    --ring: 252 87% 65%;
+  }
+}
