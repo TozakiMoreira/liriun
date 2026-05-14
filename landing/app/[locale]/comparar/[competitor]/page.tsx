@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { setRequestLocale } from "next-intl/server";
 
-import { Link } from "@/i18n/routing";
+import { routing } from "@/i18n/routing";
 import { SiteNav } from "@/components/site/nav";
 import { SiteFooter } from "@/components/site/footer";
 
@@ -85,13 +87,15 @@ function isSlug(v: string): v is CompetitorSlug {
 }
 
 export async function generateStaticParams() {
-  return SLUGS.map((competitor) => ({ competitor }));
+  return routing.locales.flatMap((locale) =>
+    SLUGS.map((competitor) => ({ locale, competitor })),
+  );
 }
 
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ competitor: string }>;
+  params: Promise<{ locale: string; competitor: string }>;
 }): Promise<Metadata> {
   const { competitor } = await params;
   if (!isSlug(competitor)) return {};
@@ -105,9 +109,10 @@ export async function generateMetadata({
 export default async function ComparePage({
   params,
 }: {
-  params: Promise<{ competitor: string }>;
+  params: Promise<{ locale: string; competitor: string }>;
 }) {
-  const { competitor } = await params;
+  const { locale, competitor } = await params;
+  setRequestLocale(locale);
   if (!isSlug(competitor)) notFound();
   const c = COMPETITORS[competitor];
 
