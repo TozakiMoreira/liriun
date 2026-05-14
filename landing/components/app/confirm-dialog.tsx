@@ -34,10 +34,10 @@ export function ConfirmDialog({
         <Button
           type="button"
           onClick={onConfirm}
-          disabled={loading}
+          loading={loading}
           className={destructive ? "!bg-danger !text-white !border-transparent" : ""}
         >
-          {loading ? "…" : confirmLabel}
+          {confirmLabel}
         </Button>
       </div>
     </Modal>

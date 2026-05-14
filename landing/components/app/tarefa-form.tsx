@@ -228,8 +228,8 @@ export function TarefaForm({ tarefa, onSubmit, onCancel }: TarefaFormProps) {
         <Button type="button" variant="secondary" onClick={onCancel} disabled={submitting}>
           Cancelar
         </Button>
-        <Button type="submit" disabled={submitting}>
-          {submitting ? "…" : editando ? "Salvar" : "Criar tarefa"}
+        <Button type="submit" loading={submitting}>
+          {editando ? "Salvar" : "Criar tarefa"}
         </Button>
       </div>
     </form>

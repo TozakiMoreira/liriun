@@ -8,6 +8,7 @@ import { AcaoConfirmCard } from "@/components/app/acao-confirm-card";
 import { Modal } from "@/components/app/modal";
 import { TarefaForm } from "@/components/app/tarefa-form";
 import { TaskCardMini } from "@/components/app/task-card-mini";
+import { TaskChecklistCard } from "@/components/app/task-checklist-card";
 import { useUsuarioAtual } from "@/components/auth/auth-provider";
 import { useTarefas } from "@/lib/api/hooks/use-tarefas";
 import { agenteApi, type AcaoSugerida, type Mensagem, type SugestaoTarefa } from "@/lib/api/agente";
@@ -588,11 +589,14 @@ export default function FalarPage() {
             return (
               <div key={m.id} className="flex flex-col gap-2.5">
                 <AgenteBubble text={m.conteudo} pendente={m.pendente} />
-                {refs.length > 0 && (
-                  <div className="flex flex-col gap-2 pl-1 max-w-[85%] animate-fade-in">
-                    {refs.map((t) => (
-                      <TaskCardMini key={t.id} tarefa={t} />
-                    ))}
+                {refs.length === 1 && (
+                  <div className="pl-1 max-w-[85%] animate-fade-in">
+                    <TaskCardMini tarefa={refs[0]} />
+                  </div>
+                )}
+                {refs.length >= 2 && (
+                  <div className="pl-1 max-w-[92%] md:max-w-[85%]">
+                    <TaskChecklistCard tarefas={refs} />
                   </div>
                 )}
                 {m.acaoSugerida && acaoAlvo && !m.acaoExecutada && (

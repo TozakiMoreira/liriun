@@ -156,8 +156,8 @@ export function EditarPerfilModal({
           <Button variant="secondary" onClick={onClose} disabled={busy}>
             Cancelar
           </Button>
-          <Button onClick={() => void salvar()} disabled={busy}>
-            {busy ? "…" : "Salvar"}
+          <Button onClick={() => void salvar()} loading={busy}>
+            Salvar
           </Button>
         </div>
       </div>

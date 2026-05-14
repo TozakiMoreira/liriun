@@ -57,8 +57,8 @@ export default function LoginPage() {
           onChange={(v) => setSenha(v)}
         />
         {erro && <p className="text-sm text-danger">{erro}</p>}
-        <Button type="submit" disabled={loading} className="w-full justify-center mt-2">
-          {loading ? "…" : t("entrar")}
+        <Button type="submit" loading={loading} className="w-full justify-center mt-2">
+          {t("entrar")}
         </Button>
         <div className="flex justify-between mt-3 text-sm">
           <Link href="/esqueci-senha" className="text-muted hover:text-text">

@@ -1,0 +1,875 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Liriun · Site · Handoff</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07080B;
+      --surface: #0E1014;
+      --surface-hi: #14161C;
+      --border: rgba(255,255,255,0.08);
+      --border-hi: rgba(255,255,255,0.12);
+      --text: rgba(244,246,252,0.96);
+      --muted: rgba(244,246,252,0.62);
+      --faint: rgba(244,246,252,0.40);
+      --dim: rgba(244,246,252,0.24);
+      --violet-300: #B79CFF;
+      --violet-400: #A88BFF;
+      --violet-500: #9C7BFF;
+      --violet-700: #5B8DEF;
+      --grad-brand: linear-gradient(135deg, #A88BFF 0%, #7C7DF6 55%, #5B8DEF 100%);
+      --mono: 'Geist Mono', ui-monospace, monospace;
+      --font: 'Geist', system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+
+    /* ── Page chrome ────────────────────────────────────────── */
+    .canvas { padding: 56px 32px 96px; }
+    .canvas-hdr { max-width: 1480px; margin: 0 auto 56px; }
+    .canvas-hdr .label { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 1.4px; text-transform: uppercase; color: var(--faint); }
+    .canvas-hdr h1 { font-size: 56px; font-weight: 600; letter-spacing: -1.6px; margin: 14px 0 0; line-height: 1; }
+    .canvas-hdr p { color: var(--muted); margin-top: 18px; max-width: 720px; font-size: 17px; line-height: 1.5; }
+    .canvas-hdr .pills { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; font-family: var(--mono); font-size: 11px; }
+    .canvas-hdr .pill { padding: 6px 12px; border-radius: 99px; background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--muted); letter-spacing: 0.4px; text-transform: uppercase; }
+
+    /* Each section card with annotations */
+    .frame {
+      max-width: 1480px; margin: 0 auto 88px;
+      display: grid; grid-template-columns: 1fr 360px; gap: 28px;
+      align-items: start;
+    }
+    .browser {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border-hi);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.45), 0 0 0 1px rgba(0,0,0,0.5);
+    }
+    .browser-chrome {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px; height: 42px;
+      background: #0A0B10; border-bottom: 1px solid var(--border);
+    }
+    .browser-chrome .lights { display: flex; gap: 7px; }
+    .browser-chrome .lights span { width: 12px; height: 12px; border-radius: 99px; background: #3a3a40; }
+    .browser-chrome .url {
+      flex: 1; height: 26px; border-radius: 6px;
+      background: rgba(255,255,255,0.05);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 11px; color: var(--faint); letter-spacing: 0.2px;
+    }
+
+    .annot {
+      position: sticky; top: 24px;
+      padding: 22px;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid var(--border-hi);
+      border-radius: 14px;
+    }
+    .annot .num { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 1.4px; color: var(--violet-300); text-transform: uppercase; }
+    .annot h3 { font-size: 18px; font-weight: 600; margin: 8px 0 0; letter-spacing: -0.3px; }
+    .annot ul { margin: 14px 0 0; padding: 0; list-style: none; }
+    .annot li { font-size: 13px; color: var(--muted); line-height: 1.55; padding: 10px 0; border-top: 1px solid var(--border); display: grid; grid-template-columns: 18px 1fr; gap: 10px; align-items: baseline; }
+    .annot li:first-child { border-top: none; padding-top: 0; }
+    .annot li::before { content: ""; }
+    .annot .k { font-family: var(--mono); font-size: 11px; color: var(--violet-300); letter-spacing: 0.5px; }
+    .annot code { font-family: var(--mono); font-size: 11px; padding: 1px 6px; border-radius: 4px; background: rgba(156,123,255,0.10); color: var(--violet-300); }
+
+    /* ── Site styles (Liriun marketing) ─────────────────────── */
+    .site { background: var(--surface); }
+    .site, .site * { font-family: var(--font); color: var(--text); }
+    .site .container { max-width: 1280px; margin: 0 auto; padding: 0 56px; }
+    .site .mono { font-family: var(--mono); }
+
+    /* Nav */
+    .nav { display: flex; align-items: center; justify-content: space-between; padding: 24px 56px; }
+    .nav-links { display: flex; gap: 28px; align-items: center; }
+    .nav-links a { font-size: 14px; color: var(--muted); font-weight: 500; letter-spacing: -0.1px; text-decoration: none; transition: color 220ms cubic-bezier(0.4,0,0.2,1); }
+    .nav-links a:hover { color: var(--text); }
+    .nav-actions { display: flex; gap: 12px; align-items: center; }
+    .nav-actions a.signin { font-size: 14px; color: var(--muted); font-weight: 500; text-decoration: none; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 11px 18px; border-radius: 12px;
+      font-size: 14px; font-weight: 500; letter-spacing: -0.1px;
+      cursor: pointer; border: 1px solid transparent;
+      transition: transform 220ms cubic-bezier(0.4,0,0.2,1), background 220ms;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--grad-brand);
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(91,141,239,0.32), inset 0 1px 0 rgba(255,255,255,0.20);
+    }
+    .btn-primary:hover { transform: translateY(-1px); }
+    .btn-secondary {
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      border-color: var(--border-hi);
+    }
+    .btn-ghost { background: transparent; color: var(--text); border-color: var(--border-hi); }
+
+    /* Logo */
+    .logo { display: flex; align-items: center; gap: 10px; }
+    .logo-mark { width: 28px; height: 28px; }
+    .logo-text { font-size: 17px; font-weight: 600; letter-spacing: -0.5px; }
+
+    /* Hero */
+    .hero {
+      padding: 8px 0 56px;
+      background:
+        radial-gradient(80% 60% at 80% 0%, rgba(156,123,255,0.18) 0%, transparent 60%),
+        radial-gradient(70% 60% at 10% 80%, rgba(91,141,239,0.14) 0%, transparent 60%),
+        var(--surface);
+    }
+    .hero-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 48px; padding: 40px 0 0; align-items: center; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 7px 13px; border-radius: 99px;
+      background: rgba(156,123,255,0.10); border: 1px solid rgba(156,123,255,0.25);
+      font-family: var(--mono); font-size: 11px; font-weight: 500; color: #C8B6FF;
+      letter-spacing: 0.4px; text-transform: uppercase;
+    }
+    .hero h1 { font-size: 76px; font-weight: 600; letter-spacing: -2.4px; line-height: 1.0; margin: 22px 0 0; }
+    .hero .grad-text {
+      background: var(--grad-brand);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p { font-size: 19px; color: var(--muted); line-height: 1.5; letter-spacing: -0.1px; max-width: 480px; margin: 22px 0 0; }
+    .hero-ctas { display: flex; gap: 12px; margin-top: 32px; }
+    .hero-meta { display: flex; gap: 24px; margin-top: 32px; font-family: var(--mono); font-size: 12px; color: var(--faint); letter-spacing: 0.3px; }
+
+    /* Hero phones */
+    .phones-stage { position: relative; height: 580px; display: flex; justify-content: center; align-items: center; }
+    .phones-orb {
+      position: absolute; top: 60px; left: 50%; transform: translateX(-50%);
+      width: 480px; height: 480px; border-radius: 99px;
+      background: radial-gradient(circle, rgba(156,123,255,0.40) 0%, rgba(91,141,239,0.18) 40%, transparent 70%);
+      filter: blur(20px);
+    }
+    .phone {
+      position: absolute;
+      width: 260px; height: 540px; border-radius: 38px;
+      background: #000; padding: 5px;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5), inset 0 0 0 5px #1a1a1c;
+    }
+    .phone-screen {
+      width: 100%; height: 100%; border-radius: 32px; overflow: hidden;
+      background: var(--surface);
+      display: flex; flex-direction: column;
+    }
+    .phone-1 { left: 0; top: 20px; transform: rotate(-4deg); }
+    .phone-2 { right: 0; top: 60px; transform: rotate(5deg); }
+
+    /* Mini app screen for hero */
+    .mini-statusbar { display: flex; justify-content: space-between; padding: 14px 22px 8px; font-family: var(--mono); font-size: 11px; color: var(--text); font-weight: 600; }
+    .mini-greeting { padding: 28px 22px 12px; font-size: 26px; font-weight: 600; letter-spacing: -0.6px; line-height: 1.1; }
+    .mini-greeting .gtxt { color: var(--violet-400); }
+    .mini-suggest { margin: 8px 22px; padding: 14px 16px; border-radius: 14px; background: rgba(156,123,255,0.08); border: 1px solid rgba(156,123,255,0.20); font-size: 12px; color: var(--muted); line-height: 1.4; }
+    .mini-bubble { margin: 16px 22px; padding: 14px 16px; border-radius: 18px 18px 6px 18px; background: var(--grad-brand); align-self: flex-end; max-width: 80%; }
+    .mini-bubble .wave { display: flex; gap: 3px; align-items: center; }
+    .mini-bubble .wave i { display: block; width: 3px; background: #fff; border-radius: 2px; opacity: 0.9; }
+    .mini-card { margin: 12px 22px; padding: 14px; border-radius: 14px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-hi); }
+    .mini-card .t { font-size: 13px; font-weight: 600; letter-spacing: -0.2px; }
+    .mini-card .meta { font-family: var(--mono); font-size: 10px; color: var(--faint); margin-top: 4px; letter-spacing: 0.3px; }
+    .mini-mic-fab { position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%); width: 64px; height: 64px; border-radius: 99px; background: var(--grad-brand); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(156,123,255,0.4); }
+
+    /* Mini list (phone 2) */
+    .mini-list { padding: 22px; }
+    .mini-list h2 { font-size: 28px; font-weight: 600; letter-spacing: -0.8px; margin: 18px 0 4px; }
+    .mini-list .sub { font-family: var(--mono); font-size: 10px; color: var(--faint); letter-spacing: 0.4px; text-transform: uppercase; }
+    .mini-row { display: flex; gap: 12px; padding: 12px 0; border-top: 1px solid var(--border); }
+    .mini-row:first-of-type { border-top: none; }
+    .mini-check { width: 18px; height: 18px; border-radius: 99px; border: 1.5px solid var(--faint); flex-shrink: 0; margin-top: 2px; }
+    .mini-check.done { background: var(--violet-500); border-color: var(--violet-500); }
+    .mini-row .body { flex: 1; }
+    .mini-row .ttl { font-size: 13px; font-weight: 500; letter-spacing: -0.1px; }
+    .mini-row .ttl.done { color: var(--faint); text-decoration: line-through; }
+    .mini-row .meta { font-family: var(--mono); font-size: 10px; color: var(--faint); margin-top: 3px; letter-spacing: 0.3px; }
+
+    /* Trust bar */
+    .trust { padding: 32px 0 56px; border-bottom: 1px solid var(--border); }
+    .trust-row { display: flex; align-items: center; justify-content: space-between; gap: 32px; flex-wrap: wrap; }
+    .trust-label { font-family: var(--mono); font-size: 11px; color: var(--faint); letter-spacing: 1px; text-transform: uppercase; }
+    .trust-logos { display: flex; gap: 36px; align-items: center; }
+    .trust-logo { font-size: 18px; font-weight: 700; color: var(--dim); letter-spacing: -0.3px; font-style: italic; }
+    .trust-logo:nth-child(2) { font-family: 'Geist Mono', monospace; font-style: normal; letter-spacing: 1.2px; }
+    .trust-logo:nth-child(3) { font-weight: 800; letter-spacing: -1px; }
+
+    /* Section header */
+    .sec-header { padding: 72px 0 40px; display: flex; align-items: flex-end; justify-content: space-between; gap: 40px; }
+    .sec-header .overline { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 1.4px; color: var(--violet-300); text-transform: uppercase; }
+    .sec-header h2 { font-size: 52px; font-weight: 600; letter-spacing: -1.4px; line-height: 1.05; margin: 14px 0 0; }
+    .sec-header p { font-size: 16px; color: var(--muted); max-width: 380px; line-height: 1.5; margin: 0; }
+
+    /* Features grid */
+    .features-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; padding-bottom: 32px; }
+    .feature-card {
+      padding: 28px; border-radius: 22px;
+      background: rgba(255,255,255,0.035);
+      border: 1px solid var(--border-hi);
+      backdrop-filter: blur(18px);
+    }
+    .feature-card.accent {
+      background: linear-gradient(180deg, rgba(156,123,255,0.10), rgba(91,141,239,0.04));
+      border-color: rgba(156,123,255,0.28);
+    }
+    .feature-icon {
+      width: 48px; height: 48px; border-radius: 14px;
+      background: rgba(255,255,255,0.06); border: 1px solid var(--border-hi);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 24px;
+    }
+    .feature-card.accent .feature-icon {
+      background: var(--grad-brand);
+      box-shadow: 0 8px 20px rgba(91,141,239,0.3), inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+    .feature-card h3 { font-size: 22px; font-weight: 600; color: var(--text); letter-spacing: -0.4px; line-height: 1.2; margin: 0; }
+    .feature-card p { font-size: 14px; color: var(--muted); margin: 10px 0 0; line-height: 1.55; letter-spacing: -0.1px; }
+
+    /* Stats strip */
+    .stats {
+      margin-top: 28px; padding: 28px 32px;
+      background: rgba(255,255,255,0.035);
+      border: 1px solid var(--border-hi);
+      border-radius: 22px;
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px;
+    }
+    .stat .n { font-size: 36px; font-weight: 600; letter-spacing: -1px; background: var(--grad-brand); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
+    .stat .l { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-top: 8px; letter-spacing: 0.3px; text-transform: uppercase; }
+    .stat:not(:first-child) { padding-left: 24px; border-left: 1px solid var(--border); }
+
+    /* How it works */
+    .how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    .how-step {
+      padding: 28px;
+      background: var(--surface-hi);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      display: flex; flex-direction: column; gap: 16px;
+    }
+    .how-num {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: var(--grad-brand);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 14px; font-weight: 600; color: #fff;
+      box-shadow: 0 6px 16px rgba(91,141,239,0.30), inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+    .how-step h4 { font-size: 18px; font-weight: 600; letter-spacing: -0.3px; margin: 0; }
+    .how-step p { font-size: 13px; color: var(--muted); line-height: 1.55; margin: 0; }
+
+    /* Pricing */
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; padding-bottom: 32px; }
+    .price-card {
+      padding: 32px;
+      background: var(--surface-hi);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      display: flex; flex-direction: column; gap: 24px;
+    }
+    .price-card.featured {
+      background: linear-gradient(180deg, rgba(156,123,255,0.12), rgba(91,141,239,0.04));
+      border-color: rgba(156,123,255,0.32);
+      position: relative;
+    }
+    .price-tag {
+      position: absolute; top: -10px; left: 32px;
+      padding: 5px 12px; border-radius: 99px;
+      background: var(--grad-brand);
+      font-family: var(--mono); font-size: 10px; font-weight: 600; color: #fff;
+      letter-spacing: 0.6px; text-transform: uppercase;
+      box-shadow: 0 6px 16px rgba(91,141,239,0.32);
+    }
+    .price-name { font-size: 13px; font-family: var(--mono); color: var(--violet-300); letter-spacing: 1px; text-transform: uppercase; }
+    .price-amount { display: flex; align-items: baseline; gap: 6px; }
+    .price-amount .n { font-size: 56px; font-weight: 600; letter-spacing: -1.4px; line-height: 1; }
+    .price-amount .p { font-size: 14px; color: var(--muted); }
+    .price-desc { font-size: 14px; color: var(--muted); line-height: 1.5; }
+    .price-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+    .price-list li { font-size: 13px; color: var(--text); display: flex; gap: 10px; align-items: flex-start; line-height: 1.4; }
+    .check { color: var(--violet-400); flex-shrink: 0; margin-top: 2px; }
+
+    /* FAQ */
+    .faq-grid { display: grid; grid-template-columns: 380px 1fr; gap: 56px; padding-bottom: 32px; }
+    .faq-list { display: flex; flex-direction: column; }
+    .faq-item { padding: 22px 0; border-top: 1px solid var(--border); }
+    .faq-item:first-child { border-top: 1px solid var(--border-hi); }
+    .faq-q { display: flex; justify-content: space-between; align-items: center; font-size: 17px; font-weight: 500; letter-spacing: -0.3px; cursor: pointer; }
+    .faq-q .icon { width: 20px; height: 20px; color: var(--muted); }
+    .faq-item.open .faq-q { color: var(--violet-300); }
+    .faq-a { font-size: 14px; color: var(--muted); margin: 12px 0 0; line-height: 1.6; max-width: 600px; }
+    .faq-item:not(.open) .faq-a { display: none; }
+
+    /* CTA strip */
+    .cta-strip {
+      margin: 48px 0;
+      padding: 48px 56px;
+      background: linear-gradient(180deg, rgba(156,123,255,0.12), rgba(91,141,239,0.04));
+      border: 1px solid rgba(156,123,255,0.32);
+      border-radius: 28px;
+      display: flex; align-items: center; justify-content: space-between; gap: 40px;
+    }
+    .cta-strip h3 { font-size: 36px; font-weight: 600; letter-spacing: -0.8px; line-height: 1.1; margin: 0; }
+    .cta-strip p { font-size: 15px; color: var(--muted); margin: 10px 0 0; max-width: 460px; line-height: 1.5; }
+    .cta-strip-actions { display: flex; gap: 12px; flex-shrink: 0; }
+
+    /* Footer */
+    .footer { padding: 64px 0 32px; background: #0A0B10; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 32px; padding-bottom: 48px; }
+    .footer-brand p { font-size: 13px; color: var(--muted); line-height: 1.6; max-width: 280px; margin: 18px 0 24px; }
+    .social-row { display: flex; gap: 10px; }
+    .social-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 12px; color: var(--muted); font-weight: 500;
+    }
+    .footer-col-title { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 1.2px; color: var(--faint); text-transform: uppercase; margin-bottom: 18px; }
+    .footer-col a { display: block; font-size: 14px; color: var(--muted); font-weight: 500; padding: 6px 0; text-decoration: none; }
+    .footer-bottom {
+      padding-top: 24px; border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      font-family: var(--mono); font-size: 11px; color: var(--faint); letter-spacing: 0.4px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Reusable mark -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="brand-grad" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#A88BFF"/>
+        <stop offset="0.55" stop-color="#7C7DF6"/>
+        <stop offset="1" stop-color="#5B8DEF"/>
+      </linearGradient>
+      <symbol id="liriun-icon" viewBox="0 0 1024 1024">
+        <path d="M 512 0 C 870 0, 1024 154, 1024 512 C 1024 870, 870 1024, 512 1024 C 154 1024, 0 870, 0 512 C 0 154, 154 0, 512 0 Z" fill="url(#brand-grad)"/>
+        <g fill="#FFFFFF">
+          <rect x="280" y="410" width="64" height="300" rx="32"/>
+          <rect x="378" y="350" width="64" height="420" rx="32"/>
+          <rect x="476" y="460" width="64" height="200" rx="32"/>
+          <rect x="574" y="350" width="64" height="420" rx="32"/>
+          <rect x="672" y="410" width="64" height="300" rx="32"/>
+          <circle cx="512" cy="266" r="22"/>
+        </g>
+      </symbol>
+    </defs>
+  </svg>
+
+  <div class="canvas">
+    <!-- ── Title ──────────────────────────────────────────────── -->
+    <div class="canvas-hdr">
+      <div class="label">Liriun · site web · handoff design v 1.0</div>
+      <h1>Site institucional</h1>
+      <p>Mockup completo do site marketing do Liriun para handoff de desenvolvimento. Stack: <strong>Next.js 15 (App Router) + Tailwind CSS + Framer Motion + shadcn/ui</strong>. Cada seção tem instruções específicas no painel à direita.</p>
+      <div class="pills">
+        <span class="pill">desktop · 1280 px</span>
+        <span class="pill">dark mode default</span>
+        <span class="pill">brand kit aplicado</span>
+        <span class="pill">7 seções</span>
+        <span class="pill">tokens.css canônicos</span>
+      </div>
+    </div>
+
+    <!-- ── Section 1 · Nav + Hero ─────────────────────────────── -->
+    <div class="frame">
+      <div class="browser">
+        <div class="browser-chrome">
+          <div class="lights"><span></span><span></span><span></span></div>
+          <div class="url">liriun.app</div>
+        </div>
+        <div class="site">
+          <nav class="nav">
+            <div class="logo"><svg class="logo-mark" viewBox="0 0 1024 1024"><use href="#liriun-icon"/></svg><span class="logo-text">Liriun</span></div>
+            <div class="nav-links">
+              <a href="#">Produto</a>
+              <a href="#">Como funciona</a>
+              <a href="#">Preços</a>
+              <a href="#">Sobre</a>
+              <a href="#">Blog</a>
+            </div>
+            <div class="nav-actions">
+              <a href="#" class="signin">Entrar</a>
+              <a href="#" class="btn btn-primary">Baixar app</a>
+            </div>
+          </nav>
+
+          <section class="hero">
+            <div class="container">
+              <div class="hero-grid">
+                <div>
+                  <div class="badge">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#C8B6FF" stroke-width="2" stroke-linecap="round"><path d="M12 3 L13 10 L20 12 L13 14 L12 21 L11 14 L4 12 L11 10 Z" fill="#C8B6FF"/></svg>
+                    Beta aberto · maio 2026
+                  </div>
+                  <h1>Sua lista de tarefas,<br/><span class="grad-text">conduzida por voz.</span></h1>
+                  <p>Liriun escuta, organiza e lembra. Um companheiro pessoal de produtividade — sem comandos, sem fricção, em qualquer dispositivo.</p>
+                  <div class="hero-ctas">
+                    <a href="#" class="btn btn-primary">
+                      Começar grátis
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                    </a>
+                    <a href="#" class="btn btn-secondary">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                      Ver demo · 1 min
+                    </a>
+                  </div>
+                  <div class="hero-meta">
+                    <span>★★★★★ &nbsp;4.9 · App Store</span>
+                    <span>+ de 12.000 usuários</span>
+                  </div>
+                </div>
+
+                <div class="phones-stage">
+                  <div class="phones-orb"></div>
+                  <div class="phone phone-1">
+                    <div class="phone-screen" style="position: relative;">
+                      <div class="mini-statusbar"><span>9:41</span><span>•••</span></div>
+                      <div class="mini-greeting">Bom dia,<br/><span class="gtxt">como posso ajudar?</span></div>
+                      <div class="mini-suggest">"Lembre-me de ligar pro João depois do almoço"</div>
+                      <div class="mini-bubble">
+                        <div class="wave">
+                          <i style="height:6px"></i><i style="height:14px"></i><i style="height:22px"></i><i style="height:16px"></i><i style="height:24px"></i><i style="height:10px"></i><i style="height:18px"></i><i style="height:8px"></i><i style="height:14px"></i><i style="height:20px"></i>
+                        </div>
+                      </div>
+                      <div class="mini-card">
+                        <div class="t">Ligar para o João</div>
+                        <div class="meta">14:00 · TRABALHO · MÉDIA</div>
+                      </div>
+                      <div class="mini-mic-fab">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="22"/></svg>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="phone phone-2">
+                    <div class="phone-screen">
+                      <div class="mini-statusbar"><span>9:41</span><span>•••</span></div>
+                      <div class="mini-list">
+                        <div class="sub">HOJE · 4 TAREFAS</div>
+                        <h2>Quinta</h2>
+                        <div class="mini-row"><div class="mini-check"></div><div class="body"><div class="ttl">Ligar para o João</div><div class="meta">14:00 · TRABALHO</div></div></div>
+                        <div class="mini-row"><div class="mini-check"></div><div class="body"><div class="ttl">Revisar proposta do site</div><div class="meta">16:30 · LIRIUN</div></div></div>
+                        <div class="mini-row"><div class="mini-check done"></div><div class="body"><div class="ttl done">Café com Marina</div><div class="meta">10:00 · CONCLUÍDO</div></div></div>
+                        <div class="mini-row"><div class="mini-check"></div><div class="body"><div class="ttl">Comprar café em grão</div><div class="meta">CASA</div></div></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- Trust bar -->
+          <div class="container">
+            <section class="trust">
+              <div class="trust-row">
+                <span class="trust-label">Confiado por equipes em</span>
+                <div class="trust-logos">
+                  <span class="trust-logo">Acme</span>
+                  <span class="trust-logo">NORTH/STAR</span>
+                  <span class="trust-logo">verve</span>
+                  <span class="trust-logo">Lumen</span>
+                  <span class="trust-logo">canopy</span>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <aside class="annot">
+        <div class="num">01 · Nav + Hero</div>
+        <h3>Topo da página</h3>
+        <ul>
+          <li><span class="k">Rota</span><span><code>app/page.tsx</code> · server component, hero animado em sub-component <code>"use client"</code>.</span></li>
+          <li><span class="k">Nav</span><span>Sticky no scroll após 80 px (use <code>useScroll</code> do Framer Motion). Backdrop blur quando sticky.</span></li>
+          <li><span class="k">Botão</span><span>shadcn <code>Button variant="default"</code> com nosso gradient. Hover: <code>translateY(-1px)</code> em 220 ms.</span></li>
+          <li><span class="k">Hero h1</span><span><code>text-[76px] font-semibold tracking-[-2.4px]</code>. Word "conduzida por voz" usa <code>bg-brand-grad bg-clip-text</code>.</span></li>
+          <li><span class="k">Phones</span><span>Apenas decorativos. Imagens estáticas (<code>next/image</code>) ou fontes SVG. Animar com <code>motion.div</code> + parallax suave no scroll (–20 px translate).</span></li>
+          <li><span class="k">Orb glow</span><span>Pseudo-elemento com <code>filter: blur(20px)</code>. Pode animar opacidade 0.6→1 em loop.</span></li>
+          <li><span class="k">Reduced motion</span><span><code>useReducedMotion()</code> desliga parallax e badge animation.</span></li>
+        </ul>
+      </aside>
+    </div>
+
+    <!-- ── Section 2 · Features ──────────────────────────────── -->
+    <div class="frame">
+      <div class="browser">
+        <div class="browser-chrome">
+          <div class="lights"><span></span><span></span><span></span></div>
+          <div class="url">liriun.app/#recursos</div>
+        </div>
+        <div class="site">
+          <div class="container">
+            <section>
+              <div class="sec-header">
+                <div>
+                  <div class="overline">Recursos</div>
+                  <h2>Pensado pra<br/>fluir com você.</h2>
+                </div>
+                <p>Liriun não é só um app de tarefas — é um agente que aprende seu ritmo, seu vocabulário e os contextos que importam pra você.</p>
+              </div>
+              <div class="features-grid">
+                <div class="feature-card accent">
+                  <div class="feature-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><line x1="12" y1="18" x2="12" y2="22"/></svg>
+                  </div>
+                  <h3>Organização por voz</h3>
+                  <p>Fale como você pensa. Liriun extrai título, prazo, prioridade e categoria automaticamente — sem você abrir um teclado.</p>
+                </div>
+                <div class="feature-card">
+                  <div class="feature-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C8B6FF" stroke-width="2" stroke-linecap="round"><path d="M12 3 L13 10 L20 12 L13 14 L12 21 L11 14 L4 12 L11 10 Z"/></svg>
+                  </div>
+                  <h3>Agente personalizado</h3>
+                  <p>O assistente aprende seus hábitos: como você nomeia projetos, em quais horários você atua, e antecipa lembretes no momento certo.</p>
+                </div>
+                <div class="feature-card">
+                  <div class="feature-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(244,246,252,0.96)" stroke-width="1.5" stroke-linecap="round"><rect x="3.5" y="3" width="11" height="18" rx="2.5"/><rect x="16" y="6" width="5" height="15" rx="1.5"/><path d="M9 7 h.01"/></svg>
+                  </div>
+                  <h3>Multi-plataforma</h3>
+                  <p>iOS, Android, web. Tudo sincronizado em tempo real, com a mesma experiência cuidada — independente do dispositivo que você abrir.</p>
+                </div>
+              </div>
+              <div class="stats">
+                <div class="stat"><div class="n">12k+</div><div class="l">usuários ativos</div></div>
+                <div class="stat"><div class="n">98%</div><div class="l">precisão de transcrição</div></div>
+                <div class="stat"><div class="n">&lt; 800ms</div><div class="l">latência média</div></div>
+                <div class="stat"><div class="n">LGPD</div><div class="l">dados criptografados</div></div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <aside class="annot">
+        <div class="num">02 · Recursos</div>
+        <h3>Grid de features</h3>
+        <ul>
+          <li><span class="k">Componente</span><span><code>FeatureCard</code> (RSC). Variant <code>accent</code> aplica o gradient brand no ícone.</span></li>
+          <li><span class="k">Anim entry</span><span><code>motion.div</code> com <code>whileInView</code> y:24→0, opacity 0→1, stagger 100 ms. Use <code>viewport={{ once: true }}</code>.</span></li>
+          <li><span class="k">Hover</span><span>Cards sobem 2 px e o border vai de <code>border-hi</code> → <code>border-glow</code>. 220 ms ease-standard.</span></li>
+          <li><span class="k">Stats</span><span>Números animam via <code>motion.span</code> + <code>useMotionValue</code> + <code>animate()</code> de 0 ao valor final, 1.4 s, ease-out.</span></li>
+          <li><span class="k">Ícones</span><span>SVG inline (não <code>lucide-react</code>) pra controle preciso da espessura 1.5—2 px e cor por <code>currentColor</code>.</span></li>
+        </ul>
+      </aside>
+    </div>
+
+    <!-- ── Section 3 · How it works ──────────────────────────── -->
+    <div class="frame">
+      <div class="browser">
+        <div class="browser-chrome">
+          <div class="lights"><span></span><span></span><span></span></div>
+          <div class="url">liriun.app/#como-funciona</div>
+        </div>
+        <div class="site">
+          <div class="container">
+            <section>
+              <div class="sec-header">
+                <div>
+                  <div class="overline">Como funciona</div>
+                  <h2>Três passos.<br/>Zero fricção.</h2>
+                </div>
+                <p>Da fala ao calendário em menos de um segundo. Liriun usa modelos de linguagem rodando na nuvem com transcrição local pra latência mínima.</p>
+              </div>
+              <div class="how-grid">
+                <div class="how-step">
+                  <div class="how-num">01</div>
+                  <h4>Você fala.</h4>
+                  <p>Aperte uma vez no botão de mic ou diga "Liriun". O áudio é transcrito localmente — privacidade primeiro.</p>
+                </div>
+                <div class="how-step">
+                  <div class="how-num">02</div>
+                  <h4>Liriun organiza.</h4>
+                  <p>O agente extrai entidades (data, hora, pessoas, prioridade) e te mostra um cartão de revisão antes de salvar.</p>
+                </div>
+                <div class="how-step">
+                  <div class="how-num">03</div>
+                  <h4>Aparece onde precisa.</h4>
+                  <p>Sincroniza com Google Calendar, Apple Reminders, Notion. Notifica você no momento certo, no dispositivo certo.</p>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <aside class="annot">
+        <div class="num">03 · Como funciona</div>
+        <h3>Stepper horizontal</h3>
+        <ul>
+          <li><span class="k">Layout</span><span>3 cards em <code>grid-cols-3</code>. Em mobile: stack vertical com numeração mantida.</span></li>
+          <li><span class="k">Conector</span><span>Opcional: linha tracejada conectando os números (only on <code>md:</code>+) usando ::after com <code>border-top: dashed</code>.</span></li>
+          <li><span class="k">Anim</span><span>Stagger 200 ms. Cada step fade+slide y:24→0. <code>whileInView once</code>.</span></li>
+        </ul>
+      </aside>
+    </div>
+
+    <!-- ── Section 4 · Pricing ──────────────────────────────── -->
+    <div class="frame">
+      <div class="browser">
+        <div class="browser-chrome">
+          <div class="lights"><span></span><span></span><span></span></div>
+          <div class="url">liriun.app/precos</div>
+        </div>
+        <div class="site">
+          <div class="container">
+            <section>
+              <div class="sec-header">
+                <div>
+                  <div class="overline">Preços</div>
+                  <h2>Simples,<br/>como deve ser.</h2>
+                </div>
+                <p>Sem taxa por dispositivo, sem upsell. Comece grátis, evolua quando precisar de mais — cancele quando quiser.</p>
+              </div>
+              <div class="pricing-grid">
+                <div class="price-card">
+                  <div>
+                    <div class="price-name">Grátis</div>
+                    <div class="price-amount" style="margin-top: 12px;"><span class="n">R$0</span><span class="p">/ mês</span></div>
+                    <div class="price-desc" style="margin-top: 8px;">Pra você experimentar Liriun no dia-a-dia.</div>
+                  </div>
+                  <ul class="price-list">
+                    <li><span class="check">✓</span><span>Até 50 tarefas por mês</span></li>
+                    <li><span class="check">✓</span><span>Voz em pt-BR e en-US</span></li>
+                    <li><span class="check">✓</span><span>Sync entre 2 dispositivos</span></li>
+                    <li><span class="check">✓</span><span>Lembretes inteligentes básicos</span></li>
+                  </ul>
+                  <a href="#" class="btn btn-secondary" style="justify-content: center;">Começar grátis</a>
+                </div>
+                <div class="price-card featured">
+                  <div class="price-tag">Mais popular</div>
+                  <div>
+                    <div class="price-name" style="color: #C8B6FF;">Pro</div>
+                    <div class="price-amount" style="margin-top: 12px;"><span class="n">R$19</span><span class="p">/ mês</span></div>
+                    <div class="price-desc" style="margin-top: 8px;">Para quem usa a voz como ferramenta principal.</div>
+                  </div>
+                  <ul class="price-list">
+                    <li><span class="check">✓</span><span>Tarefas ilimitadas</span></li>
+                    <li><span class="check">✓</span><span>Agente personalizado (aprende seu vocabulário)</span></li>
+                    <li><span class="check">✓</span><span>Sync ilimitado · Apple, Google, Notion</span></li>
+                    <li><span class="check">✓</span><span>Lembretes contextuais por localização</span></li>
+                    <li><span class="check">✓</span><span>Histórico de áudio e transcrições</span></li>
+                  </ul>
+                  <a href="#" class="btn btn-primary" style="justify-content: center;">Assinar Pro</a>
+                </div>
+                <div class="price-card">
+                  <div>
+                    <div class="price-name">Team</div>
+                    <div class="price-amount" style="margin-top: 12px;"><span class="n">R$15</span><span class="p">/ usuário · mês</span></div>
+                    <div class="price-desc" style="margin-top: 8px;">Listas compartilhadas, projetos, controle de admin.</div>
+                  </div>
+                  <ul class="price-list">
+                    <li><span class="check">✓</span><span>Tudo do Pro</span></li>
+                    <li><span class="check">✓</span><span>Listas e projetos compartilhados</span></li>
+                    <li><span class="check">✓</span><span>Atribuição por voz ("delega isso pra Maria")</span></li>
+                    <li><span class="check">✓</span><span>SSO · controles de admin</span></li>
+                    <li><span class="check">✓</span><span>Suporte prioritário</span></li>
+                  </ul>
+                  <a href="#" class="btn btn-secondary" style="justify-content: center;">Falar com vendas</a>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <aside class="annot">
+        <div class="num">04 · Pricing</div>
+        <h3>Três planos</h3>
+        <ul>
+          <li><span class="k">Rota</span><span><code>app/precos/page.tsx</code>. Pode ser RSC se preço for estático; client se houver toggle mensal/anual.</span></li>
+          <li><span class="k">Featured</span><span>Use shadcn <code>Card</code> com classe extra <code>ring-1 ring-violet-500/30</code>. Badge "Mais popular" como <code>Badge</code> shadcn re-skinnado.</span></li>
+          <li><span class="k">Toggle anual</span><span>(Opcional) shadcn <code>Switch</code> "Mensal · Anual (–20%)". Anima o preço com <code>AnimatePresence</code> mode="wait".</span></li>
+          <li><span class="k">CTAs</span><span>Pro vai pro Stripe Checkout; Team vai pra <code>mailto:vendas@liriun.app</code>.</span></li>
+        </ul>
+      </aside>
+    </div>
+
+    <!-- ── Section 5 · FAQ ──────────────────────────────────── -->
+    <div class="frame">
+      <div class="browser">
+        <div class="browser-chrome">
+          <div class="lights"><span></span><span></span><span></span></div>
+          <div class="url">liriun.app/#faq</div>
+        </div>
+        <div class="site">
+          <div class="container">
+            <section>
+              <div class="sec-header">
+                <div>
+                  <div class="overline">FAQ</div>
+                  <h2>Perguntas comuns.</h2>
+                </div>
+                <p>Não achou o que precisa? Escreve pra <strong style="color: var(--text);">oi@liriun.app</strong> — respondemos em horas.</p>
+              </div>
+              <div class="faq-grid">
+                <div class="faq-list">
+                  <div class="faq-item open">
+                    <div class="faq-q">Liriun funciona offline? <span class="icon">−</span></div>
+                    <div class="faq-a">A transcrição da voz funciona offline em iOS 17+ e Android 14+ (via modelos no dispositivo). A organização de tarefas precisa de conexão para o agente IA processar contextos e sincronizar com seus calendários.</div>
+                  </div>
+                  <div class="faq-item">
+                    <div class="faq-q">Meus áudios são gravados? <span class="icon">+</span></div>
+                  </div>
+                  <div class="faq-item">
+                    <div class="faq-q">Posso integrar com Google Calendar e Notion? <span class="icon">+</span></div>
+                  </div>
+                  <div class="faq-item">
+                    <div class="faq-q">Tem versão para empresas? <span class="icon">+</span></div>
+                  </div>
+                  <div class="faq-item">
+                    <div class="faq-q">Como cancelo? <span class="icon">+</span></div>
+                  </div>
+                </div>
+                <div>
+                  <div style="padding: 28px; background: var(--surface-hi); border: 1px solid var(--border); border-radius: 22px;">
+                    <div style="font-family: var(--mono); font-size: 11px; color: #C8B6FF; letter-spacing: 1.4px; text-transform: uppercase; margin-bottom: 14px;">Suporte</div>
+                    <div style="font-size: 22px; font-weight: 600; letter-spacing: -0.4px; line-height: 1.2;">Não encontrou sua resposta?</div>
+                    <p style="font-size: 14px; color: var(--muted); line-height: 1.55; margin: 12px 0 24px;">Nosso time responde em até 4 horas em dias úteis. Sem chatbot, sem ticket.</p>
+                    <a href="#" class="btn btn-secondary" style="width: 100%; justify-content: center;">Falar com a gente</a>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
+
+      <aside class="annot">
+        <div class="num">05 · FAQ</div>
+        <h3>Acordeão</h3>
+        <ul>
+          <li><span class="k">Componente</span><span>shadcn <code>Accordion</code> com <code>type="single" collapsible</code>. Re-skinnado com nossos tokens.</span></li>
+          <li><span class="k">Anim</span><span>Framer Motion <code>AnimatePresence</code> + <code>height auto</code> com layout. 360 ms ease-decel.</span></li>
+          <li><span class="k">Default open</span><span>Primeiro item aberto por padrão (<code>defaultValue="item-1"</code>).</span></li>
+          <li><span class="k">SEO</span><span>Use <code>schema.org/FAQPage</code> JSON-LD em <code>app/page.tsx</code> via <code>&lt;Script type="application/ld+json"&gt;</code>.</span></li>
+        </ul>
+      </aside>
+    </div>
+
+    <!-- ── Section 6 · CTA + Footer ──────────────────────────── -->
+    <div class="frame">
+      <div class="browser">
+        <div class="browser-chrome">
+          <div class="lights"><span></span><span></span><span></span></div>
+          <div class="url">liriun.app · footer</div>
+        </div>
+        <div class="site">
+          <div class="container">
+            <div class="cta-strip">
+              <div>
+                <h3>Comece a falar com o seu dia.</h3>
+                <p>Sem cartão de crédito. Disponível em iOS, Android e na web.</p>
+              </div>
+              <div class="cta-strip-actions">
+                <a href="#" class="btn btn-primary">
+                  Baixar app
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </a>
+                <a href="#" class="btn btn-secondary">Ver no navegador</a>
+              </div>
+            </div>
+          </div>
+          <footer class="footer">
+            <div class="container">
+              <div class="footer-grid">
+                <div class="footer-brand">
+                  <div class="logo"><svg class="logo-mark" viewBox="0 0 1024 1024"><use href="#liriun-icon"/></svg><span class="logo-text">Liriun</span></div>
+                  <p>Companheiro digital de produtividade. Feito com cuidado em São Paulo.</p>
+                  <div class="social-row">
+                    <div class="social-icon">X</div>
+                    <div class="social-icon">IG</div>
+                    <div class="social-icon">IN</div>
+                  </div>
+                </div>
+                <div class="footer-col"><div class="footer-col-title">Produto</div><a href="#">Recursos</a><a href="#">Mobile</a><a href="#">Web</a><a href="#">Roadmap</a></div>
+                <div class="footer-col"><div class="footer-col-title">Empresa</div><a href="#">Sobre</a><a href="#">Blog</a><a href="#">Carreiras</a><a href="#">Imprensa</a></div>
+                <div class="footer-col"><div class="footer-col-title">Suporte</div><a href="#">Ajuda</a><a href="#">Status</a><a href="#">Contato</a><a href="#">Comunidade</a></div>
+                <div class="footer-col"><div class="footer-col-title">Legal</div><a href="#">Termos</a><a href="#">Privacidade</a><a href="#">Cookies</a><a href="#">LGPD</a></div>
+              </div>
+              <div class="footer-bottom">
+                <span>© 2026 LIRIUN TECNOLOGIA LTDA · TODOS OS DIREITOS RESERVADOS</span>
+                <span>liriun.app · v 1.0</span>
+              </div>
+            </div>
+          </footer>
+        </div>
+      </div>
+
+      <aside class="annot">
+        <div class="num">06 · CTA + Footer</div>
+        <h3>Encerramento</h3>
+        <ul>
+          <li><span class="k">CTA strip</span><span>Componente reusável. Borda + bg gradiente leves. <code>max-w-[1280px] mx-auto px-14</code>.</span></li>
+          <li><span class="k">Footer</span><span>Server component. Bg <code>bg-[#0A0B10]</code> ligeiramente mais escuro pra criar separação.</span></li>
+          <li><span class="k">Sociais</span><span>Substitua os "X / IG / IN" por SVGs reais (em <code>components/icons</code>). Use <code>aria-label</code> em cada link.</span></li>
+          <li><span class="k">Manifesto SEO</span><span>Adicionar <code>app/sitemap.ts</code> e <code>app/robots.ts</code>. Open Graph já tá no brand kit.</span></li>
+        </ul>
+      </aside>
+    </div>
+
+    <!-- ── Dev handoff card ─────────────────────────────────── -->
+    <div style="max-width: 1480px; margin: 96px auto 0; padding: 36px 40px; background: linear-gradient(180deg, rgba(156,123,255,0.08), rgba(91,141,239,0.02)); border: 1px solid rgba(156,123,255,0.22); border-radius: 22px;">
+      <div class="canvas-hdr" style="margin: 0;">
+        <div class="label" style="color: #C8B6FF;">📦 Dev handoff</div>
+        <h1 style="font-size: 32px;">Pronto pro code</h1>
+        <p>Tudo neste mockup é renderizável com a stack <strong>Next.js 15 + Tailwind + Framer Motion + shadcn/ui</strong> usando os tokens do <code style="font-family: var(--mono); background: rgba(156,123,255,0.10); padding: 1px 6px; border-radius: 4px;">liriun-brand-kit/</code>.</p>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 28px;">
+        <div>
+          <div style="font-family: var(--mono); font-size: 11px; color: #C8B6FF; letter-spacing: 1.4px; margin-bottom: 8px; text-transform: uppercase;">Setup</div>
+          <ul style="padding: 0; margin: 0; list-style: none;">
+            <li style="font-size: 13px; color: var(--muted); line-height: 1.7;">1. <code style="font-family: var(--mono);">npx create-next-app@latest liriun-web --ts --tailwind --app</code></li>
+            <li style="font-size: 13px; color: var(--muted); line-height: 1.7;">2. <code style="font-family: var(--mono);">npx shadcn@latest init</code> · escolher slate</li>
+            <li style="font-size: 13px; color: var(--muted); line-height: 1.7;">3. <code style="font-family: var(--mono);">pnpm add framer-motion</code></li>
+            <li style="font-size: 13px; color: var(--muted); line-height: 1.7;">4. Cole <code style="font-family: var(--mono);">tokens.css</code> + <code style="font-family: var(--mono);">shadcn-theme.css</code> em <code style="font-family: var(--mono);">app/globals.css</code></li>
+            <li style="font-size: 13px; color: var(--muted); line-height: 1.7;">5. Cole <code style="font-family: var(--mono);">tailwind.config.snippet.js</code> dentro de <code style="font-family: var(--mono);">tailwind.config.ts</code></li>
+            <li style="font-size: 13px; color: var(--muted); line-height: 1.7;">6. Cole favicons + OG em <code style="font-family: var(--mono);">public/</code></li>
+          </ul>
+        </div>
+        <div>
+          <div style="font-family: var(--mono); font-size: 11px; color: #C8B6FF; letter-spacing: 1.4px; margin-bottom: 8px; text-transform: uppercase;">Estrutura sugerida</div>
+          <pre style="font-family: var(--mono); font-size: 11px; color: var(--muted); line-height: 1.7; margin: 0; white-space: pre;">app/
+├─ layout.tsx        ← font + metadata + OG
+├─ page.tsx          ← hero, recursos, how, faq, cta
+├─ precos/page.tsx
+├─ globals.css       ← tokens + shadcn theme
+└─ components/
+   ├─ Nav.tsx
+   ├─ Hero.tsx       ← "use client"
+   ├─ FeatureCard.tsx
+   ├─ Stats.tsx      ← motion counters
+   ├─ HowStep.tsx
+   ├─ PriceCard.tsx
+   ├─ FaqAccordion.tsx
+   └─ Footer.tsx</pre>
+        </div>
+        <div>
+          <div style="font-family: var(--mono); font-size: 11px; color: #C8B6FF; letter-spacing: 1.4px; margin-bottom: 8px; text-transform: uppercase;">Princípios</div>
+          <ul style="padding: 0; margin: 0; list-style: none;">
+            <li style="font-size: 13px; color: var(--muted); line-height: 1.7;">— RSC por padrão; <code style="font-family: var(--mono);">"use client"</code> só onde houver <code style="font-family: var(--mono);">motion</code> ou state.</li>
+            <li style="font-size: 13px; color: var(--muted); line-height: 1.7;">— Toda animação respeita <code style="font-family: var(--mono);">useReducedMotion()</code>.</li>
+            <li style="font-size: 13px; color: var(--muted); line-height: 1.7;">— Imagens pesadas vão por <code style="font-family: var(--mono);">next/image</code> com <code style="font-family: var(--mono);">priority</code> só no hero.</li>
+            <li style="font-size: 13px; color: var(--muted); line-height: 1.7;">— Cor: nunca <code style="font-family: var(--mono);">#hex</code> direto, sempre <code style="font-family: var(--mono);">bg-violet-500</code>, <code style="font-family: var(--mono);">text-fg-muted</code>, etc.</li>
+            <li style="font-size: 13px; color: var(--muted); line-height: 1.7;">— Sombra: só os tokens <code style="font-family: var(--mono);">shadow-glow</code>, <code style="font-family: var(--mono);">shadow-lg</code>, <code style="font-family: var(--mono);">shadow-xl</code>.</li>
+            <li style="font-size: 13px; color: var(--muted); line-height: 1.7;">— Mobile: priority breakpoints <code style="font-family: var(--mono);">sm 640</code>, <code style="font-family: var(--mono);">md 768</code>, <code style="font-family: var(--mono);">lg 1024</code>, <code style="font-family: var(--mono);">xl 1280</code>.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

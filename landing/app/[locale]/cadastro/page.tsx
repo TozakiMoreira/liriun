@@ -95,8 +95,8 @@ export default function CadastroPage() {
           </label>
         </div>
         {erro && <p className="text-sm text-danger">{erro}</p>}
-        <Button type="submit" disabled={loading} className="w-full justify-center mt-3">
-          {loading ? "…" : t("criarConta")}
+        <Button type="submit" loading={loading} className="w-full justify-center mt-3">
+          {t("criarConta")}
         </Button>
         <div className="text-center mt-3 text-sm">
           <Link href="/login" className="text-violet-300 hover:text-violet-200">

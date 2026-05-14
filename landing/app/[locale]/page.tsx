@@ -6,7 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SiteNav } from "@/components/site/nav";
 import { SiteFooter } from "@/components/site/footer";
-import { HeroPhones } from "@/components/site/hero-phones";
+import { DayStory } from "@/components/site/day-story";
+import { FadeIn } from "@/components/site/fade-in";
+import { HeroPhoneCarousel } from "@/components/site/hero-phone-carousel";
+import { LearningInsights } from "@/components/site/learning-insights";
+import { VoiceDemo } from "@/components/site/voice-demo";
 
 export default async function HomePage({
   params,
@@ -68,29 +72,37 @@ function HomeContent() {
               </div>
             </div>
 
-            <HeroPhones />
+            <HeroPhoneCarousel />
           </div>
         </div>
       </section>
 
 
+      {/* ─── O dia (DayStory — 3 momentos) ──────────────────────── */}
+      <DayStory />
+
+      {/* ─── Voice demo interativa ───────────────────────────────── */}
+      <VoiceDemo />
+
       {/* ─── Recursos ───────────────────────────────────────────── */}
       <section id="recursos" className="max-w-[1280px] mx-auto px-6 md:px-14 pt-12 md:pt-[72px] pb-10">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 md:gap-10 mb-8 md:mb-10">
-          <div>
-            <div className="font-mono text-xs font-medium uppercase tracking-[1.4px] text-violet-300">
-              {tRec("kicker")}
+        <FadeIn>
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-5 md:gap-10 mb-8 md:mb-10">
+            <div>
+              <div className="font-mono text-xs font-medium uppercase tracking-[1.4px] text-violet-300">
+                {tRec("kicker")}
+              </div>
+              <h2 className="text-[32px] md:text-[52px] font-semibold tracking-[-0.8px] md:tracking-[-1.4px] leading-[1.1] md:leading-[1.05] mt-3 md:mt-[14px]">
+                {tRec("title1")}
+                <br />
+                {tRec("title2")}
+              </h2>
             </div>
-            <h2 className="text-[32px] md:text-[52px] font-semibold tracking-[-0.8px] md:tracking-[-1.4px] leading-[1.1] md:leading-[1.05] mt-3 md:mt-[14px]">
-              {tRec("title1")}
-              <br />
-              {tRec("title2")}
-            </h2>
+            <p className="text-base text-muted max-w-[380px] leading-[1.5]">
+              {tRec("lead")}
+            </p>
           </div>
-          <p className="text-base text-muted max-w-[380px] leading-[1.5]">
-            {tRec("lead")}
-          </p>
-        </div>
+        </FadeIn>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-[22px] pb-8">
           <FeatureCard
@@ -131,6 +143,9 @@ function HomeContent() {
         </div>
       </section>
 
+      {/* ─── Como Liriun aprende ─────────────────────────────────── */}
+      <LearningInsights />
+
       <SiteFooter />
     </main>
   );
@@ -150,7 +165,7 @@ function FeatureCard({
 }) {
   return (
     <div
-      className="p-5 md:p-7 rounded-2xl backdrop-blur-md"
+      className="p-5 md:p-7 rounded-2xl backdrop-blur-md transition-transform duration-base ease-standard hover:-translate-y-0.5"
       style={{
         background: accent
           ? "linear-gradient(180deg, rgba(156,123,255,0.10), rgba(91,141,239,0.04))"

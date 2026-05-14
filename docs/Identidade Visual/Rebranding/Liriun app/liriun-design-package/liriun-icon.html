@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Liriun · App Icon</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #07080B;
+      --panel: #0E1117;
+      --border: rgba(255,255,255,0.10);
+      --text: rgba(244,246,252,0.96);
+      --muted: rgba(244,246,252,0.55);
+      --faint: rgba(244,246,252,0.32);
+      --mono: 'Geist Mono', ui-monospace, monospace;
+      --font: 'Geist', system-ui, -apple-system, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin:0; background: var(--bg); color: var(--text); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 56px 32px 72px; }
+    h1 { font-size: 36px; font-weight: 600; letter-spacing: -0.8px; margin: 0; }
+    .sub { color: var(--muted); margin-top: 10px; font-size: 15px; max-width: 560px; line-height: 1.5; }
+    .label { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 1.4px; text-transform: uppercase; color: var(--faint); }
+    .card { background: var(--panel); border: 1px solid var(--border); border-radius: 18px; padding: 22px; }
+    .grid { display: grid; gap: 18px; }
+    .hero {
+      margin-top: 32px; padding: 56px;
+      background: radial-gradient(80% 60% at 30% 20%, rgba(156,123,255,0.18), transparent 60%), var(--panel);
+      border: 1px solid var(--border); border-radius: 28px;
+      display: grid; grid-template-columns: 1fr 1.4fr; gap: 48px; align-items: center;
+    }
+    .hero .big {
+      width: 360px; height: 360px;
+      filter: drop-shadow(0 30px 60px rgba(91,141,239,0.35)) drop-shadow(0 6px 18px rgba(0,0,0,0.4));
+    }
+    .meta-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; font-family: var(--mono); font-size: 11px; }
+    .pill { padding: 6px 11px; border-radius: 99px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--muted); letter-spacing: 0.4px; text-transform: uppercase; }
+    .sizes { margin-top: 28px; grid-template-columns: repeat(6, 1fr); }
+    .size-card { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 22px 14px; }
+    .size-cell { display: flex; align-items: center; justify-content: center; width: 100%; height: 130px; }
+    .download-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 14px; border-radius: 12px;
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      color: var(--text); font-size: 13px; font-weight: 500; letter-spacing: -0.1px;
+      text-decoration: none; cursor: pointer;
+    }
+    .btn:hover { background: rgba(255,255,255,0.08); }
+    .btn.primary {
+      background: linear-gradient(135deg, #9C7BFF, #5B8DEF);
+      border-color: transparent;
+      box-shadow: 0 6px 18px rgba(91,141,239,0.32), inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+    .variants { margin-top: 32px; grid-template-columns: repeat(4, 1fr); }
+    .v-cell { display: flex; align-items: center; justify-content: center; height: 220px; border-radius: 12px; }
+    .v-light { background: #F4F4F0; }
+    .v-dark { background: #0A0B10; }
+    .v-bw { background: #fff; }
+    .v-checker {
+      background-image:
+        linear-gradient(45deg, rgba(255,255,255,0.04) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255,255,255,0.04) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.04) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.04) 75%);
+      background-size: 16px 16px;
+      background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+      background-color: #0E1117;
+    }
+    h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.4px; margin: 56px 0 18px; }
+    .footer { margin-top: 56px; padding-top: 24px; border-top: 1px solid var(--border); font-family: var(--mono); font-size: 11px; color: var(--faint); letter-spacing: 0.4px; display: flex; justify-content: space-between; }
+  </style>
+</head>
+<body>
+  <!-- ====== Reusable SVG icon (used at every size) ====== -->
+  <!-- viewBox 1024x1024 (Apple Marketing icon size). Geometry scales perfectly. -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <!-- Gradient: top-left lavender → bottom-right indigo blue, matches reference -->
+      <linearGradient id="liriun-grad" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="#A88BFF"/>
+        <stop offset="0.55" stop-color="#7C7DF6"/>
+        <stop offset="1" stop-color="#5B8DEF"/>
+      </linearGradient>
+      <!-- Subtle inner highlight on top edge -->
+      <linearGradient id="liriun-shine" x1="0" y1="0" x2="0" y2="1024" gradientUnits="userSpaceOnUse">
+        <stop offset="0" stop-color="rgba(255,255,255,0.32)"/>
+        <stop offset="0.4" stop-color="rgba(255,255,255,0)"/>
+      </linearGradient>
+
+      <!-- The Liriun mark itself, drawn into a 1024×1024 frame with iOS-26-style squircle (Apple icon mask radius ≈ 22.4%). -->
+      <symbol id="liriun-icon" viewBox="0 0 1024 1024">
+        <!-- Squircle base. Using a path approximating Apple's "superellipse" continuous-corner shape so it reads correct at every size. -->
+        <path d="
+          M 512 0
+          C 870 0, 1024 154, 1024 512
+          C 1024 870, 870 1024, 512 1024
+          C 154 1024, 0 870, 0 512
+          C 0 154, 154 0, 512 0
+          Z" fill="url(#liriun-grad)"/>
+        <!-- Top shine -->
+        <path d="
+          M 512 0
+          C 870 0, 1024 154, 1024 512
+          C 1024 870, 870 1024, 512 1024
+          C 154 1024, 0 870, 0 512
+          C 0 154, 154 0, 512 0
+          Z" fill="url(#liriun-shine)"/>
+
+        <!-- Waveform: 5 rounded-cap bars centered on cy=560.
+             Heights chosen to feel like a voice peak: outer medium, inner tall, center short. -->
+        <g fill="#FFFFFF">
+          <!-- bar widths and gaps tuned so total reads balanced inside the squircle -->
+          <!-- Bar 1: outer-left, h=300 -->
+          <rect x="280" y="410" width="64" height="300" rx="32"/>
+          <!-- Bar 2: tall, h=420 -->
+          <rect x="378" y="350" width="64" height="420" rx="32"/>
+          <!-- Bar 3: center, h=200 -->
+          <rect x="476" y="460" width="64" height="200" rx="32"/>
+          <!-- Bar 4: tall, h=420 -->
+          <rect x="574" y="350" width="64" height="420" rx="32"/>
+          <!-- Bar 5: outer-right, h=300 -->
+          <rect x="672" y="410" width="64" height="300" rx="32"/>
+
+          <!-- Top dot accent -->
+          <circle cx="512" cy="266" r="22"/>
+        </g>
+      </symbol>
+
+      <!-- Mono variant: same shape, single color, no fill on the squircle (used in dark/light mono cards) -->
+      <symbol id="liriun-mark-mono" viewBox="0 0 1024 1024">
+        <path d="M 512 0 C 870 0, 1024 154, 1024 512 C 1024 870, 870 1024, 512 1024 C 154 1024, 0 870, 0 512 C 0 154, 154 0, 512 0 Z" fill="currentColor"/>
+        <g fill="#000" style="mix-blend-mode: destination-out;">
+          <rect x="280" y="410" width="64" height="300" rx="32"/>
+          <rect x="378" y="350" width="64" height="420" rx="32"/>
+          <rect x="476" y="460" width="64" height="200" rx="32"/>
+          <rect x="574" y="350" width="64" height="420" rx="32"/>
+          <rect x="672" y="410" width="64" height="300" rx="32"/>
+          <circle cx="512" cy="266" r="22"/>
+        </g>
+      </symbol>
+
+      <!-- Glyph only (transparent bg) — for monochrome on solid backgrounds -->
+      <symbol id="liriun-glyph" viewBox="0 0 1024 1024">
+        <g fill="currentColor">
+          <rect x="280" y="410" width="64" height="300" rx="32"/>
+          <rect x="378" y="350" width="64" height="420" rx="32"/>
+          <rect x="476" y="460" width="64" height="200" rx="32"/>
+          <rect x="574" y="350" width="64" height="420" rx="32"/>
+          <rect x="672" y="410" width="64" height="300" rx="32"/>
+          <circle cx="512" cy="266" r="22"/>
+        </g>
+      </symbol>
+    </defs>
+  </svg>
+
+  <div class="wrap">
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; gap: 24px; flex-wrap: wrap;">
+      <div>
+        <div class="label" style="margin-bottom: 14px;">App icon · v 1.0</div>
+        <h1>Liriun · ícone</h1>
+        <p class="sub">Squircle iOS-26 com gradiente roxo→azul, waveform branco e ponto-acento. Pronto pra App Store, Google Play, favicon, foto de perfil e qualquer canal.</p>
+      </div>
+      <div class="meta-row">
+        <span class="pill">SVG vetorial</span>
+        <span class="pill">1024 × 1024</span>
+        <span class="pill">Squircle 22.4%</span>
+        <span class="pill">RGB</span>
+      </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div style="display:flex; justify-content:center;">
+        <svg class="big" viewBox="0 0 1024 1024"><use href="#liriun-icon"/></svg>
+      </div>
+      <div>
+        <div class="label">Especificação</div>
+        <div style="font-size: 18px; line-height: 1.55; margin-top: 12px; color: var(--text);">
+          Gradiente <code style="font-family:var(--mono); font-size:14px; background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 4px;">#A88BFF → #7C7DF6 → #5B8DEF</code> a 135°, sobre forma squircle Apple HIG (continuous corner radius ≈ 22,4% do lado).
+          Os cinco traços brancos formam um perfil de voz com cantos arredondados e ponto-acento centralizado acima do bar central.
+        </div>
+        <div class="download-row">
+          <a class="btn primary" id="dl-svg-app" download="liriun-icon-1024.svg">Baixar SVG · 1024</a>
+          <a class="btn" id="dl-svg-glyph" download="liriun-glyph.svg">Baixar glifo · transparente</a>
+          <a class="btn" id="dl-png-1024" download="liriun-icon-1024.png">Exportar PNG · 1024</a>
+          <a class="btn" id="dl-png-512" download="liriun-icon-512.png">PNG · 512</a>
+          <a class="btn" id="dl-png-192" download="liriun-icon-192.png">PNG · 192</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sizes -->
+    <h2>Tamanhos canônicos</h2>
+    <div class="grid sizes">
+      <div class="card size-card">
+        <div class="size-cell"><svg width="120" height="120" viewBox="0 0 1024 1024"><use href="#liriun-icon"/></svg></div>
+        <div class="label">1024 px</div>
+        <div style="font-size: 12px; color: var(--muted);">App Store</div>
+      </div>
+      <div class="card size-card">
+        <div class="size-cell"><svg width="96" height="96" viewBox="0 0 1024 1024"><use href="#liriun-icon"/></svg></div>
+        <div class="label">512 px</div>
+        <div style="font-size: 12px; color: var(--muted);">Play Store</div>
+      </div>
+      <div class="card size-card">
+        <div class="size-cell"><svg width="76" height="76" viewBox="0 0 1024 1024"><use href="#liriun-icon"/></svg></div>
+        <div class="label">192 px</div>
+        <div style="font-size: 12px; color: var(--muted);">PWA · Web</div>
+      </div>
+      <div class="card size-card">
+        <div class="size-cell"><svg width="64" height="64" viewBox="0 0 1024 1024"><use href="#liriun-icon"/></svg></div>
+        <div class="label">128 px</div>
+        <div style="font-size: 12px; color: var(--muted);">Avatar perfil</div>
+      </div>
+      <div class="card size-card">
+        <div class="size-cell"><svg width="44" height="44" viewBox="0 0 1024 1024"><use href="#liriun-icon"/></svg></div>
+        <div class="label">64 px</div>
+        <div style="font-size: 12px; color: var(--muted);">Header app</div>
+      </div>
+      <div class="card size-card">
+        <div class="size-cell"><svg width="32" height="32" viewBox="0 0 1024 1024"><use href="#liriun-icon"/></svg></div>
+        <div class="label">32 px</div>
+        <div style="font-size: 12px; color: var(--muted);">Favicon</div>
+      </div>
+    </div>
+
+    <!-- Variants -->
+    <h2>Variações</h2>
+    <div class="grid variants">
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div class="v-cell v-checker"><svg width="160" height="160" viewBox="0 0 1024 1024"><use href="#liriun-icon"/></svg></div>
+        <div style="padding: 16px;"><div class="label">Padrão · gradiente</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">Uso geral em qualquer fundo</div></div>
+      </div>
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div class="v-cell v-dark"><svg width="160" height="160" viewBox="0 0 1024 1024" style="color:#fff;"><use href="#liriun-mark-mono"/></svg></div>
+        <div style="padding: 16px;"><div class="label">Mono branco</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">Sobre superfícies escuras</div></div>
+      </div>
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div class="v-cell v-light"><svg width="160" height="160" viewBox="0 0 1024 1024" style="color:#0E1014;"><use href="#liriun-mark-mono"/></svg></div>
+        <div style="padding: 16px;"><div class="label">Mono preto</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">Impressão · documentos</div></div>
+      </div>
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div class="v-cell v-checker"><svg width="160" height="160" viewBox="0 0 1024 1024" style="color:#fff;"><use href="#liriun-glyph"/></svg></div>
+        <div style="padding: 16px;"><div class="label">Glifo · sem squircle</div><div style="font-size:12px;color:var(--muted);margin-top:4px;">Inline em texto · UI</div></div>
+      </div>
+    </div>
+
+    <!-- Usage -->
+    <h2>Aplicações reais</h2>
+    <div class="grid" style="grid-template-columns: repeat(3, 1fr);">
+      <!-- Browser tab -->
+      <div class="card">
+        <div class="label" style="margin-bottom:14px;">Aba do navegador</div>
+        <div style="background:#1a1d24; border-radius: 10px 10px 4px 4px; padding: 8px; display: flex; align-items: center; gap: 8px;">
+          <svg width="14" height="14" viewBox="0 0 1024 1024"><use href="#liriun-icon"/></svg>
+          <span style="font-size: 12px; color: var(--text);">Liriun · Suas tarefas</span>
+          <span style="margin-left:auto; color:var(--faint); font-family:var(--mono); font-size: 11px;">×</span>
+        </div>
+      </div>
+      <!-- Profile avatar -->
+      <div class="card">
+        <div class="label" style="margin-bottom:14px;">Foto de perfil</div>
+        <div style="display:flex; align-items:center; gap: 14px;">
+          <svg width="56" height="56" viewBox="0 0 1024 1024" style="border-radius: 99px;"><use href="#liriun-icon"/></svg>
+          <div>
+            <div style="font-size: 14px; font-weight: 600;">@liriun</div>
+            <div style="font-size: 12px; color: var(--muted);">2.4k seguidores</div>
+          </div>
+        </div>
+      </div>
+      <!-- Home screen -->
+      <div class="card">
+        <div class="label" style="margin-bottom:14px;">Tela inicial · iOS</div>
+        <div style="display:flex; flex-direction: column; align-items: center; gap: 8px;">
+          <svg width="64" height="64" viewBox="0 0 1024 1024"><use href="#liriun-icon"/></svg>
+          <span style="font-size: 11px; color: var(--text);">Liriun</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>LIRIUN · APP ICON · v 1.0</span>
+      <span>liriun.app/brand</span>
+    </div>
+  </div>
+
+  <script>
+    // ─── Build downloadable assets from the in-page SVG ───
+    // SVG sources (standalone, with embedded gradient defs)
+    function svgIcon1024() {
+      return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1024" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#A88BFF"/>
+      <stop offset="0.55" stop-color="#7C7DF6"/>
+      <stop offset="1" stop-color="#5B8DEF"/>
+    </linearGradient>
+    <linearGradient id="s" x1="0" y1="0" x2="0" y2="1024" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="rgba(255,255,255,0.32)"/>
+      <stop offset="0.4" stop-color="rgba(255,255,255,0)"/>
+    </linearGradient>
+  </defs>
+  <path d="M 512 0 C 870 0, 1024 154, 1024 512 C 1024 870, 870 1024, 512 1024 C 154 1024, 0 870, 0 512 C 0 154, 154 0, 512 0 Z" fill="url(#g)"/>
+  <path d="M 512 0 C 870 0, 1024 154, 1024 512 C 1024 870, 870 1024, 512 1024 C 154 1024, 0 870, 0 512 C 0 154, 154 0, 512 0 Z" fill="url(#s)"/>
+  <g fill="#FFFFFF">
+    <rect x="280" y="410" width="64" height="300" rx="32"/>
+    <rect x="378" y="350" width="64" height="420" rx="32"/>
+    <rect x="476" y="460" width="64" height="200" rx="32"/>
+    <rect x="574" y="350" width="64" height="420" rx="32"/>
+    <rect x="672" y="410" width="64" height="300" rx="32"/>
+    <circle cx="512" cy="266" r="22"/>
+  </g>
+</svg>`;
+    }
+    function svgGlyph() {
+      return `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <g fill="#FFFFFF">
+    <rect x="280" y="410" width="64" height="300" rx="32"/>
+    <rect x="378" y="350" width="64" height="420" rx="32"/>
+    <rect x="476" y="460" width="64" height="200" rx="32"/>
+    <rect x="574" y="350" width="64" height="420" rx="32"/>
+    <rect x="672" y="410" width="64" height="300" rx="32"/>
+    <circle cx="512" cy="266" r="22"/>
+  </g>
+</svg>`;
+    }
+
+    function blobURL(svg, type='image/svg+xml') {
+      return URL.createObjectURL(new Blob([svg], { type }));
+    }
+
+    document.getElementById('dl-svg-app').href = blobURL(svgIcon1024());
+    document.getElementById('dl-svg-glyph').href = blobURL(svgGlyph());
+
+    async function svgToPng(svgString, size) {
+      const url = blobURL(svgString);
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = url;
+      await new Promise((res, rej) => { img.onload = res; img.onerror = rej; });
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, size, size);
+      URL.revokeObjectURL(url);
+      return new Promise(res => canvas.toBlob(b => res(URL.createObjectURL(b)), 'image/png'));
+    }
+
+    (async () => {
+      const svg = svgIcon1024();
+      try {
+        document.getElementById('dl-png-1024').href = await svgToPng(svg, 1024);
+        document.getElementById('dl-png-512').href  = await svgToPng(svg, 512);
+        document.getElementById('dl-png-192').href  = await svgToPng(svg, 192);
+      } catch (e) { console.warn('PNG export failed', e); }
+    })();
+  </script>
+</body>
+</html>

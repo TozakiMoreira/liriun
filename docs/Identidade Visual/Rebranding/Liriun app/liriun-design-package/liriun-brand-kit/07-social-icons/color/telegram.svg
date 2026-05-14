@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"><defs>
+    <linearGradient id="g" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#A88BFF"></stop>
+      <stop offset="0.55" stop-color="#7C7DF6"></stop>
+      <stop offset="1" stop-color="#5B8DEF"></stop>
+    </linearGradient>
+    <linearGradient id="s" x1="0" y1="0" x2="0" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="rgba(255,255,255,0.32)"></stop>
+      <stop offset="0.4" stop-color="rgba(255,255,255,0)"></stop>
+    </linearGradient>
+  </defs><path d="M 256 0 C 435 0, 512 77, 512 256 C 512 435, 435 512, 256 512 C 77 512, 0 435, 0 256 C 0 77, 77 0, 256 0 Z" fill="url(#g)"></path><path d="M 256 0 C 435 0, 512 77, 512 256 C 512 435, 435 512, 256 512 C 77 512, 0 435, 0 256 C 0 77, 77 0, 256 0 Z" fill="url(#s)"></path><g fill="#fff">
+    <path d="M 384 144 l -56 240 c -4 18 -16 22 -32 14 l -88 -64 l -42 40 c -5 5 -9 9 -18 9 l 6 -88 l 158 -142 c 7 -6 -2 -10 -10 -4 l -194 122 l -84 -26 c -18 -6 -18 -18 4 -26 l 328 -126 c 16 -6 30 4 28 22 z"></path>
+  </g></svg>
