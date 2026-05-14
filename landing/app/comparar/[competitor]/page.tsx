@@ -5,8 +5,6 @@ import { Link } from "@/i18n/routing";
 import { SiteNav } from "@/components/site/nav";
 import { SiteFooter } from "@/components/site/footer";
 
-export const runtime = "edge";
-
 type CompetitorSlug = "things-3" | "todoist" | "notion" | "apple-reminders";
 
 type Competitor = {
