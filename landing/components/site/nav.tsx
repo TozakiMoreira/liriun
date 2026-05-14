@@ -82,22 +82,54 @@ export function SiteNav() {
       {/* Painel mobile */}
       {aberto && (
         <div
-          className="md:hidden border-t border-border"
-          style={{ background: "var(--liriun-bg-translucent)" }}
+          className="md:hidden relative animate-fade-in"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(28,30,38,0.96) 0%, rgba(18,20,26,0.96) 100%)",
+            backdropFilter: "blur(24px)",
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            boxShadow: "0 12px 36px rgba(0,0,0,0.45)",
+          }}
         >
-          <div className="px-6 py-4 flex flex-col gap-1">
+          {/* Hairline brand topo */}
+          <div
+            aria-hidden
+            className="absolute inset-x-0 top-0 h-px"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent 0%, rgba(156,123,255,0.55) 30%, rgba(91,141,239,0.55) 70%, transparent 100%)",
+            }}
+          />
+
+          <div className="px-3 py-3 flex flex-col gap-0.5">
             {links.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
                 onClick={fechar}
-                className="text-base text-text font-medium py-3 border-b border-border/40 last:border-b-0"
+                className="group flex items-center justify-between px-4 py-3.5 rounded-xl text-text text-base font-medium transition-all hover:bg-white/[0.04] active:bg-white/[0.06]"
               >
-                {t(l.key)}
+                <span>{t(l.key)}</span>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-faint group-hover:text-violet-300 transition-colors"
+                >
+                  <path d="M9 6l6 6-6 6" />
+                </svg>
               </Link>
             ))}
 
-            <div className="flex items-center gap-3 mt-4 pt-4 border-t border-border/60">
+            <div
+              className="mt-3 pt-4 px-1 flex items-center gap-3"
+              style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+            >
               <LocaleSwitcher />
               <div className="flex-1" />
               {logado ? (
@@ -109,7 +141,7 @@ export function SiteNav() {
                   <Link
                     href="/login"
                     onClick={fechar}
-                    className="text-sm text-muted font-medium hover:text-text px-2"
+                    className="text-sm text-muted font-medium hover:text-text px-2 transition-colors"
                   >
                     {t("entrar")}
                   </Link>

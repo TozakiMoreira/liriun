@@ -11,6 +11,7 @@ import { CategoriasModal } from "@/components/app/categorias-modal";
 import { ConfirmDialog } from "@/components/app/confirm-dialog";
 import { LiriunLoader } from "@/components/app/liriun-loader";
 import { Modal } from "@/components/app/modal";
+import { ShimmerBox } from "@/components/app/shimmer-box";
 import { TarefaForm } from "@/components/app/tarefa-form";
 import { TarefaRow } from "@/components/app/tarefa-row";
 import { Button } from "@/components/ui/button";
@@ -517,7 +518,21 @@ function FiltroDropdown({
   );
 }
 
+/**
+ * Coleções view: agrupa por categoria + smart lists (prioritárias, hoje, sem categoria).
+ * Espelha tela 3.1 do app v2 (CLAUDE_CODE_WEBAPP.md §5).
+ */
 function Loading() {
+  return (
+    <div className="flex flex-col gap-3">
+      {[1, 2, 3, 4].map((i) => (
+        <ShimmerBox key={`s-${i}`} height={64} rounded="rounded-lg" />
+      ))}
+    </div>
+  );
+}
+
+function LoadingOld() {
   return (
     <div className="flex flex-col gap-3">
       {[1, 2, 3].map((i) => (

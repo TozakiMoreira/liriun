@@ -447,14 +447,35 @@ export default function FalarPage() {
             {/* Mic FAB centro */}
             {modo === "voz" ? (
               <div className="mt-10 flex flex-col items-center gap-4">
-                <div className="relative">
-                  {gravando && (
+                <div className="relative w-[120px] h-[120px]">
+                  {/* Glow radial — idle pulsa suave */}
+                  {!gravando && (
                     <span
                       aria-hidden
-                      className="absolute inset-0 -m-3 rounded-pill animate-ping"
-                      style={{ background: "rgba(156,123,255,0.30)", filter: "blur(4px)" }}
+                      className="absolute inset-0 -m-6 rounded-pill pointer-events-none"
+                      style={{
+                        background:
+                          "radial-gradient(circle, rgba(156,123,255,0.32) 0%, rgba(91,141,239,0) 65%)",
+                        filter: "blur(8px)",
+                        animation: "liriun-pulse-glow 2.6s ease-in-out infinite",
+                      }}
                     />
                   )}
+
+                  {/* Gravando: 3 anéis concêntricos defasados 0.5s — motion-voice.jsx ScreenListening */}
+                  {gravando &&
+                    [0, 0.5, 1].map((delay) => (
+                      <span
+                        key={delay}
+                        aria-hidden
+                        className="absolute inset-0 rounded-pill pointer-events-none"
+                        style={{
+                          border: "1.5px solid rgba(156,123,255,0.45)",
+                          animation: `liriun-pulse-ring 2s cubic-bezier(0.4,0,0.2,1) infinite ${delay}s`,
+                        }}
+                      />
+                    ))}
+
                   <button
                     type="button"
                     onClick={gravando ? pararGravacao : iniciarGravacao}
@@ -463,8 +484,10 @@ export default function FalarPage() {
                     className="relative w-[120px] h-[120px] rounded-pill grid place-items-center transition-transform active:scale-95 disabled:opacity-50"
                     style={{
                       background: "var(--liriun-grad-brand)",
-                      boxShadow:
-                        "0 24px 50px rgba(91,141,239,0.50), inset 0 1px 0 rgba(255,255,255,0.3), 0 0 0 8px rgba(255,255,255,0.04)",
+                      boxShadow: gravando
+                        ? "0 30px 80px rgba(156,123,255,0.55), inset 0 1px 0 rgba(255,255,255,0.30)"
+                        : "0 24px 50px rgba(91,141,239,0.50), inset 0 1px 0 rgba(255,255,255,0.3), 0 0 0 8px rgba(255,255,255,0.04)",
+                      animation: gravando ? "liriun-mic-pulse 1.4s ease-in-out infinite" : undefined,
                     }}
                   >
                     {gravando ? <RecordingWaveform /> : <MicIcon size={44} />}
