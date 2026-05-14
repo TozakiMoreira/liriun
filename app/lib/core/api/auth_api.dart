@@ -13,7 +13,7 @@ class AuthApi {
 
   Future<LoginResponse> login({required String email, required String senha}) async {
     final res = await _dio.post<Map<String, dynamic>>(
-      "/api/auth/login",
+      "/auth/login",
       data: {"email": email, "senha": senha},
     );
     return LoginResponse.fromJson(res.data!);
@@ -25,18 +25,18 @@ class AuthApi {
     required String senha,
   }) async {
     final res = await _dio.post<Map<String, dynamic>>(
-      "/api/auth/cadastro",
+      "/auth/cadastro",
       data: {"nome": nome, "email": email, "senha": senha},
     );
     return LoginResponse.fromJson(res.data!);
   }
 
   Future<void> esqueciSenha(String email) async {
-    await _dio.post<void>("/api/auth/esqueci-senha", data: {"email": email});
+    await _dio.post<void>("/auth/esqueci-senha", data: {"email": email});
   }
 
   Future<UsuarioDto> meuPerfil() async {
-    final res = await _dio.get<Map<String, dynamic>>("/api/usuarios/me");
+    final res = await _dio.get<Map<String, dynamic>>("/auth/perfil");
     return UsuarioDto.fromJson(res.data!);
   }
 }
@@ -55,7 +55,12 @@ class LoginResponse {
   factory LoginResponse.fromJson(Map<String, dynamic> json) {
     return LoginResponse(
       token: json["token"] as String,
-      usuario: UsuarioDto.fromJson(json["usuario"] as Map<String, dynamic>),
+      usuario: UsuarioDto(
+        id: json["usuarioId"] as String,
+        nome: json["nome"] as String,
+        email: json["email"] as String,
+        fotoUrl: json["fotoUrl"] as String?,
+      ),
     );
   }
 }

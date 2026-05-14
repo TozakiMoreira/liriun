@@ -1,0 +1,72 @@
+name: Build APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_base_url:
+        description: "API_BASE_URL (default = produção)"
+        required: false
+        default: "https://api.liriun.com"
+  push:
+    branches: [main]
+    paths:
+      - "app/**"
+      - ".github/workflows/build-apk.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: temurin
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.41.9"
+          channel: stable
+          cache: true
+
+      - name: Flutter doctor
+        run: flutter doctor -v
+
+      - name: Pub get
+        working-directory: app
+        run: flutter pub get
+
+      - name: Generate launcher icons
+        working-directory: app
+        run: flutter pub run flutter_launcher_icons || true
+
+      - name: Build APK (release)
+        working-directory: app
+        run: |
+          flutter build apk --release \
+            --dart-define=API_BASE_URL=${{ github.event.inputs.api_base_url || 'https://api.liriun.com' }}
+
+      - name: Rename APK
+        working-directory: app
+        run: |
+          mkdir -p out
+          cp build/app/outputs/flutter-apk/app-release.apk out/liriun-${GITHUB_SHA::7}.apk
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: liriun-apk
+          path: app/out/*.apk
+          retention-days: 30
+
+      - name: Summary
+        run: |
+          echo "## APK pronto" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: \`${GITHUB_SHA::7}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- API: ${{ github.event.inputs.api_base_url || 'https://api.liriun.com' }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Baixe no painel **Artifacts** desta run" >> $GITHUB_STEP_SUMMARY

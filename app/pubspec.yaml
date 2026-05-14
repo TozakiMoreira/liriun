@@ -32,6 +32,21 @@ dependencies:
   flutter_tts: ^4.2.2
   permission_handler: ^11.3.1
 
+  # Animations
+  flutter_animate: ^4.5.0
+
+  # SVG icons
+  flutter_svg: ^2.0.10
+
+  # Cached images
+  cached_network_image: ^3.4.1
+
+  # Celebrações
+  confetti: ^0.7.0
+
+  # Share
+  share_plus: ^10.1.2
+
   # Storage local
   shared_preferences: ^2.3.4
 
@@ -62,8 +77,28 @@ dev_dependencies:
   custom_lint: ^0.7.0
   riverpod_lint: ^2.6.3
 
+
 flutter:
   uses-material-design: true
   generate: true
   assets:
     - assets/icons/
+  fonts:
+    - family: Geist
+      fonts:
+        - asset: assets/fonts/Geist-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Geist-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Geist-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Geist-Bold.ttf
+          weight: 700
+    - family: Geist Mono
+      fonts:
+        - asset: assets/fonts/GeistMono-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/GeistMono-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/GeistMono-SemiBold.ttf
+          weight: 600

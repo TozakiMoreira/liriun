@@ -4,6 +4,7 @@ import "package:go_router/go_router.dart";
 
 import "../../../core/api/error_message.dart";
 import "../../../core/theme/liriun_tokens.dart";
+import "../../../widgets/liriun_mark.dart";
 import "../providers/auth_controller.dart";
 
 class LoginScreen extends ConsumerStatefulWidget {
@@ -38,7 +39,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             email: _emailCtrl.text.trim(),
             senha: _senhaCtrl.text,
           );
-      if (mounted) context.go("/falar");
+      if (mounted) context.go("/hoje");
     } catch (err) {
       setState(() => _erro = errorMessage(err, "Falha no login. Verifica e-mail e senha."));
     } finally {
@@ -62,18 +63,46 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              LiriunColors.violet400.withValues(alpha: 0.15),
+                              LiriunColors.violet700.withValues(alpha: 0.05),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(LiriunRadii.xl),
+                          boxShadow: [
+                            BoxShadow(
+                              color: LiriunColors.violet500.withValues(alpha: 0.35),
+                              blurRadius: 28,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                        child: const LiriunMark(size: 56),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
                     const Text(
                       "Entre no Liriun",
+                      textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontSize: 32,
+                        fontSize: 30,
                         fontWeight: FontWeight.w600,
-                        letterSpacing: -1,
+                        letterSpacing: -0.8,
+                        color: LiriunColors.text,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
                       "Sua próxima tarefa, na voz.",
-                      style: theme.textTheme.bodyMedium,
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: LiriunColors.textMuted,
+                      ),
                     ),
                     const SizedBox(height: 32),
                     TextFormField(

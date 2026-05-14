@@ -46,7 +46,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             email: _emailCtrl.text.trim(),
             senha: _senhaCtrl.text,
           );
-      if (mounted) context.go("/falar");
+      if (mounted) context.go("/onboarding");
     } catch (err) {
       setState(() => _erro = errorMessage(err, "Falha no cadastro. Tenta de novo."));
     } finally {
