@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Design tokens canônicos do brand kit Liriun v1.0 (maio 2026).
-/// Espelhados de `docs/Identidade Visual/Rebranding/05-tokens/tokens.css`.
+/// Espelhados de `docs/Identidade Visual/Rebranding/brand-kit/05-tokens/tokens.css`.
 class LiriunColors {
   LiriunColors._();
 

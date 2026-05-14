@@ -39,23 +39,30 @@ export default function ConfiguracoesPage() {
         <Card>
           <SectionTitle>Perfil</SectionTitle>
           <div className="flex items-center gap-5">
-            {usuario.fotoUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={usuario.fotoUrl}
-                alt={usuario.nome}
-                className="w-16 h-16 rounded-pill object-cover border border-border-hi shrink-0"
-              />
-            ) : (
-              <div
-                className="w-16 h-16 rounded-pill bg-grad-brand grid place-items-center font-mono text-lg font-semibold text-white shrink-0"
-                aria-hidden
-              >
-                {inicial}
-              </div>
-            )}
+            <div
+              className="relative shrink-0 p-[2px] rounded-pill"
+              style={{ background: "var(--liriun-grad-brand)" }}
+            >
+              {usuario.fotoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={usuario.fotoUrl}
+                  alt={usuario.nome}
+                  className="w-20 h-20 rounded-pill object-cover"
+                  style={{ border: "2px solid var(--liriun-bg)" }}
+                />
+              ) : (
+                <div
+                  className="w-20 h-20 rounded-pill bg-grad-brand grid place-items-center font-mono text-2xl font-semibold text-white"
+                  style={{ border: "2px solid var(--liriun-bg)" }}
+                  aria-hidden
+                >
+                  {inicial}
+                </div>
+              )}
+            </div>
             <div className="flex-1 min-w-0">
-              <div className="text-base font-semibold tracking-[-0.2px]">{usuario.nome}</div>
+              <div className="text-lg font-semibold tracking-[-0.3px]">{usuario.nome}</div>
               <div className="text-sm text-muted">{usuario.email}</div>
             </div>
             <button
@@ -106,8 +113,19 @@ export default function ConfiguracoesPage() {
           />
         </Card>
 
+        {/* Integrações */}
+        <Card>
+          <SectionTitle>Integrações</SectionTitle>
+          <div className="flex flex-col gap-3">
+            <IntegracaoRow nome="Google Calendar" status="em breve" />
+            <IntegracaoRow nome="Apple Reminders" status="em breve" />
+            <IntegracaoRow nome="Notion" status="em breve" />
+            <IntegracaoRow nome="Slack" status="em breve" />
+          </div>
+        </Card>
+
         {/* Conta */}
-        <Card tone="danger">
+        <Card>
           <SectionTitle>Conta</SectionTitle>
           <div className="flex flex-col sm:flex-row gap-3">
             <button
@@ -120,7 +138,20 @@ export default function ConfiguracoesPage() {
             <button
               type="button"
               onClick={() => setExcluirOpen(true)}
-              className="text-sm font-medium text-danger bg-danger/10 border border-danger/30 rounded-md px-4 py-2.5 hover:bg-danger/15 transition-colors"
+              className="text-sm font-medium rounded-md px-4 py-2.5 transition-colors"
+              style={{
+                color: "var(--liriun-danger)",
+                background: "rgba(248,113,113,0.08)",
+                border: "1px solid rgba(248,113,113,0.32)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(248,113,113,0.16)";
+                e.currentTarget.style.borderColor = "rgba(248,113,113,0.5)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(248,113,113,0.08)";
+                e.currentTarget.style.borderColor = "rgba(248,113,113,0.32)";
+              }}
             >
               Excluir conta
             </button>
@@ -157,6 +188,37 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <div className="font-mono text-xs uppercase tracking-[1.4px] text-violet-300 mb-4">
       {children}
+    </div>
+  );
+}
+
+function IntegracaoRow({ nome, status }: { nome: string; status: string }) {
+  return (
+    <div className="flex items-center justify-between py-2.5">
+      <div className="flex items-center gap-3">
+        <span
+          className="w-8 h-8 rounded-md grid place-items-center text-faint"
+          style={{
+            background: "rgba(255,255,255,0.04)",
+            border: "1px solid var(--liriun-border-hi)",
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10 3v8M14 3v8M5 11h14a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z" />
+          </svg>
+        </span>
+        <span className="text-sm font-medium">{nome}</span>
+      </div>
+      <span
+        className="font-mono text-[10px] uppercase tracking-[1.4px] px-2.5 py-1 rounded-pill"
+        style={{
+          color: "var(--liriun-violet-300)",
+          background: "rgba(156,123,255,0.08)",
+          border: "1px solid rgba(156,123,255,0.22)",
+        }}
+      >
+        {status}
+      </span>
     </div>
   );
 }

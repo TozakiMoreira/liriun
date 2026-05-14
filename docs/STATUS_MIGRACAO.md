@@ -57,7 +57,7 @@ por **EF Core** (`backend/src/Liriun.Infrastructure/Persistence/Migrations/`).
 
 ### Premissas
 - Stack: **Next.js 15 (App Router)** + **Tailwind CSS** + **Framer Motion** + **shadcn/ui**
-- Tokens: `docs/Identidade Visual/Rebranding/05-tokens/tokens.css`
+- Tokens: `docs/Identidade Visual/Rebranding/brand-kit/05-tokens/tokens.css`
 - Fonte: Geist + Geist Mono
 - **Escopo:** site institucional + área logada (login + tarefas + agente + config) — substitui Angular V1 inteiro
 - Backend: consome `.NET` via `fetch` + React Query (`@tanstack/react-query`) + cliente TS gerado do OpenAPI
@@ -304,7 +304,7 @@ por **EF Core** (`backend/src/Liriun.Infrastructure/Persistence/Migrations/`).
 ### 2026-05-09 — Início migração
 - Criado este arquivo de status
 - Pasta `landing/` criada com setup Next.js 15 inicial (sem `npm install` rodado ainda)
-- Tokens canônicos copiados de `Rebranding/05-tokens/tokens.css`
+- Tokens canônicos copiados de `Rebranding/brand-kit/05-tokens/tokens.css`
 - Layout base + page hero inicial seguindo `liriun-site.html` mockup
 - Extraído Nav + Footer + Badge + Prose para `components/site/` e `components/ui/`
 - Páginas institucionais criadas: `/sobre`, `/termos`, `/privacidade`

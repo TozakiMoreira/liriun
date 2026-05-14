@@ -10,7 +10,6 @@ import { DayStory } from "@/components/site/day-story";
 import { FadeIn } from "@/components/site/fade-in";
 import { HeroPhoneCarousel } from "@/components/site/hero-phone-carousel";
 import { LearningInsights } from "@/components/site/learning-insights";
-import { VoiceDemo } from "@/components/site/voice-demo";
 
 export default async function HomePage({
   params,
@@ -80,9 +79,6 @@ function HomeContent() {
 
       {/* ─── O dia (DayStory — 3 momentos) ──────────────────────── */}
       <DayStory />
-
-      {/* ─── Voice demo interativa ───────────────────────────────── */}
-      <VoiceDemo />
 
       {/* ─── Recursos ───────────────────────────────────────────── */}
       <section id="recursos" className="max-w-[1280px] mx-auto px-6 md:px-14 pt-12 md:pt-[72px] pb-10">
