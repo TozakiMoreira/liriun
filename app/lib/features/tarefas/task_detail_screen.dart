@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/api/notification_service.dart';
 import '../../core/api/tarefas_api.dart';
 import '../../core/theme/liriun_tokens.dart';
 import '../../models/task.dart';
 import '../../models/task_mapper.dart';
+import '../../widgets/liriun_mark.dart';
 import 'editar_tarefa_sheet.dart';
 
 class TaskDetailScreen extends ConsumerWidget {
@@ -137,6 +139,16 @@ class TaskDetailScreen extends ConsumerWidget {
       BuildContext context, WidgetRef ref, TarefaDto dto, Task task) {
     final color = task.category.color;
     final done = task.completedAt != null;
+    if (!done && task.scheduledFor != null &&
+        task.scheduledFor!.isAfter(DateTime.now())) {
+      ref.read(notificationServiceProvider).agendarLembrete(
+            taskId: task.id,
+            titulo: task.title,
+            quando: task.scheduledFor!,
+          );
+    } else if (done) {
+      ref.read(notificationServiceProvider).cancelar(task.id);
+    }
     return Stack(
       children: [
         Positioned(
@@ -188,15 +200,15 @@ class TaskDetailScreen extends ConsumerWidget {
                         label: task.category.label,
                         color: color,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 14),
                       Text(
                         task.title,
                         style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: -0.7,
+                          fontSize: 30,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: -0.8,
                           color: LiriunColors.text,
-                          height: 1.1,
+                          height: 1.08,
                         ),
                       ),
                       if (task.notes != null && task.notes!.isNotEmpty) ...[
@@ -204,14 +216,14 @@ class TaskDetailScreen extends ConsumerWidget {
                         Text(
                           task.notes!,
                           style: const TextStyle(
-                            fontSize: 12,
+                            fontSize: 13,
                             color: LiriunColors.textMuted,
                             height: 1.55,
                             letterSpacing: -0.1,
                           ),
                         ),
                       ],
-                      const SizedBox(height: 16),
+                      const SizedBox(height: 18),
                       _QuickFacts(task: task, dto: dto),
                       const SizedBox(height: 14),
                       _LiriunLembra(task: task),
@@ -275,7 +287,7 @@ class TaskDetailScreen extends ConsumerWidget {
                         Icon(
                           done ? Icons.refresh_rounded : Icons.check_rounded,
                           color: Colors.white,
-                          size: 16,
+                          size: 14,
                         ),
                         const SizedBox(width: 7),
                         Text(
@@ -360,27 +372,27 @@ class _CategoryChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(7),
-        border: Border.all(color: color.withValues(alpha: 0.40)),
+        color: color.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withValues(alpha: 0.42)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 5,
-            height: 5,
+            width: 6,
+            height: 6,
             decoration: BoxDecoration(shape: BoxShape.circle, color: color),
           ),
-          const SizedBox(width: 6),
+          const SizedBox(width: 7),
           Text(
             label,
             style: TextStyle(
-              fontSize: 10,
+              fontSize: 11,
               color: color,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
               letterSpacing: -0.1,
             ),
           ),
@@ -401,23 +413,24 @@ class _QuickFacts extends StatelessWidget {
     final today = DateTime(now.year, now.month, now.day);
     final target = DateTime(d.year, d.month, d.day);
     final diff = target.difference(today).inDays;
-    String dia;
+    const wd = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+    final dataFmt =
+        '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}';
+    String prefixo;
     if (diff == 0) {
-      dia = 'Hoje';
+      prefixo = 'Hoje';
     } else if (diff == 1) {
-      dia = 'Amanhã';
+      prefixo = 'Amanhã';
     } else if (diff == -1) {
-      dia = 'Ontem';
-    } else if (diff > 1 && diff <= 6) {
-      const wd = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
-      dia = wd[d.weekday - 1];
+      prefixo = 'Ontem';
     } else {
-      dia = '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}';
+      prefixo = wd[d.weekday - 1];
     }
-    if (d.hour == 0 && d.minute == 0) return dia;
+    final base = '$prefixo · $dataFmt';
+    if (d.hour == 0 && d.minute == 0) return base;
     final hh = d.hour.toString().padLeft(2, '0');
     final mn = d.minute.toString().padLeft(2, '0');
-    return '$dia · $hh:$mn';
+    return '$base · $hh:$mn';
   }
 
   String? _dur() {
@@ -451,8 +464,16 @@ class _QuickFacts extends StatelessWidget {
   Widget build(BuildContext context) {
     final rows = <_Fact>[
       _Fact(k: 'QUANDO', v: _relativo(task.scheduledFor)),
-      if (_dur() != null) _Fact(k: 'DURAÇÃO', v: _dur()!),
-      if (task.person != null) _Fact(k: 'COM', v: task.person!, av: true),
+      _Fact(k: 'DURAÇÃO', v: _dur() ?? '—'),
+      _Fact(
+          k: 'COM',
+          v: task.person ?? '—',
+          av: task.person != null,
+          vc: task.person == null ? LiriunColors.textMuted : null),
+      _Fact(
+          k: 'LEMBRETE',
+          v: '15 min antes',
+          vc: LiriunColors.textMuted),
       _Fact(
           k: 'PRIORIDADE',
           v: _prio(),
@@ -497,15 +518,15 @@ class _FactRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
           Text(
             fact.k,
             style: const TextStyle(
               fontFamily: 'Geist Mono',
-              fontSize: 9,
-              letterSpacing: 0.5,
+              fontSize: 10,
+              letterSpacing: 0.6,
               color: LiriunColors.textFaint,
               fontWeight: FontWeight.w600,
             ),
@@ -513,8 +534,8 @@ class _FactRow extends StatelessWidget {
           const Spacer(),
           if (fact.av) ...[
             Container(
-              width: 20,
-              height: 20,
+              width: 22,
+              height: 22,
               alignment: Alignment.center,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
@@ -523,20 +544,20 @@ class _FactRow extends StatelessWidget {
               child: Text(
                 fact.v.isNotEmpty ? fact.v[0].toUpperCase() : '?',
                 style: const TextStyle(
-                  fontSize: 9,
+                  fontSize: 10,
                   color: Colors.white,
                   fontWeight: FontWeight.w700,
                 ),
               ),
             ),
-            const SizedBox(width: 6),
+            const SizedBox(width: 8),
           ],
           Text(
             fact.v,
             style: TextStyle(
-              fontSize: 12,
+              fontSize: 13,
               color: fact.vc ?? LiriunColors.text,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
               letterSpacing: -0.1,
             ),
           ),
@@ -585,20 +606,7 @@ class _LiriunLembra extends StatelessWidget {
         children: [
           Row(
             children: [
-              Container(
-                width: 12,
-                height: 12,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: LiriunColors.gradBrand,
-                ),
-                child: const Icon(
-                  Icons.auto_awesome_rounded,
-                  size: 7,
-                  color: Colors.white,
-                ),
-              ),
+              const LiriunMark(size: 14),
               const SizedBox(width: 6),
               const Text(
                 'LIRIUN LEMBRA',

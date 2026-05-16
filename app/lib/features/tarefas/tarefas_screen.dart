@@ -94,9 +94,21 @@ class _TarefasScreenState extends ConsumerState<TarefasScreen> {
   Color _catColor(String nome) {
     final lower = nome.toLowerCase();
     if (lower.contains('trabalho') || lower.contains('work')) return LiriunColors.catWork;
-    if (lower.contains('saúde') || lower.contains('saude') || lower.contains('health')) return LiriunColors.catHealth;
+    if (lower.contains('saúde') ||
+        lower.contains('saude') ||
+        lower.contains('health') ||
+        lower.contains('academia') ||
+        lower.contains('treino') ||
+        lower.contains('exerc')) {
+      return LiriunColors.catHealth;
+    }
     if (lower.contains('casa') || lower.contains('home')) return LiriunColors.catHome;
-    if (lower.contains('finança') || lower.contains('financa') || lower.contains('gasto')) return const Color(0xFFE58FB0);
+    if (lower.contains('finança') ||
+        lower.contains('financa') ||
+        lower.contains('gasto') ||
+        lower.contains('dinheiro')) {
+      return const Color(0xFFE58FB0);
+    }
     return LiriunColors.catPersonal;
   }
 
@@ -258,11 +270,79 @@ class _TarefasScreenState extends ConsumerState<TarefasScreen> {
     );
   }
 
+  String _filterLabel(_Filter f) {
+    switch (f) {
+      case _Filter.hoje:
+        return 'Hoje';
+      case _Filter.semana:
+        return 'Semana';
+      case _Filter.atrasadas:
+        return 'Atrasadas';
+      case _Filter.prioritarias:
+        return 'Prioritárias';
+      case _Filter.semCategoria:
+        return 'Sem categoria';
+      case _Filter.none:
+        return '';
+    }
+  }
+
+  Widget _activeFilterBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => setState(() {
+              _filter = _Filter.none;
+              _busca = '';
+              _buscaCtrl.clear();
+            }),
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: LiriunColors.violet400.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(99),
+                border: Border.all(
+                    color: LiriunColors.violet400.withValues(alpha: 0.32)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.chevron_left_rounded,
+                      size: 14, color: LiriunColors.violet300),
+                  const SizedBox(width: 4),
+                  Text(
+                    _filter == _Filter.none
+                        ? 'Busca: "$_busca"'
+                        : _filterLabel(_filter),
+                    style: const TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: LiriunColors.violet300,
+                      letterSpacing: -0.1,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Icon(Icons.close_rounded,
+                      size: 12, color: LiriunColors.violet300),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   List<Widget> _buildLista(List<TarefaDto> items) {
+    final bar = SliverToBoxAdapter(child: _activeFilterBar());
     if (items.isEmpty) {
       return [
+        bar,
         const SliverPadding(
-          padding: EdgeInsets.fromLTRB(20, 30, 20, 0),
+          padding: EdgeInsets.fromLTRB(20, 18, 20, 0),
           sliver: SliverToBoxAdapter(
             child: EmptyState(
               icon: Icons.search_off_rounded,
@@ -274,8 +354,9 @@ class _TarefasScreenState extends ConsumerState<TarefasScreen> {
       ];
     }
     return [
+      bar,
       SliverPadding(
-        padding: const EdgeInsets.fromLTRB(20, 18, 20, 0),
+        padding: const EdgeInsets.fromLTRB(20, 8, 20, 0),
         sliver: SliverList(
           delegate: SliverChildBuilderDelegate(
             (context, i) {

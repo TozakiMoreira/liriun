@@ -135,40 +135,39 @@ class AtividadeScreen extends ConsumerWidget {
                       body: 'Conclua suas primeiras tarefas pra ver padrões aqui.',
                     ),
                   ] else ...[
-                    _YearHeat(weeks: weeks, total: total),
-                    const SizedBox(height: 18),
-                    _Insights(
-                      bestDay: bestDayIdx,
-                      topCat: topCat?.key,
-                      voicePct: _computeVoicePct(pendentes.length + total),
-                      total: total,
-                    ),
-                    const SizedBox(height: 14),
                     _StreakCard(streak: streak),
                     const SizedBox(height: 14),
                     GestureDetector(
                       onTap: () => context.push('/share'),
                       child: Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 14),
+                            horizontal: 16, vertical: 16),
                         decoration: BoxDecoration(
-                          color: const Color(0x0AFFFFFF),
+                          gradient: LiriunColors.gradBrand,
                           borderRadius: BorderRadius.circular(LiriunRadii.md),
-                          border: Border.all(color: LiriunColors.borderHi),
+                          boxShadow: [
+                            BoxShadow(
+                              color: LiriunColors.violet500
+                                  .withValues(alpha: 0.40),
+                              blurRadius: 22,
+                              offset: const Offset(0, 8),
+                            ),
+                          ],
                         ),
                         child: Row(
                           children: [
                             Container(
-                              width: 32,
-                              height: 32,
+                              width: 40,
+                              height: 40,
+                              alignment: Alignment.center,
                               decoration: BoxDecoration(
-                                gradient: LiriunColors.gradBrand,
-                                borderRadius: BorderRadius.circular(8),
+                                color: Colors.white.withValues(alpha: 0.20),
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                              child: const Icon(Icons.share_rounded,
-                                  size: 16, color: Colors.white),
+                              child: const Icon(Icons.auto_awesome_rounded,
+                                  size: 20, color: Colors.white),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 14),
                             const Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,28 +175,37 @@ class AtividadeScreen extends ConsumerWidget {
                                   Text(
                                     'Compartilhar conquista',
                                     style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: LiriunColors.text,
-                                      letterSpacing: -0.1,
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                      letterSpacing: -0.2,
                                     ),
                                   ),
-                                  SizedBox(height: 2),
+                                  SizedBox(height: 3),
                                   Text(
-                                    'Card 9:16 pra Instagram, WhatsApp.',
+                                    'Gera um card com streak + tarefas + ritmo.',
                                     style: TextStyle(
                                       fontSize: 11,
-                                      color: LiriunColors.textMuted,
+                                      color: Color(0xCCFFFFFF),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
-                            const Icon(Icons.chevron_right_rounded,
-                                size: 18, color: LiriunColors.textFaint),
+                            const Icon(Icons.arrow_forward_rounded,
+                                size: 18, color: Colors.white),
                           ],
                         ),
                       ),
+                    ),
+                    const SizedBox(height: 18),
+                    _YearHeat(weeks: weeks, total: total),
+                    const SizedBox(height: 18),
+                    _Insights(
+                      bestDay: bestDayIdx,
+                      topCat: topCat?.key,
+                      voicePct: _computeVoicePct(pendentes.length + total),
+                      total: total,
                     ),
                   ],
                 ],

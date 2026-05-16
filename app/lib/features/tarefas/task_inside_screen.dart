@@ -54,12 +54,50 @@ class _TaskInsideScreenState extends ConsumerState<TaskInsideScreen> {
     return Scaffold(
       backgroundColor: LiriunColors.bg,
       body: pendentesAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: LiriunColors.violet300),
+        loading: () => SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(18, 8, 18, 0),
+                child: GestureDetector(
+                  onTap: () => context.pop(),
+                  child: const Icon(Icons.chevron_left_rounded,
+                      size: 28, color: LiriunColors.text),
+                ),
+              ),
+              const Expanded(
+                child: Center(
+                  child: CircularProgressIndicator(
+                      color: LiriunColors.violet300),
+                ),
+              ),
+            ],
+          ),
         ),
-        error: (e, _) => Center(
-          child: Text('Erro: $e',
-              style: const TextStyle(color: LiriunColors.danger)),
+        error: (e, st) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: () => context.pop(),
+                  child: const Icon(Icons.chevron_left_rounded,
+                      size: 28, color: LiriunColors.text),
+                ),
+                const SizedBox(height: 18),
+                const Text('Erro carregando tarefas',
+                    style: TextStyle(
+                        color: LiriunColors.text,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600)),
+                const SizedBox(height: 8),
+                Text('$e',
+                    style: const TextStyle(color: LiriunColors.danger)),
+              ],
+            ),
+          ),
         ),
         data: (pendentes) {
           final concluidas = concluidasAsync.valueOrNull ?? [];
@@ -120,6 +158,7 @@ class _TaskInsideScreenState extends ConsumerState<TaskInsideScreen> {
                         ),
                         const SizedBox(height: 12),
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
                           children: [
                             Container(
                               width: 36,
@@ -153,31 +192,33 @@ class _TaskInsideScreenState extends ConsumerState<TaskInsideScreen> {
                               ),
                             ),
                             const SizedBox(width: 10),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  categoryName,
-                                  style: const TextStyle(
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w600,
-                                    color: LiriunColors.text,
-                                    letterSpacing: -0.5,
-                                    height: 1,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    categoryName,
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.w600,
+                                      color: LiriunColors.text,
+                                      letterSpacing: -0.5,
+                                      height: 1,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '$done DE $total · ${(pct * 100).round()}%',
-                                  style: const TextStyle(
-                                    fontFamily: 'Geist Mono',
-                                    fontSize: 9,
-                                    letterSpacing: 0.4,
-                                    color: LiriunColors.textFaint,
-                                    fontWeight: FontWeight.w500,
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    '$done DE $total · ${(pct * 100).round()}%',
+                                    style: const TextStyle(
+                                      fontFamily: 'Geist Mono',
+                                      fontSize: 9,
+                                      letterSpacing: 0.4,
+                                      color: LiriunColors.textFaint,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -185,7 +226,7 @@ class _TaskInsideScreenState extends ConsumerState<TaskInsideScreen> {
                         Container(
                           height: 4,
                           decoration: BoxDecoration(
-                            color: const Color(0x0FFFFFFF),
+                            color: const Color(0x10FFFFFF),
                             borderRadius: BorderRadius.circular(99),
                           ),
                           child: FractionallySizedBox(
@@ -210,9 +251,8 @@ class _TaskInsideScreenState extends ConsumerState<TaskInsideScreen> {
                     ),
                   ),
                 ),
-                SliverPersistentHeader(
-                  pinned: true,
-                  delegate: _TabsDelegate(
+                SliverToBoxAdapter(
+                  child: _TabsRow(
                     selected: _tab,
                     abertas: pendentesCat.length,
                     concluidas: concluidasCat.length,
@@ -246,20 +286,26 @@ class _TaskInsideScreenState extends ConsumerState<TaskInsideScreen> {
   }
 
   List<Widget> _buildGroups(List<TarefaDto> items, Color catColor) {
-    final hoje = items.where((t) => _isToday(t.dataPrazo)).toList();
-    final semana = items
-        .where((t) => !_isToday(t.dataPrazo) && _isThisWeek(t.dataPrazo))
-        .toList();
-    final depois = items
-        .where((t) =>
-            !_isToday(t.dataPrazo) &&
-            !_isThisWeek(t.dataPrazo) &&
-            t.dataPrazo.isAfter(DateTime.now()))
-        .toList();
+    final hoje = <TarefaDto>[];
+    final semana = <TarefaDto>[];
+    final depois = <TarefaDto>[];
+    final antes = <TarefaDto>[];
+    for (final t in items) {
+      if (_isToday(t.dataPrazo)) {
+        hoje.add(t);
+      } else if (_isThisWeek(t.dataPrazo)) {
+        semana.add(t);
+      } else if (t.dataPrazo.isAfter(DateTime.now())) {
+        depois.add(t);
+      } else {
+        antes.add(t);
+      }
+    }
     final groups = <(String, List<TarefaDto>)>[
       if (hoje.isNotEmpty) ('HOJE', hoje),
       if (semana.isNotEmpty) ('ESTA SEMANA', semana),
       if (depois.isNotEmpty) ('DEPOIS', depois),
+      if (antes.isNotEmpty) ('ANTES', antes),
     ];
     return [
       for (final (label, list) in groups)
@@ -329,8 +375,8 @@ class _TaskInsideScreenState extends ConsumerState<TaskInsideScreen> {
   }
 }
 
-class _TabsDelegate extends SliverPersistentHeaderDelegate {
-  _TabsDelegate({
+class _TabsRow extends StatelessWidget {
+  const _TabsRow({
     required this.selected,
     required this.abertas,
     required this.concluidas,
@@ -342,32 +388,21 @@ class _TabsDelegate extends SliverPersistentHeaderDelegate {
   final void Function(int) onSelect;
 
   @override
-  double get minExtent => 44;
-  @override
-  double get maxExtent => 44;
-
-  @override
-  Widget build(BuildContext context, double shrink, bool overlap) {
+  Widget build(BuildContext context) {
     return Container(
-      color: LiriunColors.bg,
       padding: const EdgeInsets.fromLTRB(18, 6, 18, 0),
-      child: Stack(
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(color: LiriunColors.border, width: 1),
+        ),
+      ),
+      child: Row(
         children: [
-          Positioned(
-            left: 18,
-            right: 18,
-            bottom: 0,
-            child: Container(height: 1, color: LiriunColors.border),
-          ),
-          Row(
-            children: [
-              _tab('Abertas', 0, abertas),
-              const SizedBox(width: 16),
-              _tab('Concluídas', 1, concluidas),
-              const SizedBox(width: 16),
-              _tab('Arquivadas', 2, 0),
-            ],
-          ),
+          _tab('Abertas', 0, abertas),
+          const SizedBox(width: 16),
+          _tab('Concluídas', 1, concluidas),
+          const SizedBox(width: 16),
+          _tab('Arquivadas', 2, 0),
         ],
       ),
     );
@@ -427,11 +462,6 @@ class _TabsDelegate extends SliverPersistentHeaderDelegate {
     );
   }
 
-  @override
-  bool shouldRebuild(covariant _TabsDelegate old) =>
-      old.selected != selected ||
-      old.abertas != abertas ||
-      old.concluidas != concluidas;
 }
 
 class _TaskRow extends StatelessWidget {

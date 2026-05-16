@@ -14,9 +14,12 @@ class CalendarioScreen extends ConsumerStatefulWidget {
   ConsumerState<CalendarioScreen> createState() => _CalendarioScreenState();
 }
 
+enum _Scope { mes, semana }
+
 class _CalendarioScreenState extends ConsumerState<CalendarioScreen> {
   late DateTime _month;
   DateTime? _selected;
+  _Scope _scope = _Scope.mes;
 
   @override
   void initState() {
@@ -51,6 +54,22 @@ class _CalendarioScreenState extends ConsumerState<CalendarioScreen> {
             t.dataPrazo.month == _selected!.month &&
             t.dataPrazo.day == _selected!.day).toList();
 
+    final weekRef = _selected ?? DateTime.now();
+    final weekStart = DateTime(weekRef.year, weekRef.month, weekRef.day)
+        .subtract(Duration(days: (weekRef.weekday - 1) % 7));
+    final weekEnd = weekStart.add(const Duration(days: 7));
+    final scopedTasks = _scope == _Scope.mes
+        ? all
+            .where((t) =>
+                t.dataPrazo.year == _month.year &&
+                t.dataPrazo.month == _month.month)
+            .toList()
+        : all.where((t) {
+            final d =
+                DateTime(t.dataPrazo.year, t.dataPrazo.month, t.dataPrazo.day);
+            return !d.isBefore(weekStart) && d.isBefore(weekEnd);
+          }).toList();
+
     return Scaffold(
       backgroundColor: LiriunColors.bg,
       body: SafeArea(
@@ -72,49 +91,85 @@ class _CalendarioScreenState extends ConsumerState<CalendarioScreen> {
               const SizedBox(height: 6),
               Row(
                 children: [
-                  Text(
-                    _monthLabel(_month),
-                    style: const TextStyle(
-                      fontSize: 26,
-                      fontWeight: FontWeight.w600,
-                      color: LiriunColors.text,
-                      letterSpacing: -0.6,
+                  Expanded(
+                    child: Text(
+                      _scope == _Scope.mes
+                          ? _monthLabel(_month)
+                          : _weekLabel(weekStart),
+                      style: const TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w600,
+                        color: LiriunColors.text,
+                        letterSpacing: -0.6,
+                      ),
                     ),
                   ),
-                  const Spacer(),
                   _NavBtn(
                     icon: Icons.chevron_left_rounded,
                     onTap: () => setState(() {
-                      _month = DateTime(_month.year, _month.month - 1);
+                      if (_scope == _Scope.mes) {
+                        _month = DateTime(_month.year, _month.month - 1);
+                      } else {
+                        final cur = _selected ?? DateTime.now();
+                        _selected = cur.subtract(const Duration(days: 7));
+                        _month = DateTime(_selected!.year, _selected!.month);
+                      }
                     }),
                   ),
                   const SizedBox(width: 6),
                   _NavBtn(
                     icon: Icons.chevron_right_rounded,
                     onTap: () => setState(() {
-                      _month = DateTime(_month.year, _month.month + 1);
+                      if (_scope == _Scope.mes) {
+                        _month = DateTime(_month.year, _month.month + 1);
+                      } else {
+                        final cur = _selected ?? DateTime.now();
+                        _selected = cur.add(const Duration(days: 7));
+                        _month = DateTime(_selected!.year, _selected!.month);
+                      }
                     }),
                   ),
-                  const SizedBox(width: 10),
-                  const _ScopeToggle(),
                 ],
+              ),
+              const SizedBox(height: 12),
+              _ScopeToggle(
+                scope: _scope,
+                onSelect: (s) => setState(() => _scope = s),
               ),
               const SizedBox(height: 18),
               _StatsStrip(
-                total: all.length,
-                feitas: all.where((t) => t.concluidaEm != null).length,
+                total: scopedTasks.length,
+                feitas:
+                    scopedTasks.where((t) => t.concluidaEm != null).length,
                 streak: _streak(all),
               ),
               const SizedBox(height: 18),
-              _MonthGrid(
-                month: _month,
-                byDay: byDay,
-                maxCount: maxCount,
-                selected: _selected,
-                onSelect: (d) => setState(() => _selected = d),
-              ),
-              const SizedBox(height: 16),
-              _LegendRow(),
+              if (_scope == _Scope.mes) ...[
+                _MonthGrid(
+                  month: _month,
+                  byDay: byDay,
+                  maxCount: maxCount,
+                  selected: _selected,
+                  onSelect: (d) {
+                    setState(() => _selected = d);
+                    final iso =
+                        '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+                    context.push('/calendario/dia/$iso');
+                  },
+                ),
+                const SizedBox(height: 16),
+                _LegendRow(),
+              ] else
+                _WeekStrip(
+                  reference: _selected ?? DateTime.now(),
+                  allTasks: all,
+                  onTap: (d) {
+                    setState(() => _selected = d);
+                    final iso =
+                        '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+                    context.push('/calendario/dia/$iso');
+                  },
+                ),
               const SizedBox(height: 26),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -150,16 +205,29 @@ class _CalendarioScreenState extends ConsumerState<CalendarioScreen> {
                 ],
               ),
               const SizedBox(height: 10),
-              if (selectedTasks.isNotEmpty)
-                for (final t in selectedTasks)
-                  _DayTaskRow(task: t)
-              else
-                const EmptyState(
-                  compact: true,
-                  icon: Icons.weekend_outlined,
-                  title: 'Dia leve.',
-                  body: 'Sem compromissos nessa data.',
-                ),
+              GestureDetector(
+                onTap: _selected == null
+                    ? null
+                    : () {
+                        final d = _selected!;
+                        final iso =
+                            '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+                        context.push('/calendario/dia/$iso');
+                      },
+                child: selectedTasks.isNotEmpty
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          for (final t in selectedTasks) _DayTaskRow(task: t),
+                        ],
+                      )
+                    : const EmptyState(
+                        compact: true,
+                        icon: Icons.weekend_outlined,
+                        title: 'Dia leve.',
+                        body: 'Sem compromissos nessa data.',
+                      ),
+              ),
             ],
           ),
         ),
@@ -173,6 +241,17 @@ class _CalendarioScreenState extends ConsumerState<CalendarioScreen> {
       'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro',
     ];
     return '${names[d.month - 1]} ${d.year}';
+  }
+
+  String _weekLabel(DateTime weekStart) {
+    final end = weekStart.add(const Duration(days: 6));
+    const abrev = [
+      'jan', 'fev', 'mar', 'abr', 'mai', 'jun',
+      'jul', 'ago', 'set', 'out', 'nov', 'dez',
+    ];
+    final si = '${weekStart.day.toString().padLeft(2, '0')} ${abrev[weekStart.month - 1]}';
+    final se = '${end.day.toString().padLeft(2, '0')} ${abrev[end.month - 1]}';
+    return '$si – $se';
   }
 
   String _selectedHeader() {
@@ -206,53 +285,97 @@ class _CalendarioScreenState extends ConsumerState<CalendarioScreen> {
 }
 
 class _ScopeToggle extends StatelessWidget {
-  const _ScopeToggle();
+  const _ScopeToggle({required this.scope, required this.onSelect});
+  final _Scope scope;
+  final ValueChanged<_Scope> onSelect;
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _ScopeCell(label: 'M', active: true),
-        SizedBox(width: 4),
-        _ScopeCell(label: 'S', active: false),
-        SizedBox(width: 4),
-        _ScopeCell(label: 'A', active: false),
-      ],
+    return Container(
+      padding: const EdgeInsets.all(3),
+      decoration: BoxDecoration(
+        color: const Color(0x0AFFFFFF),
+        borderRadius: BorderRadius.circular(99),
+        border: Border.all(color: LiriunColors.border),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _ScopeCell(
+              icon: Icons.calendar_month_rounded,
+              label: 'Mês',
+              active: scope == _Scope.mes,
+              onTap: () => onSelect(_Scope.mes),
+            ),
+          ),
+          const SizedBox(width: 3),
+          Expanded(
+            child: _ScopeCell(
+              icon: Icons.calendar_view_week_rounded,
+              label: 'Semana',
+              active: scope == _Scope.semana,
+              onTap: () => onSelect(_Scope.semana),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
 class _ScopeCell extends StatelessWidget {
-  const _ScopeCell({required this.label, required this.active});
+  const _ScopeCell({
+    required this.icon,
+    required this.label,
+    required this.active,
+    required this.onTap,
+  });
+  final IconData icon;
   final String label;
   final bool active;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 28,
-      height: 28,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: active
-            ? LiriunColors.violet400.withValues(alpha: 0.14)
-            : const Color(0x0AFFFFFF),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: active
-              ? LiriunColors.violet400.withValues(alpha: 0.32)
-              : LiriunColors.border,
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: LiriunDurations.fast,
+        padding: const EdgeInsets.symmetric(vertical: 9),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          gradient: active ? LiriunColors.gradBrand : null,
+          borderRadius: BorderRadius.circular(99),
+          boxShadow: active
+              ? [
+                  BoxShadow(
+                    color: LiriunColors.violet500.withValues(alpha: 0.30),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
         ),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontFamily: 'Geist Mono',
-          fontSize: 10,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.4,
-          color: active ? LiriunColors.violet300 : LiriunColors.textMuted,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 14,
+              color: active ? Colors.white : LiriunColors.textMuted,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.1,
+                color: active ? Colors.white : LiriunColors.textMuted,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -599,5 +722,361 @@ class _DayTaskRow extends StatelessWidget {
     if (l.contains('casa')) return LiriunColors.catHome;
     if (l.contains('finança') || l.contains('financa')) return LiriunColors.catFinance;
     return LiriunColors.catPersonal;
+  }
+}
+
+class _WeekStrip extends StatefulWidget {
+  const _WeekStrip({
+    required this.reference,
+    required this.allTasks,
+    required this.onTap,
+  });
+  final DateTime reference;
+  final List<TarefaDto> allTasks;
+  final ValueChanged<DateTime> onTap;
+
+  @override
+  State<_WeekStrip> createState() => _WeekStripState();
+}
+
+class _WeekStripState extends State<_WeekStrip> {
+  late DateTime _selected;
+
+  @override
+  void initState() {
+    super.initState();
+    _selected = DateTime(
+        widget.reference.year, widget.reference.month, widget.reference.day);
+  }
+
+  List<TarefaDto> _tasksOn(DateTime d) {
+    return widget.allTasks
+        .where((t) =>
+            t.dataPrazo.year == d.year &&
+            t.dataPrazo.month == d.month &&
+            t.dataPrazo.day == d.day)
+        .toList()
+      ..sort((a, b) {
+        final ha = a.horarioFinal ?? '00:00';
+        final hb = b.horarioFinal ?? '00:00';
+        return ha.compareTo(hb);
+      });
+  }
+
+  Color _catColor(TarefaDto t) {
+    if (t.categorias.isEmpty) return LiriunColors.violet400;
+    final n = t.categorias.first.nome.toLowerCase();
+    if (n.contains('trabalho')) return LiriunColors.catWork;
+    if (n.contains('saúde') ||
+        n.contains('saude') ||
+        n.contains('academia') ||
+        n.contains('treino')) {
+      return LiriunColors.catHealth;
+    }
+    if (n.contains('casa')) return LiriunColors.catHome;
+    if (n.contains('finança') || n.contains('financa') || n.contains('gasto')) {
+      return const Color(0xFFE58FB0);
+    }
+    return LiriunColors.catPersonal;
+  }
+
+  String _diaNomeMaisc(DateTime d) {
+    const dias = ['SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO', 'DOMINGO'];
+    return dias[d.weekday - 1];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final base = DateTime(widget.reference.year, widget.reference.month,
+        widget.reference.day);
+    final dowMon0 = (base.weekday - 1) % 7;
+    final weekStart = base.subtract(Duration(days: dowMon0));
+    final dias = List.generate(7, (i) => weekStart.add(Duration(days: i)));
+    const wd = ['SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB', 'DOM'];
+
+    final tarefasDoDia = _tasksOn(_selected);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SizedBox(
+          height: 86,
+          child: Row(
+            children: [
+              for (var i = 0; i < dias.length; i++) ...[
+                Expanded(
+                  child: _DayChip(
+                    day: dias[i],
+                    label: wd[i],
+                    count: _tasksOn(dias[i]).length,
+                    isSelected: dias[i] == _selected,
+                    onTap: () => setState(() => _selected = dias[i]),
+                  ),
+                ),
+                if (i < dias.length - 1) const SizedBox(width: 4),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 18),
+        Row(
+          children: [
+            Text(
+              '${_diaNomeMaisc(_selected)} · ${tarefasDoDia.length} TAREFA${tarefasDoDia.length == 1 ? '' : 'S'}',
+              style: const TextStyle(
+                fontFamily: 'Geist Mono',
+                fontSize: 9,
+                letterSpacing: 1.4,
+                color: LiriunColors.textFaint,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const Spacer(),
+            GestureDetector(
+              onTap: () => widget.onTap(_selected),
+              child: const Text(
+                'ABRIR DIA →',
+                style: TextStyle(
+                  fontFamily: 'Geist Mono',
+                  fontSize: 9,
+                  letterSpacing: 1.2,
+                  color: LiriunColors.violet300,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (tarefasDoDia.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 22),
+            child: Center(
+              child: Column(
+                children: const [
+                  Icon(Icons.weekend_outlined,
+                      size: 28, color: LiriunColors.textFaint),
+                  SizedBox(height: 6),
+                  Text(
+                    'Dia leve. Sem compromissos.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: LiriunColors.textMuted,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          )
+        else
+          for (final t in tarefasDoDia)
+            _WeekTimelineRow(task: t, color: _catColor(t)),
+      ],
+    );
+  }
+}
+
+class _DayChip extends StatelessWidget {
+  const _DayChip({
+    required this.day,
+    required this.label,
+    required this.count,
+    required this.isSelected,
+    required this.onTap,
+  });
+  final DateTime day;
+  final String label;
+  final int count;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final dotColor = isSelected
+        ? Colors.white.withValues(alpha: 0.85)
+        : LiriunColors.violet300;
+    final dotCount = count.clamp(0, 3);
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: isSelected ? LiriunColors.gradBrand : null,
+          color: isSelected ? null : const Color(0x0AFFFFFF),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected
+                ? Colors.transparent
+                : LiriunColors.border,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: LiriunColors.violet500.withValues(alpha: 0.40),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ]
+              : null,
+        ),
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Geist Mono',
+                fontSize: 9,
+                letterSpacing: 0.4,
+                fontWeight: FontWeight.w600,
+                color: isSelected
+                    ? Colors.white.withValues(alpha: 0.85)
+                    : LiriunColors.textFaint,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              '${day.day}',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.3,
+                color: isSelected ? Colors.white : LiriunColors.text,
+                height: 1,
+              ),
+            ),
+            const SizedBox(height: 6),
+            SizedBox(
+              height: 4,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  for (var i = 0; i < dotCount; i++) ...[
+                    Container(
+                      width: 4,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: dotColor,
+                      ),
+                    ),
+                    if (i < dotCount - 1) const SizedBox(width: 3),
+                  ],
+                  if (count == 0)
+                    Container(
+                      width: 4,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: LiriunColors.border,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WeekTimelineRow extends StatelessWidget {
+  const _WeekTimelineRow({required this.task, required this.color});
+  final TarefaDto task;
+  final Color color;
+
+  String get _hora => task.horarioFinal == null
+      ? '--:--'
+      : task.horarioFinal!.substring(0, 5);
+
+  String? get _dur => task.observacoes != null && task.observacoes!.contains('min')
+      ? null
+      : null;
+
+  @override
+  Widget build(BuildContext context) {
+    final done = task.concluidaEm != null;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 48,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(
+                _hora,
+                style: const TextStyle(
+                  fontFamily: 'Geist Mono',
+                  fontSize: 10,
+                  letterSpacing: 0.4,
+                  color: LiriunColors.textFaint,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: Container(
+              width: 9,
+              height: 9,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color,
+                boxShadow: [
+                  BoxShadow(
+                    color: color.withValues(alpha: 0.55),
+                    blurRadius: 8,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0x0AFFFFFF),
+                borderRadius: BorderRadius.circular(11),
+                border: Border.all(color: LiriunColors.border),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    task.nome,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color:
+                          done ? LiriunColors.textFaint : LiriunColors.text,
+                      letterSpacing: -0.1,
+                      decoration:
+                          done ? TextDecoration.lineThrough : null,
+                    ),
+                  ),
+                  if (_dur != null) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      _dur!,
+                      style: const TextStyle(
+                        fontFamily: 'Geist Mono',
+                        fontSize: 9,
+                        letterSpacing: 0.3,
+                        color: LiriunColors.textFaint,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

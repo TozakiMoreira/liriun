@@ -35,20 +35,12 @@ class TabShell extends StatelessWidget {
       backgroundColor: LiriunColors.bg,
       extendBody: true,
       body: child,
-      bottomNavigationBar: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.topCenter,
-        children: [
-          _GlassBar(selected: selected, items: _items),
-          Positioned(
-            top: -28,
-            child: MicFab(
-              onTap: () => context.push('/voice'),
-              onLongPress: () => context.push('/capture'),
-            ),
-          ),
-        ],
+      floatingActionButton: MicFab(
+        onTap: () => context.push('/voice'),
+        onLongPress: () => context.push('/capture'),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: _GlassBar(selected: selected, items: _items),
     );
   }
 }

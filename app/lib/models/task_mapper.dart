@@ -30,9 +30,22 @@ extension TarefaDtoMapper on TarefaDto {
     if (n == null) return Category.personal;
     final lower = n.toLowerCase();
     if (lower.contains('trabalho') || lower.contains('work')) return Category.work;
-    if (lower.contains('saúde') || lower.contains('saude') || lower.contains('health')) return Category.health;
+    if (lower.contains('saúde') ||
+        lower.contains('saude') ||
+        lower.contains('health') ||
+        lower.contains('academia') ||
+        lower.contains('treino') ||
+        lower.contains('exerc')) {
+      return Category.health;
+    }
     if (lower.contains('casa') || lower.contains('home')) return Category.home;
-    if (lower.contains('finança') || lower.contains('financa') || lower.contains('finance') || lower.contains('gasto')) return Category.finance;
+    if (lower.contains('finança') ||
+        lower.contains('financa') ||
+        lower.contains('finance') ||
+        lower.contains('gasto') ||
+        lower.contains('dinheiro')) {
+      return Category.finance;
+    }
     return Category.personal;
   }
 

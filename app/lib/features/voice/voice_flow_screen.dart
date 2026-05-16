@@ -1115,7 +1115,7 @@ class _LiriunPergunta extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               const Text(
-                'LIRIUN CONFIRMA',
+                'LIRIUN PERGUNTA',
                 style: TextStyle(
                   fontFamily: 'Geist Mono',
                   fontSize: 9,
@@ -1128,7 +1128,7 @@ class _LiriunPergunta extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           const Text(
-            'Confere os detalhes. Salvo direto na sua lista de tarefas.',
+            'Quer que eu adicione 15 min de preparação antes?',
             style: TextStyle(
               fontSize: 12,
               color: LiriunColors.text,
@@ -1151,7 +1151,7 @@ class _LiriunPergunta extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Text(
-                      'Salvar',
+                      'Sim, adicionar',
                       style: TextStyle(
                         fontSize: 11,
                         color: Colors.white,
@@ -1173,7 +1173,7 @@ class _LiriunPergunta extends StatelessWidget {
                     border: Border.all(color: LiriunColors.border),
                   ),
                   child: const Text(
-                    'Refazer',
+                    'Não, obrigado',
                     style: TextStyle(
                       fontSize: 11,
                       color: LiriunColors.textMuted,

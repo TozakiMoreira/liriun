@@ -1,17 +1,18 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/api/error_message.dart';
 import '../../core/api/session_provider.dart';
 import '../../core/api/tarefas_api.dart';
+import '../../core/api/weather_service.dart';
 import '../../core/theme/liriun_tokens.dart';
 import '../../models/task.dart';
 import '../../models/task_mapper.dart';
 import '../../widgets/avatar.dart';
-import '../../widgets/empty_state.dart';
 import '../../widgets/liriun_mark.dart';
 import '../../widgets/skeleton.dart';
 
@@ -71,6 +72,7 @@ class HojeScreen extends ConsumerWidget {
               onRefresh: () async {
                 ref.invalidate(pendentesProvider);
                 ref.invalidate(concluidasProvider);
+                ref.invalidate(weatherProvider);
               },
               child: pendentesAsync.when(
                 loading: () => const Padding(
@@ -334,50 +336,81 @@ class _MorningView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _topHeader(
-            context: context,
-            nome: nome,
-            fotoUrl: fotoUrl,
-            streak: streak,
-            now: now,
-            variant: TodayVariant.morning,
-          ),
-          const SizedBox(height: 22),
-          _DayShape(tasks: hojeTasks, now: now),
-          const SizedBox(height: 14),
-          const _LiriunSugereMorning(),
+          _MorningHeader(nome: nome, fotoUrl: fotoUrl, now: now),
           const SizedBox(height: 18),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _sectionLabel(hasNext
-                  ? 'A SEGUIR · ${_timeUntil(next.scheduledFor)}'
-                  : 'A SEGUIR'),
-              GestureDetector(
-                onTap: () => context.go('/tarefas'),
-                child: const Text(
-                  'VER TUDO',
-                  style: TextStyle(
-                    fontFamily: 'Geist Mono',
-                    fontSize: 9,
-                    letterSpacing: 0.4,
-                    color: LiriunColors.violet300,
-                    fontWeight: FontWeight.w600,
+          _DayShape(tasks: hojeTasks, now: now, label: 'SEU DIA'),
+          const SizedBox(height: 14),
+          _LiriunSugereMorning(next: hasNext ? next : null, now: now),
+          const SizedBox(height: 18),
+          if (hasNext) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _sectionLabel('A SEGUIR · ${_timeUntil(next.scheduledFor)}'),
+                GestureDetector(
+                  onTap: () => context.go('/tarefas'),
+                  child: const Text(
+                    'VER TUDO',
+                    style: TextStyle(
+                      fontFamily: 'Geist Mono',
+                      fontSize: 9,
+                      letterSpacing: 0.4,
+                      color: LiriunColors.violet300,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          if (hasNext)
-            _NextTaskCard(
-                task: next, onTap: () => context.push('/task/${next.id}'))
-          else
-            const EmptyState(
-              icon: Icons.event_available_outlined,
-              title: 'Dia limpo.',
-              body: 'Toque no mic central pra adicionar.',
+              ],
             ),
+            const SizedBox(height: 8),
+            _NextTaskCard(
+                task: next, onTap: () => context.push('/task/${next.id}')),
+          ] else ...[
+            const SizedBox(height: 6),
+            Center(
+              child: Column(
+                children: [
+                  Container(
+                    width: 44,
+                    height: 44,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: LiriunColors.violet400.withValues(alpha: 0.08),
+                      border: Border.all(
+                          color: LiriunColors.violet400
+                              .withValues(alpha: 0.20)),
+                    ),
+                    child: const Icon(
+                      Icons.event_available_outlined,
+                      size: 20,
+                      color: LiriunColors.violet300,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Dia limpo.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: LiriunColors.text,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Toque no mic central pra adicionar.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: LiriunColors.textMuted,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
@@ -579,9 +612,14 @@ class _EveningView extends StatelessWidget {
 // ─── shared widgets ─────────────────────────────────────
 
 class _DayShape extends StatelessWidget {
-  const _DayShape({required this.tasks, required this.now});
+  const _DayShape({
+    required this.tasks,
+    required this.now,
+    this.label = 'SEU DIA',
+  });
   final List<Task> tasks;
   final DateTime now;
+  final String label;
 
   double _pct(DateTime t) {
     final h = t.hour + t.minute / 60;
@@ -605,7 +643,7 @@ class _DayShape extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _sectionLabel('SEU DIA'),
+              _sectionLabel(label),
               Text(
                 scheduled.isEmpty
                     ? 'LIVRE'
@@ -707,8 +745,137 @@ class _DayShape extends StatelessWidget {
   }
 }
 
-class _LiriunSugereMorning extends StatelessWidget {
-  const _LiriunSugereMorning();
+class _MorningHeader extends ConsumerStatefulWidget {
+  const _MorningHeader({
+    required this.nome,
+    required this.fotoUrl,
+    required this.now,
+  });
+  final String nome;
+  final String? fotoUrl;
+  final DateTime now;
+
+  @override
+  ConsumerState<_MorningHeader> createState() => _MorningHeaderState();
+}
+
+class _MorningHeaderState extends ConsumerState<_MorningHeader> {
+  bool _retried = false;
+
+  String _diaSemana(DateTime d) {
+    const dias = ['SEGUNDA', 'TERÇA', 'QUARTA', 'QUINTA', 'SEXTA', 'SÁBADO', 'DOMINGO'];
+    return dias[d.weekday - 1];
+  }
+
+  String _kicker(String? clima) {
+    final dia = _diaSemana(widget.now);
+    final hh = widget.now.hour.toString().padLeft(2, '0');
+    final mm = widget.now.minute.toString().padLeft(2, '0');
+    final base = '$dia · $hh:$mm';
+    return clima == null ? base : '$base · $clima';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final async = ref.watch(weatherProvider);
+    final weather = async.valueOrNull;
+    final clima = weather?.label;
+    if (!async.isLoading && weather == null && !_retried) {
+      _retried = true;
+      Future.delayed(const Duration(seconds: 3), () {
+        if (mounted) ref.invalidate(weatherProvider);
+      });
+    }
+    final nome = widget.nome;
+    final fotoUrl = widget.fotoUrl;
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        GestureDetector(
+          onTap: () => context.push('/configuracoes'),
+          child: LiriunAvatar(nome: nome, fotoUrl: fotoUrl, size: 56),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _kicker(clima),
+                style: const TextStyle(
+                  fontFamily: 'Geist Mono',
+                  fontSize: 11,
+                  letterSpacing: 1.4,
+                  fontWeight: FontWeight.w600,
+                  color: LiriunColors.textFaint,
+                ),
+              ),
+              const SizedBox(height: 6),
+              RichText(
+                text: TextSpan(
+                  style: const TextStyle(
+                    fontFamily: 'Geist',
+                    fontSize: 28,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.7,
+                    color: LiriunColors.text,
+                    height: 1.05,
+                  ),
+                  children: [
+                    const TextSpan(text: 'Bom dia,\n'),
+                    TextSpan(
+                      text: '$nome.',
+                      style: const TextStyle(color: LiriunColors.violet300),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LiriunSugereMorning extends StatefulWidget {
+  const _LiriunSugereMorning({required this.next, required this.now});
+  final Task? next;
+  final DateTime now;
+
+  @override
+  State<_LiriunSugereMorning> createState() => _LiriunSugereMorningState();
+}
+
+class _LiriunSugereMorningState extends State<_LiriunSugereMorning> {
+  bool _dismissed = false;
+
+  Task? get next => widget.next;
+  DateTime get now => widget.now;
+
+  String _texto() {
+    if (next == null || next!.scheduledFor == null) {
+      return 'Aproveite pra ler um livro ou descansar. Você não tem nenhuma tarefa pendente.';
+    }
+    final diff = next!.scheduledFor!.difference(now);
+    final hours = diff.inHours;
+    final mins = diff.inMinutes % 60;
+    final pessoa = next!.person;
+    String janela;
+    if (hours >= 2) {
+      janela = '$hours horas';
+    } else if (hours == 1) {
+      janela = '1 hora${mins > 0 ? " e $mins min" : ""}';
+    } else if (mins > 30) {
+      janela = '$mins min';
+    } else {
+      janela = 'pouco tempo';
+    }
+    final destino = pessoa != null
+        ? 'a reunião com $pessoa'
+        : next!.title.toLowerCase();
+    return 'Já tomou café? Aproveite, você tem $janela antes d${pessoa != null ? "a" : "e"} $destino.';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -721,7 +888,7 @@ class _LiriunSugereMorning extends StatelessWidget {
             LiriunColors.violet700.withValues(alpha: 0.04),
           ],
         ),
-        borderRadius: BorderRadius.circular(LiriunRadii.md),
+        borderRadius: BorderRadius.circular(14),
         border:
             Border.all(color: LiriunColors.violet400.withValues(alpha: 0.28)),
       ),
@@ -729,10 +896,20 @@ class _LiriunSugereMorning extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              LiriunMark(size: 16),
-              SizedBox(width: 6),
-              Text(
+            children: [
+              Container(
+                width: 16,
+                height: 16,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LiriunColors.gradBrand,
+                ),
+                child: const Icon(Icons.auto_awesome_rounded,
+                    size: 10, color: Colors.white),
+              ),
+              const SizedBox(width: 6),
+              const Text(
                 'LIRIUN SUGERE',
                 style: TextStyle(
                   fontFamily: 'Geist Mono',
@@ -745,9 +922,9 @@ class _LiriunSugereMorning extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          const Text(
-            'Você tem espaço logo cedo. Aproveite pra começar pela tarefa que mais pesa.',
-            style: TextStyle(
+          Text(
+            _texto(),
+            style: const TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w500,
               color: LiriunColors.text,
@@ -755,6 +932,102 @@ class _LiriunSugereMorning extends StatelessWidget {
               letterSpacing: -0.1,
             ),
           ),
+          if (!_dismissed) ...[
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    context.push('/voice');
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 11, vertical: 6),
+                    decoration: BoxDecoration(
+                      gradient: LiriunColors.gradBrand,
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.mic_rounded,
+                            size: 11, color: Colors.white),
+                        SizedBox(width: 5),
+                        Text(
+                          'Começar agora',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            letterSpacing: -0.1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 6),
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    setState(() => _dismissed = true);
+                    ScaffoldMessenger.of(context)
+                      ..hideCurrentSnackBar()
+                      ..showSnackBar(
+                        SnackBar(
+                          content: const Row(
+                            children: [
+                              Icon(Icons.check_rounded,
+                                  size: 16, color: LiriunColors.violet300),
+                              SizedBox(width: 8),
+                              Text(
+                                'Anotado. Te aviso depois.',
+                                style: TextStyle(
+                                  color: LiriunColors.text,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w500,
+                                  letterSpacing: -0.1,
+                                ),
+                              ),
+                            ],
+                          ),
+                          duration: const Duration(seconds: 2),
+                          backgroundColor: const Color(0xEB14161C),
+                          behavior: SnackBarBehavior.floating,
+                          margin: const EdgeInsets.fromLTRB(20, 0, 20, 100),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            side: BorderSide(
+                              color: LiriunColors.violet400
+                                  .withValues(alpha: 0.32),
+                            ),
+                          ),
+                        ),
+                      );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 11, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0x0FFFFFFF),
+                      borderRadius: BorderRadius.circular(9),
+                      border: Border.all(color: LiriunColors.border),
+                    ),
+                    child: const Text(
+                      'Mais tarde',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: LiriunColors.textMuted,
+                        letterSpacing: -0.1,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
