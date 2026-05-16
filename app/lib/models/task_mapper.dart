@@ -18,8 +18,11 @@ extension TarefaDtoMapper on TarefaDto {
   DateTime? _scheduledDateTime() {
     if (horarioFinal == null) return dataPrazo;
     final parts = horarioFinal!.split(':');
-    final h = int.tryParse(parts[0]) ?? 0;
-    final m = parts.length > 1 ? int.tryParse(parts[1]) ?? 0 : 0;
+    if (parts.isEmpty) return dataPrazo;
+    final h = int.tryParse(parts[0]);
+    final m = parts.length > 1 ? int.tryParse(parts[1]) : 0;
+    if (h == null || h < 0 || h > 23) return dataPrazo;
+    if (m == null || m < 0 || m > 59) return dataPrazo;
     return DateTime(dataPrazo.year, dataPrazo.month, dataPrazo.day, h, m);
   }
 

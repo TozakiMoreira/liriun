@@ -10,9 +10,13 @@ import '../../features/hoje/hoje_screen.dart';
 import '../../features/tarefas/tarefas_screen.dart';
 import '../../features/atividade/atividade_screen.dart';
 import '../../features/configuracoes/configuracoes_screen.dart';
+import '../../features/calendario/calendario_dia_screen.dart';
 import '../../features/calendario/calendario_screen.dart';
 import '../../features/capture/quick_capture_screen.dart';
+import '../../features/notification/notification_preview_screen.dart';
 import '../../features/onboarding/onboarding_screen.dart';
+import '../../features/shareable/share_card_screen.dart';
+import '../../features/splash/splash_screen.dart';
 import '../../features/tarefas/task_detail_screen.dart';
 import '../../features/tarefas/task_inside_screen.dart';
 import '../../features/voice/voice_flow_screen.dart';
@@ -28,17 +32,21 @@ final appRouterProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     navigatorKey: rootNavKey,
-    initialLocation: '/hoje',
+    initialLocation: '/',
     refreshListenable: GoRouterRefreshNotifier(ref),
     redirect: (context, state) {
-      final logado = ref.read(isAuthenticatedProvider);
-      final loggingIn = state.matchedLocation == '/login' ||
-          state.matchedLocation == '/cadastro';
+      final loc = state.matchedLocation;
+      if (loc == '/') return null; // splash decide
+      final sessionAsync = ref.read(sessionControllerProvider);
+      if (sessionAsync.isLoading) return null;
+      final logado = sessionAsync.valueOrNull != null;
+      final loggingIn = loc == '/login' || loc == '/cadastro';
       if (!logado && !loggingIn) return '/login';
       if (logado && loggingIn) return '/hoje';
       return null;
     },
     routes: [
+      GoRoute(path: '/', builder: (_, __) => const SplashScreen()),
       GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
       GoRoute(path: '/cadastro', builder: (_, __) => const SignupScreen()),
       GoRoute(path: '/onboarding', builder: (_, __) => const OnboardingScreen()),
@@ -57,6 +65,31 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: '/tarefas/cat/:catId',
         builder: (ctx, st) =>
             TaskInsideScreen(categoryId: st.pathParameters['catId']!),
+      ),
+      GoRoute(
+        path: '/notificacoes/preview',
+        builder: (_, __) => const NotificationPreviewScreen(),
+      ),
+      GoRoute(
+        path: '/share',
+        pageBuilder: (ctx, st) => CustomTransitionPage(
+          child: const ShareCardScreen(),
+          transitionDuration: LiriunDurations.slow,
+          transitionsBuilder: (_, anim, __, child) => SlideTransition(
+            position: Tween(
+              begin: const Offset(0, 1),
+              end: Offset.zero,
+            ).animate(CurvedAnimation(parent: anim, curve: LiriunCurves.decel)),
+            child: child,
+          ),
+        ),
+      ),
+      GoRoute(
+        path: '/calendario/dia/:date',
+        builder: (ctx, st) {
+          final date = DateTime.parse(st.pathParameters['date']!);
+          return CalendarioDiaScreen(date: date);
+        },
       ),
       GoRoute(
         path: '/task/:id',

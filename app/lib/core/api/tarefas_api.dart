@@ -42,6 +42,26 @@ class TarefasApi {
     return TarefaDto.fromJson(res.data!);
   }
 
+  Future<TarefaDto> atualizar({
+    required String id,
+    required String nome,
+    int prioridade = 3,
+    required DateTime dataPrazo,
+    String? horarioFinal,
+    List<String>? categoriaIds,
+    String? observacoes,
+  }) async {
+    final res = await _dio.put<Map<String, dynamic>>('/tarefas/$id', data: {
+      'nome': nome,
+      'prioridade': prioridade,
+      'dataPrazo': dataPrazo.toIso8601String(),
+      if (horarioFinal != null) 'horarioFinal': horarioFinal,
+      if (categoriaIds != null) 'categoriaIds': categoriaIds,
+      if (observacoes != null) 'observacoes': observacoes,
+    });
+    return TarefaDto.fromJson(res.data!);
+  }
+
   Future<void> concluir(String id) async {
     await _dio.post<void>('/tarefas/$id/concluir');
   }

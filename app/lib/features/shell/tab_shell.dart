@@ -35,25 +35,19 @@ class TabShell extends StatelessWidget {
       backgroundColor: LiriunColors.bg,
       extendBody: true,
       body: child,
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
-          child: Stack(
-            clipBehavior: Clip.none,
-            alignment: Alignment.bottomCenter,
-            children: [
-              _GlassBar(selected: selected, items: _items),
-              Positioned(
-                bottom: 22,
-                child: MicFab(
-                  onTap: () => context.push('/voice'),
-                  onLongPress: () => context.push('/capture'),
-                ),
-              ),
-            ],
+      bottomNavigationBar: Stack(
+        clipBehavior: Clip.none,
+        alignment: Alignment.topCenter,
+        children: [
+          _GlassBar(selected: selected, items: _items),
+          Positioned(
+            top: -28,
+            child: MicFab(
+              onTap: () => context.push('/voice'),
+              onLongPress: () => context.push('/capture'),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -67,25 +61,30 @@ class _GlassBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(LiriunRadii.xl),
+    return ClipRect(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
         child: Container(
-          height: 72,
           decoration: BoxDecoration(
-            color: LiriunColors.surfaceHi.withValues(alpha: 0.85),
-            borderRadius: BorderRadius.circular(LiriunRadii.xl),
-            border: Border.all(color: LiriunColors.borderHi),
+            color: LiriunColors.surfaceHi.withValues(alpha: 0.88),
+            border: const Border(
+              top: BorderSide(color: LiriunColors.borderHi, width: 1),
+            ),
           ),
-          child: Row(
-            children: [
-              _tabSlot(context, 0, items[0]),
-              _tabSlot(context, 1, items[1]),
-              const SizedBox(width: 72), // espaço pro Mic FAB
-              _tabSlot(context, 2, items[2]),
-              _tabSlot(context, 3, items[3]),
-            ],
+          child: SafeArea(
+            top: false,
+            child: SizedBox(
+              height: 64,
+              child: Row(
+                children: [
+                  _tabSlot(context, 0, items[0]),
+                  _tabSlot(context, 1, items[1]),
+                  const SizedBox(width: 72), // espaço Mic FAB
+                  _tabSlot(context, 2, items[2]),
+                  _tabSlot(context, 3, items[3]),
+                ],
+              ),
+            ),
           ),
         ),
       ),

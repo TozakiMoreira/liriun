@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../core/api/session_provider.dart';
 import '../../core/theme/liriun_tokens.dart';
+import '../../widgets/avatar.dart';
 import '../auth/providers/auth_controller.dart';
+import 'modals.dart';
 
 class ConfiguracoesScreen extends ConsumerWidget {
   const ConfiguracoesScreen({super.key});
@@ -53,8 +55,41 @@ class ConfiguracoesScreen extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 18),
-              _Profile(),
-              const SizedBox(height: 20),
+              _Profile(
+                onEdit: () async {
+                  await showLiriunSheet<bool>(
+                    context: context,
+                    child: const EditarPerfilSheet(),
+                  );
+                },
+              ),
+              const SizedBox(height: 14),
+              _Section(
+                title: 'Segurança',
+                items: [
+                  _Item(
+                    icon: Icons.lock_outline_rounded,
+                    label: 'Alterar senha',
+                    onTap: () async {
+                      final ok = await showLiriunSheet<bool>(
+                        context: context,
+                        child: const AlterarSenhaSheet(),
+                      );
+                      if (ok == true && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Senha alterada.'),
+                            duration: Duration(seconds: 2),
+                            backgroundColor: LiriunColors.surfaceHi,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
               _Section(
                 title: 'Preferências',
                 items: [
@@ -74,6 +109,12 @@ class ConfiguracoesScreen extends ConsumerWidget {
                     icon: Icons.label_outline_rounded,
                     label: 'Categorias',
                     onTap: () => _snack(context, 'Categorias'),
+                  ),
+                  _Item(
+                    icon: Icons.notifications_active_outlined,
+                    label: 'Notificações',
+                    sub: 'preview',
+                    onTap: () => context.push('/notificacoes/preview'),
                   ),
                 ],
               ),
@@ -109,7 +150,18 @@ class ConfiguracoesScreen extends ConsumerWidget {
                 },
               ),
               const SizedBox(height: 10),
-              _ExcluirButton(onTap: () => _snack(context, 'Excluir conta')),
+              _ExcluirButton(
+                onTap: () async {
+                  final ok = await showLiriunSheet<bool>(
+                    context: context,
+                    child: const ExcluirContaSheet(),
+                  );
+                  if (ok == true && context.mounted) {
+                    await ref.read(authControllerProvider).sair();
+                    if (context.mounted) context.go('/login');
+                  }
+                },
+              ),
             ],
           ),
         ),
@@ -119,49 +171,32 @@ class ConfiguracoesScreen extends ConsumerWidget {
 }
 
 class _Profile extends ConsumerWidget {
+  const _Profile({required this.onEdit});
+  final VoidCallback onEdit;
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sessionAsync = ref.watch(sessionControllerProvider);
     final session = sessionAsync.valueOrNull;
     final nome = session?.usuario.nome ?? 'Usuário';
     final email = session?.usuario.email ?? '';
-    final inicial = nome.isEmpty ? '?' : nome[0].toUpperCase();
+    final fotoUrl = session?.usuario.fotoUrl;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0x0AFFFFFF),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onEdit,
         borderRadius: BorderRadius.circular(LiriunRadii.md),
-        border: Border.all(color: LiriunColors.borderHi),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(2),
-            decoration: const BoxDecoration(
-              gradient: LiriunColors.gradBrand,
-              shape: BoxShape.circle,
-            ),
-            child: Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: LiriunColors.surfaceHi,
-                border: Border.all(color: LiriunColors.bg, width: 2),
-              ),
-              child: Center(
-                child: Text(
-                  inicial,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w600,
-                    color: LiriunColors.text,
-                  ),
-                ),
-              ),
-            ),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: const Color(0x0AFFFFFF),
+            borderRadius: BorderRadius.circular(LiriunRadii.md),
+            border: Border.all(color: LiriunColors.borderHi),
           ),
+          child: Row(
+        children: [
+          LiriunAvatar(nome: nome, fotoUrl: fotoUrl, size: 60),
           const SizedBox(width: 14),
           Expanded(
             child: Column(
@@ -192,6 +227,8 @@ class _Profile extends ConsumerWidget {
             color: LiriunColors.textFaint,
           ),
         ],
+      ),
+        ),
       ),
     );
   }

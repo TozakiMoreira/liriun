@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../core/api/tarefas_api.dart';
 import '../../core/theme/liriun_tokens.dart';
+import '../../widgets/empty_state.dart';
 
 class AtividadeScreen extends ConsumerWidget {
   const AtividadeScreen({super.key});
@@ -126,16 +128,78 @@ class AtividadeScreen extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(height: 18),
-                  _YearHeat(weeks: weeks, total: total),
-                  const SizedBox(height: 18),
-                  _Insights(
-                    bestDay: bestDayIdx,
-                    topCat: topCat?.key,
-                    voicePct: _computeVoicePct(pendentes.length + total),
-                    total: total,
-                  ),
-                  const SizedBox(height: 14),
-                  _StreakCard(streak: streak),
+                  if (total == 0) ...[
+                    const EmptyState(
+                      icon: Icons.insights_outlined,
+                      title: 'Liriun ainda está te conhecendo.',
+                      body: 'Conclua suas primeiras tarefas pra ver padrões aqui.',
+                    ),
+                  ] else ...[
+                    _YearHeat(weeks: weeks, total: total),
+                    const SizedBox(height: 18),
+                    _Insights(
+                      bestDay: bestDayIdx,
+                      topCat: topCat?.key,
+                      voicePct: _computeVoicePct(pendentes.length + total),
+                      total: total,
+                    ),
+                    const SizedBox(height: 14),
+                    _StreakCard(streak: streak),
+                    const SizedBox(height: 14),
+                    GestureDetector(
+                      onTap: () => context.push('/share'),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: const Color(0x0AFFFFFF),
+                          borderRadius: BorderRadius.circular(LiriunRadii.md),
+                          border: Border.all(color: LiriunColors.borderHi),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                gradient: LiriunColors.gradBrand,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: const Icon(Icons.share_rounded,
+                                  size: 16, color: Colors.white),
+                            ),
+                            const SizedBox(width: 12),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Compartilhar conquista',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: LiriunColors.text,
+                                      letterSpacing: -0.1,
+                                    ),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    'Card 9:16 pra Instagram, WhatsApp.',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: LiriunColors.textMuted,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.chevron_right_rounded,
+                                size: 18, color: LiriunColors.textFaint),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             );

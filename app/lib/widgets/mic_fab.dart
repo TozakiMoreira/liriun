@@ -11,7 +11,7 @@ class MicFab extends StatefulWidget {
     required this.onTap,
     this.onLongPress,
     this.state = MicFabState.idle,
-    this.size = 64,
+    this.size = 56,
   });
 
   final VoidCallback onTap;
@@ -33,7 +33,7 @@ class _MicFabState extends State<MicFab> with TickerProviderStateMixin {
     _glowController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2400),
-    )..repeat();
+    );
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1400),
@@ -84,8 +84,6 @@ class _MicFabState extends State<MicFab> with TickerProviderStateMixin {
           builder: (context, _) {
             final pulseT = _pulseController.value;
             final pulseScale = 1.0 + (pulseT * 0.06);
-            final glowT = _glowController.value;
-            final glowSpread = 4 + (glowT * 12);
             return Transform.scale(
               scale: pulseScale,
               child: Container(
@@ -96,14 +94,9 @@ class _MicFabState extends State<MicFab> with TickerProviderStateMixin {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: LiriunColors.violet700.withValues(alpha: 0.45),
-                      blurRadius: 24,
-                      spreadRadius: glowSpread,
-                    ),
-                    const BoxShadow(
-                      color: Color(0x33FFFFFF),
-                      blurRadius: 0,
-                      offset: Offset(0, -1),
+                      color: LiriunColors.violet700.withValues(alpha: 0.40),
+                      blurRadius: 14,
+                      offset: const Offset(0, 6),
                     ),
                   ],
                 ),

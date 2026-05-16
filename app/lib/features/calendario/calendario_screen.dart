@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:go_router/go_router.dart';
+
 import '../../core/api/tarefas_api.dart';
 import '../../core/theme/liriun_tokens.dart';
+import '../../widgets/empty_state.dart';
 
 class CalendarioScreen extends ConsumerStatefulWidget {
   const CalendarioScreen({super.key});
@@ -85,19 +88,22 @@ class _CalendarioScreenState extends ConsumerState<CalendarioScreen> {
                       _month = DateTime(_month.year, _month.month - 1);
                     }),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   _NavBtn(
                     icon: Icons.chevron_right_rounded,
                     onTap: () => setState(() {
                       _month = DateTime(_month.year, _month.month + 1);
                     }),
                   ),
+                  const SizedBox(width: 10),
+                  const _ScopeToggle(),
                 ],
               ),
               const SizedBox(height: 18),
               _StatsStrip(
                 total: all.length,
                 feitas: all.where((t) => t.concluidaEm != null).length,
+                streak: _streak(all),
               ),
               const SizedBox(height: 18),
               _MonthGrid(
@@ -109,21 +115,51 @@ class _CalendarioScreenState extends ConsumerState<CalendarioScreen> {
               ),
               const SizedBox(height: 16),
               _LegendRow(),
-              if (selectedTasks.isNotEmpty) ...[
-                const SizedBox(height: 26),
-                Text(
-                  _selectedHeader().toUpperCase(),
-                  style: const TextStyle(
-                    fontSize: 9,
-                    letterSpacing: 1.6,
-                    color: LiriunColors.violet300,
-                    fontWeight: FontWeight.w600,
+              const SizedBox(height: 26),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    _selectedHeader().toUpperCase(),
+                    style: const TextStyle(
+                      fontFamily: 'Geist Mono',
+                      fontSize: 9,
+                      letterSpacing: 1.6,
+                      color: LiriunColors.violet300,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 10),
+                  if (_selected != null)
+                    GestureDetector(
+                      onTap: () {
+                        final iso =
+                            '${_selected!.year}-${_selected!.month.toString().padLeft(2, '0')}-${_selected!.day.toString().padLeft(2, '0')}';
+                        context.push('/calendario/dia/$iso');
+                      },
+                      child: const Text(
+                        'ABRIR DIA →',
+                        style: TextStyle(
+                          fontFamily: 'Geist Mono',
+                          fontSize: 9,
+                          letterSpacing: 1.2,
+                          color: LiriunColors.violet300,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              if (selectedTasks.isNotEmpty)
                 for (final t in selectedTasks)
-                  _DayTaskRow(task: t),
-              ],
+                  _DayTaskRow(task: t)
+              else
+                const EmptyState(
+                  compact: true,
+                  icon: Icons.weekend_outlined,
+                  title: 'Dia leve.',
+                  body: 'Sem compromissos nessa data.',
+                ),
             ],
           ),
         ),
@@ -146,6 +182,80 @@ class _CalendarioScreenState extends ConsumerState<CalendarioScreen> {
       return 'HOJE';
     }
     return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}';
+  }
+
+  int _streak(List<TarefaDto> all) {
+    final feitas = all.where((t) => t.concluidaEm != null).map((t) {
+      final c = t.concluidaEm!;
+      return DateTime(c.year, c.month, c.day);
+    }).toSet();
+    if (feitas.isEmpty) return 0;
+    final now = DateTime.now();
+    var cur = DateTime(now.year, now.month, now.day);
+    if (!feitas.contains(cur)) {
+      cur = cur.subtract(const Duration(days: 1));
+      if (!feitas.contains(cur)) return 0;
+    }
+    var count = 0;
+    while (feitas.contains(cur)) {
+      count += 1;
+      cur = cur.subtract(const Duration(days: 1));
+    }
+    return count;
+  }
+}
+
+class _ScopeToggle extends StatelessWidget {
+  const _ScopeToggle();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _ScopeCell(label: 'M', active: true),
+        SizedBox(width: 4),
+        _ScopeCell(label: 'S', active: false),
+        SizedBox(width: 4),
+        _ScopeCell(label: 'A', active: false),
+      ],
+    );
+  }
+}
+
+class _ScopeCell extends StatelessWidget {
+  const _ScopeCell({required this.label, required this.active});
+  final String label;
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 28,
+      height: 28,
+      alignment: Alignment.center,
+      decoration: BoxDecoration(
+        color: active
+            ? LiriunColors.violet400.withValues(alpha: 0.14)
+            : const Color(0x0AFFFFFF),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: active
+              ? LiriunColors.violet400.withValues(alpha: 0.32)
+              : LiriunColors.border,
+        ),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontFamily: 'Geist Mono',
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.4,
+          color: active ? LiriunColors.violet300 : LiriunColors.textMuted,
+        ),
+      ),
+    );
   }
 }
 
@@ -177,9 +287,14 @@ class _NavBtn extends StatelessWidget {
 }
 
 class _StatsStrip extends StatelessWidget {
-  const _StatsStrip({required this.total, required this.feitas});
+  const _StatsStrip({
+    required this.total,
+    required this.feitas,
+    required this.streak,
+  });
   final int total;
   final int feitas;
+  final int streak;
 
   @override
   Widget build(BuildContext context) {
@@ -195,9 +310,11 @@ class _StatsStrip extends StatelessWidget {
         children: [
           Expanded(child: _StatCell(label: 'TAREFAS', value: '$total')),
           _VDivider(),
-          Expanded(child: _StatCell(label: 'FEITAS', value: '$feitas')),
+          Expanded(child: _StatCell(label: 'CONCLUÍDAS', value: '$feitas')),
           _VDivider(),
           Expanded(child: _StatCell(label: 'FOCO', value: '$foco%')),
+          _VDivider(),
+          Expanded(child: _StatCell(label: 'STREAK', value: '${streak}d')),
         ],
       ),
     );

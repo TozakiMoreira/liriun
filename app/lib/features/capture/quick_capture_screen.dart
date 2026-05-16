@@ -82,8 +82,18 @@ class _QuickCaptureScreenState extends ConsumerState<QuickCaptureScreen> {
         HapticFeedback.heavyImpact();
       }
       if (mounted) context.pop();
-    } catch (_) {
-      if (mounted) setState(() => _processing = false);
+    } catch (err) {
+      if (mounted) {
+        setState(() => _processing = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Falha ao capturar: $err'),
+            duration: const Duration(seconds: 3),
+            backgroundColor: LiriunColors.surfaceHi,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
@@ -171,6 +181,8 @@ class _QuickCaptureScreenState extends ConsumerState<QuickCaptureScreen> {
                         _modePill(_Mode.voz, Icons.mic_rounded, 'Voz'),
                         const SizedBox(width: 4),
                         _modePill(_Mode.texto, Icons.short_text_rounded, 'Texto'),
+                        const SizedBox(width: 4),
+                        _fotoPillDisabled(),
                       ],
                     ),
                     const SizedBox(height: 14),
@@ -195,6 +207,47 @@ class _QuickCaptureScreenState extends ConsumerState<QuickCaptureScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _fotoPillDisabled() {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Captura por foto — em breve.'),
+            duration: Duration(seconds: 2),
+            backgroundColor: LiriunColors.surfaceHi,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+        decoration: BoxDecoration(
+          color: const Color(0x0DFFFFFF),
+          borderRadius: BorderRadius.circular(99),
+          border: Border.all(color: LiriunColors.border),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Icon(Icons.photo_camera_outlined,
+                size: 12, color: LiriunColors.textFaint),
+            SizedBox(width: 5),
+            Text(
+              'Foto',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+                color: LiriunColors.textFaint,
+                letterSpacing: -0.1,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

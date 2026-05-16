@@ -26,7 +26,12 @@ class AuthApi {
   }) async {
     final res = await _dio.post<Map<String, dynamic>>(
       "/auth/cadastro",
-      data: {"nome": nome, "email": email, "senha": senha},
+      data: {
+        "nome": nome,
+        "email": email,
+        "senha": senha,
+        "aceitouTermos": true,
+      },
     );
     return LoginResponse.fromJson(res.data!);
   }
@@ -37,6 +42,39 @@ class AuthApi {
 
   Future<UsuarioDto> meuPerfil() async {
     final res = await _dio.get<Map<String, dynamic>>("/auth/perfil");
+    return UsuarioDto.fromJson(res.data!);
+  }
+
+  Future<UsuarioDto> atualizarPerfil({
+    required String nome,
+    required String email,
+  }) async {
+    final res = await _dio.put<Map<String, dynamic>>(
+      "/auth/perfil",
+      data: {"nome": nome, "email": email},
+    );
+    return UsuarioDto.fromJson(res.data!);
+  }
+
+  Future<void> alterarSenha({
+    required String senhaAtual,
+    required String novaSenha,
+  }) async {
+    await _dio.post<void>(
+      "/auth/alterar-senha",
+      data: {"senhaAtual": senhaAtual, "novaSenha": novaSenha},
+    );
+  }
+
+  Future<void> excluirConta(String senha) async {
+    await _dio.delete<void>("/auth/conta", data: {"senha": senha});
+  }
+
+  Future<UsuarioDto> atualizarFoto(String? fotoUrl) async {
+    final res = await _dio.put<Map<String, dynamic>>(
+      "/auth/perfil/foto",
+      data: {"fotoUrl": fotoUrl},
+    );
     return UsuarioDto.fromJson(res.data!);
   }
 }

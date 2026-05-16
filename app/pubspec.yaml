@@ -47,6 +47,15 @@ dependencies:
   # Share
   share_plus: ^10.1.2
 
+  # Image picker
+  image_picker: ^1.1.2
+
+  # Path provider (pra salvar PNG temporário do shareable)
+  path_provider: ^2.1.5
+
+  # Abrir URLs externas (Termos, Política)
+  url_launcher: ^6.3.1
+
   # Storage local
   shared_preferences: ^2.3.4
 

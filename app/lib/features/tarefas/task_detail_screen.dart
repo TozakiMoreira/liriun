@@ -7,6 +7,7 @@ import '../../core/api/tarefas_api.dart';
 import '../../core/theme/liriun_tokens.dart';
 import '../../models/task.dart';
 import '../../models/task_mapper.dart';
+import 'editar_tarefa_sheet.dart';
 
 class TaskDetailScreen extends ConsumerWidget {
   const TaskDetailScreen({super.key, required this.taskId});
@@ -16,6 +17,7 @@ class TaskDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final pendentesAsync = ref.watch(pendentesProvider);
+    final concluidasAsync = ref.watch(concluidasProvider);
     return Scaffold(
       backgroundColor: LiriunColors.bg,
       body: pendentesAsync.when(
@@ -26,11 +28,16 @@ class TaskDetailScreen extends ConsumerWidget {
           child: Text('Erro: $e',
               style: const TextStyle(color: LiriunColors.danger)),
         ),
-        data: (dtos) {
-          final dto = dtos.cast<TarefaDto?>().firstWhere(
-                (t) => t!.id == taskId,
-                orElse: () => null,
-              );
+        data: (pendentes) {
+          final concluidas = concluidasAsync.valueOrNull ?? [];
+          final dtos = [...pendentes, ...concluidas];
+          TarefaDto? dto;
+          for (final t in dtos) {
+            if (t.id == taskId) {
+              dto = t;
+              break;
+            }
+          }
           if (dto == null) {
             return Center(
               child: Column(
@@ -48,227 +55,269 @@ class TaskDetailScreen extends ConsumerWidget {
               ),
             );
           }
-          return _body(context, ref, dto.toTask());
+          return _body(context, ref, dto, dto.toTask());
         },
       ),
     );
   }
 
-  Widget _body(BuildContext context, WidgetRef ref, Task task) {
+  Future<void> _abrirMenu(
+      BuildContext context, WidgetRef ref, TarefaDto dto) async {
+    final acao = await showModalBottomSheet<String>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      barrierColor: const Color(0xA6000000),
+      builder: (ctx) => Container(
+        margin: const EdgeInsets.all(12),
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
+        decoration: BoxDecoration(
+          color: const Color(0xEB14161C),
+          borderRadius: BorderRadius.circular(22),
+          border: Border.all(color: LiriunColors.borderHi),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 36,
+                height: 4,
+                margin: const EdgeInsets.only(bottom: 14),
+                decoration: BoxDecoration(
+                  color: const Color(0x2DFFFFFF),
+                  borderRadius: BorderRadius.circular(99),
+                ),
+              ),
+              ListTile(
+                leading: const Icon(Icons.edit_outlined,
+                    color: LiriunColors.violet300),
+                title: const Text('Editar', style: TextStyle(color: LiriunColors.text)),
+                onTap: () => Navigator.of(ctx).pop('editar'),
+              ),
+              ListTile(
+                leading: const Icon(Icons.delete_outline_rounded,
+                    color: LiriunColors.danger),
+                title: const Text('Excluir',
+                    style: TextStyle(color: LiriunColors.danger)),
+                onTap: () => Navigator.of(ctx).pop('excluir'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+    if (acao == 'editar' && context.mounted) {
+      final ok = await showEditarTarefaSheet(context: context, task: dto.toTask());
+      if (ok == true) {
+        ref.invalidate(pendentesProvider);
+        ref.invalidate(concluidasProvider);
+      }
+    } else if (acao == 'excluir' && context.mounted) {
+      try {
+        await ref.read(tarefasApiProvider).excluir(dto.id);
+        ref.invalidate(pendentesProvider);
+        ref.invalidate(concluidasProvider);
+        if (context.mounted) context.pop();
+      } catch (err) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Falha ao excluir: $err'),
+              backgroundColor: LiriunColors.surfaceHi,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
+      }
+    }
+  }
+
+  Widget _body(
+      BuildContext context, WidgetRef ref, TarefaDto dto, Task task) {
     final color = task.category.color;
+    final done = task.completedAt != null;
     return Stack(
       children: [
-        Positioned.fill(
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: const [0.0, 0.5],
-                colors: [
-                  color.withValues(alpha: 0.30),
-                  LiriunColors.bg,
-                ],
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 220,
+          child: IgnorePointer(
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    color.withValues(alpha: 0.24),
+                    Colors.transparent,
+                  ],
+                ),
               ),
             ),
           ),
         ),
         SafeArea(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
                 child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back_rounded,
-                          color: LiriunColors.text),
-                      onPressed: () => context.pop(),
+                    _RoundBtn(
+                      icon: Icons.chevron_left_rounded,
+                      onTap: () => context.pop(),
                     ),
-                    const Spacer(),
-                    IconButton(
-                      icon: const Icon(Icons.more_horiz_rounded,
-                          color: LiriunColors.text),
-                      onPressed: () {},
+                    _RoundBtn(
+                      icon: Icons.more_horiz_rounded,
+                      onTap: () => _abrirMenu(context, ref, dto),
                     ),
                   ],
                 ),
               ),
               Expanded(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+                  padding: const EdgeInsets.fromLTRB(18, 16, 18, 120),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 5),
-                        decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.18),
-                          borderRadius: BorderRadius.circular(LiriunRadii.pill),
-                          border: Border.all(
-                              color: color.withValues(alpha: 0.40)),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 6,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: color,
-                              ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              task.category.label.toUpperCase(),
-                              style: TextStyle(
-                                fontSize: 9,
-                                letterSpacing: 1.4,
-                                fontWeight: FontWeight.w600,
-                                color: color,
-                              ),
-                            ),
-                          ],
-                        ),
+                      _CategoryChip(
+                        label: task.category.label,
+                        color: color,
                       ),
-                      const SizedBox(height: 18),
+                      const SizedBox(height: 12),
                       Text(
                         task.title,
                         style: const TextStyle(
-                          fontSize: 32,
+                          fontSize: 26,
                           fontWeight: FontWeight.w600,
+                          letterSpacing: -0.7,
                           color: LiriunColors.text,
-                          letterSpacing: -1,
                           height: 1.1,
                         ),
                       ),
-                      const SizedBox(height: 22),
-                      _Row(
-                        icon: Icons.event_outlined,
-                        label: 'Quando',
-                        value: _fmtDate(task.scheduledFor),
-                      ),
-                      if (task.person != null) ...[
-                        const SizedBox(height: 12),
-                        _Row(
-                          icon: Icons.person_outline_rounded,
-                          label: 'Com',
-                          value: task.person!,
-                        ),
-                      ],
-                      if (task.priority != null) ...[
-                        const SizedBox(height: 12),
-                        _Row(
-                          icon: Icons.flag_outlined,
-                          label: 'Prioridade',
-                          value: _priLabel(task.priority!),
-                        ),
-                      ],
                       if (task.notes != null && task.notes!.isNotEmpty) ...[
-                        const SizedBox(height: 22),
-                        const Text(
-                          'OBSERVAÇÕES',
-                          style: TextStyle(
-                            fontSize: 9,
-                            letterSpacing: 1.4,
-                            fontWeight: FontWeight.w600,
-                            color: LiriunColors.textFaint,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.all(14),
-                          decoration: BoxDecoration(
-                            color: const Color(0x0AFFFFFF),
-                            borderRadius:
-                                BorderRadius.circular(LiriunRadii.md),
-                            border: Border.all(color: LiriunColors.border),
-                          ),
-                          child: Text(
-                            task.notes!,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: LiriunColors.text,
-                              height: 1.5,
-                            ),
+                        const SizedBox(height: 12),
+                        Text(
+                          task.notes!,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: LiriunColors.textMuted,
+                            height: 1.55,
+                            letterSpacing: -0.1,
                           ),
                         ),
                       ],
+                      const SizedBox(height: 16),
+                      _QuickFacts(task: task, dto: dto),
+                      const SizedBox(height: 14),
+                      _LiriunLembra(task: task),
                     ],
                   ),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: const Color(0x10FFFFFF),
-                        borderRadius: BorderRadius.circular(LiriunRadii.md),
-                        border: Border.all(color: LiriunColors.borderHi),
-                      ),
-                      child: IconButton(
-                        icon: const Icon(Icons.edit_outlined,
-                            color: LiriunColors.text),
-                        onPressed: () {},
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () async {
-                          HapticFeedback.mediumImpact();
-                          try {
-                            if (task.completedAt == null) {
-                              await ref
-                                  .read(tarefasApiProvider)
-                                  .concluir(task.id);
-                            } else {
-                              await ref
-                                  .read(tarefasApiProvider)
-                                  .reabrir(task.id);
-                            }
-                          } catch (_) {}
-                          ref.invalidate(pendentesProvider);
-                          ref.invalidate(concluidasProvider);
-                          if (context.mounted) context.pop();
-                        },
-                        child: Container(
-                          height: 56,
-                          alignment: Alignment.center,
-                          decoration: BoxDecoration(
-                            gradient: LiriunColors.gradBrand,
-                            borderRadius:
-                                BorderRadius.circular(LiriunRadii.md),
-                            boxShadow: [
-                              BoxShadow(
-                                color: color.withValues(alpha: 0.35),
-                                blurRadius: 20,
-                                offset: const Offset(0, 8),
-                              ),
-                            ],
+            ],
+          ),
+        ),
+        Positioned(
+          left: 18,
+          right: 18,
+          bottom: 28,
+          child: Row(
+            children: [
+              Expanded(
+                flex: 2,
+                child: GestureDetector(
+                  onTap: () async {
+                    HapticFeedback.mediumImpact();
+                    try {
+                      if (!done) {
+                        await ref.read(tarefasApiProvider).concluir(task.id);
+                      } else {
+                        await ref.read(tarefasApiProvider).reabrir(task.id);
+                      }
+                      ref.invalidate(pendentesProvider);
+                      ref.invalidate(concluidasProvider);
+                      if (context.mounted) context.pop();
+                    } catch (err) {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Falha: $err'),
+                            duration: const Duration(seconds: 3),
+                            backgroundColor: LiriunColors.surfaceHi,
+                            behavior: SnackBarBehavior.floating,
                           ),
-                          child: Text(
-                            task.completedAt == null
-                                ? 'Concluir'
-                                : 'Reabrir',
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                              letterSpacing: -0.2,
-                            ),
+                        );
+                      }
+                    }
+                  },
+                  child: Container(
+                    height: 46,
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      gradient: LiriunColors.gradBrand,
+                      borderRadius: BorderRadius.circular(13),
+                      boxShadow: [
+                        BoxShadow(
+                          color: LiriunColors.violet500.withValues(alpha: 0.35),
+                          blurRadius: 22,
+                          offset: const Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          done ? Icons.refresh_rounded : Icons.check_rounded,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 7),
+                        Text(
+                          done ? 'Reabrir' : 'Concluir',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            letterSpacing: -0.1,
                           ),
                         ),
-                      ),
+                      ],
                     ),
-                  ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: () async {
+                  final ok = await showEditarTarefaSheet(
+                    context: context,
+                    task: task,
+                  );
+                  if (ok == true) {
+                    ref.invalidate(pendentesProvider);
+                    ref.invalidate(concluidasProvider);
+                  }
+                },
+                child: Container(
+                  width: 46,
+                  height: 46,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: const Color(0x0AFFFFFF),
+                    borderRadius: BorderRadius.circular(13),
+                    border: Border.all(color: LiriunColors.borderHi),
+                  ),
+                  child: const Icon(
+                    Icons.edit_outlined,
+                    size: 16,
+                    color: LiriunColors.textMuted,
+                  ),
                 ),
               ),
             ],
@@ -277,74 +326,305 @@ class TaskDetailScreen extends ConsumerWidget {
       ],
     );
   }
-
-  String _fmtDate(DateTime? d) {
-    if (d == null) return 'Sem prazo';
-    final dd = d.day.toString().padLeft(2, '0');
-    final mm = d.month.toString().padLeft(2, '0');
-    final hh = d.hour.toString().padLeft(2, '0');
-    final mn = d.minute.toString().padLeft(2, '0');
-    return '$dd/$mm às $hh:$mn';
-  }
-
-  String _priLabel(Priority p) {
-    switch (p) {
-      case Priority.high:
-        return 'Alta';
-      case Priority.medium:
-        return 'Normal';
-      case Priority.low:
-        return 'Baixa';
-    }
-  }
 }
 
-class _Row extends StatelessWidget {
-  const _Row({required this.icon, required this.label, required this.value});
+class _RoundBtn extends StatelessWidget {
+  const _RoundBtn({required this.icon, required this.onTap});
   final IconData icon;
-  final String label;
-  final String value;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: const Color(0x0AFFFFFF),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: LiriunColors.border),
-          ),
-          child: Icon(icon, size: 18, color: LiriunColors.textMuted),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 36,
+        height: 36,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: const Color(0x0DFFFFFF),
+          shape: BoxShape.circle,
+          border: Border.all(color: LiriunColors.border),
         ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label.toUpperCase(),
-              style: const TextStyle(
-                fontSize: 9,
-                letterSpacing: 1.4,
-                color: LiriunColors.textFaint,
-                fontWeight: FontWeight.w600,
+        child: Icon(icon, size: 18, color: LiriunColors.textMuted),
+      ),
+    );
+  }
+}
+
+class _CategoryChip extends StatelessWidget {
+  const _CategoryChip({required this.label, required this.color});
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(7),
+        border: Border.all(color: color.withValues(alpha: 0.40)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 5,
+            height: 5,
+            decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              color: color,
+              fontWeight: FontWeight.w500,
+              letterSpacing: -0.1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _QuickFacts extends StatelessWidget {
+  const _QuickFacts({required this.task, required this.dto});
+  final Task task;
+  final TarefaDto dto;
+
+  String _relativo(DateTime? d) {
+    if (d == null) return 'Sem prazo';
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final target = DateTime(d.year, d.month, d.day);
+    final diff = target.difference(today).inDays;
+    String dia;
+    if (diff == 0) {
+      dia = 'Hoje';
+    } else if (diff == 1) {
+      dia = 'Amanhã';
+    } else if (diff == -1) {
+      dia = 'Ontem';
+    } else if (diff > 1 && diff <= 6) {
+      const wd = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo'];
+      dia = wd[d.weekday - 1];
+    } else {
+      dia = '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}';
+    }
+    if (d.hour == 0 && d.minute == 0) return dia;
+    final hh = d.hour.toString().padLeft(2, '0');
+    final mn = d.minute.toString().padLeft(2, '0');
+    return '$dia · $hh:$mn';
+  }
+
+  String? _dur() {
+    final d = task.duration;
+    if (d == null) return null;
+    final m = d.inMinutes;
+    if (m < 60) return '$m min';
+    final h = (m / 60).floor();
+    final rem = m % 60;
+    return rem == 0 ? '$h h' : '${h}h ${rem}min';
+  }
+
+  String _prio() {
+    switch (task.priority) {
+      case Priority.high:
+        return 'Alta';
+      case Priority.low:
+        return 'Baixa';
+      case Priority.medium:
+      case null:
+        return 'Normal';
+    }
+  }
+
+  Color _prioColor() {
+    if (task.priority == Priority.high) return const Color(0xFFF0B36E);
+    return LiriunColors.text;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = <_Fact>[
+      _Fact(k: 'QUANDO', v: _relativo(task.scheduledFor)),
+      if (_dur() != null) _Fact(k: 'DURAÇÃO', v: _dur()!),
+      if (task.person != null) _Fact(k: 'COM', v: task.person!, av: true),
+      _Fact(
+          k: 'PRIORIDADE',
+          v: _prio(),
+          vc: _prioColor()),
+    ];
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0x06FFFFFF),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: LiriunColors.border),
+      ),
+      child: Column(
+        children: [
+          for (var i = 0; i < rows.length; i++) ...[
+            _FactRow(fact: rows[i]),
+            if (i < rows.length - 1)
+              Container(height: 1, color: LiriunColors.border),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _Fact {
+  _Fact({
+    required this.k,
+    required this.v,
+    this.av = false,
+    this.vc,
+  });
+  final String k;
+  final String v;
+  final bool av;
+  final Color? vc;
+}
+
+class _FactRow extends StatelessWidget {
+  const _FactRow({required this.fact});
+  final _Fact fact;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+      child: Row(
+        children: [
+          Text(
+            fact.k,
+            style: const TextStyle(
+              fontFamily: 'Geist Mono',
+              fontSize: 9,
+              letterSpacing: 0.5,
+              color: LiriunColors.textFaint,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const Spacer(),
+          if (fact.av) ...[
+            Container(
+              width: 20,
+              height: 20,
+              alignment: Alignment.center,
+              decoration: const BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: LiriunColors.gradBrand,
+              ),
+              child: Text(
+                fact.v.isNotEmpty ? fact.v[0].toUpperCase() : '?',
+                style: const TextStyle(
+                  fontSize: 9,
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
-            const SizedBox(height: 2),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: LiriunColors.text,
-                letterSpacing: -0.2,
-              ),
+            const SizedBox(width: 6),
+          ],
+          Text(
+            fact.v,
+            style: TextStyle(
+              fontSize: 12,
+              color: fact.vc ?? LiriunColors.text,
+              fontWeight: FontWeight.w500,
+              letterSpacing: -0.1,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LiriunLembra extends StatelessWidget {
+  const _LiriunLembra({required this.task});
+  final Task task;
+
+  String _msg() {
+    final prep = task.prepNotes;
+    if (prep != null && prep.isNotEmpty) return prep.first;
+    if (task.person != null) {
+      return 'Encontro com ${task.person}. Levar contexto da última conversa.';
+    }
+    if (task.category == Category.work) {
+      return 'Foco profissional. Reserve o tempo no calendário pra não atropelar.';
+    }
+    if (task.category == Category.health) {
+      return 'Cuidado com você. Saúde também é produtividade.';
+    }
+    return 'Tudo certo. Quando começar, foca só nisso.';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            LiriunColors.violet400.withValues(alpha: 0.10),
+            LiriunColors.violet700.withValues(alpha: 0.03),
           ],
         ),
-      ],
+        borderRadius: BorderRadius.circular(12),
+        border:
+            Border.all(color: LiriunColors.violet400.withValues(alpha: 0.22)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 12,
+                height: 12,
+                alignment: Alignment.center,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: LiriunColors.gradBrand,
+                ),
+                child: const Icon(
+                  Icons.auto_awesome_rounded,
+                  size: 7,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(width: 6),
+              const Text(
+                'LIRIUN LEMBRA',
+                style: TextStyle(
+                  fontFamily: 'Geist Mono',
+                  fontSize: 9,
+                  fontWeight: FontWeight.w600,
+                  color: LiriunColors.violet300,
+                  letterSpacing: 1.0,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            _msg(),
+            style: const TextStyle(
+              fontSize: 11,
+              color: LiriunColors.text,
+              fontWeight: FontWeight.w500,
+              height: 1.45,
+              letterSpacing: -0.1,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
