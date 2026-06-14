@@ -6,8 +6,10 @@ import { useEffect, useMemo, useState } from "react";
 
 import { Modal } from "@/components/app/modal";
 import { ShimmerBox } from "@/components/app/shimmer-box";
+import { TarefaCheckbox } from "@/components/app/tarefa-checkbox";
 import { TarefaForm } from "@/components/app/tarefa-form";
 import { TarefaRow } from "@/components/app/tarefa-row";
+import { ToastViewport, useToasts } from "@/components/app/toast";
 import { useUsuarioAtual } from "@/components/auth/auth-provider";
 import { useTarefas } from "@/lib/api/hooks/use-tarefas";
 import { ehHoje, paraDataLocal } from "@/lib/datetime";
@@ -15,6 +17,7 @@ import type { CriarTarefaInput, Tarefa } from "@/lib/api/tarefas";
 
 export default function HojePage() {
   const { pendentes, concluidas, loading, concluir, reabrir, atualizar } = useTarefas();
+  const { toasts, push, dismiss } = useToasts();
   const usuario = useUsuarioAtual();
   const primeiroNome = usuario?.nome.split(" ")[0] ?? "";
   const [tarefaEditando, setTarefaEditando] = useState<Tarefa | null>(null);
@@ -28,6 +31,25 @@ export default function HojePage() {
 
   function abrirEditar(t: Tarefa) {
     setTarefaEditando(t);
+  }
+
+  function handleToggle(t: Tarefa) {
+    const id = t.id;
+    if (t.status === 2) {
+      void reabrir(id);
+      push({ message: "Desconcluído", actionLabel: "Desfazer", onAction: () => void concluir(id) });
+    } else {
+      void concluir(id);
+      push({ message: "Concluído", actionLabel: "Desfazer", onAction: () => void reabrir(id) });
+    }
+  }
+
+  function concluirEditando() {
+    const t = tarefaEditando;
+    if (!t) return;
+    void concluir(t.id);
+    push({ message: "Concluído", actionLabel: "Desfazer", onAction: () => void reabrir(t.id) });
+    setTarefaEditando(null);
   }
 
   async function handleSubmitForm(input: CriarTarefaInput) {
@@ -105,7 +127,7 @@ export default function HojePage() {
       <section className="max-w-[1080px] mx-auto px-6 md:px-12 pt-10 grid grid-cols-1 md:grid-cols-[1fr_320px] gap-6">
         <div>
           <DayShape tarefas={tarefasHoje} />
-          <FeaturedNext tarefa={proximaTarefa} onEdit={abrirEditar} />
+          <FeaturedNext tarefa={proximaTarefa} onEdit={abrirEditar} onToggle={handleToggle} />
         </div>
         <LiriunSugere
           totalHoje={stats.pendentes}
@@ -127,7 +149,7 @@ export default function HojePage() {
               <TarefaRow
                 key={t.id}
                 tarefa={t}
-                onToggle={() => (t.status === 2 ? reabrir(t.id) : concluir(t.id))}
+                onToggle={() => handleToggle(t)}
                 onEdit={() => abrirEditar(t)}
               />
             ))}
@@ -144,7 +166,7 @@ export default function HojePage() {
               <TarefaRow
                 key={t.id}
                 tarefa={t}
-                onToggle={() => reabrir(t.id)}
+                onToggle={() => handleToggle(t)}
                 onEdit={() => abrirEditar(t)}
               />
             ))}
@@ -163,9 +185,12 @@ export default function HojePage() {
             tarefa={tarefaEditando}
             onSubmit={handleSubmitForm}
             onCancel={() => setTarefaEditando(null)}
+            onConcluir={concluirEditando}
           />
         )}
       </Modal>
+
+      <ToastViewport toasts={toasts} onDismiss={dismiss} />
     </div>
   );
 }
@@ -380,15 +405,21 @@ function DayShape({ tarefas }: { tarefas: Tarefa[] }) {
   );
 }
 
-function FeaturedNext({ tarefa, onEdit }: { tarefa: Tarefa | null; onEdit: (t: Tarefa) => void }) {
+function FeaturedNext({
+  tarefa,
+  onEdit,
+  onToggle,
+}: {
+  tarefa: Tarefa | null;
+  onEdit: (t: Tarefa) => void;
+  onToggle: (t: Tarefa) => void;
+}) {
   if (!tarefa) return null;
   const atrasada = tarefa.status === 3;
   const horario = tarefa.horarioFinal?.slice(0, 5);
   return (
-    <button
-      type="button"
-      onClick={() => onEdit(tarefa)}
-      className="group w-full text-left rounded-2xl p-5 md:p-6 transition-transform hover:-translate-y-0.5"
+    <div
+      className="relative rounded-2xl p-5 md:p-6 transition-transform hover:-translate-y-0.5"
       style={{
         background: atrasada
           ? "linear-gradient(135deg, rgba(255,185,154,0.10) 0%, rgba(238,122,142,0.06) 100%)"
@@ -397,23 +428,30 @@ function FeaturedNext({ tarefa, onEdit }: { tarefa: Tarefa | null; onEdit: (t: T
         boxShadow: "0 16px 36px rgba(0,0,0,0.30), inset 0 1px 0 rgba(255,255,255,0.06)",
       }}
     >
-      <div
-        className="font-mono text-[10px] uppercase tracking-[1.6px] mb-2"
-        style={{ color: atrasada ? "#FFB99A" : "var(--liriun-violet-300)" }}
-      >
-        {atrasada ? "Atrasada · acerte primeiro" : "A seguir"}
+      {/* Concluir — bolinha no canto */}
+      <div className="absolute top-5 right-5 md:top-6 md:right-6 z-10">
+        <TarefaCheckbox concluida={false} atrasada={atrasada} onToggle={() => onToggle(tarefa)} />
       </div>
-      <div className="text-xl md:text-2xl font-semibold tracking-[-0.4px]">{tarefa.nome}</div>
-      <div className="flex items-center gap-3 mt-3 font-mono text-[10px] uppercase tracking-[1.2px] text-faint">
-        {horario && <span>{horario}</span>}
-        {tarefa.categorias[0] && (
-          <>
-            {horario && <span>·</span>}
-            <span>{tarefa.categorias[0].nome}</span>
-          </>
-        )}
-      </div>
-    </button>
+
+      <button type="button" onClick={() => onEdit(tarefa)} className="w-full text-left pr-9">
+        <div
+          className="font-mono text-[10px] uppercase tracking-[1.6px] mb-2"
+          style={{ color: atrasada ? "#FFB99A" : "var(--liriun-violet-300)" }}
+        >
+          {atrasada ? "Atrasada · acerte primeiro" : "A seguir"}
+        </div>
+        <div className="text-xl md:text-2xl font-semibold tracking-[-0.4px]">{tarefa.nome}</div>
+        <div className="flex items-center gap-3 mt-3 font-mono text-[10px] uppercase tracking-[1.2px] text-faint">
+          {horario && <span>{horario}</span>}
+          {tarefa.categorias[0] && (
+            <>
+              {horario && <span>·</span>}
+              <span>{tarefa.categorias[0].nome}</span>
+            </>
+          )}
+        </div>
+      </button>
+    </div>
   );
 }
 

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { TarefaCheckbox } from "@/components/app/tarefa-checkbox";
 import { descricaoRelativa, formatarDataCurta, formatarHorario } from "@/lib/datetime";
 import {
   PRIORIDADE_LABEL,
@@ -45,23 +46,7 @@ export function TarefaRow({
       onMouseLeave={() => setHovering(false)}
     >
       {/* Checkbox */}
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-label={concluida ? "Reabrir tarefa" : "Concluir tarefa"}
-        className="w-[22px] h-[22px] rounded-pill grid place-items-center transition-all duration-150 shrink-0 hover:scale-105 active:scale-90"
-        style={{
-          border: concluida ? "none" : `1.5px solid ${atrasada ? "rgba(255,185,154,0.65)" : "var(--liriun-border-hi)"}`,
-          background: concluida ? "var(--liriun-grad-brand)" : "transparent",
-          boxShadow: concluida ? "0 4px 10px rgba(91,141,239,0.3)" : "none",
-        }}
-      >
-        {concluida && (
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M5 12.5l4.5 4.5L19 7" />
-          </svg>
-        )}
-      </button>
+      <TarefaCheckbox concluida={concluida} atrasada={atrasada} onToggle={onToggle} />
 
       {/* Texto */}
       <button

@@ -265,6 +265,16 @@ function TarefasInner() {
           tarefa={tarefaEditando ?? undefined}
           onSubmit={handleSubmitForm}
           onCancel={() => setModalAberto(false)}
+          onConcluir={
+            tarefaEditando
+              ? () => {
+                  const t = tarefaEditando;
+                  void concluir(t.id);
+                  push({ message: "Concluído", actionLabel: "Desfazer", onAction: () => void reabrir(t.id) });
+                  setModalAberto(false);
+                }
+              : undefined
+          }
         />
       </Modal>
 

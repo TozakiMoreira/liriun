@@ -20,13 +20,16 @@ type TarefaFormProps = {
   tarefa?: Tarefa;
   onSubmit: (input: CriarTarefaInput) => Promise<void>;
   onCancel: () => void;
+  /** Quando presente e editando uma tarefa não concluída, mostra botão "Concluir". */
+  onConcluir?: () => void;
 };
 
 const PRIORIDADES: Prioridade[] = [1, 2, 3, 4];
 const RECORRENCIAS: TipoRecorrencia[] = [0, 1, 2];
 
-export function TarefaForm({ tarefa, onSubmit, onCancel }: TarefaFormProps) {
+export function TarefaForm({ tarefa, onSubmit, onCancel, onConcluir }: TarefaFormProps) {
   const editando = !!tarefa;
+  const concluida = tarefa?.status === 2;
   const { categorias } = useCategorias();
 
   const [nome, setNome] = useState(tarefa?.nome ?? "");
@@ -224,13 +227,32 @@ export function TarefaForm({ tarefa, onSubmit, onCancel }: TarefaFormProps) {
 
       {erro && <p className="text-sm text-danger">{erro}</p>}
 
-      <div className="flex gap-3 justify-end pt-2 border-t border-border">
-        <Button type="button" variant="secondary" onClick={onCancel} disabled={submitting}>
-          Cancelar
-        </Button>
-        <Button type="submit" loading={submitting}>
-          {editando ? "Salvar" : "Criar tarefa"}
-        </Button>
+      <div className="flex gap-3 items-center justify-between pt-2 border-t border-border">
+        <div>
+          {editando && !concluida && onConcluir && (
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onConcluir}
+              disabled={submitting}
+              className="text-success"
+              style={{ borderColor: "rgba(123,215,176,0.40)", background: "rgba(123,215,176,0.08)" }}
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M5 12.5l4.5 4.5L19 7" />
+              </svg>
+              Concluir
+            </Button>
+          )}
+        </div>
+        <div className="flex gap-3">
+          <Button type="button" variant="secondary" onClick={onCancel} disabled={submitting}>
+            Cancelar
+          </Button>
+          <Button type="submit" loading={submitting}>
+            {editando ? "Salvar" : "Criar tarefa"}
+          </Button>
+        </div>
       </div>
     </form>
   );
