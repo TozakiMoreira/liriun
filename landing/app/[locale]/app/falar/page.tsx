@@ -11,9 +11,9 @@ import { TaskCardMini } from "@/components/app/task-card-mini";
 import { TaskChecklistCard } from "@/components/app/task-checklist-card";
 import { useUsuarioAtual } from "@/components/auth/auth-provider";
 import { useTarefas } from "@/lib/api/hooks/use-tarefas";
+import { useCategorias } from "@/lib/api/hooks/use-categorias";
 import { agenteApi, type AcaoSugerida, type Mensagem, type SugestaoTarefa } from "@/lib/api/agente";
 import {
-  categoriasApi,
   tarefasApi,
   type Categoria,
   type CriarTarefaInput,
@@ -61,7 +61,7 @@ export default function FalarPage() {
   const [audioSuportado, setAudioSuportado] = useState<boolean | null>(null);
   const [sugestao, setSugestao] = useState<SugestaoTarefa | null>(null);
   const [salvando, setSalvando] = useState(false);
-  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const { categorias } = useCategorias();
   const [editandoAberto, setEditandoAberto] = useState(false);
   const [duracaoMs, setDuracaoMs] = useState(0);
 
@@ -82,15 +82,6 @@ export default function FalarPage() {
     setAudioSuportado(ok);
   }, []);
 
-  // Carrega categorias do usuário (pra mostrar nomes no card de sugestão)
-  useEffect(() => {
-    categoriasApi
-      .listar()
-      .then(setCategorias)
-      .catch(() => {
-        // silencia: card só não mostra nome de categoria
-      });
-  }, []);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });

@@ -17,6 +17,7 @@ import { TarefaRow } from "@/components/app/tarefa-row";
 import { ToastViewport, useToasts } from "@/components/app/toast";
 import { Button } from "@/components/ui/button";
 import { useTarefas } from "@/lib/api/hooks/use-tarefas";
+import { prefetchCategorias } from "@/lib/api/hooks/use-categorias";
 import { ehAmanha, ehHoje, paraDataLocal } from "@/lib/datetime";
 import type { Prioridade, StatusTarefa, Tarefa } from "@/lib/api/tarefas";
 
@@ -74,6 +75,12 @@ function TarefasInner() {
     useTarefas();
   const { toasts, push, dismiss } = useToasts();
   const searchParams = useSearchParams();
+
+  // Aquece o cache de categorias ao abrir a tela — assim o card de editar/criar
+  // não dispara GET /categorias toda vez que abre.
+  useEffect(() => {
+    prefetchCategorias();
+  }, []);
 
   const [modo, setModo] = useState<Modo>("lista");
   const [filtro, setFiltro] = useState<Filtro>("pendentes");

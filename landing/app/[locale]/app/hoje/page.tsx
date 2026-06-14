@@ -12,6 +12,7 @@ import { TarefaRow } from "@/components/app/tarefa-row";
 import { ToastViewport, useToasts } from "@/components/app/toast";
 import { useUsuarioAtual } from "@/components/auth/auth-provider";
 import { useTarefas } from "@/lib/api/hooks/use-tarefas";
+import { prefetchCategorias } from "@/lib/api/hooks/use-categorias";
 import { ehHoje, paraDataLocal } from "@/lib/datetime";
 import type { CriarTarefaInput, Tarefa } from "@/lib/api/tarefas";
 
@@ -27,6 +28,11 @@ export default function HojePage() {
     const h = new Date().getHours();
     setSaudacao(h >= 5 && h < 12 ? "Bom dia" : h >= 12 && h < 18 ? "Boa tarde" : "Boa noite");
     setLembrete(escolherLembrete(h));
+  }, []);
+
+  // Aquece o cache de categorias ao abrir a tela (o card reusa, sem refetch).
+  useEffect(() => {
+    prefetchCategorias();
   }, []);
 
   function abrirEditar(t: Tarefa) {
