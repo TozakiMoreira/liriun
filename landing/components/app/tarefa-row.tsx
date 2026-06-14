@@ -49,7 +49,7 @@ export function TarefaRow({
         type="button"
         onClick={onToggle}
         aria-label={concluida ? "Reabrir tarefa" : "Concluir tarefa"}
-        className="w-[22px] h-[22px] rounded-pill grid place-items-center transition-all shrink-0"
+        className="w-[22px] h-[22px] rounded-pill grid place-items-center transition-all duration-150 shrink-0 hover:scale-105 active:scale-90"
         style={{
           border: concluida ? "none" : `1.5px solid ${atrasada ? "rgba(255,185,154,0.65)" : "var(--liriun-border-hi)"}`,
           background: concluida ? "var(--liriun-grad-brand)" : "transparent",
