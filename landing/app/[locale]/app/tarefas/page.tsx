@@ -4,7 +4,7 @@ export const runtime = "edge";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 import { AppPageHeader } from "@/components/app/page-header";
 import { CategoriasModal } from "@/components/app/categorias-modal";
@@ -14,6 +14,7 @@ import { Modal } from "@/components/app/modal";
 import { ShimmerBox } from "@/components/app/shimmer-box";
 import { TarefaForm } from "@/components/app/tarefa-form";
 import { TarefaRow } from "@/components/app/tarefa-row";
+import { ToastViewport, useToasts } from "@/components/app/toast";
 import { Button } from "@/components/ui/button";
 import { useTarefas } from "@/lib/api/hooks/use-tarefas";
 import { ehAmanha, ehHoje, paraDataLocal } from "@/lib/datetime";
@@ -71,6 +72,7 @@ export default function TarefasPage() {
 function TarefasInner() {
   const { pendentes, concluidas, loading, error, criar, atualizar, concluir, reabrir, excluir } =
     useTarefas();
+  const { toasts, push, dismiss } = useToasts();
   const searchParams = useSearchParams();
 
   const [modo, setModo] = useState<Modo>("lista");
@@ -149,11 +151,16 @@ function TarefasInner() {
     setModalAberto(false);
   }
 
-  async function handleToggle(t: Tarefa) {
+  function handleToggle(t: Tarefa) {
+    const id = t.id;
     if (t.status === 2) {
-      await reabrir(t.id);
+      // Reabrindo uma concluída
+      void reabrir(id);
+      push({ message: "Desconcluído", actionLabel: "Desfazer", onAction: () => void concluir(id) });
     } else {
-      await concluir(t.id);
+      // Concluindo uma pendente/atrasada
+      void concluir(id);
+      push({ message: "Concluído", actionLabel: "Desfazer", onAction: () => void reabrir(id) });
     }
   }
 
@@ -273,6 +280,8 @@ function TarefasInner() {
         onConfirm={() => void confirmarExcluir()}
         onCancel={() => setConfirmarExclusao(null)}
       />
+
+      <ToastViewport toasts={toasts} onDismiss={dismiss} />
     </div>
   );
 }
@@ -568,15 +577,18 @@ function ListaView({
   if (!agrupar) {
     return (
       <div className="flex flex-col">
-        {tarefas.map((t) => (
-          <TarefaRow
-            key={t.id}
-            tarefa={t}
-            onToggle={() => onToggle(t)}
-            onEdit={() => onEdit(t)}
-            onDelete={() => onDelete(t)}
-          />
-        ))}
+        <AnimatePresence initial={false}>
+          {tarefas.map((t) => (
+            <RowSaida key={t.id}>
+              <TarefaRow
+                tarefa={t}
+                onToggle={() => onToggle(t)}
+                onEdit={() => onEdit(t)}
+                onDelete={() => onDelete(t)}
+              />
+            </RowSaida>
+          ))}
+        </AnimatePresence>
       </div>
     );
   }
@@ -589,19 +601,37 @@ function ListaView({
         <section key={label}>
           <SectionHeader label={label} count={items.length} />
           <div className="flex flex-col">
-            {items.map((t) => (
-              <TarefaRow
-                key={t.id}
-                tarefa={t}
-                onToggle={() => onToggle(t)}
-                onEdit={() => onEdit(t)}
-                onDelete={() => onDelete(t)}
-              />
-            ))}
+            <AnimatePresence initial={false}>
+              {items.map((t) => (
+                <RowSaida key={t.id}>
+                  <TarefaRow
+                    tarefa={t}
+                    onToggle={() => onToggle(t)}
+                    onEdit={() => onEdit(t)}
+                    onDelete={() => onDelete(t)}
+                  />
+                </RowSaida>
+              ))}
+            </AnimatePresence>
           </div>
         </section>
       ))}
     </div>
+  );
+}
+
+/** Wrapper que anima a saída da linha (fade + colapso) quando ela some da lista. */
+function RowSaida({ children }: { children: React.ReactNode }) {
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0, height: 0, marginTop: 0, overflow: "hidden" }}
+      transition={{ duration: 0.26, ease: [0.4, 0, 0.2, 1] }}
+    >
+      {children}
+    </motion.div>
   );
 }
 
