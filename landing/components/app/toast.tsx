@@ -64,15 +64,15 @@ export function ToastViewport({
   onDismiss: (id: number) => void;
 }) {
   return (
-    <div className="fixed inset-x-0 bottom-6 z-[60] flex flex-col items-center gap-2 px-4 pointer-events-none">
+    <div className="fixed top-4 right-4 md:top-6 md:right-6 z-[60] flex flex-col items-end gap-2 pointer-events-none">
       <AnimatePresence initial={false}>
         {toasts.map((t) => (
           <motion.div
             key={t.id}
             layout
-            initial={{ opacity: 0, y: 16, scale: 0.96 }}
+            initial={{ opacity: 0, y: -12, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.96 }}
+            exit={{ opacity: 0, y: -8, scale: 0.96 }}
             transition={{ type: "spring", bounce: 0.28, duration: 0.42 }}
             className="pointer-events-auto flex items-center gap-3 rounded-pill px-4 py-2.5 max-w-[90vw]"
             style={{
