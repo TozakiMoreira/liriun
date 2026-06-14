@@ -11,10 +11,11 @@ public sealed class AtualizarTarefaValidator : AbstractValidator<AtualizarTarefa
             .NotEmpty().WithMessage("Nome da tarefa e obrigatorio")
             .MaximumLength(200).WithMessage("Nome da tarefa nao pode passar de 200 caracteres");
 
+        // Sem restricao de data passada: uma tarefa atrasada e estado valido e
+        // precisa continuar editavel (ex: ajustar prioridade/observacoes sem
+        // mover o prazo). So exigimos que a data exista.
         RuleFor(x => x.DataPrazo)
-            .NotEqual(default(DateTime)).WithMessage("Data do prazo e obrigatoria")
-            .Must(d => d.Date >= DateTime.UtcNow.Date.AddDays(-1))
-            .WithMessage("Data do prazo nao pode ser anterior a hoje");
+            .NotEqual(default(DateTime)).WithMessage("Data do prazo e obrigatoria");
 
         RuleFor(x => x.HorarioFinal)
             .Must(h => h >= TimeSpan.Zero && h < TimeSpan.FromDays(1))

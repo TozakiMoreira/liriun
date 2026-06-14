@@ -80,7 +80,11 @@ export async function api<T = unknown>(path: string, opts: FetchOptions = {}): P
   if (res.status === 204) return undefined as T;
 
   if (!res.ok) {
-    let payload: { code?: string; message?: string; details?: unknown } | null = null;
+    // Backend .NET responde ProblemDetails RFC 7807: { type, title, status, detail, errors }.
+    // Mantém fallback pra code/message caso algum endpoint use o formato antigo.
+    let payload:
+      | { code?: string; message?: string; title?: string; detail?: string; details?: unknown; errors?: unknown }
+      | null = null;
     try {
       payload = await res.json();
     } catch {
@@ -88,9 +92,9 @@ export async function api<T = unknown>(path: string, opts: FetchOptions = {}): P
     }
     throw new ApiError(
       res.status,
-      payload?.code ?? `http_${res.status}`,
-      payload?.message ?? res.statusText,
-      payload?.details,
+      payload?.code ?? payload?.title ?? `http_${res.status}`,
+      payload?.message ?? payload?.detail ?? res.statusText ?? "Erro inesperado",
+      payload?.details ?? payload?.errors,
     );
   }
 
