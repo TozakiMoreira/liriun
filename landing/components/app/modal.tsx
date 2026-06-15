@@ -8,12 +8,14 @@ export function Modal({
   title,
   children,
   size = "md",
+  closeOnBackdrop = true,
 }: {
   open: boolean;
   onClose: () => void;
   title?: string;
   children: React.ReactNode;
   size?: "sm" | "md" | "lg";
+  closeOnBackdrop?: boolean;
 }) {
   useEffect(() => {
     if (!open) return;
@@ -40,7 +42,7 @@ export function Modal({
     <div
       className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-6 animate-fade-in"
       style={{ background: "rgba(8,10,14,0.65)", backdropFilter: "blur(2px)" }}
-      onClick={onClose}
+      onClick={closeOnBackdrop ? onClose : undefined}
     >
       <div
         className={`w-full ${widths[size]} max-h-[92vh] overflow-y-auto rounded-t-[28px] md:rounded-2xl p-6 md:p-7 animate-slide-up md:animate-scale-in`}

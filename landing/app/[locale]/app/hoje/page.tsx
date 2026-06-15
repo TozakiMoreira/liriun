@@ -185,6 +185,7 @@ export default function HojePage() {
         onClose={() => setTarefaEditando(null)}
         title="Editar tarefa"
         size="md"
+        closeOnBackdrop={false}
       >
         {tarefaEditando && (
           <TarefaForm

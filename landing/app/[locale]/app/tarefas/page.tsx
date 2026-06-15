@@ -267,6 +267,7 @@ function TarefasInner() {
         onClose={() => setModalAberto(false)}
         title={tarefaEditando ? "Editar tarefa" : "Nova tarefa"}
         size="md"
+        closeOnBackdrop={false}
       >
         <TarefaForm
           tarefa={tarefaEditando ?? undefined}

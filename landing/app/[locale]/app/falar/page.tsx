@@ -653,6 +653,7 @@ export default function FalarPage() {
         onClose={() => setEditandoAberto(false)}
         title="Editar tarefa"
         size="md"
+        closeOnBackdrop={false}
       >
         {sugestao && (
           <TarefaForm
