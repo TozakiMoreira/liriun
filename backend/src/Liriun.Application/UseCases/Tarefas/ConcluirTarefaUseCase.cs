@@ -30,6 +30,6 @@ public class ConcluirTarefaUseCase
 
         await _tarefas.AtualizarAsync(tarefa, tarefa.Categorias.Select(c => c.CategoriaId), ct);
 
-        return Result<TarefaViewModel>.Success(TarefaViewModel.FromEntity(tarefa, DateTime.UtcNow));
+        return Result<TarefaViewModel>.Success(TarefaViewModel.FromEntity(tarefa, DateTime.UtcNow, _usuarioLogado.TimeZoneId));
     }
 }

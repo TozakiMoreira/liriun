@@ -51,7 +51,7 @@ public class CadastrarUsuarioUseCase
             return Result<AutenticacaoViewModel>.Failure(UsuarioErrors.EmailJaCadastrado());
 
         string senhaHash = _hasher.Hash(input.Senha);
-        Result<Usuario> criacaoResult = Usuario.Criar(input.Nome, emailNormalizado, senhaHash, DateTime.UtcNow);
+        Result<Usuario> criacaoResult = Usuario.Criar(input.Nome, emailNormalizado, senhaHash, DateTime.UtcNow, input.TimeZoneId);
         if (criacaoResult.IsFailure)
             return Result<AutenticacaoViewModel>.Failure(criacaoResult.Error!);
 

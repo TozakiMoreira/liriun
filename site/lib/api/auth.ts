@@ -33,6 +33,15 @@ export async function login(email: string, senha: string): Promise<Usuario> {
   return mapAuth(res);
 }
 
+/** Fuso IANA do dispositivo (ex: "America/Sao_Paulo"). undefined se indisponível. */
+function detectarFuso(): string | undefined {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 export async function cadastrar(input: {
   nome: string;
   email: string;
@@ -41,7 +50,7 @@ export async function cadastrar(input: {
 }): Promise<Usuario> {
   const res = await api<AutenticacaoBackend>("/auth/cadastro", {
     method: "POST",
-    body: input,
+    body: { ...input, timeZoneId: detectarFuso() },
     auth: false,
   });
   writeToken(res.token);

@@ -19,6 +19,7 @@ public class UsuarioConfiguration : IEntityTypeConfiguration<UsuarioModel>
         builder.Property(u => u.FotoUrl).HasColumnName("foto_url").HasColumnType("text");
         builder.Property(u => u.CriadoEm).HasColumnName("criado_em").IsRequired();
         builder.Property(u => u.TermosAceitosEm).HasColumnName("termos_aceitos_em");
+        builder.Property(u => u.TimeZoneId).HasColumnName("time_zone_id").HasMaxLength(64).IsRequired().HasDefaultValue("America/Sao_Paulo");
 
         builder.HasIndex(u => u.Email).IsUnique();
     }

@@ -22,9 +22,10 @@ public class ListarTarefasConcluidasUseCase
         DateTime agora = DateTime.UtcNow;
         DateTime? deUtc = NormalizarUtc(de);
         DateTime? ateUtc = NormalizarUtc(ate);
+        string tz = _usuarioLogado.TimeZoneId;
         IReadOnlyList<TarefaReadModel> lista = await _tarefaRead.ListarConcluidasAsync(_usuarioLogado.Id, deUtc, ateUtc, ct);
         IReadOnlyList<TarefaViewModel> viewModels = lista
-            .Select(t => TarefaViewModel.FromReadModel(t, agora))
+            .Select(t => TarefaViewModel.FromReadModel(t, agora, tz))
             .ToList();
         return Result<IReadOnlyList<TarefaViewModel>>.Success(viewModels);
     }

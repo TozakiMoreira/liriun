@@ -72,6 +72,6 @@ public class CriarTarefaUseCase
             await _tarefas.AdicionarAsync(futura, categoriaIds, ct);
         }
 
-        return Result<TarefaViewModel>.Success(TarefaViewModel.FromEntity(tarefa, DateTime.UtcNow));
+        return Result<TarefaViewModel>.Success(TarefaViewModel.FromEntity(tarefa, DateTime.UtcNow, _usuarioLogado.TimeZoneId));
     }
 }

@@ -167,31 +167,62 @@ public class Tarefa
         return futuras;
     }
 
-    public StatusTarefa StatusComputado(DateTime agoraUtc)
+    public const string FusoPadrao = "America/Sao_Paulo";
+
+    public StatusTarefa StatusComputado(DateTime agoraUtc, string? tzId = null)
     {
         if (Status == StatusTarefa.Concluida)
             return StatusTarefa.Concluida;
 
         // DataPrazo (date) e HorarioFinal (time) sao wall-clock no fuso do usuario.
-        // Comparar com agora-em-UTC daria atrasada 3h cedo no Brasil. Converte pra BRT.
-        DateTime agoraLocal = ConverterParaFusoUsuario(agoraUtc);
+        // Comparar com agora-em-UTC daria atrasada cedo. Converte pro fuso do usuario.
+        DateTime agoraLocal = ConverterParaFusoUsuario(agoraUtc, tzId);
         DateTime limite = DataPrazo.Date.Add(HorarioFinal ?? FimDoDia);
         return agoraLocal > limite ? StatusTarefa.Atrasada : StatusTarefa.Pendente;
     }
 
-    public static DateTime ConverterParaFusoUsuario(DateTime agoraUtc)
+    /// <summary>
+    /// Converte um instante UTC pro fuso do usuario (IANA, ex: "America/Sao_Paulo").
+    /// tzId null/vazio/invalido cai no fuso padrao (BRT). Aceita IANA em qualquer SO
+    /// (ICU); em Windows sem ICU, converte IANA->Windows. Ultimo recurso: UTC-3.
+    /// </summary>
+    public static DateTime ConverterParaFusoUsuario(DateTime agoraUtc, string? tzId = null)
     {
         DateTime utc = agoraUtc.Kind == DateTimeKind.Utc ? agoraUtc : DateTime.SpecifyKind(agoraUtc, DateTimeKind.Utc);
+        TimeZoneInfo? tz = ResolverFuso(tzId);
+        return tz is null ? utc.AddHours(-3) : TimeZoneInfo.ConvertTimeFromUtc(utc, tz);
+    }
+
+    private static TimeZoneInfo? ResolverFuso(string? tzId)
+    {
+        string id = string.IsNullOrWhiteSpace(tzId) ? FusoPadrao : tzId.Trim();
+
+        if (TryFindFuso(id, out TimeZoneInfo? tz)) return tz;
+        if (TimeZoneInfo.TryConvertIanaIdToWindowsId(id, out string? winId) && winId is not null && TryFindFuso(winId, out tz))
+            return tz;
+
+        // Fallback pro fuso padrao (BRT) quando o id do usuario nao resolve.
+        if (id != FusoPadrao)
+        {
+            if (TryFindFuso(FusoPadrao, out tz)) return tz;
+            if (TimeZoneInfo.TryConvertIanaIdToWindowsId(FusoPadrao, out string? winPad) && winPad is not null && TryFindFuso(winPad, out tz))
+                return tz;
+        }
+
+        return null; // chamador aplica UTC-3
+    }
+
+    private static bool TryFindFuso(string id, out TimeZoneInfo? tz)
+    {
         try
         {
-            // Linux/Mac usa IANA, Windows usa Win key. TimeZoneInfo cuida do fallback do sistema.
-            TimeZoneInfo tz = TimeZoneInfo.FindSystemTimeZoneById(
-                OperatingSystem.IsWindows() ? "E. South America Standard Time" : "America/Sao_Paulo");
-            return TimeZoneInfo.ConvertTimeFromUtc(utc, tz);
+            tz = TimeZoneInfo.FindSystemTimeZoneById(id);
+            return true;
         }
-        catch (TimeZoneNotFoundException)
+        catch (Exception e) when (e is TimeZoneNotFoundException or InvalidTimeZoneException)
         {
-            return utc.AddHours(-3);
+            tz = null;
+            return false;
         }
     }
 

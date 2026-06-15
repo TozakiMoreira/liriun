@@ -4,4 +4,5 @@ public sealed record CadastrarUsuarioInput(
     string Nome,
     string Email,
     string Senha,
-    bool AceitouTermos);
+    bool AceitouTermos,
+    string? TimeZoneId = null);

@@ -60,6 +60,6 @@ public class AtualizarTarefaUseCase
 
         Tarefa atualizada = await _tarefas.AtualizarAsync(tarefa, categoriaIds, ct);
 
-        return Result<TarefaViewModel>.Success(TarefaViewModel.FromEntity(atualizada, DateTime.UtcNow));
+        return Result<TarefaViewModel>.Success(TarefaViewModel.FromEntity(atualizada, DateTime.UtcNow, _usuarioLogado.TimeZoneId));
     }
 }

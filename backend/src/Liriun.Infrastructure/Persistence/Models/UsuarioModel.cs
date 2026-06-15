@@ -9,4 +9,5 @@ public class UsuarioModel
     public string? FotoUrl { get; set; }
     public DateTime CriadoEm { get; set; }
     public DateTime? TermosAceitosEm { get; set; }
+    public string TimeZoneId { get; set; } = "America/Sao_Paulo";
 }

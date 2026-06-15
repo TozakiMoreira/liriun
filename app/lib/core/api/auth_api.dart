@@ -23,6 +23,11 @@ class AuthApi {
     required String nome,
     required String email,
     required String senha,
+    // Fuso IANA do device (ex: "America/Sao_Paulo"). Backend defaulta BRT se null.
+    // TODO(Pedro): detectar via package flutter_timezone:
+    //   final tz = await FlutterTimezone.getLocalTimezone();
+    // e passar aqui. Sem isso, usuarios do app ficam em BRT por padrao.
+    String? timeZoneId,
   }) async {
     final res = await _dio.post<Map<String, dynamic>>(
       "/auth/cadastro",
@@ -31,6 +36,7 @@ class AuthApi {
         "email": email,
         "senha": senha,
         "aceitouTermos": true,
+        if (timeZoneId != null) "timeZoneId": timeZoneId,
       },
     );
     return LoginResponse.fromJson(res.data!);

@@ -31,4 +31,9 @@ public class UsuarioLogadoContext : IUsuarioLogado
         _http.HttpContext?.User?.FindFirst(JwtRegisteredClaimNames.Email)?.Value
         ?? _http.HttpContext?.User?.FindFirst(ClaimTypes.Email)?.Value
         ?? string.Empty;
+
+    public string TimeZoneId =>
+        _http.HttpContext?.User?.FindFirst("tz")?.Value is { Length: > 0 } tz
+            ? tz
+            : "America/Sao_Paulo";
 }

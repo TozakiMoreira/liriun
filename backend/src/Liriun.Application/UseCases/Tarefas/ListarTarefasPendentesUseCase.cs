@@ -20,9 +20,10 @@ public class ListarTarefasPendentesUseCase
     public async Task<Result<IReadOnlyList<TarefaViewModel>>> ExecuteAsync(CancellationToken ct)
     {
         DateTime agora = DateTime.UtcNow;
+        string tz = _usuarioLogado.TimeZoneId;
         IReadOnlyList<TarefaReadModel> lista = await _tarefaRead.ListarPendentesAsync(_usuarioLogado.Id, ct);
         IReadOnlyList<TarefaViewModel> viewModels = lista
-            .Select(t => TarefaViewModel.FromReadModel(t, agora))
+            .Select(t => TarefaViewModel.FromReadModel(t, agora, tz))
             .ToList();
         return Result<IReadOnlyList<TarefaViewModel>>.Success(viewModels);
     }

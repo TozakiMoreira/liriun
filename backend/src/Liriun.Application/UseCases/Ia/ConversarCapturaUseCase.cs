@@ -58,7 +58,7 @@ public class ConversarCapturaUseCase
         (ContextoConversa contexto, IReadOnlyList<CategoriaReadModel> categorias, HashSet<Guid> tarefaIdsValidos) = await MontarContextoAsync(mensagens, NormalizarIdioma(input.Idioma), ct);
 
         Result<RespostaConversa> respostaResult = await _gemini.ConversarAsync(contexto, ct);
-        return MapearResposta(respostaResult, categorias, tarefaIdsValidos);
+        return MapearResposta(respostaResult, categorias, tarefaIdsValidos, _usuarioLogado.TimeZoneId);
     }
 
     public async Task<Result<ConversaCapturaViewModel>> ExecuteComAudioAsync(
@@ -91,7 +91,7 @@ public class ConversarCapturaUseCase
         (ContextoConversa contexto, IReadOnlyList<CategoriaReadModel> categorias, HashSet<Guid> tarefaIdsValidos) = await MontarContextoAsync(mensagens, NormalizarIdioma(idioma), ct);
 
         Result<RespostaConversa> respostaResult = await _gemini.ConversarComAudioAsync(contexto, audio, mimeType, ct);
-        return MapearResposta(respostaResult, categorias, tarefaIdsValidos);
+        return MapearResposta(respostaResult, categorias, tarefaIdsValidos, _usuarioLogado.TimeZoneId);
     }
 
     private static string NormalizarIdioma(string? idioma)
@@ -139,7 +139,8 @@ public class ConversarCapturaUseCase
     private static Result<ConversaCapturaViewModel> MapearResposta(
         Result<RespostaConversa> respostaResult,
         IReadOnlyList<CategoriaReadModel> categorias,
-        HashSet<Guid> tarefaIdsValidos)
+        HashSet<Guid> tarefaIdsValidos,
+        string? tzId)
     {
         if (respostaResult.IsFailure)
             return Result<ConversaCapturaViewModel>.Failure(respostaResult.Error!);
@@ -153,9 +154,9 @@ public class ConversarCapturaUseCase
             AnaliseTarefa a = criar.Tarefa;
 
             // Filtros defensivos contra alucinacao.
-            // Sem data ou data passada → assume hoje (BRT). Dominio exige DataPrazo;
-            // usuario que nao falou "quando" quer a tarefa pra hoje. Pode editar no card.
-            DateTime hoje = Core.Entities.Tarefa.ConverterParaFusoUsuario(DateTime.UtcNow).Date;
+            // Sem data ou data passada → assume hoje (fuso do usuario). Dominio exige
+            // DataPrazo; usuario que nao falou "quando" quer a tarefa pra hoje. Editavel no card.
+            DateTime hoje = Core.Entities.Tarefa.ConverterParaFusoUsuario(DateTime.UtcNow, tzId).Date;
             DateTime dataValida = a.DataPrazo?.Date is { } d && d >= hoje ? d : hoje;
 
             HashSet<Guid> categoriasValidasSet = categorias.Select(c => c.Id).ToHashSet();
@@ -198,7 +199,7 @@ public class ConversarCapturaUseCase
         {
             AnaliseTarefa m = ed.Mudancas;
 
-            DateTime hojeEdit = DateTime.UtcNow.Date;
+            DateTime hojeEdit = Core.Entities.Tarefa.ConverterParaFusoUsuario(DateTime.UtcNow, tzId).Date;
             DateTime? dataMud = m.DataPrazo?.Date >= hojeEdit ? m.DataPrazo?.Date : null;
 
             HashSet<Guid> categoriasSet = categorias.Select(c => c.Id).ToHashSet();

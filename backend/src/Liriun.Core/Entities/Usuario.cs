@@ -15,10 +15,13 @@ public class Usuario
     public DateTime CriadoEm { get; private set; }
     public DateTime? TermosAceitosEm { get; private set; }
 
+    /// <summary>Fuso horario IANA do usuario (ex: "America/Sao_Paulo"). Default BRT.</summary>
+    public string TimeZoneId { get; private set; } = Tarefa.FusoPadrao;
+
     private Usuario() { }
 
     internal static Usuario Reconstituir(
-        Guid id, string nome, string email, string senhaHash, string? fotoUrl, DateTime criadoEm, DateTime? termosAceitosEm)
+        Guid id, string nome, string email, string senhaHash, string? fotoUrl, DateTime criadoEm, DateTime? termosAceitosEm, string? timeZoneId = null)
         => new()
         {
             Id = id,
@@ -28,9 +31,10 @@ public class Usuario
             FotoUrl = fotoUrl,
             CriadoEm = criadoEm,
             TermosAceitosEm = termosAceitosEm,
+            TimeZoneId = NormalizarFuso(timeZoneId),
         };
 
-    public static Result<Usuario> Criar(string nome, string email, string senhaHash, DateTime? termosAceitosEm = null)
+    public static Result<Usuario> Criar(string nome, string email, string senhaHash, DateTime? termosAceitosEm = null, string? timeZoneId = null)
     {
         DateTime agora = DateTime.UtcNow;
         Usuario usuario = new()
@@ -41,7 +45,8 @@ public class Usuario
             SenhaHash = senhaHash,
             FotoUrl = null,
             CriadoEm = agora,
-            TermosAceitosEm = termosAceitosEm ?? agora
+            TermosAceitosEm = termosAceitosEm ?? agora,
+            TimeZoneId = NormalizarFuso(timeZoneId)
         };
 
         Result validacao = usuario.Validar();
@@ -55,6 +60,12 @@ public class Usuario
     {
         Nome = novoNome?.Trim() ?? string.Empty;
         return Validar();
+    }
+
+    public Result AtualizarFusoHorario(string? timeZoneId)
+    {
+        TimeZoneId = NormalizarFuso(timeZoneId);
+        return Result.Success();
     }
 
     public Result AtualizarPerfil(string novoNome, string novoEmail)
@@ -96,6 +107,15 @@ public class Usuario
 
         FotoUrl = trimmed;
         return Result.Success();
+    }
+
+    private static string NormalizarFuso(string? timeZoneId)
+    {
+        string id = timeZoneId?.Trim() ?? string.Empty;
+        // Validade real do fuso e resolvida na conversao (com fallback). Aqui so garante
+        // que nao fica vazio e limita tamanho pra evitar lixo no banco.
+        if (id.Length == 0 || id.Length > 64) return Tarefa.FusoPadrao;
+        return id;
     }
 
     private Result Validar()

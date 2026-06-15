@@ -26,6 +26,7 @@ public class JwtTokenService : IJwtTokenService
             new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, usuario.Email),
             new Claim("nome", usuario.Nome),
+            new Claim("tz", usuario.TimeZoneId),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 

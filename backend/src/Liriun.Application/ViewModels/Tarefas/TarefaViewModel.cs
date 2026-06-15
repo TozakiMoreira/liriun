@@ -22,12 +22,12 @@ public sealed record TarefaViewModel(
 {
     private static readonly TimeSpan FimDoDia = new(23, 59, 59);
 
-    public static TarefaViewModel FromEntity(Tarefa tarefa, DateTime agora)
+    public static TarefaViewModel FromEntity(Tarefa tarefa, DateTime agora, string? tzId = null)
         => new(
             tarefa.Id,
             tarefa.Nome,
             tarefa.Prioridade,
-            tarefa.StatusComputado(agora),
+            tarefa.StatusComputado(agora, tzId),
             tarefa.DataPrazo,
             tarefa.HorarioFinal,
             tarefa.Observacoes,
@@ -40,12 +40,12 @@ public sealed record TarefaViewModel(
                 .Select(tc => new TarefaCategoriaViewModel(tc.CategoriaId, tc.Categoria!.Nome))
                 .ToList());
 
-    public static TarefaViewModel FromReadModel(TarefaReadModel readModel, DateTime agora)
+    public static TarefaViewModel FromReadModel(TarefaReadModel readModel, DateTime agora, string? tzId = null)
     {
         StatusTarefa statusComputado = readModel.Status;
         if (statusComputado != StatusTarefa.Concluida)
         {
-            DateTime agoraLocal = Tarefa.ConverterParaFusoUsuario(agora);
+            DateTime agoraLocal = Tarefa.ConverterParaFusoUsuario(agora, tzId);
             DateTime limite = readModel.DataPrazo.Date.Add(readModel.HorarioFinal ?? FimDoDia);
             if (agoraLocal > limite)
                 statusComputado = StatusTarefa.Atrasada;
