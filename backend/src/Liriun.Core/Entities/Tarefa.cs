@@ -17,6 +17,9 @@ public class Tarefa
     public TimeSpan? HorarioFinal { get; private set; }
     public string? Observacoes { get; private set; }
 
+    /// <summary>Tempo total cronometrado na tarefa, em segundos (acumulado). Default 0.</summary>
+    public long TempoGastoSegundos { get; private set; }
+
     public Prioridade Prioridade { get; private set; }
     public StatusTarefa Status { get; private set; }
 
@@ -36,7 +39,8 @@ public class Tarefa
         Prioridade prioridade, StatusTarefa status,
         TipoRecorrencia recorrencia, int recorrenciaQuantidade,
         DateTime criadaEm, DateTime? concluidaEm,
-        ICollection<TarefaCategoria>? categorias = null)
+        ICollection<TarefaCategoria>? categorias = null,
+        long tempoGastoSegundos = 0)
         => new()
         {
             Id = id, UsuarioId = usuarioId, Nome = nome,
@@ -44,6 +48,7 @@ public class Tarefa
             Prioridade = prioridade, Status = status,
             Recorrencia = recorrencia, RecorrenciaQuantidade = recorrenciaQuantidade,
             CriadaEm = criadaEm, ConcluidaEm = concluidaEm,
+            TempoGastoSegundos = tempoGastoSegundos < 0 ? 0 : tempoGastoSegundos,
             Categorias = categorias ?? new List<TarefaCategoria>()
         };
 
@@ -55,7 +60,8 @@ public class Tarefa
         TimeSpan? horarioFinal = null,
         string? observacoes = null,
         TipoRecorrencia recorrencia = TipoRecorrencia.Nenhuma,
-        int recorrenciaQuantidade = 1)
+        int recorrenciaQuantidade = 1,
+        long tempoGastoSegundos = 0)
     {
         Tarefa tarefa = new()
         {
@@ -69,6 +75,7 @@ public class Tarefa
             Status = StatusTarefa.Pendente,
             Recorrencia = recorrencia,
             RecorrenciaQuantidade = NormalizarQuantidade(recorrencia, recorrenciaQuantidade),
+            TempoGastoSegundos = tempoGastoSegundos < 0 ? 0 : tempoGastoSegundos,
             CriadaEm = DateTime.UtcNow
         };
 
@@ -106,7 +113,8 @@ public class Tarefa
         TimeSpan? horarioFinal,
         string? observacoes,
         TipoRecorrencia recorrencia = TipoRecorrencia.Nenhuma,
-        int recorrenciaQuantidade = 1)
+        int recorrenciaQuantidade = 1,
+        long tempoGastoSegundos = 0)
     {
         if (Status == StatusTarefa.Concluida)
             return Result.Failure(TarefaErrors.NaoEditavelConcluida());
@@ -118,6 +126,7 @@ public class Tarefa
         Observacoes = NormalizarObservacoes(observacoes);
         Recorrencia = recorrencia;
         RecorrenciaQuantidade = NormalizarQuantidade(recorrencia, recorrenciaQuantidade);
+        TempoGastoSegundos = tempoGastoSegundos < 0 ? 0 : tempoGastoSegundos;
         return Validar();
     }
 

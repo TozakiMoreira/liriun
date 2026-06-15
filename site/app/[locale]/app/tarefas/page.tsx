@@ -2,7 +2,7 @@
 
 export const runtime = "edge";
 
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 
@@ -102,6 +102,9 @@ function TarefasInner() {
   const [categoriasAberto, setCategoriasAberto] = useState(false);
   const [confirmarExclusao, setConfirmarExclusao] = useState<Tarefa | null>(null);
   const [excluindo, setExcluindo] = useState(false);
+  const [confirmarSaida, setConfirmarSaida] = useState(false);
+  // Cronômetro com tempo não salvo? (atualizado pelo TarefaForm via onDirtyChange)
+  const tempoDirtyRef = useRef(false);
 
   // Auto-abrir modal "Nova" via querystring (?novo=1) — vindo do FAB mobile na primeira navegação
   useEffect(() => {
@@ -149,13 +152,27 @@ function TarefasInner() {
     setModalAberto(true);
   }
 
+  function fecharModal() {
+    tempoDirtyRef.current = false;
+    setModalAberto(false);
+  }
+
+  // Guarda: se há tempo cronometrado não salvo, abre confirmação em vez de fechar.
+  function tentarFecharModal(): boolean {
+    if (tempoDirtyRef.current) {
+      setConfirmarSaida(true);
+      return false;
+    }
+    return true;
+  }
+
   async function handleSubmitForm(input: Parameters<typeof criar>[0]) {
     if (tarefaEditando) {
       await atualizar(tarefaEditando.id, input);
     } else {
       await criar(input);
     }
-    setModalAberto(false);
+    fecharModal();
   }
 
   function handleToggle(t: Tarefa) {
@@ -264,27 +281,49 @@ function TarefasInner() {
 
       <Modal
         open={modalAberto}
-        onClose={() => setModalAberto(false)}
+        onClose={fecharModal}
+        onAttemptClose={tentarFecharModal}
         title={tarefaEditando ? "Editar tarefa" : "Nova tarefa"}
         size="md"
         closeOnBackdrop={false}
       >
         <TarefaForm
           tarefa={tarefaEditando ?? undefined}
+          mostrarCronometro
+          onDirtyChange={(d) => {
+            tempoDirtyRef.current = d;
+          }}
           onSubmit={handleSubmitForm}
-          onCancel={() => setModalAberto(false)}
+          onCancel={() => {
+            if (tentarFecharModal()) fecharModal();
+          }}
           onConcluir={
             tarefaEditando
-              ? () => {
+              ? async (input) => {
                   const t = tarefaEditando;
-                  void concluir(t.id);
+                  // Persiste tempo + edições antes de concluir.
+                  if (input) await atualizar(t.id, input);
+                  await concluir(t.id);
                   push({ message: "Concluído", actionLabel: "Desfazer", onAction: () => void reabrir(t.id) });
-                  setModalAberto(false);
+                  fecharModal();
                 }
               : undefined
           }
         />
       </Modal>
+
+      <ConfirmDialog
+        open={confirmarSaida}
+        title="Descartar tempo cronometrado?"
+        message="Você cronometrou tempo nesta tarefa mas não salvou. Se sair agora, esse tempo será perdido."
+        confirmLabel="Sair sem salvar"
+        destructive
+        onConfirm={() => {
+          setConfirmarSaida(false);
+          fecharModal();
+        }}
+        onCancel={() => setConfirmarSaida(false)}
+      />
 
       <CategoriasModal open={categoriasAberto} onClose={() => setCategoriasAberto(false)} />
 

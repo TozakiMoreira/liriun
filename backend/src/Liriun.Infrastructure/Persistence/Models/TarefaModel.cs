@@ -16,6 +16,7 @@ public class TarefaModel
     public int RecorrenciaQuantidade { get; set; } = 1;
     public DateTime CriadaEm { get; set; }
     public DateTime? ConcluidaEm { get; set; }
+    public long TempoGastoSegundos { get; set; }
 
     public ICollection<TarefaCategoriaModel> Categorias { get; set; } = new List<TarefaCategoriaModel>();
 }

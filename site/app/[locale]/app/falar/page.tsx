@@ -870,6 +870,7 @@ function sugestaoToTarefa(s: SugestaoTarefa, categorias: Categoria[]): Tarefa {
     recorrenciaQuantidade: 1,
     criadaEm: agora,
     concluidaEm: null,
+    tempoGastoSegundos: 0,
     categorias: cats,
   };
 }

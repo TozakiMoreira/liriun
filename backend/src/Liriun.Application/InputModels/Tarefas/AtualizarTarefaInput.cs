@@ -10,4 +10,5 @@ public sealed record AtualizarTarefaInput(
     TimeSpan? HorarioFinal = null,
     string? Observacoes = null,
     TipoRecorrencia Recorrencia = TipoRecorrencia.Nenhuma,
-    int RecorrenciaQuantidade = 1);
+    int RecorrenciaQuantidade = 1,
+    long TempoGastoSegundos = 0);

@@ -9,6 +9,7 @@ export function Modal({
   children,
   size = "md",
   closeOnBackdrop = true,
+  onAttemptClose,
 }: {
   open: boolean;
   onClose: () => void;
@@ -16,11 +17,19 @@ export function Modal({
   children: React.ReactNode;
   size?: "sm" | "md" | "lg";
   closeOnBackdrop?: boolean;
+  /** Intercepta X/Esc/backdrop. Retorna false pra bloquear o fechamento (ex: confirmar perda de dados). */
+  onAttemptClose?: () => boolean;
 }) {
+  // Fechamento "guardado": se onAttemptClose retornar false, nao fecha.
+  const solicitarFechar = () => {
+    if (onAttemptClose && !onAttemptClose()) return;
+    onClose();
+  };
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") solicitarFechar();
     };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
@@ -28,7 +37,8 @@ export function Modal({
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [open, onClose]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, onClose, onAttemptClose]);
 
   if (!open) return null;
 
@@ -42,7 +52,7 @@ export function Modal({
     <div
       className="fixed inset-0 z-50 flex items-end md:items-center justify-center p-0 md:p-6 animate-fade-in"
       style={{ background: "rgba(8,10,14,0.65)", backdropFilter: "blur(2px)" }}
-      onClick={closeOnBackdrop ? onClose : undefined}
+      onClick={closeOnBackdrop ? solicitarFechar : undefined}
     >
       <div
         className={`w-full ${widths[size]} max-h-[92vh] overflow-y-auto rounded-t-[28px] md:rounded-2xl p-6 md:p-7 animate-slide-up md:animate-scale-in`}
@@ -63,7 +73,7 @@ export function Modal({
             <h2 className="text-lg font-semibold tracking-[-0.3px]">{title}</h2>
             <button
               type="button"
-              onClick={onClose}
+              onClick={solicitarFechar}
               aria-label="Fechar"
               className="w-8 h-8 rounded-md grid place-items-center text-muted hover:text-text hover:bg-white/[0.06]"
             >

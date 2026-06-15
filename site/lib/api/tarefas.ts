@@ -28,6 +28,7 @@ export type Tarefa = {
   recorrenciaQuantidade: number;
   criadaEm: string;
   concluidaEm: string | null;
+  tempoGastoSegundos: number;    // tempo cronometrado acumulado (segundos)
   categorias: TarefaCategoria[];
 };
 
@@ -40,6 +41,7 @@ export type CriarTarefaInput = {
   observacoes?: string | null;
   recorrencia?: TipoRecorrencia;
   recorrenciaQuantidade?: number;
+  tempoGastoSegundos?: number;
 };
 
 export const tarefasApi = {

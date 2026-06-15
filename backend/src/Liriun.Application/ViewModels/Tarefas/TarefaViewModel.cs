@@ -18,6 +18,7 @@ public sealed record TarefaViewModel(
     int RecorrenciaQuantidade,
     DateTime CriadaEm,
     DateTime? ConcluidaEm,
+    long TempoGastoSegundos,
     IReadOnlyList<TarefaCategoriaViewModel> Categorias)
 {
     private static readonly TimeSpan FimDoDia = new(23, 59, 59);
@@ -35,6 +36,7 @@ public sealed record TarefaViewModel(
             tarefa.RecorrenciaQuantidade,
             tarefa.CriadaEm,
             tarefa.ConcluidaEm,
+            tarefa.TempoGastoSegundos,
             tarefa.Categorias
                 .Where(tc => tc.Categoria != null)
                 .Select(tc => new TarefaCategoriaViewModel(tc.CategoriaId, tc.Categoria!.Nome))
@@ -63,6 +65,7 @@ public sealed record TarefaViewModel(
             readModel.RecorrenciaQuantidade,
             readModel.CriadaEm,
             readModel.ConcluidaEm,
+            readModel.TempoGastoSegundos,
             readModel.Categorias
                 .Select(c => new TarefaCategoriaViewModel(c.Id, c.Nome))
                 .ToList());

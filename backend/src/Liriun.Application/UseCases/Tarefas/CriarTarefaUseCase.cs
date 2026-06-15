@@ -58,7 +58,8 @@ public class CriarTarefaUseCase
             input.HorarioFinal,
             input.Observacoes,
             input.Recorrencia,
-            input.RecorrenciaQuantidade);
+            input.RecorrenciaQuantidade,
+            input.TempoGastoSegundos);
 
         if (criacaoResult.IsFailure)
             return Result<TarefaViewModel>.Failure(criacaoResult.Error!);

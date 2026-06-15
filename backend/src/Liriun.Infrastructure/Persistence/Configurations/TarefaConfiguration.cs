@@ -24,6 +24,7 @@ public class TarefaConfiguration : IEntityTypeConfiguration<TarefaModel>
         builder.Property(t => t.RecorrenciaQuantidade).HasColumnName("recorrencia_quantidade").HasConversion<short>().IsRequired().HasDefaultValue(1);
         builder.Property(t => t.CriadaEm).HasColumnName("criada_em").IsRequired();
         builder.Property(t => t.ConcluidaEm).HasColumnName("concluida_em");
+        builder.Property(t => t.TempoGastoSegundos).HasColumnName("tempo_gasto_segundos").IsRequired().HasDefaultValue(0L);
 
         builder.HasOne<UsuarioModel>()
             .WithMany()

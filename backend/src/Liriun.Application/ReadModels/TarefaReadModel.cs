@@ -18,4 +18,5 @@ public sealed record TarefaReadModel(
     int RecorrenciaQuantidade,
     DateTime CriadaEm,
     DateTime? ConcluidaEm,
+    long TempoGastoSegundos,
     IReadOnlyList<TarefaCategoriaReadModel> Categorias);

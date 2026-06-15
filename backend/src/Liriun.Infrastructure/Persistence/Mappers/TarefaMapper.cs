@@ -18,7 +18,8 @@ internal static class TarefaMapper
         Recorrencia = entity.Recorrencia,
         RecorrenciaQuantidade = entity.RecorrenciaQuantidade,
         CriadaEm = entity.CriadaEm,
-        ConcluidaEm = entity.ConcluidaEm
+        ConcluidaEm = entity.ConcluidaEm,
+        TempoGastoSegundos = entity.TempoGastoSegundos
     };
 
     public static Tarefa ToEntity(TarefaModel model)
@@ -45,6 +46,7 @@ internal static class TarefaMapper
             model.RecorrenciaQuantidade,
             model.CriadaEm,
             model.ConcluidaEm,
-            categorias);
+            categorias,
+            model.TempoGastoSegundos);
     }
 }

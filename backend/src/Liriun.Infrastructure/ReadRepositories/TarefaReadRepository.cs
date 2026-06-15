@@ -33,6 +33,7 @@ public class TarefaReadRepository : ITarefaReadRepository
                 t.RecorrenciaQuantidade,
                 t.CriadaEm,
                 t.ConcluidaEm,
+                t.TempoGastoSegundos,
                 t.Categorias
                     .Where(tc => tc.Categoria != null)
                     .Select(tc => new TarefaCategoriaReadModel(tc.CategoriaId, tc.Categoria!.Nome))
@@ -64,6 +65,7 @@ public class TarefaReadRepository : ITarefaReadRepository
                 t.RecorrenciaQuantidade,
                 t.CriadaEm,
                 t.ConcluidaEm,
+                t.TempoGastoSegundos,
                 t.Categorias
                     .Where(tc => tc.Categoria != null)
                     .Select(tc => new TarefaCategoriaReadModel(tc.CategoriaId, tc.Categoria!.Nome))
