@@ -2,22 +2,31 @@
 
 Organizador pessoal de tarefas com agente de voz.
 
-## Direção atual (2026-05-09)
+## Direção atual (2026-06-15)
 
-O projeto está em **transição** de produto único (V1 web) para **multi-cliente com agente de voz**:
+Produto **multi-cliente com agente de voz**, em **monorepo único** (branch `main`):
 
-- **V1 web (Angular + .NET)** — funcional, no ar, segue rodando até o site novo cobrir tudo. As instruções de setup deste README cobrem o V1.
-- **Produto novo** — backend .NET continua como **backend principal centralizado**, atendendo:
-  - **Site Next.js** (substitui Angular V1 com mesma funcionalidade, modernizado)
-  - **App Flutter mobile** (Android + iOS, com agente de voz como diferencial)
+- **Backend .NET centralizado** — fonte única de verdade (lógica + dados + auth), **1 banco Supabase único** (mesmo do V1, sem criar novo). Atende:
+  - **Site Next.js** (`site/`) — substitui o Angular V1, mesma funcionalidade modernizada — **sócio**
+  - **App Flutter mobile** (`app/`, Android + iOS APENAS — sem Web) — agente de voz como diferencial — **Pedro**
   - **Plataformas futuras** (smartwatch, Alexa skill, browser extension, etc) — todas consomem a mesma API REST
 
 ```
-Web (Next.js)   ─┐
-App Flutter     ─┼─→ Backend .NET ─→ Supabase Postgres
-Plataformas fut ─┘   (REST + JWT + Gemini)
+Site (Next.js)   ─┐
+App Flutter      ─┼─→ Backend .NET ─→ Supabase Postgres (1 banco único)
+Plataformas fut  ─┘   (REST + JWT + Gemini)
 ```
 
+> **Angular V1 (`front/`) foi removido** do disco em 2026-06-15. Era o produto pré-pivô; o source segue preservado no histórico git (commit `3bad961^`) pra consulta — `git show 3bad961^:front/src/...`.
+
+### Plano de migração
+1. ✅ Angular V1 (`front/`) removido — source no histórico git (`3bad961^`)
+2. Pedro cria app Flutter cobrindo tudo que o Angular fazia
+3. Sócio migra → Next.js (`site/`) cobrindo tudo que o Angular fazia
+4. Evolução continua só no app + site (novas features daí pra frente)
+5. Schema do banco evolui livre — sem mais Angular pra quebrar
+
+> **Estratégia de repo:** monorepo único. Decisão + gatilhos de split em [`docs/CONTEXTO_APP.md`](docs/CONTEXTO_APP.md).
 > **Fonte autoritativa de decisões técnicas e arquitetura:** [`docs/CONTEXTO_APP.md`](docs/CONTEXTO_APP.md).
 > **Style guide visual:** [`docs/design-ref/Liriun · Visual Reference · Print.pdf`](docs/design-ref/).
 
@@ -27,7 +36,7 @@ Plataformas fut ─┘   (REST + JWT + Gemini)
 - [Estrutura do repositório](#estrutura-do-repositório)
 - [Pré-requisitos](#pré-requisitos)
 - [Configuração — backend](#configuração--backend)
-- [Configuração — frontend (Angular V1)](#configuração--frontend-angular-v1)
+- [Configuração — site (Next.js)](#configuração--site-nextjs)
 - [Como rodar (passo a passo)](#como-rodar-passo-a-passo)
 - [Migrations](#migrations)
 - [Testes](#testes)
@@ -37,41 +46,45 @@ Plataformas fut ─┘   (REST + JWT + Gemini)
 
 ## Stack
 
-### Backend (PRINCIPAL — evolui pra produto novo)
+### Backend (PRINCIPAL)
 | Camada | Tecnologia |
 |--------|------------|
 | API | .NET 10 + ASP.NET Core Web API + Clean Architecture (Core, Application, Infrastructure, Api) |
 | ORM | Entity Framework Core 9 + Npgsql |
-| Banco | PostgreSQL no Supabase (em V1) / projeto Supabase NOVO no produto novo |
+| Banco | PostgreSQL no Supabase (mesmo banco do V1, mantemos) |
 | Auth | JWT Bearer (HS256) + BCrypt + Google/Apple Sign-In (a adicionar) |
 | IA | Google Gemini API (`gemini-2.0-flash` por padrão) |
 | Validação | FluentValidation |
 | Testes | xUnit + FluentAssertions + Moq |
 
-### Frontend Angular V1 (legado, segue rodando)
-| Camada | Tecnologia |
-|--------|------------|
-| Framework | Angular 18 (standalone components, Signals) |
-| UI | PrimeNG 18 + TailwindCSS 3 + Font Awesome Free |
+### Site web (`site/`)
+| Camada | Tecnologia | Responsável |
+|--------|------------|-------------|
+| Framework | Next.js 15 (App Router) + React 19 | Sócio |
+| UI | TailwindCSS 3 + shadcn/ui (Radix) + Framer Motion + Lucide | Sócio |
+| i18n | next-intl (pt / en) | Sócio |
+| HTTP client | `fetch` + JWT (lib `site/lib/api/`) | Sócio |
+| Codegen client | OpenAPI Generator (TypeScript a partir do .NET) | Ambos |
 
-### Produto novo (a construir)
-| Camada | Tecnologia |
-|--------|------------|
-| Site web | Next.js 15 (App Router) + Tailwind v4 + shadcn/ui + Framer Motion + React Query |
-| App mobile | Flutter + Riverpod + feature-first + dio |
-| Codegen client | OpenAPI Generator (TypeScript pro Next, Dart pro Flutter) |
-| STT/TTS | Nativo do dispositivo |
-| Push | Firebase Cloud Messaging |
+### App mobile (`app/`)
+| Camada | Tecnologia | Responsável |
+|--------|------------|-------------|
+| Framework | Flutter (Android + iOS apenas, sem Web) + Riverpod + feature-first + dio | Pedro |
+| IDE | VS Code + extensão Flutter + Dart | Pedro |
+| SDK Android | Android Studio (só pra SDK + emulador) | Pedro |
+| Codegen client | OpenAPI Generator (Dart a partir do .NET) | Pedro |
+| STT/TTS | Nativo do dispositivo | Pedro |
+| Push | Firebase Cloud Messaging | Pedro |
 
 ### Hosting (a definir)
 - Backend: Oracle Cloud Free / Railway / VPS
-- Site: Vercel
+- Site: Vercel (free tier)
 - Banco: Supabase Postgres
 
 ## Estrutura do repositório
 
 ```
-Liriun/
+Liriun/   (monorepo único — branch main)
 ├── backend/                            # .NET 10 — backend principal
 │   ├── src/
 │   │   ├── Liriun.Core/                # Entidades, Enums, Errors, Result<T>, interfaces de repo
@@ -82,41 +95,41 @@ Liriun/
 │       ├── Liriun.Core.Tests/
 │       ├── Liriun.Application.Tests/
 │       └── Liriun.Api.Tests/
-├── front/                              # Angular V1 (segue rodando até site Next.js cobrir)
-│   ├── src/app/
-│   │   ├── core/                       # auth, http, api services
-│   │   ├── features/                   # landing, auth, onboarding, captura, tarefas, concluidas, configuracoes
-│   │   ├── layout/                     # shell autenticado
-│   │   └── shared/                     # componentes reusáveis
-│   └── src/environments/               # environment.ts (dev) / environment.prod.ts
-├── app/                                # Flutter mobile (vazia, a popular — Riverpod + feature-first)
-├── site/                               # Next.js (ainda não criado)
+├── site/                               # Next.js 15 — web (institucional + app logado) — sócio
+│   ├── app/                            # App Router (rotas [locale]/, área logada em app/)
+│   ├── components/                     # app/, auth/, site/, ui/, brand/
+│   ├── lib/                            # api/ (client + hooks), auth/, utils
+│   ├── i18n/ · messages/               # next-intl (pt.json / en.json)
+│   └── public/                         # assets, ícones, og-images
+├── app/                                # Flutter mobile (Android + iOS apenas, sem Web) — Pedro
 ├── docs/
 │   ├── CONTEXTO_APP.md                 # FONTE AUTORITATIVA — arquitetura e decisões
 │   ├── ESTRATEGIA_LIRIUN.md            # posicionamento, concorrência
+│   ├── STATUS_MIGRACAO.md              # tracking da migração V1 → produto novo
 │   ├── IDEIAS_FUTURO.md                # backlog priorizado por tier
 │   ├── PLANO_NEGOCIO_TEMPLATE.md       # PARKED até MVP
 │   ├── design-ref/                     # style guide visual oficial (PDF + ícones)
 │   ├── docs-arquivados/                # docs históricos do V1 (ARCHITECTURE, ENTREVISTA, etc)
 │   └── termos-de-uso/                  # TERMOS_USO.md, POLITICA_PRIVACIDADE.md
 ├── CLAUDE.md                           # contexto resumido pra Claude Code
-├── .env.example                        # template de variáveis (copie pra .env.local)
+├── .env.example                        # template de variáveis do backend (copie pra .env.local)
 └── .env.local                          # valores reais (gitignored)
 ```
+
+> **`front/` (Angular V1) não existe mais** — removido em 2026-06-15. Referência no histórico git (`3bad961^`).
 
 ## Pré-requisitos
 
 | Ferramenta | Versão | Observação |
 |------------|--------|------------|
 | .NET SDK | 10.0+ | https://dotnet.microsoft.com/download |
-| Node.js | 20.x LTS+ | https://nodejs.org |
-| Angular CLI | 18.x | `npm install -g @angular/cli@18` (V1) |
+| Node.js | 20.x LTS+ | https://nodejs.org (pro site Next.js) |
 | EF Core CLI | 9.0+ | `dotnet tool install --global dotnet-ef` |
 | Conta Supabase | — | https://supabase.com (free tier serve) |
 | Gemini API key | — | https://aistudio.google.com/apikey (free tier) |
 | Git | — | — |
 
-### Para o produto novo (a instalar quando começar)
+### Para o app Flutter (a instalar quando começar)
 | Ferramenta | Versão | Observação |
 |------------|--------|------------|
 | Flutter SDK | 3.x+ | https://flutter.dev/docs/get-started/install |
@@ -179,28 +192,24 @@ A connection string aponta direto pro PostgreSQL do Supabase. Pega em **Project 
 Host=db.<ref>.supabase.co;Port=5432;Database=postgres;Username=postgres;Password=<senha>;SSL Mode=Require;Trust Server Certificate=true
 ```
 
-> **Produto novo:** vai usar projeto Supabase **NOVO** (separado do V1). Free tier permite 2 projetos por organização.
+> **Produto novo:** mantém o **mesmo projeto Supabase do V1** (1 banco único). Sem criar projeto novo.
 
 ### Gemini API key
 
 Cria em https://aistudio.google.com/apikey. Free tier basta pra dev (rate limit ~15 req/min, ~1500 req/dia em `gemini-2.0-flash`). Quando estoura `429`, o backend devolve `IaErrors.LimiteExcedido()` com retry hint.
 
-## Configuração — frontend (Angular V1)
+## Configuração — site (Next.js)
 
-Edita `front/src/environments/environment.ts` se a API local rodar em outra porta:
+O site lê a URL da API de uma env pública `NEXT_PUBLIC_API_BASE_URL`. Cria `site/.env.local`:
 
-```ts
-export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:5108',
-};
+```bash
+# site/.env.local
+NEXT_PUBLIC_API_BASE_URL=http://localhost:5108
 ```
 
-Pra build de produção, ajusta `front/src/environments/environment.prod.ts` com a URL pública da API.
+> Sem essa env o client lança erro explícito (`site/lib/api/client.ts`). Em produção, aponta pra URL pública do backend.
 
-CORS no backend libera só `http://localhost:4200` em dev (`Program.cs`). Se mudar a porta do front, atualiza lá também.
-
-> **Quando o site Next.js novo for criado**, CORS precisa liberar também `http://localhost:3000` (dev Next) + `http://localhost:8080` (dev Flutter Web) + os domínios de produção.
+CORS no backend (`Program.cs`) já libera `http://localhost:3000` (dev Next) + `https://liriun.com` / `https://www.liriun.com`. Se mudar a porta do site, atualiza lá também. Flutter mobile NÃO precisa de CORS (CORS é browser-only).
 
 ## Como rodar (passo a passo)
 
@@ -213,8 +222,8 @@ cd Liriun
 # Backend: restore
 dotnet restore backend
 
-# Frontend V1 (Angular): instala pacotes
-cd front
+# Site (Next.js): instala pacotes
+cd site
 npm install
 cd ..
 ```
@@ -240,17 +249,16 @@ dotnet run
 
 Abre Swagger automático em http://localhost:5108/swagger.
 
-### 5. Sobe frontend Angular V1
+### 5. Sobe o site Next.js
 
-Em outro terminal:
+Em outro terminal (com `site/.env.local` configurado):
 
 ```powershell
-cd front
-npm start
-# ou: ng serve
+cd site
+npm run dev
 ```
 
-Acessa http://localhost:4200.
+Acessa http://localhost:3000.
 
 ## Migrations
 
@@ -288,12 +296,10 @@ Testes da `Application` mockam `IGeminiService` e repos via Moq, não precisam d
 
 | Serviço | URL |
 |---------|-----|
-| Frontend V1 (Angular) | http://localhost:4200 |
+| Site Next.js (`site/`) | http://localhost:3000 |
 | Backend (HTTP) | http://localhost:5108 |
 | Backend (HTTPS) | https://localhost:7208 |
 | Swagger | http://localhost:5108/swagger |
-| Site Next.js (novo, futuro) | http://localhost:3000 |
-| Flutter Web (novo, futuro) | http://localhost:8080 |
 
 Pra autenticar no Swagger: `POST /auth/cadastro` ou `POST /auth/login`, copia o `token` da resposta, clica em **Authorize** e cola **só o JWT** (sem o prefixo `Bearer`).
 
@@ -317,9 +323,10 @@ Quando o plano pago for implementado, a leitura do flag migra de config global p
 
 ## Documentação adicional
 
-### Ativos (foco no produto novo)
+### Ativos
 - **[`docs/CONTEXTO_APP.md`](docs/CONTEXTO_APP.md)** — **fonte autoritativa** de arquitetura e decisões técnicas
 - **[`docs/ESTRATEGIA_LIRIUN.md`](docs/ESTRATEGIA_LIRIUN.md)** — posicionamento, pilares, concorrência
+- **[`docs/STATUS_MIGRACAO.md`](docs/STATUS_MIGRACAO.md)** — tracking da migração V1 → produto novo
 - **[`docs/IDEIAS_FUTURO.md`](docs/IDEIAS_FUTURO.md)** — backlog priorizado por tier
 - **[`docs/PLANO_NEGOCIO_TEMPLATE.md`](docs/PLANO_NEGOCIO_TEMPLATE.md)** — PARKED até MVP
 - **[`docs/design-ref/`](docs/design-ref/)** — style guide visual oficial (PDF + ícones)
@@ -339,6 +346,7 @@ Em `docs/termos-de-uso/`: `TERMOS_USO.md`, `POLITICA_PRIVACIDADE.md`.
 | `InvalidOperationException: Jwt:Secret nao configurada` | JWT secret não setada | Idem acima pra `Jwt:Secret` |
 | `IaErrors.NaoConfigurada` na rota de captura | `Gemini:ApiKey` vazia | Setar via user-secrets |
 | `IaErrors.LimiteExcedido` (429) | Rate limit do free tier do Gemini | Esperar o `retryAfterSeconds` da resposta |
-| CORS bloqueado no front | Front rodando em porta diferente de 4200 | Ajustar policy `FrontDev` em `Program.cs` |
+| `NEXT_PUBLIC_API_BASE_URL não definida` no site | `.env.local` ausente em `site/` | Criar `site/.env.local` com a URL do backend |
+| CORS bloqueado no site | Site rodando em porta diferente de 3000 | Ajustar a policy de CORS em `Program.cs` |
 | `dotnet ef` não reconhecido | EF tools não instaladas | `dotnet tool install --global dotnet-ef` |
 | Migration falha com SSL | Supabase exige TLS | Garantir `SSL Mode=Require;Trust Server Certificate=true` na conn string |

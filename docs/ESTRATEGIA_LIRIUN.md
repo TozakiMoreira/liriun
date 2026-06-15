@@ -84,11 +84,12 @@ Liriun é um **organizador pessoal de tarefas multi-plataforma com agente de voz
 - Tom de voz definido lá na frente (parked até MVP funcional).
 
 ### D. Multi-plataforma desde o dia 1
-- **Backend .NET centralizado** atende todos clientes (web, mobile, futuro: smartwatch, Alexa, browser ext).
-- Flutter compila pra iOS + Android (e potencialmente Web logado).
-- Site Next.js cobre web (login, tarefas, agente, config).
-- Adicionar plataforma nova = só implementar front, backend não muda.
+- **Backend .NET centralizado** + **1 banco Supabase único** (mesmo do V1) atendem todos clientes.
+- **App Flutter** cobre iOS + Android (sem Web — site é Next.js).
+- **Site Next.js** cobre web (login, tarefas, agente, config) — substitui Angular V1.
+- **Plataformas futuras** (smartwatch, Alexa, browser ext) = só implementar front, backend não muda.
 - Single source of truth: cria tarefa no app → vê no site → reflete em todo lugar.
+- **Divisão de trabalho:** Pedro faz app Flutter; sócio migra Angular → Next.js. Angular V1 (`front/`) já foi removido (2026-06-15); app + site assumem todas as funcionalidades.
 
 ---
 
