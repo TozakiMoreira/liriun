@@ -36,26 +36,65 @@ O agente funciona como **interceptador**: usuario fala -> agente interpreta -> c
 App Flutter (iOS)   │                  │
 App Flutter (Andr)  │                  │
 Site Next.js (web)  ├──REST API────────│ Backend .NET ──→ Supabase Postgres
-Smartwatch (futuro) │   (JWT)          │   ├─ Auth (JWT)         (DB only)
+Smartwatch (futuro) │   (JWT)          │   ├─ Auth (JWT)         (1 banco unico)
 Alexa Skill (fut)   │                  │   ├─ Validacao
 Browser ext (fut)   │                  │   ├─ Logica de negocio
 ...                 └──────────────────┘   └─ Chama Gemini API
 ```
 
 **Padrao "headless backend / multi-client":**
-- Backend .NET = fonte unica de verdade (logica + dados + auth)
+- **1 backend .NET unico** = fonte unica de verdade (logica + dados + auth)
+- **1 banco Supabase unico** (mesmo do V1 — nao criamos projeto novo)
 - Cada cliente novo (web, mobile, smartwatch, Alexa, etc) consome a MESMA API
 - Adicionar plataforma nova nao exige mexer no backend, so implementa front
 - Padrao usado por Linear, Asana, Slack, Notion, Discord, Spotify
 - **Decidido 2026-05-09 apos analise de escalabilidade longo prazo**
 
+> **Nota:** arquitetura (como clientes falam com o backend) ≠ estrategia de repo (como o codigo e organizado no git). Ver abaixo.
+
+### Estrategia de repositorio — monorepo unico
+
+**Decidido 2026-06-15:** tudo num repo so (`backend/` + `site/` + `app/`), todos na branch `main`.
+
+```
+liriun/  (1 repo, branch main)
+├─ backend/   .NET — dono do OpenAPI spec (fonte de verdade do contrato)
+├─ site/      Next.js 15 (institucional + app logado) — socio
+├─ app/       Flutter (Android + iOS) — Pedro
+└─ docs/      contexto + design-ref
+```
+
+**Por que monorepo (cenario atual: 2 devs, produto cedo, contrato via OpenAPI):**
+- Mudanca de contrato e **atomica**: mexe no endpoint .NET → regenera client Dart + TS → atualiza app + site em **1 PR**. Polyrepo viraria 3 PRs coordenados + versionamento do contrato.
+- **Fonte unica de verdade**: OpenAPI spec + design tokens (`docs/design-ref/`) num lugar so.
+- Onboarding/contexto: clona 1 repo, ve o sistema inteiro.
+- CI por pasta resolve toolchains diferentes (.NET / Node / Flutter) — **path-filtered**, builda so o que mudou.
+
+**Gatilhos pra separar em multiplos repos (NENHUM vale hoje):**
+- Time cresce e quer **deploy/release independente** por cliente sem coordenar.
+- Precisa **isolar acesso** (contratado externo so no app, p.ex.).
+- CI do mono fica lento mesmo com path-filter.
+- Quer **versionar a API publicamente** como contrato estavel (spec/clients viram repo proprio).
+
+Migrar mono→poly depois e tranquilo; juntar poly→mono e mais chato. Comeca junto.
+
+### Plano de migracao Angular V1 → produto novo
+
+> Decidido 2026-05-09: trabalho dividido entre Pedro e socio.
+
+1. ✅ **Angular V1 (`front/`) removido do disco** em 2026-06-15 — source preservado no historico git (`3bad961^`) pra consulta
+2. **Pedro** cria app Flutter mobile (Android + iOS) com mesmo conteudo/funcionalidades do Angular
+3. **Socio** migra → Next.js (`site/`) com mesmo conteudo/funcionalidades
+4. Continuar evolucao a partir dai (novas features so no app + site)
+5. **Schema do banco evolui livremente** — sem mais Angular pra quebrar
+
 ### Stack do backend (compartilhado por todos clientes)
 | Camada | Tecnologia | Motivo |
 |---|---|---|
 | Backend | **.NET 10** + ASP.NET Core Web API | Mantem codigo Clean Architecture ja construido (Result<T>, ProblemDetails, FluentValidation, Read/Write repos). Type-safe, escala infinita, padrao de mercado |
-| Banco | **Supabase Postgres** (DB only) | Postgres gerenciado, free tier generoso (500MB), backup automatico. NAO usa Auth/RLS/Edge Functions — so como banco |
+| Banco | **Supabase Postgres do V1** (1 banco unico) | Mantemos o banco Supabase ja existente do V1. Sem criar projeto novo. Schema evolui durante a migracao |
 | Auth | **JWT proprio do .NET** | Ja implementado. Issuer `liriun-api` / audience `liriun-app`. Ainda decidir: Google/Apple Sign-In via OAuth no .NET |
-| Migracoes | **EF Core migrations** | Ja em uso. Comandos em `docs/banco/MIGRATIONS.md` (arquivado) |
+| Migracoes | **EF Core migrations** | Ja em uso. Comandos em `docs/docs-arquivados/banco/MIGRATIONS.md` |
 | IA/NLU | **Google Gemini API (Flash-Lite pago)** | Backend .NET chama Gemini. Mantem API key segura no servidor. ~$1.30/mes com 1000 usuarios |
 | Hosting (producao) | **Oracle Cloud Free** ou **Railway** | Oracle Free aguenta MVP+ por anos sem custo. Railway ~$5-25/mes. Decidir mais perto da publicacao |
 | Cache (futuro) | Redis | So quando precisar (V2+) |
@@ -64,7 +103,7 @@ Browser ext (fut)   │                  │   ├─ Logica de negocio
 ### Stack do app mobile (Flutter)
 | Camada | Tecnologia | Motivo |
 |---|---|---|
-| Framework | **Flutter** (Dart) | Um codebase pra Android + iOS + Web. Performance pra audio/ML on-device, UI consistente |
+| Framework | **Flutter** (Dart) | Codebase unico pra Android + iOS. **Sem Flutter Web** — site web sera Next.js (responsabilidade do socio) |
 | State management | **Riverpod** | Padrao de mercado 2026, type-safe, escala bem |
 | Estrutura de pastas | **Feature-first** (`/auth`, `/tarefas`, `/agente`, `/categorias`) | Features isoladas, navegacao facil |
 | HTTP client | **dio** ou `http` package | Comunicacao com backend .NET (REST + JWT) |
@@ -74,6 +113,9 @@ Browser ext (fut)   │                  │   ├─ Logica de negocio
 | Wake word | **Adiado pra Fase 3** | So depois do app ter conteudo |
 | Push | **Firebase Cloud Messaging** | Padrao Android + iOS |
 | Offline-first | **PARKED pra V2** | MVP online-only |
+| IDE | **VS Code** + extensao Flutter + Dart | Editor leve, padrao da comunidade Flutter |
+| SDK Android | **Android Studio** instalado (so pra SDK + emulador) | Necessario mesmo nao usando como editor |
+| Build iOS | **Xcode no Mac do socio** | Pedro nao tem Mac; socio testa quando finalizar |
 
 ### Stack do site web (Next.js)
 | Camada | Tecnologia | Motivo |
@@ -90,8 +132,9 @@ Browser ext (fut)   │                  │   ├─ Logica de negocio
 
 ### Escopo do site Next.js
 - **Substitui o Angular V1 inteiro** (nao eh so landing — tem login, tarefas, agente, config — TUDO que tem hoje)
+- **Migracao feita pelo socio** (Pedro foca no app Flutter)
 - Angular V1 atual segue no ar ate o Next.js novo cobrir todas funcionalidades
-- Site e app compartilham conta + dados (mesmo backend .NET, mesmo banco)
+- Site e app compartilham conta + dados (mesmo backend .NET, mesmo banco Supabase)
 - Cria tarefa no app -> aparece no site (e vice-versa) — single source of truth no backend
 
 ### Auth
@@ -107,13 +150,15 @@ Browser ext (fut)   │                  │   ├─ Logica de negocio
 - Reaproveita: Result<T>, ProblemDetails, FluentValidation, Read/Write repos, JWT, GeminiService, migrations
 - **Decidido 2026-05-09** apos analise de escalabilidade (vs Supabase direto)
 
-### Supabase — APENAS COMO BANCO
+### Supabase — APENAS COMO BANCO (mesmo do V1)
 - Supabase usado SO como Postgres gerenciado
+- **1 unico projeto Supabase** (mesmo do V1, mantemos) — sem criar projeto novo
 - NAO usa Supabase Auth (auth fica no .NET com JWT proprio)
 - NAO usa RLS (validacao fica no .NET)
 - NAO usa Edge Functions (logica fica no .NET)
-- Connection string `ConnectionStrings:Liriun` aponta pro Postgres do Supabase
+- Connection string `ConnectionStrings:Liriun` aponta pro Postgres do Supabase atual
 - Migrations EF Core do .NET aplicam direto no Supabase
+- Schema evolui durante migracao Angular -> app + Next: se quebrar Angular eh OK, socio resolve no Next quando chegar
 
 ### Offline-first — PARKED pra V2
 - MVP sera online-only (mais rapido de fazer)
@@ -177,31 +222,33 @@ Browser ext (fut)   │                  │   ├─ Logica de negocio
 
 ### 4.1 Setup do projeto
 
-#### Backend .NET
-- [ ] Subir banco Supabase Postgres novo (projeto separado do V1 web)
-- [ ] Atualizar `ConnectionStrings:Liriun` pra apontar pro Supabase novo
-- [ ] Rodar migrations EF Core no Supabase novo
+#### Backend .NET (mantido — pequenos ajustes)
 - [ ] Adicionar OpenAPI/Swagger detalhado pra codegen dos clients
-- [ ] Configurar CORS pra `app.liriun.com` + `liriun.com` + `localhost:3000` (dev Next) + `localhost:8080` (dev Flutter Web)
-- [ ] Definir host de prod (Oracle Free / Railway / outro)
+- [ ] Configurar CORS pra `liriun.com` (Next.js futuro) + `localhost:3000` (dev Next) — Flutter mobile NAO precisa CORS
+- [ ] Avaliar se precisa adicionar Google + Apple Sign-In via OAuth (decidir conforme app for evoluindo)
+- [ ] Definir host de prod (Oracle Free / Railway / outro) — pos-MVP
 
-#### App Flutter
-- [ ] Criar projeto Flutter (`flutter create liriun_app`)
+#### Banco Supabase
+- [ ] Mantem o projeto Supabase atual do V1 (sem criar novo)
+- [ ] Migrations rodam normalmente conforme schema evoluir
+
+#### App Flutter (Pedro)
+- [ ] Instalar Flutter SDK
+- [ ] Instalar Android Studio (so pra SDK Android + emulador AVD)
+- [ ] Instalar VS Code + extensao Flutter + Dart
+- [ ] Criar projeto Flutter (`flutter create liriun_app` na pasta `app/`)
 - [ ] Configurar estrutura feature-first (`/lib/features/{auth,tarefas,agente,categorias,config}`)
 - [ ] Configurar Riverpod
 - [ ] Gerar client Dart a partir do OpenAPI do .NET
 - [ ] Configurar dio com interceptor JWT
 - [ ] Configurar Firebase project (FCM push)
 
-#### Site Next.js
+#### Site Next.js (socio — depois do app + Angular V1 ainda no ar)
 - [ ] Criar projeto Next.js (`npx create-next-app@latest liriun-site --typescript --tailwind --app`)
 - [ ] Adicionar shadcn/ui
 - [ ] Configurar tokens do design system (cores, fonts, radii) no `tailwind.config` + CSS vars
 - [ ] Gerar client TypeScript a partir do OpenAPI do .NET
 - [ ] Configurar React Query + interceptor JWT
-
-#### Compartilhado
-- [ ] Setup CI basico (build Android + iOS + Web Next + .NET)
 
 ### 4.2 Auth
 - [ ] Login email + senha (ja existe no .NET — JWT proprio)
@@ -310,11 +357,11 @@ Browser ext (fut)   │                  │   ├─ Logica de negocio
 
 ### 4.11 Deploy MVP
 - [ ] Backend .NET hospedado (Oracle Free / Railway) com dominio `api.liriun.com`
-- [ ] Site Next.js hospedado em Vercel com dominio `liriun.com`
-- [ ] Flutter Web (`app.liriun.com`) — opcional MVP, decidir
-- [ ] App Android buildavel localmente (APK pra testar no celular)
+- [ ] Site Next.js hospedado em Vercel com dominio `liriun.com` (depois que socio terminar)
+- [ ] App Android buildavel localmente (APK pra Pedro testar no celular)
 - [ ] App iOS buildavel quando socio testar (precisa Mac)
-- [ ] Banco Supabase Postgres em prod (mesmo que dev por enquanto, separar quando publicar)
+- [ ] Banco Supabase Postgres em prod (mesmo do V1, mesmo dev e prod por enquanto)
+- [ ] Quando app + Next estiverem funcionais e cobrindo Angular V1: arquivar `front/`
 
 ---
 
@@ -365,17 +412,21 @@ Browser ext (fut)   │                  │   ├─ Logica de negocio
 - [x] Nome "Liriun" continua
 - [x] Arquitetura: **multi-client com backend .NET centralizado** (escalavel, padrao Linear/Asana/Slack)
 - [x] Backend principal: **.NET continua** (reaproveita Clean Architecture pronta)
-- [x] Site novo Next.js: **substitui Angular V1 inteiro** (login + tarefas + agente + config — nao so landing)
+- [x] Banco: **mesmo Supabase do V1** (1 unico projeto, sem criar novo)
+- [x] Divisao de trabalho: **Pedro faz app Flutter, socio migra Angular -> Next.js**
+- [x] App Flutter compila pra **Android + iOS APENAS** (sem Flutter Web — site eh Next.js)
+- [x] Site novo Next.js: **substitui Angular V1 inteiro** (login + tarefas + agente + config)
 - [x] Tech do site: **Next.js 15** + Tailwind + shadcn/ui + Framer Motion + React Query
-- [x] Banco: **Supabase Postgres novo** (so como banco — sem Auth/RLS/Edge Functions)
 - [x] Auth: **JWT proprio do .NET** (nao Supabase Auth) + Google/Apple Sign-In via OAuth no .NET
 - [x] State management Flutter: **Riverpod**
 - [x] Estrutura de pastas Flutter: **feature-first**
+- [x] IDE Flutter: **VS Code** (Android Studio so pra SDK + emulador)
 - [x] Codegen client: **OpenAPI** -> client TypeScript pro site, client Dart pro Flutter (type safety end-to-end)
 - [x] Offline-first: **PARKED pra V2** (MVP online-only)
 - [x] TTS: **nativo do dispositivo**
-- [x] iOS: socio testa quando finalizar; por enquanto build local pra PC + celular
+- [x] iOS: socio testa quando finalizar; por enquanto build local pra PC + APK no celular Pedro
 - [x] Estilo visual: aprovado (mockups + style guide em `docs/design-ref/`)
+- [x] Plano de migracao: Angular V1 fica no ar; quando app + Next cobrirem tudo, arquiva Angular e evolucao continua so no app + site novo
 
 ### Adiados ate o MVP estar pronto
 - [ ] Plano de negocio (freemium, limites, precos) — `PLANO_NEGOCIO_TEMPLATE.md`
@@ -396,21 +447,25 @@ liriun/
                        Liriun.Core / Application / Infrastructure / Api
                        REST + JWT + EF Core + Gemini integration
                        Atende site Next.js, app Flutter, e plataformas futuras
-  app/              <- Flutter (Android + iOS + Web logado)
+  app/              <- Flutter (Android + iOS APENAS — sem Web)
                        Riverpod, feature-first
                        Estrutura: /lib/features/{auth,tarefas,agente,categorias,config}
                        Comunica com backend .NET via REST + JWT
-  site/             <- Next.js 15 (App Router) — substitui Angular V1
+                       Responsabilidade: Pedro
+  site/             <- Next.js 15 (App Router) — substitui Angular V1 [a criar]
                        Login, tarefas, agente, config — funcionalidade completa
                        Tailwind + shadcn/ui + Framer Motion + React Query
                        Comunica com backend .NET via REST + JWT
-  frontend/         <- Angular V1 ATUAL (segue no ar ate site Next.js cobrir tudo)
-                       Sera arquivado quando Next.js estiver completo
+                       Responsabilidade: socio
+  front/            <- Angular V1 ATUAL (segue no ar durante migracao)
+                       Sera ARQUIVADO quando app + Next.js cobrirem todas funcionalidades
   docs/             <- Documentacao
     design-ref/     <- Style guide oficial (PDF, icones, glyph)
+    docs-arquivados/ <- Docs historicos do V1 web
+    termos-de-uso/  <- TERMOS_USO.md, POLITICA_PRIVACIDADE.md
 ```
 
-> **Banco:** Supabase Postgres usado como database gerenciado (DB only, sem Auth/RLS/Edge Functions).
+> **Banco:** Supabase Postgres usado como database gerenciado (1 banco unico — mesmo do V1).
 > Connection string em `appsettings.json` do .NET.
 
 ---

@@ -20,19 +20,26 @@ Organizador pessoal de tarefas com captura por IA conversacional (texto + voz Ge
 
 ### Pivô (2026-05-08) — produto novo em desenvolvimento
 Liriun vira **multi-cliente com agente de voz**:
-- **App Flutter mobile** (iOS + Android) com agente de voz como diferencial
-- **Site Next.js** que substitui Angular V1 (funcionalidade completa, não só landing)
+- **App Flutter mobile** (Android + iOS APENAS, sem Web) com agente de voz como diferencial — **Pedro**
+- **Site Next.js** que substitui Angular V1 (funcionalidade completa, não só landing) — **sócio**
 - **Backend .NET continua como backend principal centralizado**
-- **Supabase = só Postgres** (sem Auth/RLS/Edge Functions)
+- **1 Supabase único** (mesmo do V1, mantemos — sem criar projeto novo) usado SÓ como Postgres
 - Adicionar plataforma futura (smartwatch, Alexa, etc) = só implementa front
 
 Padrão: **headless backend / multi-client** (Linear, Asana, Slack fazem assim).
 
 ```
 Web (Next.js)   ─┐
-App Flutter     ─┼─→ Backend .NET ─→ Supabase Postgres
+App Flutter     ─┼─→ Backend .NET ─→ Supabase Postgres (1 banco único)
 Plataformas fut ─┘   (REST + JWT + Gemini)
 ```
+
+### Plano de migração Angular V1 → produto novo
+1. ✅ Angular V1 (`front/`) **removido do disco** (2026-06-15) — source no histórico git (`3bad961^`)
+2. Pedro cria app Flutter cobrindo tudo que Angular fazia
+3. Sócio migra → Next.js (`site/`) cobrindo tudo que Angular fazia
+4. Evolução continua só no app + site (novas features daí pra frente)
+5. Schema do banco evolui livre — sem mais Angular pra quebrar
 
 ## Decisões tomadas (2026-05-09)
 
@@ -40,9 +47,10 @@ Plataformas fut ─┘   (REST + JWT + Gemini)
 | Camada | Tecnologia |
 |---|---|
 | Backend | **.NET 10** + ASP.NET Core Web API + Clean Architecture (Liriun.Core/Application/Infrastructure/Api) |
-| Banco | **Supabase Postgres** (DB only — projeto NOVO separado do V1) |
+| Banco | **Supabase Postgres** — **mesmo do V1** (1 banco único, sem criar projeto novo) |
 | Auth | **JWT próprio do .NET** + Google/Apple Sign-In via OAuth no .NET |
-| App mobile | **Flutter** + **Riverpod** + **feature-first** (`/lib/features/{auth,tarefas,agente,categorias,config}`) |
+| App mobile | **Flutter** (Android + iOS APENAS — sem Web) + **Riverpod** + **feature-first** (`/lib/features/{auth,tarefas,agente,categorias,config}`) |
+| IDE Flutter | **VS Code** + extensão Flutter + Dart (Android Studio só pra SDK + emulador) |
 | Site web | **Next.js 15** (App Router) + Tailwind v4 + shadcn/ui + Framer Motion + React Query |
 | HTTP client | dio (Flutter) / fetch + React Query (Next.js) |
 | Codegen | OpenAPI Generator (Dart + TypeScript clients gerados a partir do .NET) |
@@ -186,26 +194,33 @@ Controlado por `GeminiOptions.ModoInterativo` (default `false`).
 
 Detalhes em `docs/CONTEXTO_APP.md` seção 4. Resumo das 3 frentes paralelas:
 
-### Backend .NET (reaproveita 90% do V1)
-- Atualizar `ConnectionStrings:Liriun` pra Supabase NOVO (não V1)
-- Rodar migrations EF Core no banco novo
+### Backend .NET (mantido — pequenos ajustes)
+- Banco continua o **mesmo** (Supabase atual do V1)
 - OpenAPI/Swagger detalhado pra codegen
-- CORS pra `app.liriun.com` + `liriun.com` + dev hosts
-- Adicionar Google + Apple Sign-In via OAuth
+- CORS pra `liriun.com` + `localhost:3000` (dev Next) — Flutter mobile não precisa CORS
+- Adicionar Google + Apple Sign-In via OAuth (conforme app evoluir)
 
-### App Flutter (do zero)
-- `flutter create liriun_app` com estrutura feature-first
+### App Flutter — Pedro (do zero)
+- Instalar Flutter SDK + Android Studio (só SDK + emulador) + VS Code
+- `flutter create liriun_app` na pasta `app/`
+- Estrutura feature-first (`/lib/features/{auth,tarefas,agente,categorias,config}`)
 - Riverpod, dio, client gerado do OpenAPI
 - Telas: login, cadastro, onboarding, conversa com agente, tarefas, configurações
 - STT/TTS nativos
 - Firebase Cloud Messaging
+- Compila pra Android + iOS (sem Web)
 
-### Site Next.js (substitui Angular V1)
+### Site Next.js — sócio (substitui Angular V1)
 - `create-next-app` + Tailwind + shadcn/ui
 - Tokens do design system (`docs/design-ref/`)
 - Mesmas funcionalidades do V1 (login, tarefas, agente, config)
 - Client TypeScript gerado do OpenAPI
 - Deploy Vercel
+
+### Migração Angular V1
+- ✅ `front/` Angular removido do disco (2026-06-15) — source no histórico git (`3bad961^`)
+- Site `site/` (Next.js) e app Flutter assumem todas as funcionalidades
+- Schema banco evolui livre — sem mais Angular pra quebrar
 
 ## Roadmap de fases (alto nível)
 
@@ -244,6 +259,8 @@ Documentos do V1 web mantidos como referência histórica:
 
 ### Código
 - `backend/` — .NET (PRINCIPAL, evoluindo)
-- `front/` — Angular V1 (no ar até site Next.js cobrir tudo, depois arquiva)
-- `app/` — Flutter mobile (pasta vazia, a popular)
-- `site/` — Next.js (a criar) [pasta ainda não existe]
+- `site/` — Next.js 15 (institucional pronto + área logada em construção; substitui o Angular V1) — **sócio**
+- `app/` — Flutter mobile (Android + iOS) — **Pedro**
+- `front/` — **REMOVIDO** (Angular V1 apagado do disco em 2026-06-15; source preservado no histórico git em `3bad961^` se precisar consultar)
+
+> **Estratégia de repo:** monorepo único (`backend/` + `site/` + `app/` na mesma branch `main`). Decisão e gatilhos de split em `docs/CONTEXTO_APP.md`.

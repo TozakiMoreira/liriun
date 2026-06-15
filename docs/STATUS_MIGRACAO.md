@@ -19,7 +19,7 @@ Smartwatch/Alexa…   ┘                  (auth, lógica, Gemini)
 
 | Camada | Tecnologia | Status |
 |---|---|---|
-| **Site web `liriun.com`** | Next.js 15 + Tailwind + Framer Motion. **Substitui Angular V1 INTEIRO** (login + tarefas + agente + config — não só institucional) | 🚧 institucional pronto (`landing/`); falta área logada |
+| **Site web `liriun.com`** | Next.js 15 + Tailwind + Framer Motion. **Substitui Angular V1 INTEIRO** (login + tarefas + agente + config — não só institucional) | 🚧 institucional pronto (`site/`); falta área logada |
 | **App mobile** | Flutter (Android + iOS + Web opcional) consumindo `.NET` via dio + JWT | 🚧 scaffolding feito (auth REST + 5 telas stub) |
 | **Backend** | **`.NET 10` Web API** (`backend/`) — Clean Architecture mantida. Auth JWT, validação, Gemini, EF Core migrations | ✅ existe; precisa CORS + OpenAPI/Swagger + Google/Apple OAuth |
 | **Banco** | Supabase Postgres (**DB-only** — não usa Auth/RLS/Edge) | ⏳ projeto prod a criar |
@@ -33,12 +33,13 @@ Smartwatch/Alexa…   ┘                  (auth, lógica, Gemini)
 ## 📁 Estrutura esperada do repo
 
 ```
-liriun/
+liriun/   (monorepo único, branch main)
 ├─ backend/           ← .NET 10 Web API · BACKEND PRINCIPAL ✅ ATIVO
 │                       (Postgres host: Supabase Cloud DB-only — connection string em appsettings)
-├─ landing/           ← Next.js 15 (substitui Angular V1)  🚧 institucional pronto
-├─ app/               ← Flutter (mobile + web) consumindo .NET via dio + JWT  🚧 scaffolding
-├─ front/             ← Angular V1 (arquivar quando Next.js cobrir tudo) 🟡 ATIVO temp
+├─ site/              ← Next.js 15 (substitui Angular V1)  🚧 institucional pronto + área logada em construção
+│                       (renomeado de landing/ → site/ em 2026-06-15)
+├─ app/               ← Flutter (Android + iOS) consumindo .NET via dio + JWT  🚧 scaffolding
+│                       (front/ Angular V1 REMOVIDO do disco em 2026-06-15 — source em git 3bad961^)
 └─ docs/
    ├─ STATUS_MIGRACAO.md         ← este arquivo
    ├─ CONTEXTO_APP.md            ← decisões pivô (Pedro)
@@ -292,7 +293,7 @@ por **EF Core** (`backend/src/Liriun.Infrastructure/Persistence/Migrations/`).
 
 ## 📦 Fase D — Substituir Angular V1 / Arquivar
 
-- [ ] Quando `landing/` Next.js cobrir 100% das funcionalidades do `front/` Angular V1 (login + tarefas + agente + config), apontar `liriun.com` pro Next
+- [ ] Quando `site/` Next.js cobrir 100% das funcionalidades que o `front/` Angular V1 tinha (login + tarefas + agente + config), apontar `liriun.com` pro Next  _(front/ já removido do disco em 2026-06-15 — referência em git `3bad961^`)_
 - [ ] Mover `front/` Angular pra `archive/web-v1-angular/` (preserva, não deleta)
 - [ ] README.md raiz atualizado com nova estrutura
 - [ ] CLAUDE.md atualizado

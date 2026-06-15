@@ -1,8 +1,8 @@
 {
-  "name": "liriun-landing",
+  "name": "liriun-site",
   "version": "1.0.0",
   "private": true,
-  "description": "Liriun — site marketing institucional. ToMore.",
+  "description": "Liriun — site web Next.js (institucional + app logado). ToMore.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

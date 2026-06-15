@@ -83,8 +83,7 @@ builder.Services.AddCors(opt =>
     {
         policy
             .WithOrigins(
-                "http://localhost:4200", // Angular V1 dev
-                "http://localhost:3000", // Next.js dev (landing/)
+                "http://localhost:3000", // Next.js dev (site/)
                 "http://localhost:8080", // Flutter Web dev
                 "http://localhost:5173", // Vite (caso futuro)
                 "https://liriun.com",
