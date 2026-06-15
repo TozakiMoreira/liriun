@@ -84,9 +84,12 @@ export function TarefaForm({
     setRodando(true);
   }
   function pausarCron() {
-    setTempoBase((b) => b + sessaoCorrente());
+    // Captura o elapsed AGORA (rodando/inicioRef ainda válidos). O updater de
+    // setState roda na fase de render — se lesse inicioRef depois de limpar, daria 0.
+    const elapsed = sessaoCorrente();
     inicioRef.current = null;
     setRodando(false);
+    setTempoBase((b) => b + elapsed);
   }
 
   useEffect(() => {
