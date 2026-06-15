@@ -112,9 +112,10 @@ public class ConversarCapturaUseCaseTests
     }
 
     [Fact]
-    public async Task Zera_data_passada_sugerida_pela_ia()
+    public async Task Data_passada_sugerida_pela_ia_vira_hoje()
     {
-        DateTime ontem = DateTime.UtcNow.Date.AddDays(-1);
+        DateTime hoje = Liriun.Core.Entities.Tarefa.ConverterParaFusoUsuario(DateTime.UtcNow).Date;
+        DateTime ontem = hoje.AddDays(-1);
         _gemini.Setup(g => g.ConversarAsync(It.IsAny<ContextoConversa>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result<RespostaConversa>.Success(new RespostaConversa(
                 "Anotado.",
@@ -124,7 +125,23 @@ public class ConversarCapturaUseCaseTests
         Result<ConversaCapturaViewModel> result = await Criar().ExecuteAsync(
             Mensagens(("usuario", "salva")), CancellationToken.None);
 
-        result.Value!.Tarefa!.DataPrazo.Should().BeNull();
+        result.Value!.Tarefa!.DataPrazo.Should().Be(hoje);
+    }
+
+    [Fact]
+    public async Task Tarefa_sem_data_assume_hoje()
+    {
+        DateTime hoje = Liriun.Core.Entities.Tarefa.ConverterParaFusoUsuario(DateTime.UtcNow).Date;
+        _gemini.Setup(g => g.ConversarAsync(It.IsAny<ContextoConversa>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Result<RespostaConversa>.Success(new RespostaConversa(
+                "Anotado.",
+                new AcaoCriar(new AnaliseTarefa("X", Array.Empty<Guid>(), null, null, null, null)),
+                true)));
+
+        Result<ConversaCapturaViewModel> result = await Criar().ExecuteAsync(
+            Mensagens(("usuario", "salva")), CancellationToken.None);
+
+        result.Value!.Tarefa!.DataPrazo.Should().Be(hoje);
     }
 
     [Fact]

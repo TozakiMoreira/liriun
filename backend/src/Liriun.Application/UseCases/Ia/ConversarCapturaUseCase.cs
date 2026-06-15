@@ -152,9 +152,11 @@ public class ConversarCapturaUseCase
         {
             AnaliseTarefa a = criar.Tarefa;
 
-            // Filtros defensivos contra alucinacao
-            DateTime hoje = DateTime.UtcNow.Date;
-            DateTime? dataValida = a.DataPrazo?.Date >= hoje ? a.DataPrazo?.Date : null;
+            // Filtros defensivos contra alucinacao.
+            // Sem data ou data passada → assume hoje (BRT). Dominio exige DataPrazo;
+            // usuario que nao falou "quando" quer a tarefa pra hoje. Pode editar no card.
+            DateTime hoje = Core.Entities.Tarefa.ConverterParaFusoUsuario(DateTime.UtcNow).Date;
+            DateTime dataValida = a.DataPrazo?.Date is { } d && d >= hoje ? d : hoje;
 
             HashSet<Guid> categoriasValidasSet = categorias.Select(c => c.Id).ToHashSet();
             IReadOnlyList<Guid> categoriasFiltradas = a.CategoriaIds
