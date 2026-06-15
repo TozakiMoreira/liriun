@@ -57,8 +57,8 @@ Plataformas fut ─┘   (REST + JWT + Gemini)
 | IA | Google Gemini API (default `gemini-2.0-flash`) |
 | STT/TTS | Nativo do dispositivo (sem custo) |
 | Push | Firebase Cloud Messaging |
-| Hosting backend | Oracle Cloud Free / Railway (decidir mais perto da publicação) |
-| Hosting site | Vercel (free tier) |
+| Hosting backend | **Render** (Docker, free tier — cold start ~30-60s após idle) |
+| Hosting site | **Cloudflare Pages** (`@cloudflare/next-on-pages` + wrangler) |
 
 ### Domínio (mantido do V1, evolui no novo)
 - 2 entidades: Tarefa e Categoria (N:N entre elas)
@@ -215,7 +215,7 @@ Detalhes em `docs/CONTEXTO_APP.md` seção 4. Resumo das 3 frentes paralelas:
 - Tokens do design system (`docs/design-ref/`)
 - Mesmas funcionalidades do V1 (login, tarefas, agente, config)
 - Client TypeScript gerado do OpenAPI
-- Deploy Vercel
+- Deploy Cloudflare Pages
 
 ### Migração Angular V1
 - ✅ `front/` Angular removido do disco (2026-06-15) — source no histórico git (`3bad961^`)

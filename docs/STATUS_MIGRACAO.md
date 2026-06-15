@@ -129,8 +129,8 @@ por **EF Core** (`backend/src/Liriun.Infrastructure/Persistence/Migrations/`).
 - [ ] Copiar OG images sociais em `public/social/`
 
 **A.7 — Deploy** (PARKED — Pedro pediu pra adiar)
-- [ ] DNS `liriun.com` apontando pra Vercel/Cloudflare Pages
-- [ ] Vercel project conectado no repo (auto-deploy)
+- [ ] DNS `liriun.com` apontando pra Cloudflare Pages
+- [ ] Cloudflare Pages conectado no repo (auto-deploy; root dir `site/`, build `npm run pages:build`)
 - [ ] Variáveis ambiente: `NEXT_PUBLIC_API_BASE_URL` (URL `.NET` prod)
 - [ ] Open Graph + Twitter Card validados
 
@@ -280,8 +280,8 @@ por **EF Core** (`backend/src/Liriun.Infrastructure/Persistence/Migrations/`).
 - [ ] Validar backups automáticos (já vem no plano pago)
 
 **C.4 — Hospedagem do `.NET`**
-- [ ] Decidir host (Oracle Cloud Free / Railway / Azure / Fly.io) — ver tradeoffs em `docs/CONTEXTO_APP.md`
-- [ ] DNS `api.liriun.com` apontando pro host escolhido
+- [x] Host decidido: **Render** (Docker, free tier) — migrar pra Fly ~$4/mês se cold start incomodar
+- [ ] DNS `api.liriun.com` apontando pro Render
 - [ ] HTTPS (cert via Caddy/nginx ou plataforma)
 
 **C.5 — Outros**

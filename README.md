@@ -76,9 +76,9 @@ Plataformas fut  ─┘   (REST + JWT + Gemini)
 | STT/TTS | Nativo do dispositivo | Pedro |
 | Push | Firebase Cloud Messaging | Pedro |
 
-### Hosting (a definir)
-- Backend: Oracle Cloud Free / Railway / VPS
-- Site: Vercel (free tier)
+### Hosting
+- Backend: **Render** (Docker, free tier — cold start ~30-60s após idle)
+- Site: **Cloudflare Pages** (`@cloudflare/next-on-pages` + wrangler)
 - Banco: Supabase Postgres
 
 ## Estrutura do repositório

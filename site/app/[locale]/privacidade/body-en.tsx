@@ -56,7 +56,18 @@ export function PrivacidadeBodyEN() {
           .
         </li>
         <li>
-          <strong>Vercel Inc. / Cloudflare:</strong> hosting and CDN for the marketing site.
+          <strong>Cloudflare, Inc.:</strong> site hosting and CDN (Cloudflare Pages).{" "}
+          <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">
+            Cloudflare Policy
+          </a>
+          .
+        </li>
+        <li>
+          <strong>Render (Render Services, Inc.):</strong> backend (API) hosting.{" "}
+          <a href="https://render.com/privacy" target="_blank" rel="noopener noreferrer">
+            Render Policy
+          </a>
+          .
         </li>
       </ul>
 

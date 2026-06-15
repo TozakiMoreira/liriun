@@ -144,11 +144,11 @@
 
 *Cada usuário ativo custa quanto pra rodar?*
 
-- Hosting backend .NET (Oracle Free / Railway / VPS): R$ `[preencher — Oracle Free é R$0 até limites]`
+- Hosting backend .NET (Render Docker, free tier): R$ `[preencher — free $0; cold start; upgrade Fly ~$4/mês]`
 - Supabase Postgres (DB only): R$ `[preencher — free até 500MB, depois Pro $25/mês]`
 - Gemini API Flash-Lite (custo médio por usuário ativo): R$ `[preencher — ~R$0,007 por usuário/mês com 1000 usuários]`
 - Firebase Cloud Messaging (push): R$ `[preencher — free tier generoso]`
-- Vercel (site Next.js): R$ `[preencher — free tier serve até X req]`
+- Cloudflare Pages (site Next.js): R$ `[preencher — free tier generoso]`
 - Storage / CDN / outros: R$ `[preencher]`
 - **Total: R$ `[soma]`**
 
@@ -231,10 +231,10 @@ Para cada etapa definir taxa alvo:
 
 ### 7.3 Custos operacionais mensais
 
-- Hosting backend .NET (Oracle Free / Railway / VPS): R$ `[preencher — Oracle Free $0; Railway $5-25/mês; DigitalOcean $30/mês]`
+- Hosting backend .NET (Render Docker, free tier): R$ `[preencher — free $0; upgrade Fly ~$4/mês ou Render paid se cold start incomodar]`
 - Supabase Postgres (DB only): R$ `[preencher — free até 500MB, depois Pro $25/mês]`
 - Gemini API estimativa: R$ `[preencher — ~$1,30/mês por 1000 usuários ativos]`
-- Vercel (site Next.js): R$ `[preencher — free até X bandwidth]`
+- Cloudflare Pages (site Next.js): R$ `[preencher — free tier generoso]`
 - Firebase Cloud Messaging: R$ `[preencher — free tier]`
 - Domínio + DNS (liriun.com): R$ `[preencher — anual já comprado]`
 - Email transacional (Resend / SendGrid): R$ `[preencher]`

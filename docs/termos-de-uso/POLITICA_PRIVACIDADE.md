@@ -41,7 +41,8 @@ Esta política descreve como coletamos, usamos, armazenamos, compartilhamos e pr
 
 - **Google Gemini API (Google LLC):** o conteúdo enviado ao "Modo Liriun" é processado pela Google para gerar a sugestão de tarefa. [Política do Google](https://policies.google.com/privacy).
 - **Supabase Inc.:** banco PostgreSQL gerenciado onde os dados são persistidos. [Política da Supabase](https://supabase.com/privacy).
-- **Provedor de hospedagem:** [PREENCHER — Railway/Hetzner/AWS/etc].
+- **Render (Render Services, Inc.):** hospedagem do backend (API). [Política da Render](https://render.com/privacy).
+- **Cloudflare, Inc.:** hospedagem e CDN do site (Cloudflare Pages). [Política da Cloudflare](https://www.cloudflare.com/privacypolicy/).
 
 ## 3. Para que usamos seus dados (finalidades e bases legais)
 

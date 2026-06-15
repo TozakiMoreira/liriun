@@ -96,7 +96,7 @@ Migrar mono→poly depois e tranquilo; juntar poly→mono e mais chato. Comeca j
 | Auth | **JWT proprio do .NET** | Ja implementado. Issuer `liriun-api` / audience `liriun-app`. Ainda decidir: Google/Apple Sign-In via OAuth no .NET |
 | Migracoes | **EF Core migrations** | Ja em uso. Comandos em `docs/docs-arquivados/banco/MIGRATIONS.md` |
 | IA/NLU | **Google Gemini API (Flash-Lite pago)** | Backend .NET chama Gemini. Mantem API key segura no servidor. ~$1.30/mes com 1000 usuarios |
-| Hosting (producao) | **Oracle Cloud Free** ou **Railway** | Oracle Free aguenta MVP+ por anos sem custo. Railway ~$5-25/mes. Decidir mais perto da publicacao |
+| Hosting (producao) | **Render** (Docker, free tier) | Cold start ~30-60s apos 15min idle (toleravel pra V1). Migrar pra Fly ~$4/mes se UX incomodar |
 | Cache (futuro) | Redis | So quando precisar (V2+) |
 | Background jobs (futuro) | Hangfire ou Quartz.NET | Lembretes agendados, notificacoes em massa |
 
@@ -120,7 +120,7 @@ Migrar mono→poly depois e tranquilo; juntar poly→mono e mais chato. Comeca j
 ### Stack do site web (Next.js)
 | Camada | Tecnologia | Motivo |
 |---|---|---|
-| Framework | **Next.js 15** (App Router) | React com SSR/SSG, SEO de verdade, deploy 1-clique Vercel |
+| Framework | **Next.js 15** (App Router) | React com SSR/SSG, SEO de verdade, deploy em Cloudflare Pages (`next-on-pages`) |
 | Linguagem | TypeScript | Type-safe, padrao moderno |
 | Estilizacao | Tailwind CSS v4 | Utility-first, casa com tokens do design system |
 | Componentes | shadcn/ui | Componentes copiaveis customizaveis |
@@ -128,7 +128,7 @@ Migrar mono→poly depois e tranquilo; juntar poly→mono e mais chato. Comeca j
 | Icones | Lucide React | Linhas finas, casa com estetica |
 | HTTP client | **fetch** + React Query (`@tanstack/react-query`) | Cache de dados, revalidacao automatica |
 | Codegen do client | **OpenAPI TypeScript** | Gera client TS a partir do OpenAPI do .NET |
-| Deploy | Vercel (free tier) | Made by Next.js team |
+| Deploy | **Cloudflare Pages** (free tier) | `@cloudflare/next-on-pages` + wrangler. Scripts `pages:build` / `pages:preview` no `site/package.json` |
 
 ### Escopo do site Next.js
 - **Substitui o Angular V1 inteiro** (nao eh so landing — tem login, tarefas, agente, config — TUDO que tem hoje)
@@ -226,7 +226,7 @@ Migrar mono→poly depois e tranquilo; juntar poly→mono e mais chato. Comeca j
 - [ ] Adicionar OpenAPI/Swagger detalhado pra codegen dos clients
 - [ ] Configurar CORS pra `liriun.com` (Next.js futuro) + `localhost:3000` (dev Next) — Flutter mobile NAO precisa CORS
 - [ ] Avaliar se precisa adicionar Google + Apple Sign-In via OAuth (decidir conforme app for evoluindo)
-- [ ] Definir host de prod (Oracle Free / Railway / outro) — pos-MVP
+- [x] Host de prod definido: **Render** (backend, Docker) + **Cloudflare Pages** (site)
 
 #### Banco Supabase
 - [ ] Mantem o projeto Supabase atual do V1 (sem criar novo)
@@ -356,8 +356,8 @@ Migrar mono→poly depois e tranquilo; juntar poly→mono e mais chato. Comeca j
 - [ ] Permissao pedida no onboarding mobile
 
 ### 4.11 Deploy MVP
-- [ ] Backend .NET hospedado (Oracle Free / Railway) com dominio `api.liriun.com`
-- [ ] Site Next.js hospedado em Vercel com dominio `liriun.com` (depois que socio terminar)
+- [ ] Backend .NET hospedado no **Render** (Docker) com dominio `api.liriun.com`
+- [ ] Site Next.js hospedado no **Cloudflare Pages** com dominio `liriun.com` (depois que socio terminar)
 - [ ] App Android buildavel localmente (APK pra Pedro testar no celular)
 - [ ] App iOS buildavel quando socio testar (precisa Mac)
 - [ ] Banco Supabase Postgres em prod (mesmo do V1, mesmo dev e prod por enquanto)

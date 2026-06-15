@@ -655,7 +655,7 @@ Pra Claude Code começar do zero, pega na ordem:
 7. **Página de Pricing** (`/precos`)
 8. **Páginas legais** (privacidade, termos) — usar markdown convertido
 9. **Otimizar imagens, Lighthouse, OG, manifest**
-10. **Deploy preview (Vercel)** com domínio `staging.liriun.com`
+10. **Deploy preview (Cloudflare Pages)** com domínio `staging.liriun.com`
 
 Pra o app Flutter:
 

@@ -56,7 +56,18 @@ export function PrivacidadeBodyPT() {
           .
         </li>
         <li>
-          <strong>Vercel Inc. / Cloudflare:</strong> hospedagem e CDN do site marketing.
+          <strong>Cloudflare, Inc.:</strong> hospedagem e CDN do site (Cloudflare Pages).{" "}
+          <a href="https://www.cloudflare.com/privacypolicy/" target="_blank" rel="noopener noreferrer">
+            Política da Cloudflare
+          </a>
+          .
+        </li>
+        <li>
+          <strong>Render (Render Services, Inc.):</strong> hospedagem do backend (API).{" "}
+          <a href="https://render.com/privacy" target="_blank" rel="noopener noreferrer">
+            Política da Render
+          </a>
+          .
         </li>
       </ul>
 
