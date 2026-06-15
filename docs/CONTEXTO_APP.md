@@ -122,11 +122,11 @@ Migrar mono→poly depois e tranquilo; juntar poly→mono e mais chato. Comeca j
 |---|---|---|
 | Framework | **Next.js 15** (App Router) | React com SSR/SSG, SEO de verdade, deploy em Cloudflare Pages (`next-on-pages`) |
 | Linguagem | TypeScript | Type-safe, padrao moderno |
-| Estilizacao | Tailwind CSS v4 | Utility-first, casa com tokens do design system |
+| Estilizacao | Tailwind CSS v3 (`^3.4`) | Utility-first, casa com tokens do design system |
 | Componentes | shadcn/ui | Componentes copiaveis customizaveis |
 | Animacoes | Framer Motion | Padrao React pra animacoes fluidas |
 | Icones | Lucide React | Linhas finas, casa com estetica |
-| HTTP client | **fetch** + React Query (`@tanstack/react-query`) | Cache de dados, revalidacao automatica |
+| HTTP client | **fetch** + hooks customizados (`site/lib/api/hooks/`) | Sem React Query no momento — hooks proprios (`use-tarefas`, `use-categorias`) sobre `fetch` + JWT |
 | Codegen do client | **OpenAPI TypeScript** | Gera client TS a partir do OpenAPI do .NET |
 | Deploy | **Cloudflare Pages** (free tier) | `@cloudflare/next-on-pages` + wrangler. Scripts `pages:build` / `pages:preview` no `site/package.json` |
 
