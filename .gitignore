@@ -37,3 +37,10 @@ yarn-error.log*
 # Logs
 *.log
 logs/
+
+# Contexto / notas internas (nao publicar)
+.claude/
+CLAUDE.md
+LIRIUNTO10K.md
+docs/ESTRATEGIA_LIRIUN.md
+docs/PLANO_NEGOCIO_TEMPLATE.md
