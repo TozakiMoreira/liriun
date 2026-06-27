@@ -13,7 +13,6 @@ import { useAuth } from "@/components/auth/auth-provider";
 const links = [
   { key: "produto", href: "/recursos" },
   { key: "precos", href: "/precos" },
-  { key: "empresa", href: "/empresa" },
 ] as const;
 
 export function SiteNav() {

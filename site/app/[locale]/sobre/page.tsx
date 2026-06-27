@@ -8,5 +8,5 @@ export default async function SobreRedirect({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
-  redirect({ href: "/empresa", locale });
+  redirect({ href: "/", locale });
 }

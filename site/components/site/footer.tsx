@@ -2,7 +2,6 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { LiriunLockup } from "@/components/brand/liriun-lockup";
 import { Button } from "@/components/ui/button";
-import { FooterWidget } from "@/components/site/footer-widget";
 
 type FooterItem = { key: string; href: string; external?: boolean };
 
@@ -17,7 +16,6 @@ const groups: { title: string; items: FooterItem[] }[] = [
   {
     title: "empresa",
     items: [
-      { key: "empresa", href: "/empresa" },
       { key: "contato", href: "mailto:contato@liriun.com", external: true },
     ],
   },
@@ -65,39 +63,12 @@ export function SiteFooter({ showCta = true }: { showCta?: boolean }) {
           </div>
         )}
 
-        <div className="mb-12 hidden md:block">
-          <FooterWidget />
-        </div>
-
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
           <div className="col-span-2">
             <LiriunLockup iconSize={24} textSize={17} />
             <p className="text-sm text-muted mt-[18px] leading-[1.6] max-w-[280px]">
               {t("tagline")}
             </p>
-            <div className="flex gap-[10px] mt-6">
-              {[
-                { id: "instagram", label: "Instagram", href: "https://instagram.com/liriun.com" },
-                { id: "linkedin", label: "LinkedIn", href: "https://linkedin.com/company/liriun" },
-                { id: "x", label: "X (Twitter)", href: "https://x.com/liriunapp" },
-              ].map((s) => (
-                <a
-                  key={s.id}
-                  href={s.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={s.label}
-                  className="block"
-                >
-                  <img
-                    src={`/social/${s.id}.svg`}
-                    alt=""
-                    aria-hidden
-                    className="w-9 h-9 rounded-sm transition-opacity duration-base hover:opacity-85"
-                  />
-                </a>
-              ))}
-            </div>
           </div>
           {groups.map((g) => (
             <div key={g.title}>
@@ -131,9 +102,41 @@ export function SiteFooter({ showCta = true }: { showCta?: boolean }) {
           ))}
         </div>
 
-        <div className="border-t border-border pt-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-2 font-mono text-xs text-faint tracking-[0.4px]">
+        <div className="border-t border-border pt-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 font-mono text-xs text-faint tracking-[0.4px]">
           <span>{t("copyright")}</span>
-          <span>{t("version")}</span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+            <span className="inline-flex items-center gap-1.5">
+              {t("madeBy")}{" "}
+              <a
+                href="https://tomore.co"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="ToMore — tomore.co"
+                className="group inline-flex items-center gap-1 hover:text-text transition-colors"
+              >
+                <span className="inline-flex items-baseline gap-0.5">
+                  <span className="text-faint group-hover:text-violet-300 transition-colors">To</span>
+                  <span className="font-semibold text-muted group-hover:text-text transition-colors">More</span>
+                </span>
+                <svg
+                  width="10"
+                  height="10"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden
+                  className="text-faint group-hover:text-violet-300 transition-all duration-base group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                >
+                  <path d="M7 17l10-10M7 7h10v10" />
+                </svg>
+              </a>
+            </span>
+            <span className="hidden sm:inline text-faint/50">·</span>
+            <span>{t("version")}</span>
+          </div>
         </div>
       </div>
     </footer>
