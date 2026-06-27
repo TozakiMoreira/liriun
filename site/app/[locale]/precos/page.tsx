@@ -6,6 +6,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { SiteNav } from "@/components/site/nav";
 import { SiteFooter } from "@/components/site/footer";
+import { ComingSoon } from "@/components/site/coming-soon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -34,6 +35,7 @@ function PrecosContent() {
   const tFree = useTranslations("Precos.tiers.free");
   const tPro = useTranslations("Precos.tiers.pro");
   const tFaq = useTranslations("Precos.faq");
+  const tAviso = useTranslations("Aviso");
 
   const freeFeatures = (tFree.raw("features") as string[]) ?? [];
   const proFeatures = (tPro.raw("features") as string[]) ?? [];
@@ -76,7 +78,7 @@ function PrecosContent() {
             tagline={tFree("tagline")}
             features={freeFeatures}
             ctaLabel={tFree("ctaLabel")}
-            ctaHref="/login"
+            ctaHref="/cadastro"
           />
           <PricingTier
             name={tPro("name")}
@@ -86,6 +88,7 @@ function PrecosContent() {
             features={proFeatures}
             ctaLabel={tPro("ctaLabel")}
             ctaHref="/contato"
+            comingSoonLabel={tAviso("emDesenvolvimento")}
             disabled
           />
         </div>
@@ -133,6 +136,7 @@ function PricingTier({
   features,
   ctaLabel,
   ctaHref,
+  comingSoonLabel,
 }: {
   highlight?: boolean;
   disabled?: boolean;
@@ -144,6 +148,7 @@ function PricingTier({
   features: string[];
   ctaLabel: string;
   ctaHref: string;
+  comingSoonLabel?: string;
 }) {
   return (
     <div
@@ -187,9 +192,11 @@ function PricingTier({
 
       <div className="mt-auto pt-2">
         {disabled ? (
-          <Button variant="secondary" disabled className="w-full justify-center">
-            {ctaLabel}
-          </Button>
+          <ComingSoon label={comingSoonLabel ?? "Em breve"} className="w-full">
+            <Button variant="secondary" className="w-full justify-center" style={{ opacity: 0.75 }}>
+              {ctaLabel}
+            </Button>
+          </ComingSoon>
         ) : (
           <Link href={ctaHref} className="block">
             <Button className="w-full justify-center">{ctaLabel}</Button>

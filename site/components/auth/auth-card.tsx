@@ -1,4 +1,5 @@
 import { LiriunLockup } from "@/components/brand/liriun-lockup";
+import { IllustrativeBanner } from "@/components/site/illustrative-banner";
 import { Link } from "@/i18n/routing";
 
 export function AuthCard({
@@ -13,8 +14,10 @@ export function AuthCard({
   note?: string;
 }) {
   return (
-    <main
-      className="min-h-screen flex items-center justify-center px-6 py-16"
+    <>
+      <IllustrativeBanner />
+      <main
+      className="min-h-[calc(100vh-2.5rem)] flex items-center justify-center px-6 py-16"
       style={{
         background:
           "radial-gradient(70% 50% at 80% 0%, rgba(156,123,255,0.16) 0%, transparent 60%), radial-gradient(60% 50% at 10% 80%, rgba(91,141,239,0.12) 0%, transparent 60%), var(--liriun-surface)",
@@ -41,6 +44,7 @@ export function AuthCard({
           </div>
         )}
       </div>
-    </main>
+      </main>
+    </>
   );
 }

@@ -119,7 +119,7 @@ function EmpresaContent() {
           <Link href="/recursos">
             <Button variant="secondary">{t("produto.ctaSobre")}</Button>
           </Link>
-          <Link href="/login">
+          <Link href="/cadastro">
             <Button>{t("produto.ctaSignup")}</Button>
           </Link>
         </div>

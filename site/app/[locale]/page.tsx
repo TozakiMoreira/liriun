@@ -2,6 +2,7 @@ export const runtime = "edge";
 
 import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
+import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { SiteNav } from "@/components/site/nav";
@@ -25,6 +26,7 @@ function HomeContent() {
   const tHero = useTranslations("Hero");
   const tRec = useTranslations("Recursos");
   const tStats = useTranslations("Stats");
+  const tAviso = useTranslations("Aviso");
 
   return (
     <main>
@@ -56,14 +58,18 @@ function HomeContent() {
                 {tHero("lead")}
               </p>
               <div className="flex flex-wrap gap-3 mt-6 md:mt-8">
-                <Button>
-                  {tHero("ctaPrimary")}
-                  <ArrowIcon />
-                </Button>
-                <Button variant="secondary">
-                  <PlayIcon />
-                  {tHero("ctaSecondary")}
-                </Button>
+                <Link href="/cadastro">
+                  <Button>
+                    {tHero("ctaPrimary")}
+                    <ArrowIcon />
+                  </Button>
+                </Link>
+                <a href="#recursos">
+                  <Button variant="secondary">
+                    {tHero("ctaSecondary")}
+                    <ChevronDownIcon />
+                  </Button>
+                </a>
               </div>
               <div className="flex flex-wrap gap-x-6 gap-y-2 mt-6 md:mt-8 font-mono text-xs text-faint tracking-[0.3px]">
                 <span>{tHero("rating")}</span>
@@ -71,7 +77,19 @@ function HomeContent() {
               </div>
             </div>
 
-            <HeroPhoneCarousel />
+            <div className="flex flex-col items-center gap-3">
+              <span
+                className="font-mono text-[10px] uppercase tracking-[1.4px] px-3 py-1 rounded-pill"
+                style={{
+                  color: "var(--liriun-violet-300)",
+                  background: "rgba(156,123,255,0.08)",
+                  border: "1px solid rgba(156,123,255,0.22)",
+                }}
+              >
+                {tAviso("telasIlustrativas")}
+              </span>
+              <HeroPhoneCarousel />
+            </div>
           </div>
         </div>
       </section>
@@ -203,10 +221,10 @@ function ArrowIcon() {
   );
 }
 
-function PlayIcon() {
+function ChevronDownIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
-      <polygon points="5 3 19 12 5 21 5 3" />
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9" />
     </svg>
   );
 }

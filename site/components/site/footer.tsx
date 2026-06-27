@@ -55,8 +55,12 @@ export function SiteFooter({ showCta = true }: { showCta?: boolean }) {
               </p>
             </div>
             <div className="flex gap-3 flex-wrap">
-              <Button>{tCta("primary")}</Button>
-              <Button variant="secondary">{tCta("secondary")}</Button>
+              <Link href="/cadastro">
+                <Button>{tCta("primary")}</Button>
+              </Link>
+              <Link href="/login">
+                <Button variant="secondary">{tCta("secondary")}</Button>
+              </Link>
             </div>
           </div>
         )}

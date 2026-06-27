@@ -7,6 +7,7 @@ import { Link } from "@/i18n/routing";
 import { LiriunLockup } from "@/components/brand/liriun-lockup";
 import { Button } from "@/components/ui/button";
 import { LocaleSwitcher } from "@/components/site/locale-switcher";
+import { IllustrativeBanner } from "@/components/site/illustrative-banner";
 import { useAuth } from "@/components/auth/auth-provider";
 
 const links = [
@@ -26,7 +27,9 @@ export function SiteNav() {
   }
 
   return (
-    <nav
+    <>
+      <IllustrativeBanner />
+      <nav
       className="sticky top-0 z-40 backdrop-blur-md border-b border-border"
       style={{ background: "var(--liriun-bg-translucent)" }}
     >
@@ -154,7 +157,8 @@ export function SiteNav() {
           </div>
         </div>
       )}
-    </nav>
+      </nav>
+    </>
   );
 }
 

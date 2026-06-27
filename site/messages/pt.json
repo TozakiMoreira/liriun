@@ -10,7 +10,7 @@
     "empresa": "Empresa",
     "blog": "Blog",
     "entrar": "Entrar",
-    "baixarApp": "Baixar app",
+    "baixarApp": "Entrar no beta",
     "homeAria": "Liriun · página inicial"
   },
   "Hero": {
@@ -19,7 +19,7 @@
     "title2": "conduzida por voz.",
     "lead": "Liriun escuta, organiza e lembra. Um companheiro pessoal de produtividade — sem comandos, sem fricção, em qualquer dispositivo. Em construção, liberado por convite.",
     "ctaPrimary": "Entrar com convite",
-    "ctaSecondary": "Ver demo · 1 min",
+    "ctaSecondary": "Ver recursos",
     "rating": "Em desenvolvimento ativo",
     "users": "Acesso por convite"
   },
@@ -108,7 +108,7 @@
         "price": "R$ 19",
         "period": "/mês · em breve",
         "tagline": "Mais contexto, mais memória, mais integração.",
-        "ctaLabel": "Avise-me",
+        "ctaLabel": "Em breve",
         "features": [
           "Tudo do plano Beta",
           "Histórico de contexto extenso",
@@ -144,9 +144,9 @@
   },
   "FooterCTA": {
     "title": "Comece a falar com o seu dia.",
-    "lead": "Sem cartão de crédito. Disponível em iOS, Android e na web.",
-    "primary": "Baixar app",
-    "secondary": "Ver no navegador"
+    "lead": "Sem cartão de crédito. Beta fechado — entre com seu convite.",
+    "primary": "Criar conta",
+    "secondary": "Já tenho conta"
   },
   "Footer": {
     "tagline": "Companheiro digital de produtividade. Feito com cuidado em São Paulo pela ToMore.",
@@ -251,6 +251,13 @@
     "label": "Idioma",
     "pt": "Português",
     "en": "English"
+  },
+  "Aviso": {
+    "bannerTitulo": "Conteúdo ilustrativo.",
+    "bannerTexto": "O Liriun está em desenvolvimento (beta fechado) — as telas e funcionalidades mostradas são demonstrativas e ainda não estão todas no ar.",
+    "telasIlustrativas": "Telas ilustrativas",
+    "emBreve": "Em breve",
+    "emDesenvolvimento": "Em desenvolvimento · em breve"
   },
   "Auth": {
     "kicker": "Beta fechado · 2026",
