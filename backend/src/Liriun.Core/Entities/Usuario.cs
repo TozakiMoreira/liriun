@@ -18,10 +18,13 @@ public class Usuario
     /// <summary>Fuso horario IANA do usuario (ex: "America/Sao_Paulo"). Default BRT.</summary>
     public string TimeZoneId { get; private set; } = Tarefa.FusoPadrao;
 
+    /// <summary>Conta administradora (acesso a area admin: gerar/listar/revogar codigos beta).</summary>
+    public bool EhAdmin { get; private set; }
+
     private Usuario() { }
 
     internal static Usuario Reconstituir(
-        Guid id, string nome, string email, string senhaHash, string? fotoUrl, DateTime criadoEm, DateTime? termosAceitosEm, string? timeZoneId = null)
+        Guid id, string nome, string email, string senhaHash, string? fotoUrl, DateTime criadoEm, DateTime? termosAceitosEm, string? timeZoneId = null, bool ehAdmin = false)
         => new()
         {
             Id = id,
@@ -32,6 +35,7 @@ public class Usuario
             CriadoEm = criadoEm,
             TermosAceitosEm = termosAceitosEm,
             TimeZoneId = NormalizarFuso(timeZoneId),
+            EhAdmin = ehAdmin,
         };
 
     public static Result<Usuario> Criar(string nome, string email, string senhaHash, DateTime? termosAceitosEm = null, string? timeZoneId = null)
@@ -55,6 +59,9 @@ public class Usuario
 
         return Result<Usuario>.Success(usuario);
     }
+
+    /// <summary>Promove a conta a administradora (usado pelo seed por Admin:Email).</summary>
+    public void PromoverAdmin() => EhAdmin = true;
 
     public Result AtualizarNome(string novoNome)
     {

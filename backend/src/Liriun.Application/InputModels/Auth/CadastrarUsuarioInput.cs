@@ -5,4 +5,5 @@ public sealed record CadastrarUsuarioInput(
     string Email,
     string Senha,
     bool AceitouTermos,
+    string CodigoBeta,
     string? TimeZoneId = null);

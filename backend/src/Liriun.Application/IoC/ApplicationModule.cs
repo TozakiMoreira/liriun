@@ -1,4 +1,5 @@
 using FluentValidation;
+using Liriun.Application.UseCases.Admin;
 using Liriun.Application.UseCases.Auth;
 using Liriun.Application.UseCases.Categorias;
 using Liriun.Application.UseCases.Ia;
@@ -36,6 +37,10 @@ public static class ApplicationModule
         services.AddScoped<RemoverTarefaUseCase>();
 
         services.AddScoped<ConversarCapturaUseCase>();
+
+        services.AddScoped<GerarCodigoBetaUseCase>();
+        services.AddScoped<ListarCodigosBetaUseCase>();
+        services.AddScoped<RevogarCodigoBetaUseCase>();
 
         return services;
     }

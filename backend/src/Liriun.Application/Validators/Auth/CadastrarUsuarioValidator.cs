@@ -18,6 +18,9 @@ public sealed class CadastrarUsuarioValidator : AbstractValidator<CadastrarUsuar
 
         RuleFor(x => x.Senha).SenhaForte();
 
+        RuleFor(x => x.CodigoBeta)
+            .NotEmpty().WithMessage("Codigo beta e obrigatorio");
+
         RuleFor(x => x.AceitouTermos)
             .Equal(true).WithMessage("Voce precisa aceitar os Termos de Uso e a Politica de Privacidade");
     }

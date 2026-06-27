@@ -10,7 +10,7 @@ public class CadastrarUsuarioValidatorTests
     private readonly CadastrarUsuarioValidator _validator = new();
 
     private static CadastrarUsuarioInput Input(string senha)
-        => new("Lucas", "lucas@ex.com", senha, true);
+        => new("Lucas", "lucas@ex.com", senha, true, "LRN-TESTE");
 
     [Fact]
     public void Senha_valida_passa()
@@ -70,7 +70,7 @@ public class CadastrarUsuarioValidatorTests
     [Fact]
     public void Email_sem_arroba_falha()
     {
-        ValidationResult r = _validator.Validate(new CadastrarUsuarioInput("Lucas", "invalido", "Senha123!", true));
+        ValidationResult r = _validator.Validate(new CadastrarUsuarioInput("Lucas", "invalido", "Senha123!", true, "LRN-TESTE"));
         r.IsValid.Should().BeFalse();
         r.Errors.Should().Contain(e => e.PropertyName == "Email");
     }
@@ -78,7 +78,7 @@ public class CadastrarUsuarioValidatorTests
     [Fact]
     public void Nome_vazio_falha()
     {
-        ValidationResult r = _validator.Validate(new CadastrarUsuarioInput("", "lucas@ex.com", "Senha123!", true));
+        ValidationResult r = _validator.Validate(new CadastrarUsuarioInput("", "lucas@ex.com", "Senha123!", true, "LRN-TESTE"));
         r.IsValid.Should().BeFalse();
         r.Errors.Should().Contain(e => e.PropertyName == "Nome");
     }
@@ -86,9 +86,17 @@ public class CadastrarUsuarioValidatorTests
     [Fact]
     public void AceitouTermos_false_falha()
     {
-        ValidationResult r = _validator.Validate(new CadastrarUsuarioInput("Lucas", "lucas@ex.com", "Senha123!", false));
+        ValidationResult r = _validator.Validate(new CadastrarUsuarioInput("Lucas", "lucas@ex.com", "Senha123!", false, "LRN-TESTE"));
         r.IsValid.Should().BeFalse();
         r.Errors.Should().Contain(e => e.PropertyName == "AceitouTermos"
             && e.ErrorMessage.Contains("Termos"));
+    }
+
+    [Fact]
+    public void CodigoBeta_vazio_falha()
+    {
+        ValidationResult r = _validator.Validate(new CadastrarUsuarioInput("Lucas", "lucas@ex.com", "Senha123!", true, ""));
+        r.IsValid.Should().BeFalse();
+        r.Errors.Should().Contain(e => e.PropertyName == "CodigoBeta");
     }
 }

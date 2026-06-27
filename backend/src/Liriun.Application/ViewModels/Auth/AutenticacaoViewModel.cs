@@ -6,4 +6,5 @@ public sealed record AutenticacaoViewModel(
     string Email,
     string? FotoUrl,
     string Token,
-    DateTime ExpiraEm);
+    DateTime ExpiraEm,
+    bool EhAdmin);

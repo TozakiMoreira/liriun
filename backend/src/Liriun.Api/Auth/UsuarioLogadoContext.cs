@@ -16,6 +16,9 @@ public class UsuarioLogadoContext : IUsuarioLogado
     public bool EstaAutenticado =>
         _http.HttpContext?.User?.Identity?.IsAuthenticated ?? false;
 
+    public bool EhAdmin =>
+        _http.HttpContext?.User?.IsInRole("Admin") ?? false;
+
     public Guid Id
     {
         get

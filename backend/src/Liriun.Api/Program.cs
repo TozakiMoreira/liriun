@@ -4,7 +4,9 @@ using Liriun.Api.Middlewares;
 using Liriun.Application.Interfaces.Auth;
 using Liriun.Application.IoC;
 using Liriun.Infrastructure.IoC;
+using Liriun.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 
@@ -74,21 +76,34 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy => policy.RequireRole("Admin"));
+});
 
 const string CorsFront = "FrontDev";
+string[] origensProducao =
+[
+    "https://liriun.com",
+    "https://www.liriun.com",
+    "https://app.liriun.com"
+];
+string[] origensDev =
+[
+    "http://localhost:3000", // Next.js dev (site/)
+    "http://localhost:8080", // Flutter Web dev
+    "http://localhost:5173"  // Vite (caso futuro)
+];
+// localhost so e liberado em Development; em producao apenas os dominios liriun.com.
+string[] origensPermitidas = builder.Environment.IsDevelopment()
+    ? [.. origensProducao, .. origensDev]
+    : origensProducao;
 builder.Services.AddCors(opt =>
 {
     opt.AddPolicy(CorsFront, policy =>
     {
         policy
-            .WithOrigins(
-                "http://localhost:3000", // Next.js dev (site/)
-                "http://localhost:8080", // Flutter Web dev
-                "http://localhost:5173", // Vite (caso futuro)
-                "https://liriun.com",
-                "https://www.liriun.com",
-                "https://app.liriun.com")
+            .WithOrigins(origensPermitidas)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -96,6 +111,28 @@ builder.Services.AddCors(opt =>
 });
 
 WebApplication app = builder.Build();
+
+// Seed admin (idempotente): promove a conta de Admin:Email a administradora. No-op se o
+// email ainda nao existir. Uma falha aqui (ex.: migration ainda nao aplicada) NAO derruba
+// a API — da pra promover manualmente via SQL no Supabase. O dono precisa relogar depois
+// para o JWT carregar a claim de admin.
+string? adminEmail = app.Configuration["Admin:Email"];
+if (!string.IsNullOrWhiteSpace(adminEmail))
+{
+    try
+    {
+        using IServiceScope scope = app.Services.CreateScope();
+        LiriunDbContext db = scope.ServiceProvider.GetRequiredService<LiriunDbContext>();
+        string adminEmailNorm = adminEmail.Trim().ToLowerInvariant();
+        await db.Usuarios
+            .Where(u => u.Email == adminEmailNorm)
+            .ExecuteUpdateAsync(s => s.SetProperty(u => u.EhAdmin, true));
+    }
+    catch (Exception ex)
+    {
+        Console.Error.WriteLine($"[seed-admin] Nao foi possivel promover o admin: {ex.Message}");
+    }
+}
 
 if (app.Environment.IsDevelopment())
 {

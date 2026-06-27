@@ -6,4 +6,5 @@ public interface IUsuarioLogado
     string Email { get; }
     string TimeZoneId { get; }
     bool EstaAutenticado { get; }
+    bool EhAdmin { get; }
 }

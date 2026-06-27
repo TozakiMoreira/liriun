@@ -49,6 +49,6 @@ public class AtualizarFotoPerfilUseCase
         await _usuarios.AtualizarAsync(usuario, ct);
 
         return Result<PerfilViewModel>.Success(
-            new PerfilViewModel(usuario.Id, usuario.Nome, usuario.Email, usuario.FotoUrl));
+            new PerfilViewModel(usuario.Id, usuario.Nome, usuario.Email, usuario.FotoUrl, usuario.EhAdmin));
     }
 }

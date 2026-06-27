@@ -25,6 +25,6 @@ public class ObterPerfilUseCase
             return Result<PerfilViewModel>.Failure(UsuarioErrors.NaoEncontrado());
 
         return Result<PerfilViewModel>.Success(new PerfilViewModel(
-            usuario.Id, usuario.Nome, usuario.Email, usuario.FotoUrl));
+            usuario.Id, usuario.Nome, usuario.Email, usuario.FotoUrl, usuario.EhAdmin));
     }
 }

@@ -21,14 +21,19 @@ public class JwtTokenService : IJwtTokenService
         var chave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Secret));
         var credenciais = new SigningCredentials(chave, SecurityAlgorithms.HmacSha256);
 
-        var claims = new[]
+        var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.Email, usuario.Email),
-            new Claim("nome", usuario.Nome),
-            new Claim("tz", usuario.TimeZoneId),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new(JwtRegisteredClaimNames.Sub, usuario.Id.ToString()),
+            new(JwtRegisteredClaimNames.Email, usuario.Email),
+            new("nome", usuario.Nome),
+            new("tz", usuario.TimeZoneId),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
+
+        // Papel admin (usa ClaimTypes.Role = RoleClaimType default do JwtBearer, entao
+        // [Authorize(Roles="Admin")]/RequireRole funcionam sem config extra).
+        if (usuario.EhAdmin)
+            claims.Add(new Claim(ClaimTypes.Role, "Admin"));
 
         var expira = DateTime.UtcNow.AddHours(_options.ExpirationHours);
 

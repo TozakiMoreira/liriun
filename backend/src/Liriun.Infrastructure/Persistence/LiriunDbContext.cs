@@ -11,6 +11,7 @@ public class LiriunDbContext : DbContext
     public DbSet<CategoriaModel> Categorias => Set<CategoriaModel>();
     public DbSet<TarefaModel> Tarefas => Set<TarefaModel>();
     public DbSet<TarefaCategoriaModel> TarefasCategorias => Set<TarefaCategoriaModel>();
+    public DbSet<CodigoBetaModel> CodigosBeta => Set<CodigoBetaModel>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
