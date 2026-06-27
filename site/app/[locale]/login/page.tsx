@@ -31,16 +31,15 @@ export default function LoginPage() {
       const usuario = await login(email.trim(), senha);
       setUsuario(usuario);
       router.replace("/app/falar");
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      setErro(`${t("erroLogin")} (${msg})`);
+    } catch {
+      setErro(t("erroLogin"));
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <AuthCard title={t("loginTitle")} lead={t("loginLead")}>
+    <AuthCard title={t("loginTitle")} lead={t("loginLead")} note={t("avisoServidor")}>
       <form onSubmit={onSubmit} className="flex flex-col gap-3">
         <Field
           type="email"

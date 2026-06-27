@@ -21,6 +21,7 @@ export default function CadastroPage() {
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [codigoBeta, setCodigoBeta] = useState("");
   const [aceitouTermos, setAceitouTermos] = useState(false);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
@@ -30,11 +31,18 @@ export default function CadastroPage() {
     if (nome.trim().length === 0) return setErro(t("erroNomeObrigatorio"));
     if (!email.includes("@")) return setErro(t("erroEmailInvalido"));
     if (!senhaAtendeRequisitos(senha)) return setErro(t("erroSenhaCurta"));
+    if (codigoBeta.trim().length === 0) return setErro(t("erroCodigoBetaObrigatorio"));
     if (!aceitouTermos) return setErro(t("erroAceiteTermos"));
     setLoading(true);
     setErro(null);
     try {
-      const usuario = await cadastrar({ nome: nome.trim(), email: email.trim(), senha, aceitouTermos });
+      const usuario = await cadastrar({
+        nome: nome.trim(),
+        email: email.trim(),
+        senha,
+        aceitouTermos,
+        codigoBeta: codigoBeta.trim().toUpperCase(),
+      });
       setUsuario(usuario);
       router.replace("/app/falar");
     } catch (err) {
@@ -45,7 +53,7 @@ export default function CadastroPage() {
   }
 
   return (
-    <AuthCard title={t("signupTitle")} lead={t("signupLead")}>
+    <AuthCard title={t("signupTitle")} lead={t("signupLead")} note={t("avisoServidor")}>
       <form onSubmit={onSubmit} className="flex flex-col gap-3">
         <input
           type="text"
@@ -73,6 +81,17 @@ export default function CadastroPage() {
         />
         <div className="mt-1">
           <PasswordRequirements senha={senha} />
+        </div>
+        <div className="mt-2">
+          <input
+            type="text"
+            autoComplete="off"
+            placeholder={t("codigoBeta")}
+            value={codigoBeta}
+            onChange={(e) => setCodigoBeta(e.target.value)}
+            className="w-full bg-white/[0.05] border border-border-hi rounded-md px-4 py-3 text-base text-text placeholder:text-faint focus:outline-none focus:border-violet-500/60 uppercase tracking-widest"
+          />
+          <p className="mt-1.5 text-xs text-faint">{t("codigoBetaHint")}</p>
         </div>
         <div className="flex items-start gap-3 mt-2 text-sm text-muted leading-[1.5]">
           <input

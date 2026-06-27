@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 import { AppPageHeader } from "@/components/app/page-header";
+import { BetaCodigosCard } from "@/components/app/beta-codigos-card";
 import { AlterarSenhaModal } from "@/components/app/alterar-senha-modal";
 import { EditarPerfilModal } from "@/components/app/editar-perfil-modal";
 import { ExcluirContaModal } from "@/components/app/excluir-conta-modal";
@@ -123,6 +124,9 @@ export default function ConfiguracoesPage() {
             <IntegracaoRow nome="Slack" status="em breve" />
           </div>
         </Card>
+
+        {/* Códigos beta — somente admin */}
+        {usuario.ehAdmin && <BetaCodigosCard />}
 
         {/* Conta */}
         <Card>

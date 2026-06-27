@@ -14,14 +14,14 @@
     "homeAria": "Liriun · home"
   },
   "Hero": {
-    "badge": "Open beta · May 2026",
+    "badge": "Closed beta · in development",
     "title1": "Your task list,",
     "title2": "guided by voice.",
-    "lead": "Liriun listens, organizes and remembers. A personal productivity companion — no commands, no friction, on every device.",
-    "ctaPrimary": "Start free",
+    "lead": "Liriun listens, organizes and remembers. A personal productivity companion — no commands, no friction, on every device. In the making, invite-only.",
+    "ctaPrimary": "Enter with invite",
     "ctaSecondary": "Watch demo · 1 min",
-    "rating": "★★★★★  4.9 · App Store",
-    "users": "12,000+ users"
+    "rating": "In active development",
+    "users": "Invite-only access"
   },
   "Recursos": {
     "kicker": "Features",
@@ -42,9 +42,9 @@
     }
   },
   "Stats": {
-    "users": "active users",
-    "accuracy": "transcription accuracy",
-    "latency": "average latency",
+    "acesso": "invite-only access",
+    "captura": "voice capture",
+    "sync": "iOS · Android · Web",
     "lgpd": "encrypted data"
   },
   "RecursosPage": {
@@ -75,23 +75,23 @@
       "lead": "We don't train AI on your content. We don't sell it. We don't share it. JSON export in one click."
     },
     "ctaTitle": "Start speaking.",
-    "ctaLead": "Open beta, free.",
+    "ctaLead": "Closed beta · invite-only, free.",
     "ctaButton": "Create account"
   },
   "Precos": {
     "title": "Pricing",
-    "description": "Liriun plans — V1 free for everyone during the open beta.",
+    "description": "Liriun plans — V1 free for everyone during the closed beta.",
     "kicker": "Plans",
     "heroLine1": "Start free.",
     "heroLine2": "Always.",
-    "lead": "Liriun is free during the open beta. In 2027 we'll launch an optional Pro plan — without ever taking features away from the free plan.",
-    "betaBadge": "Beta · May 2026",
+    "lead": "Liriun is free during the closed beta. In 2027 we'll launch an optional Pro plan — without ever taking features away from the free plan.",
+    "betaBadge": "Closed beta · 2026",
     "tiers": {
       "free": {
         "name": "Beta",
         "price": "$0",
         "period": "forever",
-        "tagline": "Everything in Liriun, free during the open beta.",
+        "tagline": "Everything in Liriun, free during the closed beta.",
         "ctaLabel": "Start free",
         "features": [
           "Unlimited tasks",
@@ -253,16 +253,18 @@
     "en": "English"
   },
   "Auth": {
-    "kicker": "Beta · May 2026",
+    "kicker": "Closed beta · 2026",
     "loginTitle": "Good to see you",
     "loginLead": "Your next task, spoken.",
     "signupTitle": "Create account",
-    "signupLead": "Open beta · free.",
+    "signupLead": "Closed beta · invite-only.",
     "recoverTitle": "Recover password",
     "recoverLead": "We'll email a link for you to reset your password.",
     "email": "Email",
     "senha": "Password",
     "nome": "Name",
+    "codigoBeta": "Beta code",
+    "codigoBetaHint": "Liriun is in closed beta. You need an invite code to create your account.",
     "entrar": "Sign in",
     "criarConta": "Create account",
     "jaTemConta": "I already have an account — sign in",
@@ -284,8 +286,10 @@
     "erroSenhaCurta": "Password must meet all requirements.",
     "erroNomeObrigatorio": "Name is required.",
     "erroAceiteTermos": "You must accept the Terms and the Privacy Policy.",
+    "erroCodigoBetaObrigatorio": "Enter your beta invite code.",
     "erroLogin": "Login failed. Check email and password.",
-    "linkEnviado": "Link sent. Check your inbox."
+    "linkEnviado": "Link sent. Check your inbox.",
+    "avisoServidor": "Liriun is in development and runs on a free server hosted in the US during the beta. The first action after some idle time may take a few seconds while the server \"wakes up\", and you might notice slight latency. Thanks for your patience. 💜"
   },
   "AppShell": {
     "falar": "Speak",

@@ -124,9 +124,9 @@ function HomeContent() {
           style={{ background: "rgba(255,255,255,0.035)" }}
         >
           {[
-            ["12k+", tStats("users")],
-            ["98%", tStats("accuracy")],
-            ["< 800ms", tStats("latency")],
+            ["Beta", tStats("acesso")],
+            ["Voz", tStats("captura")],
+            ["Sync", tStats("sync")],
             ["LGPD", tStats("lgpd")],
           ].map(([n, label]) => (
             <div key={label} className="md:not-first:pl-6 md:not-first:border-l border-border">

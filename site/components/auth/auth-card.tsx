@@ -5,10 +5,12 @@ export function AuthCard({
   title,
   lead,
   children,
+  note,
 }: {
   title: string;
   lead?: string;
   children: React.ReactNode;
+  note?: string;
 }) {
   return (
     <main
@@ -27,6 +29,17 @@ export function AuthCard({
         </h1>
         {lead && <p className="text-base text-muted leading-[1.55] mt-3 text-left">{lead}</p>}
         <div className="mt-8 text-left">{children}</div>
+        {note && (
+          <div
+            className="mt-6 text-left rounded-md px-4 py-3 text-xs leading-[1.55] text-muted"
+            style={{
+              background: "rgba(156,123,255,0.06)",
+              border: "1px solid rgba(156,123,255,0.18)",
+            }}
+          >
+            {note}
+          </div>
+        )}
       </div>
     </main>
   );

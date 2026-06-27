@@ -14,14 +14,14 @@
     "homeAria": "Liriun · página inicial"
   },
   "Hero": {
-    "badge": "Beta aberto · maio 2026",
+    "badge": "Beta fechado · em desenvolvimento",
     "title1": "Sua lista de tarefas,",
     "title2": "conduzida por voz.",
-    "lead": "Liriun escuta, organiza e lembra. Um companheiro pessoal de produtividade — sem comandos, sem fricção, em qualquer dispositivo.",
-    "ctaPrimary": "Começar grátis",
+    "lead": "Liriun escuta, organiza e lembra. Um companheiro pessoal de produtividade — sem comandos, sem fricção, em qualquer dispositivo. Em construção, liberado por convite.",
+    "ctaPrimary": "Entrar com convite",
     "ctaSecondary": "Ver demo · 1 min",
-    "rating": "★★★★★  4.9 · App Store",
-    "users": "+ de 12.000 usuários"
+    "rating": "Em desenvolvimento ativo",
+    "users": "Acesso por convite"
   },
   "Recursos": {
     "kicker": "Recursos",
@@ -42,9 +42,9 @@
     }
   },
   "Stats": {
-    "users": "usuários ativos",
-    "accuracy": "precisão de transcrição",
-    "latency": "latência média",
+    "acesso": "acesso por convite",
+    "captura": "captura por voz",
+    "sync": "iOS · Android · Web",
     "lgpd": "dados criptografados"
   },
   "RecursosPage": {
@@ -75,23 +75,23 @@
       "lead": "Não treinamos IA com seu conteúdo. Não vendemos. Não compartilhamos. Exportação JSON a um clique."
     },
     "ctaTitle": "Comece a falar.",
-    "ctaLead": "Beta aberto, gratuito.",
+    "ctaLead": "Beta fechado · por convite, gratuito.",
     "ctaButton": "Criar conta"
   },
   "Precos": {
     "title": "Preços",
-    "description": "Planos do Liriun — V1 gratuita pra todos durante o beta aberto.",
+    "description": "Planos do Liriun — V1 gratuita pra todos durante o beta fechado.",
     "kicker": "Planos",
     "heroLine1": "Comece grátis.",
     "heroLine2": "Sempre.",
-    "lead": "O Liriun é gratuito durante o beta aberto. Em 2027 lançaremos um plano Pro opcional — sem nunca tirar funcionalidade do plano grátis.",
-    "betaBadge": "Beta · maio 2026",
+    "lead": "O Liriun é gratuito durante o beta fechado. Em 2027 lançaremos um plano Pro opcional — sem nunca tirar funcionalidade do plano grátis.",
+    "betaBadge": "Beta fechado · 2026",
     "tiers": {
       "free": {
         "name": "Beta",
         "price": "R$ 0",
         "period": "para sempre",
-        "tagline": "Tudo do Liriun, gratuito durante o beta aberto.",
+        "tagline": "Tudo do Liriun, gratuito durante o beta fechado.",
         "ctaLabel": "Começar grátis",
         "features": [
           "Tarefas ilimitadas",
@@ -253,16 +253,18 @@
     "en": "English"
   },
   "Auth": {
-    "kicker": "Beta · maio 2026",
+    "kicker": "Beta fechado · 2026",
     "loginTitle": "Bom te ver",
     "loginLead": "Sua próxima tarefa, na voz.",
     "signupTitle": "Criar conta",
-    "signupLead": "Beta aberto · gratuito.",
+    "signupLead": "Beta fechado · acesso por convite.",
     "recoverTitle": "Recuperar senha",
     "recoverLead": "Enviaremos um link pra você redefinir sua senha.",
     "email": "E-mail",
     "senha": "Senha",
     "nome": "Nome",
+    "codigoBeta": "Código beta",
+    "codigoBetaHint": "O Liriun está em beta fechado. Você precisa de um código de convite para criar sua conta.",
     "entrar": "Entrar",
     "criarConta": "Criar conta",
     "jaTemConta": "Já tenho conta — entrar",
@@ -284,8 +286,10 @@
     "erroSenhaCurta": "Senha precisa atender todos os requisitos.",
     "erroNomeObrigatorio": "Nome obrigatório.",
     "erroAceiteTermos": "É preciso aceitar os Termos e a Política de Privacidade.",
+    "erroCodigoBetaObrigatorio": "Informe seu código de convite para o beta.",
     "erroLogin": "Falha no login. Verifique e-mail e senha.",
-    "linkEnviado": "Link enviado. Confira seu e-mail."
+    "linkEnviado": "Link enviado. Confira seu e-mail.",
+    "avisoServidor": "O Liriun está em desenvolvimento e roda em servidor gratuito hospedado nos EUA durante o beta. A primeira ação após um tempo parado pode levar alguns segundos enquanto o servidor \"acorda\", e pode haver leve latência. Obrigado pela paciência. 💜"
   },
   "AppShell": {
     "falar": "Falar",

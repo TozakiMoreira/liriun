@@ -69,13 +69,19 @@ public class CadastrarUsuarioUseCase
 
         // Consumo do codigo + criacao do usuario na MESMA transacao: se um falha, o outro
         // e desfeito (o codigo so e "gasto" se a conta realmente for criada).
+        //
+        // Ordem importa: o usuario e inserido ANTES do consumo, porque ConsumirAtomicoAsync
+        // seta codigos_beta.usado_por_usuario_id (FK -> usuarios.id). No PostgreSQL a FK e
+        // verificada imediatamente, entao o usuario precisa existir antes do UPDATE. Se o
+        // codigo for invalido, o Failure dispara o rollback e a insercao do usuario e desfeita.
         Result<Usuario> persistencia = await _uow.ExecuteInTransactionAsync(async token =>
         {
+            await _usuarios.AdicionarAsync(usuario, token);
+
             Result consumo = await _codigosBeta.ConsumirAtomicoAsync(codigoNormalizado, usuario.Id, DateTime.UtcNow, token);
             if (consumo.IsFailure)
                 return Result<Usuario>.Failure(consumo.Error!);
 
-            await _usuarios.AdicionarAsync(usuario, token);
             return Result<Usuario>.Success(usuario);
         }, ct);
 

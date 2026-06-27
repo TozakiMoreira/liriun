@@ -26,15 +26,16 @@ export default function EsqueciSenhaPage() {
     try {
       await esqueciSenha(email.trim());
       setEnviado(true);
-    } catch (err) {
-      setErro(err instanceof Error ? err.message : t("erroLogin"));
+    } catch {
+      // Anti-enumeração: não revela se o e-mail existe — sempre confirma envio.
+      setEnviado(true);
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <AuthCard title={t("recoverTitle")} lead={t("recoverLead")}>
+    <AuthCard title={t("recoverTitle")} lead={t("recoverLead")} note={t("avisoServidor")}>
       {enviado ? (
         <div className="text-base text-success leading-[1.55] mt-2">{t("linkEnviado")}</div>
       ) : (

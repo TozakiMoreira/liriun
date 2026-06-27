@@ -5,6 +5,7 @@ export type Usuario = {
   nome: string;
   email: string;
   fotoUrl: string | null;
+  ehAdmin: boolean;
 };
 
 /**
@@ -17,10 +18,11 @@ type AutenticacaoBackend = {
   fotoUrl: string | null;
   token: string;
   expiraEm: string;
+  ehAdmin: boolean;
 };
 
 function mapAuth(res: AutenticacaoBackend): Usuario {
-  return { id: res.usuarioId, nome: res.nome, email: res.email, fotoUrl: res.fotoUrl };
+  return { id: res.usuarioId, nome: res.nome, email: res.email, fotoUrl: res.fotoUrl, ehAdmin: res.ehAdmin ?? false };
 }
 
 export async function login(email: string, senha: string): Promise<Usuario> {
@@ -47,6 +49,7 @@ export async function cadastrar(input: {
   email: string;
   senha: string;
   aceitouTermos: boolean;
+  codigoBeta: string;
 }): Promise<Usuario> {
   const res = await api<AutenticacaoBackend>("/auth/cadastro", {
     method: "POST",
@@ -70,10 +73,11 @@ type PerfilBackend = {
   nome: string;
   email: string;
   fotoUrl: string | null;
+  ehAdmin: boolean;
 };
 
 function mapPerfil(p: PerfilBackend): Usuario {
-  return { id: p.id, nome: p.nome, email: p.email, fotoUrl: p.fotoUrl };
+  return { id: p.id, nome: p.nome, email: p.email, fotoUrl: p.fotoUrl, ehAdmin: p.ehAdmin ?? false };
 }
 
 export async function meuPerfil(): Promise<Usuario> {

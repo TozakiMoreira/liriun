@@ -81,11 +81,13 @@ public class CadastrarUsuarioUseCaseTests
     }
 
     [Fact]
-    public async Task Retorna_falha_e_nao_cria_usuario_quando_codigo_beta_invalido()
+    public async Task Retorna_falha_e_nao_emite_token_quando_codigo_beta_invalido()
     {
         _usuarioRead.Setup(r => r.ExisteEmailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(false);
         _hasher.Setup(h => h.Hash(It.IsAny<string>())).Returns("hash-fake");
+        _usuarios.Setup(r => r.AdicionarAsync(It.IsAny<Usuario>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Usuario u, CancellationToken _) => u);
         _codigosBeta.Setup(r => r.ConsumirAtomicoAsync(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(Result.Failure(CodigoBetaErrors.CodigoInvalido()));
 
@@ -94,7 +96,35 @@ public class CadastrarUsuarioUseCaseTests
 
         result.IsFailure.Should().BeTrue();
         result.Error!.Code.Should().Be("codigo-beta.invalido");
-        _usuarios.Verify(r => r.AdicionarAsync(It.IsAny<Usuario>(), It.IsAny<CancellationToken>()), Times.Never);
+        // A garantia de "usuario nao persiste" vem do rollback da transacao (a acao retorna
+        // Failure). Aqui validamos que nenhum token e emitido para um codigo invalido.
+        _jwt.Verify(j => j.Gerar(It.IsAny<Usuario>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Insere_usuario_antes_de_consumir_codigo()
+    {
+        _usuarioRead.Setup(r => r.ExisteEmailAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+        _hasher.Setup(h => h.Hash(It.IsAny<string>())).Returns("hash-fake");
+        _jwt.Setup(j => j.Gerar(It.IsAny<Usuario>()))
+            .Returns(("token-fake", DateTime.UtcNow.AddHours(24)));
+
+        List<string> ordem = new();
+        _usuarios.Setup(r => r.AdicionarAsync(It.IsAny<Usuario>(), It.IsAny<CancellationToken>()))
+            .Callback(() => ordem.Add("usuario"))
+            .ReturnsAsync((Usuario u, CancellationToken _) => u);
+        _codigosBeta.Setup(r => r.ConsumirAtomicoAsync(It.IsAny<string>(), It.IsAny<Guid>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
+            .Callback(() => ordem.Add("codigo"))
+            .ReturnsAsync(Result.Success());
+
+        CadastrarUsuarioInput input = new("Pedro", "pedro@ex.com", "senha1234", true, "LRN-TESTE");
+        Result<AutenticacaoViewModel> result = await Criar().ExecuteAsync(input, CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        // FK codigos_beta.usado_por_usuario_id -> usuarios.id: o usuario PRECISA ser inserido
+        // antes do UPDATE de consumo, senao o Postgres rejeita a FK. Trava a ordem.
+        ordem.Should().Equal("usuario", "codigo");
     }
 
     [Fact]
