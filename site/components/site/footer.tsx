@@ -108,15 +108,15 @@ export function SiteFooter({ showCta = true }: { showCta?: boolean }) {
             <span className="inline-flex items-center gap-1.5">
               {t("madeBy")}{" "}
               <a
-                href="https://tomore.co"
+                href="https://tozaki.dev"
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="ToMore — tomore.co"
+                aria-label="Pedro Tozaki — tozaki.dev"
                 className="group inline-flex items-center gap-1 hover:text-text transition-colors"
               >
                 <span className="inline-flex items-baseline gap-0.5">
-                  <span className="text-faint group-hover:text-violet-300 transition-colors">To</span>
-                  <span className="font-semibold text-muted group-hover:text-text transition-colors">More</span>
+                  <span className="text-faint group-hover:text-violet-300 transition-colors">pedro</span>
+                  <span className="font-semibold text-muted group-hover:text-text transition-colors">tozaki</span>
                 </span>
                 <svg
                   width="10"
