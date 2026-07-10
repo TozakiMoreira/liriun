@@ -2,33 +2,26 @@
 
 Organizador pessoal de tarefas com agente de voz.
 
-## Direção atual (2026-06-15)
+## Direção atual
 
-Produto **multi-cliente com agente de voz**, em **monorepo único** (branch `main`):
+Produto **multi-cliente com agente de voz**, **projeto pessoal e solo do Pedro Tozaki**, em **monorepo único** (branch `main`):
 
-- **Backend .NET centralizado** — fonte única de verdade (lógica + dados + auth), **1 banco Supabase único** (mesmo do V1, sem criar novo). Atende:
-  - **Site Next.js** (`site/`) — substitui o Angular V1, mesma funcionalidade modernizada — **sócio**
-  - **App Flutter mobile** (`app/`, Android + iOS APENAS — sem Web) — agente de voz como diferencial — **Pedro**
-  - **Plataformas futuras** (smartwatch, Alexa skill, browser extension, etc) — todas consomem a mesma API REST
+- **Backend .NET centralizado** — fonte única de verdade (lógica + dados + auth), **1 banco Supabase único** (dev=prod). Atende:
+  - **Site Next.js** (`site/`) — institucional + área logada. No ar em **liriun.com**, em desenvolvimento. **Foco atual.**
+  - **App Flutter mobile** (`app/`, Android + iOS APENAS — sem Web) — agente de voz como diferencial. **Será refeito do zero** depois do site.
+  - **Plataformas futuras** (smartwatch, extensão, etc) — todas consomem a mesma API REST
 
 ```
 Site (Next.js)   ─┐
-App Flutter      ─┼─→ Backend .NET ─→ Supabase Postgres (1 banco único)
+App Flutter      ─┼─→ Backend .NET ─→ Supabase Postgres (1 banco único, dev=prod)
 Plataformas fut  ─┘   (REST + JWT + Gemini)
 ```
 
-> **Angular V1 (`front/`) foi removido** do disco em 2026-06-15. Era o produto pré-pivô; o source segue preservado no histórico git (commit `3bad961^`) pra consulta — `git show 3bad961^:front/src/...`.
+> O Angular V1 (`front/`) foi removido em 2026-06-15 (source no histórico git `3bad961^`). O app Flutter atual será
+> descartado e reconstruído. Tudo (site + app) é feito pelo Pedro.
 
-### Plano de migração
-1. ✅ Angular V1 (`front/`) removido — source no histórico git (`3bad961^`)
-2. Pedro cria app Flutter cobrindo tudo que o Angular fazia
-3. Sócio migra → Next.js (`site/`) cobrindo tudo que o Angular fazia
-4. Evolução continua só no app + site (novas features daí pra frente)
-5. Schema do banco evolui livre — sem mais Angular pra quebrar
-
-> **Estratégia de repo:** monorepo único. Decisão + gatilhos de split em [`docs/CONTEXTO_APP.md`](docs/CONTEXTO_APP.md).
-> **Fonte autoritativa de decisões técnicas e arquitetura:** [`docs/CONTEXTO_APP.md`](docs/CONTEXTO_APP.md).
-> **Style guide visual:** [`docs/design-ref/Liriun · Visual Reference · Print.pdf`](docs/design-ref/).
+> **Fonte autoritativa de decisões técnicas, arquitetura e estado atual:** [`docs/CONTEXTO_APP.md`](docs/CONTEXTO_APP.md).
+> **Style guide visual (provisório):** [`docs/design-ref/`](docs/design-ref/) + `docs/Identidade Visual/Rebranding/brand-kit/`.
 
 ## Sumário
 
@@ -53,17 +46,17 @@ Plataformas fut  ─┘   (REST + JWT + Gemini)
 | ORM | Entity Framework Core 9 + Npgsql |
 | Banco | PostgreSQL no Supabase (mesmo banco do V1, mantemos) |
 | Auth | JWT Bearer (HS256) + BCrypt + Google/Apple Sign-In (a adicionar) |
-| IA | Google Gemini API (`gemini-2.0-flash` por padrão) |
+| IA | Google Gemini API (`gemini-2.5-flash` por padrão) |
 | Validação | FluentValidation |
 | Testes | xUnit + FluentAssertions + Moq |
 
 ### Site web (`site/`)
 | Camada | Tecnologia | Responsável |
 |--------|------------|-------------|
-| Framework | Next.js 15 (App Router) + React 19 | Sócio |
-| UI | TailwindCSS 3 + shadcn/ui (Radix) + Framer Motion + Lucide | Sócio |
-| i18n | next-intl (pt / en) | Sócio |
-| HTTP client | `fetch` + JWT (lib `site/lib/api/`) | Sócio |
+| Framework | Next.js 15 (App Router) + React 19 | Pedro |
+| UI | TailwindCSS 3 + shadcn/ui (Radix) + Framer Motion + Lucide | Pedro |
+| i18n | next-intl (pt / en) | Pedro |
+| HTTP client | `fetch` + JWT (lib `site/lib/api/`) | Pedro |
 | Codegen client | OpenAPI Generator (TypeScript a partir do .NET) | Ambos |
 
 ### App mobile (`app/`)
@@ -95,20 +88,17 @@ Liriun/   (monorepo único — branch main)
 │       ├── Liriun.Core.Tests/
 │       ├── Liriun.Application.Tests/
 │       └── Liriun.Api.Tests/
-├── site/                               # Next.js 15 — web (institucional + app logado) — sócio
+├── site/                               # Next.js 15 — web (institucional + app logado) · no ar, em dev
 │   ├── app/                            # App Router (rotas [locale]/, área logada em app/)
 │   ├── components/                     # app/, auth/, site/, ui/, brand/
-│   ├── lib/                            # api/ (client + hooks), auth/, utils
+│   ├── lib/                            # api/ (client escrito à mão + hooks), auth/, utils
 │   ├── i18n/ · messages/               # next-intl (pt.json / en.json)
 │   └── public/                         # assets, ícones, og-images
-├── app/                                # Flutter mobile (Android + iOS apenas, sem Web) — Pedro
+├── app/                                # Flutter mobile (Android + iOS apenas, sem Web) · SERÁ REFEITO DO ZERO
 ├── docs/
-│   ├── CONTEXTO_APP.md                 # FONTE AUTORITATIVA — arquitetura e decisões
-│   ├── ESTRATEGIA_LIRIUN.md            # posicionamento, concorrência
-│   ├── IDEIAS_FUTURO.md                # backlog priorizado por tier
-│   ├── PLANO_NEGOCIO_TEMPLATE.md       # PARKED até MVP
-│   ├── design-ref/                     # style guide visual oficial (PDF + ícones)
-│   ├── Identidade Visual/Rebranding/   # brand kit + guias de implementação (app/site/webapp)
+│   ├── CONTEXTO_APP.md                 # FONTE AUTORITATIVA — arquitetura, produto, estado
+│   ├── design-ref/                     # style guide visual (PDF) — provisório
+│   ├── Identidade Visual/Rebranding/   # brand kit (tokens, logos, fontes) — provisório
 │   └── termos-de-uso/                  # TERMOS_USO.md, POLITICA_PRIVACIDADE.md
 ├── CLAUDE.md                           # contexto resumido pra Claude Code
 ├── .env.example                        # template de variáveis do backend (copie pra .env.local)
@@ -133,7 +123,7 @@ Liriun/   (monorepo único — branch main)
 |------------|--------|------------|
 | Flutter SDK | 3.x+ | https://flutter.dev/docs/get-started/install |
 | Android Studio | — | pra emulador Android e debug |
-| Xcode | — | pra build iOS (sócio testa em Mac) |
+| Xcode | — | pra build iOS (precisa de Mac — a resolver) |
 
 ## Configuração — backend
 
@@ -147,7 +137,7 @@ A API lê três blocos de configuração obrigatórios:
 | `Jwt:Audience` | `appsettings.json` | Não | `liriun-app` |
 | `Jwt:ExpirationHours` | `appsettings.json` | Não | `24` |
 | `Gemini:ApiKey` | user-secrets / env | Sim (pra usar IA) | — |
-| `Gemini:Model` | user-secrets / env | Não | `gemini-2.0-flash` |
+| `Gemini:Model` | user-secrets / env | Não | `gemini-2.5-flash` |
 | `Gemini:BaseUrl` | user-secrets / env | Não | `https://generativelanguage.googleapis.com/v1beta` |
 | `Gemini:TimeoutSeconds` | user-secrets / env | Não | `90` |
 | `Gemini:ModoInterativo` | user-secrets / env | Não | `false` (ver [Modos de IA](#modos-de-ia-one-shot-vs-interativo)) |
@@ -195,7 +185,7 @@ Host=db.<ref>.supabase.co;Port=5432;Database=postgres;Username=postgres;Password
 
 ### Gemini API key
 
-Cria em https://aistudio.google.com/apikey. Free tier basta pra dev (rate limit ~15 req/min, ~1500 req/dia em `gemini-2.0-flash`). Quando estoura `429`, o backend devolve `IaErrors.LimiteExcedido()` com retry hint.
+Cria em https://aistudio.google.com/apikey. Free tier basta pra dev (rate limit ~15 req/min, ~1500 req/dia em `gemini-2.5-flash`). Quando estoura `429`, o backend devolve `IaErrors.LimiteExcedido()` com retry hint.
 
 ## Configuração — site (Next.js)
 
@@ -308,31 +298,22 @@ Controlado por `Gemini:ModoInterativo` em config. Default: `false`.
 
 | Modo | Comportamento | Custo de tokens |
 |------|---------------|------------------|
-| **One-shot** (default) | Liriun NÃO faz perguntas. Sempre retorna `completo=true` com a tarefa preenchida. Campos faltantes ficam `null` pro usuário completar na UI de revisão. Observações copiam o "onde/como" cru do texto, sem reescrever. | ~75% menos tokens por tarefa |
-| **Interativo** (reservado pro plano pago futuro) | Liriun pode fazer até 3 perguntas de contexto antes de fechar. Enriquece observações com checklist. Código preservado em `GeminiService.MontarInstrucaoInterativo`. | 2-4× mais tokens por tarefa |
+| **One-shot** (default) | Liriun NÃO faz perguntas de follow-up. Retorna a tarefa preenchida; campos faltantes ficam `null` pro usuário completar no card de revisão. | ~75% menos tokens |
+| **Interativo** (desligado, ignorar por ora) | Liriun poderia fazer até 3 perguntas antes de fechar. Código preservado em `GeminiService.MontarInstrucaoInterativo`, mas não é foco. | 2-4× mais tokens |
 
-Pra ligar o modo interativo em dev:
-
-```powershell
-cd backend/src/Liriun.Api
-dotnet user-secrets set "Gemini:ModoInterativo" "true"
-```
-
-Quando o plano pago for implementado, a leitura do flag migra de config global pra campo do usuário (`Usuario.IaInterativa`) — ponto único de mudança em `GeminiService.MontarInstrucaoSistema`.
+> O agente é conversacional (multi-turno) e faz criar/editar/concluir/excluir tarefas independente desse flag.
+> Pra ligar o interativo em dev: `dotnet user-secrets set "Gemini:ModoInterativo" "true"` na pasta `Liriun.Api`.
 
 ## Documentação adicional
 
 ### Ativos
-- **[`docs/CONTEXTO_APP.md`](docs/CONTEXTO_APP.md)** — **fonte autoritativa** de arquitetura e decisões técnicas
-- **[`docs/ESTRATEGIA_LIRIUN.md`](docs/ESTRATEGIA_LIRIUN.md)** — posicionamento, pilares, concorrência
-- **[`docs/IDEIAS_FUTURO.md`](docs/IDEIAS_FUTURO.md)** — backlog priorizado por tier
-- **[`docs/PLANO_NEGOCIO_TEMPLATE.md`](docs/PLANO_NEGOCIO_TEMPLATE.md)** — PARKED até MVP
-- **[`docs/design-ref/`](docs/design-ref/)** — style guide visual oficial (PDF + ícones)
-- **`docs/Identidade Visual/Rebranding/`** — brand kit + guias de implementação por plataforma
-- **[`CLAUDE.md`](CLAUDE.md)** — contexto resumido pra Claude Code
+- **[`docs/CONTEXTO_APP.md`](docs/CONTEXTO_APP.md)** — **fonte autoritativa** de arquitetura, produto e estado atual
+- **[`docs/design-ref/`](docs/design-ref/)** + `docs/Identidade Visual/Rebranding/` — identidade visual (provisória)
+- **[`CLAUDE.md`](CLAUDE.md)** + `backend/`, `site/`, `app/` `CLAUDE.md` — contexto e regras pra Claude Code
 
-### Removidos (só no histórico git)
-Os docs históricos do V1 web (`docs/docs-arquivados/` — `ARCHITECTURE.md`, `DEPLOY.md`, `PROJETO.md`, `banco/MIGRATIONS.md`, etc) e `docs/STATUS_MIGRACAO.md` foram removidos do disco. Seguem consultáveis no histórico git.
+### Fora do repo
+Estratégia (era-ToMore), plano de negócio e o backlog de ideias futuras foram arquivados em `~/Desktop/arquivo liriun/`
+(fora de escopo agora). Docs históricos do V1 web e `STATUS_MIGRACAO.md` seguem só no histórico git.
 
 ### Documentos legais
 Em `docs/termos-de-uso/`: `TERMOS_USO.md`, `POLITICA_PRIVACIDADE.md`.

@@ -2,7 +2,8 @@
 
 > Regras específicas do site. Contexto geral do produto, domínio, terminologia e tom de voz: `../CLAUDE.md`.
 > Arquitetura/decisões: `../docs/CONTEXTO_APP.md`. Identidade visual (tokens/fontes): `../docs/Identidade Visual/Rebranding/brand-kit/`.
-> **Dono:** sócio. Substitui o Angular V1 — institucional (marketing) **+** área logada, funcionalidade completa.
+> **Dono:** Pedro (faz tudo agora). Institucional (marketing) **+** área logada. No ar em **liriun.com**, mas
+> **em desenvolvimento** — funciona ponta a ponta, porém com muita melhoria/alteração pendente. É o **foco atual**.
 
 ## Stack
 Next.js 15 (App Router) + React 19 · TypeScript · TailwindCSS 3 + shadcn/ui (Radix) + Framer Motion + Lucide ·
@@ -17,7 +18,9 @@ next-intl (pt/en) · `fetch` + JWT. Deploy: Cloudflare Pages (`@cloudflare/next-
 
 ## Convenções não-negociáveis
 
-- **Backend .NET é a fonte de verdade.** Todo dado vem da API REST via `lib/api/` (JWT no header). Sem lógica de negócio no front, sem acesso direto ao Supabase.
+- **Backend .NET é a fonte de verdade.** Todo dado vem da API REST via `lib/api/` (client **escrito à mão**, JWT no header). Sem lógica de negócio no front, sem acesso direto ao Supabase.
+- **Auth só e-mail/senha** (sem Google/Apple). Cadastro exige código de convite (beta fechado).
+- **Agente de voz** (`/app/falar`): grava áudio com `MediaRecorder` e envia pro backend (`/captura/conversar-audio`, multimodal); modo texto também. Resposta é **texto** (sem TTS). Card de revisão + auto-save na confirmação.
 - `NEXT_PUBLIC_API_BASE_URL` obrigatória (`client.ts` lança erro explícito sem ela). Backend libera CORS pra `localhost:3000` + `liriun.com`.
 - **Tokens, não hex.** Cores/raios/sombras/fontes vêm do brand-kit (`bg-surface`, `text-fg`, gradiente `brand-grad`). Nunca `#hex` solto no JSX, nunca inventar cor fora dos tokens.
 - **Tipografia só Geist / Geist Mono** (`next/font`). Sem outra fonte.

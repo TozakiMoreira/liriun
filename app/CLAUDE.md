@@ -1,30 +1,34 @@
 # App Flutter — Liriun
 
-> Regras específicas do app. Setup, estrutura de pastas detalhada e pendências: `README.md` (nesta pasta).
-> Contexto geral do produto, domínio, terminologia e tom de voz: `../CLAUDE.md`.
-> Identidade visual (tokens/fontes): `../docs/Identidade Visual/Rebranding/brand-kit/`.
-> **Dono:** Pedro. **Android + iOS APENAS — sem Web.** Agente de voz é o diferencial mobile.
+> Contexto geral, domínio, terminologia e tom de voz: `../CLAUDE.md`. Arquitetura/estado: `../docs/CONTEXTO_APP.md`.
+> Identidade visual (provisória): `../docs/Identidade Visual/Rebranding/brand-kit/`.
+> **Dono:** Pedro. **Android + iOS APENAS — sem Web.** O agente de voz é o diferencial mobile.
 
-## Stack
-Flutter 3.24+ / Dart 3.5+ · Riverpod (state) · go_router (nav + auth guard) · dio + flutter_secure_storage (JWT
-em Keychain/EncryptedSharedPreferences) · speech_to_text + flutter_tts (voz) · freezed + json_serializable ·
-firebase_messaging (fase posterior).
+## ⚠️ Status: será REFEITO DO ZERO
 
-## Estrutura (feature-first)
-`lib/core/` (`api/`, `router/`, `theme/`) · `lib/features/` (`splash`, `onboarding`, `auth`, `shell`, `falar`,
-`hoje`, `tarefas`, `calendario`, `atividade`, `capture`, `voice`, `notification`, `shareable`, `configuracoes`) ·
-`lib/models/` · `lib/widgets/`. Abas principais no `shell`.
+O conteúdo atual de `app/` (a pasta `lib/`, telas, etc) **vai ser descartado e reconstruído do zero**. Não invista
+em entender nem evoluir o código existente. A reconstrução começa **depois que o site estiver finalizado** (o site
+é o foco atual). Enquanto isso, este arquivo registra a **direção pretendida** — não o que existe.
 
-## Convenções não-negociáveis
+## Direção pretendida (quando começar a reconstrução)
 
-- **Backend .NET é a fonte de verdade.** Todo dado via REST + JWT (dio no `core/api/`). Sem acesso direto ao Supabase, sem lógica de negócio duplicada no app.
-- `API_BASE_URL` via `--dart-define` (emulador Android: `http://10.0.2.2:5000`; prod: `https://api.liriun.com`).
-- Models via **freezed** espelhando os contratos da API .NET (não o schema do banco). Client gerado do OpenAPI quando disponível.
-- **Tokens, não valores soltos:** cores/durações/curvas em `lib/core/theme/` (mapeadas do brand-kit). Nunca `Colors.*` do Material nem hex avulso.
-- **Tipografia Geist / Geist Mono.** **Dark mode default.** **Sem emojis.** Ícones via SVG do brand kit (`flutter_svg`), não `Icons.*` do Material.
-- **STT/TTS nativos** (`pt_BR`). Voz é primária — todo o fluxo de `falar`/`voice` gira em torno do gesto de falar.
-- **Terminologia e tom de voz** do Liriun (ver `../CLAUDE.md`).
-- **Acessibilidade:** `Semantics` em botões custom; respeitar `MediaQuery.disableAnimations`; hit area mín. 44×44.
+- **Flutter (Android + iOS)**, dark mode default, identidade visual do brand kit (provisória).
+- **Backend .NET é a fonte de verdade** — o app consome a API REST + JWT (sem acesso direto ao Supabase, sem lógica
+  de negócio duplicada). Auth só e-mail/senha (cadastro exige código de convite — beta fechado).
+- **Agente de voz** como centro: entrada por voz + texto, mesmo backend do site (`/captura/conversar` e
+  `/captura/conversar-audio` multimodal). Decidir no início: STT/TTS nativos do dispositivo vs. mandar áudio pro
+  backend como o site faz.
+- **Meta de UX:** usabilidade parecida com o site (referência Duolingo). Se não der pra manter os dois no mesmo
+  nível, o **app tem prioridade de excelência**.
+- State management, navegação, estrutura de pastas: **decidir na hora da reconstrução** (Riverpod + go_router +
+  feature-first são a inclinação, mas nada é compromisso — o objetivo é funcional primeiro, depois refinar).
 
-## Rodar
-`flutter pub get` → `flutter pub run build_runner build --delete-conflicting-outputs` → `flutter run --dart-define=API_BASE_URL=...`. Detalhe no `README.md`. Backend precisa estar de pé.
+## Regras que valem desde o começo
+
+- **Terminologia e tom de voz** do Liriun (ver `../CLAUDE.md`): "Tarefa"/"Categoria", mordomo seco, sem emoji.
+- **Tokens, não valores soltos** (cores/durações do brand kit). Tipografia **Geist**. Dark default. Ícones lineares.
+- **Domínio** espelha os contratos da **API .NET**, não o schema do banco. `DataPrazo` é obrigatória; status
+  "atrasada" vem calculado do backend; prioridades urgente/importante/normal/baixa.
+- Acessibilidade desde o início (hit area mín. 44×44, respeitar reduce-motion, semantics em botões custom).
+
+> Push (FCM), recorrência, wake word: fora de escopo na primeira versão — ver `../docs/CONTEXTO_APP.md` §11.

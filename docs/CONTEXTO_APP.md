@@ -1,543 +1,177 @@
-# Liriun App — Contexto e Decisoes
+# Liriun — Contexto do Projeto
 
-> Documento de continuidade. Criado em 2026-05-08. Ultima atualizacao 2026-05-09.
-> Retomar a partir daqui na proxima sessao.
-> **Referencia visual:** `docs/design-ref/Liriun · Visual Reference · Print.pdf` (style guide oficial — paleta, tipografia, componentes, mockups). Icones: `liriun-icon-1024.png`, `liriun-glyph.svg`, etc na mesma pasta.
-
----
-
-## 1. Visao do produto
-
-O Liriun sera um **app mobile** (Android + iOS + Web) que funciona como um **agente pessoal por voz**, similar a uma Alexa pessoal. O usuario fala e o Liriun organiza, cria, consulta, conclui tarefas e gerencia sua agenda.
-
-O agente funciona como **interceptador**: usuario fala -> agente interpreta -> chama backend -> recebe dados -> responde por voz. Sem historico de conversa persistente, cada interacao eh independente (mais barato, mais confiavel).
-
-### Core features desejadas
-- Criar tarefas por voz (com IA extraindo titulo, categoria, prazo, prioridade)
-- Consultar tarefas por voz ("quais itens de limpeza da minha lista de mercado?")
-- Concluir/reabrir/remanejar tarefas por voz
-- Criar tarefas manualmente pelo app (modo manual + modo IA — ja existe no web)
-- Nome do agente customizavel pelo usuario (cada um escolhe o nome do seu Liriun)
-- Wake word customizado com o nome escolhido (ex: "Hey Bolsonaro")
-- Funcionar em background / com tela bloqueada (always listening)
-- Integracao com Google Calendar, Apple Calendar, Outlook Calendar
-- Lembretes por SMS, ligacao ou push notification
-- Personalizacao do agente pelo usuario
-- **Resposta por voz (TTS)** — Liriun fala de volta pro usuario
+> **Fonte autoritativa** de produto, arquitetura e estado atual. Em conflito com qualquer outro doc, este vence.
+> Resumo rápido + regras que o Claude aplica sempre: `../CLAUDE.md`. Setup/como rodar: `../README.md`.
+> Última revisão: 2026-07-10 (realinhamento completo com a realidade do código).
 
 ---
 
-## 2. Decisoes tomadas
+## 1. O que é o Liriun
 
-### Arquitetura geral — multi-client com backend centralizado
+Organizador pessoal de tarefas com **agente de voz** como diferencial. O usuário fala (ou digita) como pensa
+("reunião com a Marina amanhã às 9, prioridade alta") e o Liriun extrai a tarefa estruturada — título, prazo,
+categoria, prioridade — e organiza.
+
+- **Projeto pessoal e solo do Pedro Tozaki.** Não é mais um projeto da "ToMore" (descontinuada), não tem sócio
+  ativo, não tem CNPJ e **não tem relação com a faculdade** (Pedro faz ADS na FATEC, mas o projeto é independente).
+- **Objetivo:** tirar o protótipo do papel e transformar num **produto real** — escalável, usável, capaz de gerar
+  receita de verdade — pensando "sem medo", como produto do mundo real. Também serve de **portfólio** (fallback
+  pra conseguir emprego se não decolar).
+- **Hoje:** em desenvolvimento. Beta fechado; só o Pedro usa (nenhum código de convite foi distribuído ainda).
+
+## 2. Método de trabalho (importante pro Claude)
+
+- **Vibecoding:** o **Claude Code escreve o código**; o Pedro planeja, valida e refina depois que está funcional.
+  A ideia é usar a IA pra acelerar o desenvolvimento — com o planejamento do Pedro, mas sem ele codar na mão.
+- **Ordem:** primeiro deixar **funcional**; depois melhorar arquitetura/qualidade do que fizer sentido.
+- **Foco atual, em ordem:**
+  1. **Site** funcional e sem erros + **definir bem as funcionalidades iniciais**. (É o mais adiantado — finalizar primeiro.)
+  2. Depois, **refazer o app do zero** e focar 100% nele.
+- **Meta de UX:** site e app com usabilidade parecida (referência: Duolingo). Se não der pra manter os dois no mesmo
+  nível, o **app tem prioridade de excelência** e o site vira complemento.
+- **Sem prazo duro.** Pedro está de férias e sem emprego — dedica 60%+ do tempo livre.
+
+## 3. Arquitetura
+
+Padrão **headless backend / multi-client** (como Linear, Asana, Slack): um backend central serve todos os clientes.
 
 ```
-                    ┌──────────────────┐
-App Flutter (iOS)   │                  │
-App Flutter (Andr)  │                  │
-Site Next.js (web)  ├──REST API────────│ Backend .NET ──→ Supabase Postgres
-Smartwatch (futuro) │   (JWT)          │   ├─ Auth (JWT)         (1 banco unico)
-Alexa Skill (fut)   │                  │   ├─ Validacao
-Browser ext (fut)   │                  │   ├─ Logica de negocio
-...                 └──────────────────┘   └─ Chama Gemini API
+Site (Next.js)   ─┐
+App Flutter      ─┼─→ Backend .NET ─→ Supabase Postgres (1 banco único)
+Plataformas fut  ─┘   (REST + JWT + Gemini)
 ```
 
-**Padrao "headless backend / multi-client":**
-- **1 backend .NET unico** = fonte unica de verdade (logica + dados + auth)
-- **1 banco Supabase unico** (mesmo do V1 — nao criamos projeto novo)
-- Cada cliente novo (web, mobile, smartwatch, Alexa, etc) consome a MESMA API
-- Adicionar plataforma nova nao exige mexer no backend, so implementa front
-- Padrao usado por Linear, Asana, Slack, Notion, Discord, Spotify
-- **Decidido 2026-05-09 apos analise de escalabilidade longo prazo**
-
-> **Nota:** arquitetura (como clientes falam com o backend) ≠ estrategia de repo (como o codigo e organizado no git). Ver abaixo.
-
-### Estrategia de repositorio — monorepo unico
-
-**Decidido 2026-06-15:** tudo num repo so (`backend/` + `site/` + `app/`), todos na branch `main`.
-
-```
-liriun/  (1 repo, branch main)
-├─ backend/   .NET — dono do OpenAPI spec (fonte de verdade do contrato)
-├─ site/      Next.js 15 (institucional + app logado) — socio
-├─ app/       Flutter (Android + iOS) — Pedro
-└─ docs/      contexto + design-ref
-```
-
-**Por que monorepo (cenario atual: 2 devs, produto cedo, contrato via OpenAPI):**
-- Mudanca de contrato e **atomica**: mexe no endpoint .NET → regenera client Dart + TS → atualiza app + site em **1 PR**. Polyrepo viraria 3 PRs coordenados + versionamento do contrato.
-- **Fonte unica de verdade**: OpenAPI spec + design tokens (`docs/design-ref/`) num lugar so.
-- Onboarding/contexto: clona 1 repo, ve o sistema inteiro.
-- CI por pasta resolve toolchains diferentes (.NET / Node / Flutter) — **path-filtered**, builda so o que mudou.
-
-**Gatilhos pra separar em multiplos repos (NENHUM vale hoje):**
-- Time cresce e quer **deploy/release independente** por cliente sem coordenar.
-- Precisa **isolar acesso** (contratado externo so no app, p.ex.).
-- CI do mono fica lento mesmo com path-filter.
-- Quer **versionar a API publicamente** como contrato estavel (spec/clients viram repo proprio).
-
-Migrar mono→poly depois e tranquilo; juntar poly→mono e mais chato. Comeca junto.
-
-### Plano de migracao Angular V1 → produto novo
-
-> Decidido 2026-05-09: trabalho dividido entre Pedro e socio.
-
-1. ✅ **Angular V1 (`front/`) removido do disco** em 2026-06-15 — source preservado no historico git (`3bad961^`) pra consulta
-2. **Pedro** cria app Flutter mobile (Android + iOS) com mesmo conteudo/funcionalidades do Angular
-3. **Socio** migra → Next.js (`site/`) com mesmo conteudo/funcionalidades
-4. Continuar evolucao a partir dai (novas features so no app + site)
-5. **Schema do banco evolui livremente** — sem mais Angular pra quebrar
-
-### Stack do backend (compartilhado por todos clientes)
-| Camada | Tecnologia | Motivo |
-|---|---|---|
-| Backend | **.NET 10** + ASP.NET Core Web API | Mantem codigo Clean Architecture ja construido (Result<T>, ProblemDetails, FluentValidation, Read/Write repos). Type-safe, escala infinita, padrao de mercado |
-| Banco | **Supabase Postgres do V1** (1 banco unico) | Mantemos o banco Supabase ja existente do V1. Sem criar projeto novo. Schema evolui durante a migracao |
-| Auth | **JWT proprio do .NET** | Ja implementado. Issuer `liriun-api` / audience `liriun-app`. Ainda decidir: Google/Apple Sign-In via OAuth no .NET |
-| Migracoes | **EF Core migrations** | Ja em uso. Comandos na secao Migrations do `README.md` |
-| IA/NLU | **Google Gemini API (Flash-Lite pago)** | Backend .NET chama Gemini. Mantem API key segura no servidor. ~$1.30/mes com 1000 usuarios |
-| Hosting (producao) | **Render** (Docker, free tier) | Cold start ~30-60s apos 15min idle (toleravel pra V1). Migrar pra Fly ~$4/mes se UX incomodar |
-| Cache (futuro) | Redis | So quando precisar (V2+) |
-| Background jobs (futuro) | Hangfire ou Quartz.NET | Lembretes agendados, notificacoes em massa |
-
-### Stack do app mobile (Flutter)
-| Camada | Tecnologia | Motivo |
-|---|---|---|
-| Framework | **Flutter** (Dart) | Codebase unico pra Android + iOS. **Sem Flutter Web** — site web sera Next.js (responsabilidade do socio) |
-| State management | **Riverpod** | Padrao de mercado 2026, type-safe, escala bem |
-| Estrutura de pastas | **Feature-first** (`/auth`, `/tarefas`, `/agente`, `/categorias`) | Features isoladas, navegacao facil |
-| HTTP client | **dio** ou `http` package | Comunicacao com backend .NET (REST + JWT) |
-| Codegen do client | **OpenAPI Generator** ou **Swagger Codegen** | Gera client Dart a partir do OpenAPI do .NET — type safety end-to-end |
-| STT (Speech-to-Text) | **Nativo do dispositivo** | Gratis, offline, baixa latencia |
-| TTS (Text-to-Speech) | **`flutter_tts` nativo** | Gratis, offline. Upgrade futuro se qualidade incomodar |
-| Wake word | **Adiado pra Fase 3** | So depois do app ter conteudo |
-| Push | **Firebase Cloud Messaging** | Padrao Android + iOS |
-| Offline-first | **PARKED pra V2** | MVP online-only |
-| IDE | **VS Code** + extensao Flutter + Dart | Editor leve, padrao da comunidade Flutter |
-| SDK Android | **Android Studio** instalado (so pra SDK + emulador) | Necessario mesmo nao usando como editor |
-| Build iOS | **Xcode no Mac do socio** | Pedro nao tem Mac; socio testa quando finalizar |
-
-### Stack do site web (Next.js)
-| Camada | Tecnologia | Motivo |
-|---|---|---|
-| Framework | **Next.js 15** (App Router) | React com SSR/SSG, SEO de verdade, deploy em Cloudflare Pages (`next-on-pages`) |
-| Linguagem | TypeScript | Type-safe, padrao moderno |
-| Estilizacao | Tailwind CSS v3 (`^3.4`) | Utility-first, casa com tokens do design system |
-| Componentes | shadcn/ui | Componentes copiaveis customizaveis |
-| Animacoes | Framer Motion | Padrao React pra animacoes fluidas |
-| Icones | Lucide React | Linhas finas, casa com estetica |
-| HTTP client | **fetch** + hooks customizados (`site/lib/api/hooks/`) | Sem React Query no momento — hooks proprios (`use-tarefas`, `use-categorias`) sobre `fetch` + JWT |
-| Codegen do client | **OpenAPI TypeScript** | Gera client TS a partir do OpenAPI do .NET |
-| Deploy | **Cloudflare Pages** (free tier) | `@cloudflare/next-on-pages` + wrangler. Scripts `pages:build` / `pages:preview` no `site/package.json` |
-
-### Escopo do site Next.js
-- **Substitui o Angular V1 inteiro** (nao eh so landing — tem login, tarefas, agente, config — TUDO que tem hoje)
-- **Migracao feita pelo socio** (Pedro foca no app Flutter)
-- Angular V1 atual segue no ar ate o Next.js novo cobrir todas funcionalidades
-- Site e app compartilham conta + dados (mesmo backend .NET, mesmo banco Supabase)
-- Cria tarefa no app -> aparece no site (e vice-versa) — single source of truth no backend
-
-### Auth
-- Email + senha (ja implementado no .NET com BCrypt + JWT)
-- Google Sign-In + Apple Sign-In (a adicionar no .NET via OAuth library tipo `Microsoft.AspNetCore.Authentication.Google`)
-- Apple Sign-In obrigatorio pra publicar na App Store quando se oferece login social
-- 1 conta unica vale pra site + app + plataformas futuras
-
-### Backend .NET — RETOMADO COMO BACKEND PRINCIPAL
-- Backend .NET continua sendo o **backend principal** do produto novo
-- Atende site Next.js, app Flutter mobile, e plataformas futuras (smartwatch, Alexa, etc)
-- Mantem Clean Architecture: `Liriun.Core`, `Liriun.Application`, `Liriun.Infrastructure`, `Liriun.Api`
-- Reaproveita: Result<T>, ProblemDetails, FluentValidation, Read/Write repos, JWT, GeminiService, migrations
-- **Decidido 2026-05-09** apos analise de escalabilidade (vs Supabase direto)
-
-### Supabase — APENAS COMO BANCO (mesmo do V1)
-- Supabase usado SO como Postgres gerenciado
-- **1 unico projeto Supabase** (mesmo do V1, mantemos) — sem criar projeto novo
-- NAO usa Supabase Auth (auth fica no .NET com JWT proprio)
-- NAO usa RLS (validacao fica no .NET)
-- NAO usa Edge Functions (logica fica no .NET)
-- Connection string `ConnectionStrings:Liriun` aponta pro Postgres do Supabase atual
-- Migrations EF Core do .NET aplicam direto no Supabase
-- Schema evolui durante migracao Angular -> app + Next: se quebrar Angular eh OK, socio resolve no Next quando chegar
-
-### Offline-first — PARKED pra V2
-- MVP sera online-only (mais rapido de fazer)
-- Quando tiver base de usuarios reclamando, adiciona SQLite local (Brick ou PowerSync) com sync automatico
-
-### Wake word — adiado pra Fase 3
-- Feature mais complexa e com limitacoes no iOS
-- Valor do Liriun esta na **experiencia de conversa com o agente**, nao em como abre o app
-- So depois do app ter conteudo e core validado. **Confirmado 2026-05-09**
-
-### Historico de conversa — NAO persiste
-- O agente funciona como interceptador stateless
-- Usuario fala -> backend .NET interpreta via Gemini -> backend salva no Supabase -> responde
-- Sem contexto acumulado entre interacoes (mais barato em tokens, mais confiavel)
-
-### Planos/pricing — PARKED ate o app estar finalizado
-- Decidir SOMENTE quando MVP estiver funcional e com testes
-- Por enquanto: foco eh desenvolver e deixar funcionando, nao monetizar
-- Quando chegar a hora: pricing, limites, freemium, tudo de uma vez
-
-### Publicacao nas lojas — PARKED ate o app estar finalizado
-- Apple App Store ($99/ano) + Google Play ($25 unico) so quando o app estiver pronto
-- Por enquanto: build local pra PC, depois passar APK/IPA pro celular pra testar
-- Antes de publicar: ajustar appsettings de producao, revisao final, etc
-
----
-
-## 3. Fases de desenvolvimento
-
-### Fase 1 — MVP: Agente funciona DENTRO do app (detalhado abaixo)
-
-### Fase 2 — Acesso rapido SEM abrir o app
-- Widget na home screen (Android + iOS)
-- Atalho na Central de Controle (iOS) / Quick Settings (Android)
-- Notificacao persistente com botao "Falar com Liriun"
-- Lembretes por push notification (prazo se aproximando, tarefa atrasada)
-
-### Fase 3 — Wake word + always listening
-- Integracao Picovoice Porcupine (ou openWakeWord)
-- Background listening (foreground service Android, background audio iOS)
-- Nome do agente customizavel — Porcupine treina modelo por texto em segundos
-- Tela bloqueada: funciona no Android, parcial no iOS (limitacoes da Apple)
-
-### Fase 4 — Integracao com calendarios
-- Google Calendar API (OAuth, sync bidirecional)
-- Apple Calendar via EventKit (nativo iOS)
-- Outlook via Microsoft Graph API
-
-### Fase 5 — Lembretes avancados
-- SMS via Twilio
-- Ligacao via Twilio TTS
-- Configuracao de frequencia/horarios pelo usuario
-
----
-
-## 4. Fase 1 — MVP Detalhado
-
-> Objetivo: produto novo funcional (backend .NET + site Next.js + app Flutter mobile) que substitui o V1 web.
-> Site Next.js cobre as mesmas funcionalidades que o Angular V1 tem hoje (login, tarefas, agente, config) — modernizado.
-> App Flutter inclui agente de voz como diferencial mobile.
-
-### 4.1 Setup do projeto
-
-#### Backend .NET (mantido — pequenos ajustes)
-- [ ] Adicionar OpenAPI/Swagger detalhado pra codegen dos clients
-- [ ] Configurar CORS pra `liriun.com` (Next.js futuro) + `localhost:3000` (dev Next) — Flutter mobile NAO precisa CORS
-- [ ] Avaliar se precisa adicionar Google + Apple Sign-In via OAuth (decidir conforme app for evoluindo)
-- [x] Host de prod definido: **Render** (backend, Docker) + **Cloudflare Pages** (site)
-
-#### Banco Supabase
-- [ ] Mantem o projeto Supabase atual do V1 (sem criar novo)
-- [ ] Migrations rodam normalmente conforme schema evoluir
-
-#### App Flutter (Pedro)
-- [ ] Instalar Flutter SDK
-- [ ] Instalar Android Studio (so pra SDK Android + emulador AVD)
-- [ ] Instalar VS Code + extensao Flutter + Dart
-- [ ] Criar projeto Flutter (`flutter create liriun_app` na pasta `app/`)
-- [ ] Configurar estrutura feature-first (`/lib/features/{auth,tarefas,agente,categorias,config}`)
-- [ ] Configurar Riverpod
-- [ ] Gerar client Dart a partir do OpenAPI do .NET
-- [ ] Configurar dio com interceptor JWT
-- [ ] Configurar Firebase project (FCM push)
-
-#### Site Next.js (socio — depois do app + Angular V1 ainda no ar)
-- [ ] Criar projeto Next.js (`npx create-next-app@latest liriun-site --typescript --tailwind --app`)
-- [ ] Adicionar shadcn/ui
-- [ ] Configurar tokens do design system (cores, fonts, radii) no `tailwind.config` + CSS vars
-- [ ] Gerar client TypeScript a partir do OpenAPI do .NET
-- [ ] Configurar React Query + interceptor JWT
-
-### 4.2 Auth
-- [ ] Login email + senha (ja existe no .NET — JWT proprio)
-- [ ] Cadastro email + senha + nome (ja existe no .NET)
-- [ ] Telas de login/cadastro no app Flutter
-- [ ] Telas de login/cadastro no site Next.js
-- [ ] Adicionar Google Sign-In no .NET (`Microsoft.AspNetCore.Authentication.Google`)
-- [ ] Adicionar Apple Sign-In no .NET
-- [ ] Persistencia de sessao no app (`flutter_secure_storage`) e no site (cookie httpOnly + refresh token)
-- [ ] Telas de alterar senha em ambos
-- [ ] Logout em ambos
-
-### 4.3 Banco de dados (Postgres no Supabase)
-- [ ] Schema ja existe do V1 (Tarefas, Categorias, TarefaCategoria, Usuarios)
-- [ ] Avaliar se precisa adicionar tabela `MensagensAgente` (historico de conversa) — provavelmente NAO no MVP (stateless)
-- [ ] Avaliar se precisa coluna `nome_agente` em `Usuarios` (apos onboarding "como me chamar")
-- [ ] Avaliar se precisa coluna `voz_preferida` em `Usuarios` (Fase 2+, parado)
-- [ ] Migrations EF Core aplicadas no Supabase novo
-
-### 4.4 Offline-first — PARKED pra V2
-
-### 4.5 Onboarding
-- [ ] Fluxo bloqueante no primeiro acesso apos cadastro (igual V1)
-- [ ] Passo 1: nome do usuario + nome do agente ("como me chamar?")
-- [ ] Passo 2: categorias (templates padrao + criar proprias)
-- [ ] Tutorial rapido (opcional)
-- [ ] Implementar em site Next.js E em app Flutter
-
-### 4.6 Agente — Conversa por voz/texto
-
-#### Backend .NET
-- [ ] Endpoint `POST /api/agente/interpretar` — recebe texto OU audio + categorias do user, chama Gemini, retorna JSON estruturado (titulo, categorias, data, prioridade, observacoes)
-- [ ] Reaproveitar `GeminiService` existente do V1
-- [ ] Tratar rate limit 429 (mensagem ja existe)
-- [ ] Tratar JSON invalido do Gemini (fallback)
-- [ ] Endpoint `POST /api/agente/responder` (opcional) — monta resposta do Liriun pro TTS
-
-#### App Flutter
-- [ ] Interface de chat/conversa (estilo assistente — ver mockup `docs/design-ref/`)
-- [ ] Botao mic gigante (gravar audio)
-- [ ] Input de texto (alternativa ao mic)
-- [ ] Enviar texto/audio pro backend `.NET /api/agente/interpretar`
-- [ ] Card de revisao mostrando tarefa extraida -> user confirma/edita
-- [ ] TTS nativo (`flutter_tts`) le resposta do Liriun
-- [ ] Comandos MVP: criar tarefa, listar hoje, listar categoria, concluir, listar semana
-- [ ] Fallback: erro Gemini -> mensagem + opcao manual
-- [ ] Modo manual: form completo (titulo, categorias, data, hora, prioridade)
-
-#### Site Next.js
-- [ ] Mesma interface de chat (porem provavelmente sem TTS automatico — Web Speech API se quiser)
-- [ ] Modo texto + audio (browser MediaRecorder)
-- [ ] Modo manual completo
-
-### 4.7 Tarefas (CRUD)
-
-#### Backend .NET
-- [ ] Endpoints existentes do V1 reaproveitados: GET, POST, PATCH, DELETE em `/api/tarefas`
-- [ ] Validar que JWT do request pertence a user dono da tarefa
-- [ ] Status atrasada calculado no backend ao listar (ja existe)
-
-#### Site Next.js
-- [ ] Tela de listagem (filtros: status, prioridade, categoria)
-- [ ] Visualizacao Lista (Quadro/Semana ficam pra depois — repensar conforme design)
-- [ ] Detalhe/edicao em modal ou bottom sheet
-- [ ] Concluir tarefa
-- [ ] Reabrir concluida
-- [ ] Atrasadas em destaque
-- [ ] Tela de concluidas com filtro por periodo
-
-#### App Flutter
-- [ ] Mesmas funcionalidades em mobile (lista + detalhe)
-- [ ] Swipe pra concluir/excluir
-- [ ] Visualizacoes: Lista no MVP (Kanban/Semana se sobrar tempo)
-
-### 4.8 Categorias
-#### Backend .NET — endpoints existentes do V1 reaproveitados
-
-#### Site Next.js + App Flutter
-- [ ] Tela de configuracoes com gerenciamento
-- [ ] Criar/editar/excluir categoria (excluir bloqueado se tarefa pendente vinculada)
-- [ ] Cor por categoria (paleta da identidade visual)
-- [ ] Icone (lib Lucide pro site, equivalente Flutter)
-
-### 4.9 UI/UX
-
-#### Compartilhado
-- [ ] Identidade visual segue `docs/design-ref/Liriun · Visual Reference · Print.pdf`
-- [ ] Dark mode default em ambos
-- [ ] Tom de voz do Liriun mantido (seco, discreto, competente)
-- [ ] Sem emojis (icones Lucide ou equivalente)
-
-#### Site Next.js
-- [ ] shadcn/ui customizado pros tokens do design system
-- [ ] Animacoes Framer Motion
-- [ ] Responsivo (desktop primeiro mas funciona em mobile browser)
-
-#### App Flutter
-- [ ] Tema escuro (default) + claro
-- [ ] Animacoes nativas Flutter
-- [ ] Mockups oficiais como referencia (`docs/design-ref/`)
-
-### 4.10 Push notifications
-- [ ] Configurar Firebase Cloud Messaging (app Flutter)
-- [ ] Backend .NET dispara notificacao via FCM quando: tarefa vencendo no dia, atrasada
-- [ ] Permissao pedida no onboarding mobile
-
-### 4.11 Deploy MVP
-- [ ] Backend .NET hospedado no **Render** (Docker) com dominio `api.liriun.com`
-- [ ] Site Next.js hospedado no **Cloudflare Pages** com dominio `liriun.com` (depois que socio terminar)
-- [ ] App Android buildavel localmente (APK pra Pedro testar no celular)
-- [ ] App iOS buildavel quando socio testar (precisa Mac)
-- [ ] Banco Supabase Postgres em prod (mesmo do V1, mesmo dev e prod por enquanto)
-- [ ] Quando app + Next estiverem funcionais e cobrindo Angular V1: arquivar `front/`
-
----
-
-## 5. Limitacoes conhecidas (pesquisado e confirmado)
-
-### iOS — Wake word com tela bloqueada (Fase 3)
-- Apple reserva wake word a nivel de sistema exclusivamente pro Siri
-- Apps de terceiros usam background audio mode (AVAudioSession) — funciona mas:
-  - iOS mostra indicador vermelho permanente no status bar (mic ativo)
-  - Se usuario matar o app (swipe up), para de ouvir — sem como religar sozinho
-  - iOS pode matar apps em background quando precisa de RAM
-- **Nunca sera identico ao "Hey Siri"** — limitacao da Apple, fora do nosso controle
-
-### Android — Wake word com tela bloqueada (Fase 3)
-- Funciona bem via Foreground Service
-- Requer notificacao persistente ("Liriun esta ouvindo")
-- Nao funciona se usuario forcar encerramento (force stop)
-
-### Picovoice Porcupine — Pricing (Fase 3)
-- Free: ate 3 usuarios ativos/mes (perfeito pra dev/teste)
-- Pago: a partir de $6.000/ano (Foundation plan pra startups < 5 anos, < 20 funcionarios)
-- Alternativa gratuita: openWakeWord (open source, sem SDK Flutter oficial, integracao manual via ONNX)
-
-### Bateria (Fase 3)
-- Deteccao leve de wake word consome ~2-5% ao dia com modelos otimizados
-- Implementacoes mal feitas podem chegar a 45% drain
-
-### TTS
-- Nativo do dispositivo: gratis, funciona offline, qualidade boa (nao incrivel)
-- Upgrade futuro: Fish Audio S2 (~$15/1M chars) ou Speechmatics ($0.011/1K chars)
-
-### Gemini API — Custos reais estimados
-- Free tier: limitado a Flash models, 5-15 RPM, 100-1000 RPD, precisa renovar diariamente
-- **Plano pago (Flash-Lite): $0.10 input / $0.40 output por 1M tokens**
-- Cada request do Liriun usa ~500 tokens input + ~200 output
-- Custo mensal estimado:
-  - Teste (50 req/dia): ~$0.01/mes
-  - 100 usuarios: ~$0.13/mes
-  - 1.000 usuarios: ~$1.30/mes
-  - 10.000 usuarios: ~$13.00/mes
-- Como ativar: Google AI Studio > Settings > Billing > adicionar cartao. Mesma API key, sem mudar codigo
-
----
-
-## 6. O que falta definir / proximos passos
-
-### Decididos em 2026-05-09
-- [x] Nome "Liriun" continua
-- [x] Arquitetura: **multi-client com backend .NET centralizado** (escalavel, padrao Linear/Asana/Slack)
-- [x] Backend principal: **.NET continua** (reaproveita Clean Architecture pronta)
-- [x] Banco: **mesmo Supabase do V1** (1 unico projeto, sem criar novo)
-- [x] Divisao de trabalho: **Pedro faz app Flutter, socio migra Angular -> Next.js**
-- [x] App Flutter compila pra **Android + iOS APENAS** (sem Flutter Web — site eh Next.js)
-- [x] Site novo Next.js: **substitui Angular V1 inteiro** (login + tarefas + agente + config)
-- [x] Tech do site: **Next.js 15** + Tailwind + shadcn/ui + Framer Motion + React Query
-- [x] Auth: **JWT proprio do .NET** (nao Supabase Auth) + Google/Apple Sign-In via OAuth no .NET
-- [x] State management Flutter: **Riverpod**
-- [x] Estrutura de pastas Flutter: **feature-first**
-- [x] IDE Flutter: **VS Code** (Android Studio so pra SDK + emulador)
-- [x] Codegen client: **OpenAPI** -> client TypeScript pro site, client Dart pro Flutter (type safety end-to-end)
-- [x] Offline-first: **PARKED pra V2** (MVP online-only)
-- [x] TTS: **nativo do dispositivo**
-- [x] iOS: socio testa quando finalizar; por enquanto build local pra PC + APK no celular Pedro
-- [x] Estilo visual: aprovado (mockups + style guide em `docs/design-ref/`)
-- [x] Plano de migracao: Angular V1 fica no ar; quando app + Next cobrirem tudo, arquiva Angular e evolucao continua so no app + site novo
-
-### Adiados ate o MVP estar pronto
-- [ ] Plano de negocio (freemium, limites, precos) — `PLANO_NEGOCIO_TEMPLATE.md`
-- [ ] Publicacao lojas (App Store $99/ano, Google Play $25 unico)
-- [ ] Tom de voz do Liriun (apos definir voz pelo TTS)
-- [ ] Wake word + always listening (Fase 3)
-- [ ] Lembretes SMS/ligacao via Twilio (Fase 5)
-- [ ] Fluxo de onboarding detalhado (telas, steps) — definir conforme construirmos
-- [ ] Build iOS (socio testa, sem urgencia)
-
----
-
-## 7. Estrutura do repositorio
-
-```
-liriun/
-  backend/          <- .NET 10 — backend PRINCIPAL (Clean Architecture)
-                       Liriun.Core / Application / Infrastructure / Api
-                       REST + JWT + EF Core + Gemini integration
-                       Atende site Next.js, app Flutter, e plataformas futuras
-  app/              <- Flutter (Android + iOS APENAS — sem Web)
-                       Riverpod, feature-first
-                       Estrutura: /lib/features/{auth,tarefas,agente,categorias,config}
-                       Comunica com backend .NET via REST + JWT
-                       Responsabilidade: Pedro
-  site/             <- Next.js 15 (App Router) — substitui Angular V1 [a criar]
-                       Login, tarefas, agente, config — funcionalidade completa
-                       Tailwind + shadcn/ui + Framer Motion + React Query
-                       Comunica com backend .NET via REST + JWT
-                       Responsabilidade: socio
-  docs/             <- Documentacao
-    design-ref/     <- Style guide oficial (PDF, icones, glyph)
-    Identidade Visual/Rebranding/ <- Brand kit + guias de implementacao por plataforma
-    termos-de-uso/  <- TERMOS_USO.md, POLITICA_PRIVACIDADE.md
-```
-
-> **Banco:** Supabase Postgres usado como database gerenciado (1 banco unico — mesmo do V1).
-> Connection string em `appsettings.json` do .NET.
-
----
-
-## 8. Arquivos do projeto — estado atual
-
-### Ativos (docs/)
-- `CONTEXTO_APP.md` — **este arquivo** (fonte autoritativa de decisoes do app)
-- `ESTRATEGIA_LIRIUN.md` — posicionamento (revisado 2026-05-09 pra direcao voice agent)
-- `IDEIAS_FUTURO.md` — backlog de features futuras
-- `PLANO_NEGOCIO_TEMPLATE.md` — template parado ate MVP estar pronto
-- `design-ref/` — style guide oficial (PDF visual reference + icones)
-
-### Removidos (so no historico git)
-- `docs/docs-arquivados/` (docs historicos do V1 web) e `docs/STATUS_MIGRACAO.md` — apagados do disco; consultaveis no historico git
-
-### Raiz
-- `CLAUDE.md` — contexto pro Claude Code
-- `README.md` — README operacional do repo
-
----
-
-## 9. Apendice historico — V1 web (Angular) implementado
-
-> Inventario do que o produto pre-pivo (Angular + .NET) tinha pronto. O Angular V1 (`front/`)
-> foi removido do disco em 2026-06-15 (source no historico git `3bad961^`). O site Next.js novo
-> e o app Flutter devem cobrir tudo isso. Serve como checklist de paridade funcional.
-
-**Auth & Onboarding**
-- Cadastro/login com JWT + hash BCrypt
-- Onboarding bloqueante de categorias
-
-**Captura**
-- Modo Manual (form completo)
-- Modo Liriun (texto)
-- Modo Liriun por audio (Gemini multimodal): waveform AnalyserNode, preview/playback, auto-stop 60s, atalho Ctrl+Espaco
-- Auto-save quando user confirma sugestao
-- Quick-reply chips ("Salva", "Muda data", etc)
-- Persistencia rascunho/conversa em localStorage (TTL 1h)
-- Continuar conversa pos-save
-
-**Tarefas**
-- 3 visualizacoes: Lista, Quadro (Kanban), Semana (Seg-Dom com hora atual)
-- Atrasadas em destaque
-- Filtros (status, prioridade, categoria) em dropdown popover
-- Categorias com bloqueio de exclusao
-- Status atrasada respeita fuso BRT
-- Reabrir tarefa concluida
-- Detalhe modal + edit unificado
-- Concluidas com filtro por periodo
-
-**Visao geral**
-- Dashboard home: 4 stat cards, grafico atividade semana, donut categorias, agenda do dia (timeline com linha "agora"), pendentes por prioridade
-
-**UI/UX V1 (Angular)**
-- Tema claro/escuro togglavel (`ThemeService`)
-- Sidebar collapsible
-- Header global via `PageHeaderService`
-- Microanimacoes Tailwind keyframes
-- Date/Time pickers customizados (portal pro body)
-- Confirmacoes destrutivas: `<app-confirm-modal>` (NUNCA `confirm()` nativo)
-- Erros HTTP: helper `extrairProblemDetails(err, fallback)`
-
-**Backend** (mantido e evoluindo — nao e historico)
-- Clean Architecture (Core/Application/Infrastructure/Api) sem violations
-- Result<T> + ProblemDetails RFC 7807
-- FluentValidation
-- Migrations EF Core aplicadas no Supabase
-- Rate limit 429 do Gemini tratado
-
-**Rebrand Jarvis -> Liriun (2026-05-03)**
-- Namespaces `Liriun.{Core,Application,Infrastructure,Api}`
-- `LiriunDbContext`, `ConnectionStrings:Liriun`
-- JWT issuer `liriun-api` / audience `liriun-app`
-- Contract `papel: 'liriun'` (`PapelConversa.Liriun`)
-- ProblemDetails Type `https://liriun-api/erros/...`
-- Solution `Liriun.slnx`, http file `Liriun.Api.http`
+- **Backend .NET** é a **fonte única de verdade** (lógica + dados + auth). Clientes só consomem a API REST.
+- **1 Supabase Postgres único** — dev e prod compartilham o **mesmo banco** por enquanto.
+- Adicionar plataforma nova (smartwatch, extensão, etc) = só implementar o front; o backend não muda.
+- **Monorepo único** (`backend/` + `site/` + `app/`) na branch `main`.
+
+## 4. Stack real (hoje)
+
+| Camada | Tecnologia |
+|---|---|
+| Backend | .NET 10 + ASP.NET Core Web API + Clean Architecture (Core/Application/Infrastructure/Api) |
+| ORM/Banco | EF Core 9 + Npgsql · PostgreSQL no Supabase (banco único, dev=prod) |
+| Auth | JWT próprio (HS256) + BCrypt — **só e-mail/senha** (Google/Apple **não** implementados) |
+| IA | Google Gemini — modelo default **`gemini-2.5-flash`**. Free tier **com cartão vinculado** (excedente vira pago) |
+| Validação | FluentValidation |
+| Testes | xUnit + FluentAssertions + Moq |
+| Site | Next.js 15 (App Router, várias rotas em `runtime = edge`) + React 19 + Tailwind 3 + shadcn/ui + Framer Motion + next-intl (pt/en) |
+| Client HTTP do site | `fetch` + wrapper próprio (`lib/api/`) — **escrito à mão** (sem codegen OpenAPI) |
+| App | Flutter (Android + iOS, sem Web) — **a ser refeito do zero** |
+| Hosting backend | Render (Docker, free tier — cold start ~30-60s após idle; deploy por push) |
+| Hosting site | Cloudflare Pages · domínio **liriun.com** |
+
+## 5. Estado atual por frente
+
+### Backend .NET — em produção, funcional
+- No ar no Render (free tier, cold start após idle). Clean Architecture, sem mudanças estruturais.
+- Controllers: `auth`, `tarefas`, `categorias`, `captura` (agente), `codigos-beta` (admin).
+- Auth: cadastro, login, alterar senha, perfil (+ foto), excluir conta, **recuperação de senha** (`EsqueciSenhaUseCase`).
+
+### Site Next.js — no ar, mas "em desenvolvimento"
+- Institucional no ar em **liriun.com** (Cloudflare): landing, preços, recursos, comparar, sobre, empresa, legais.
+- **Área logada** (`/app/...`): `falar`, `hoje`, `tarefas`, `atividade`, `configuracoes`. Dá pra cadastrar, logar,
+  criar tarefa por voz/texto e ver — **mas considerar em desenvolvimento**: tem muita melhoria e alteração pendente.
+
+### App Flutter — **descartar e refazer do zero**
+- Ignorar tudo que existe em `app/`. Será reconstruído do zero quando o site estiver finalizado. Ver `../app/CLAUDE.md`.
+
+### Beta fechado — ativo em produção
+- Cadastro exige **código de convite**. A conta admin (do Pedro) gera o código (`codigos-beta`); a pessoa usa o
+  código pra criar a conta. Nenhum código distribuído ainda.
+
+## 6. Agente de voz (o diferencial) — como funciona hoje
+
+Verificado no código do site + backend:
+
+- **Entrada por voz e texto.** No site: grava áudio com `MediaRecorder` (até ~60s / 8MB) e envia o **áudio
+  multimodal direto pro Gemini** (`POST /captura/conversar-audio`); modo texto usa `POST /captura/conversar`.
+- **Conversacional (multi-turno).** O histórico (até 30 mensagens) é mantido no cliente e reenviado a cada turno —
+  o servidor é **stateless**. O usuário pode continuar a conversa depois de salvar.
+- **Faz mais que criar:** o agente pode **criar, editar, concluir e excluir** tarefas, e **responder sobre tarefas
+  existentes** (referencia as pendentes do usuário).
+- **Card de revisão + auto-save:** a sugestão aparece num card; salva automaticamente quando o usuário confirma
+  ("salva", "sim", "pode salvar", etc) e já havia sugestão na tela.
+- **Sem TTS:** o Liriun responde em **texto**, não fala de volta. É voz na entrada, texto na saída.
+- **Sem perguntas de follow-up** por padrão (existe um flag `Gemini:ModoInterativo`, desligado — ignorar por ora).
+- **Filtros anti-alucinação:** o backend valida categorias/datas/prioridades contra o que é do usuário antes de sugerir.
+
+## 7. Domínio e modelo (verificado no código)
+
+**Entidades:** `Usuario`, `Tarefa`, `Categoria`, `TarefaCategoria` (junção N:N com PK composta), `CodigoBeta`.
+
+- **Tarefa:** `Nome`, **`DataPrazo` (obrigatória)**, `HorarioFinal?` (TimeSpan), `Observacoes?`, `Prioridade`,
+  `Status`, `Recorrencia` + `RecorrenciaQuantidade`, `TempoGastoSegundos` (cronômetro acumulado), `CriadaEm`,
+  `ConcluidaEm`, `Categorias`.
+- **Usuario:** `Nome`, `Email`, `SenhaHash` (BCrypt), `FotoUrl?` (data URI), `TimeZoneId` (IANA, default BRT),
+  `EhAdmin`, `TermosAceitosEm`. **Não existe campo "nome do agente"** — a ideia de agente com nome custom nunca foi construída.
+- **Prioridade:** urgente(1) · importante(2) · normal(3) · baixa(4).
+- **Status:** pendente · concluida · **atrasada é calculada** (`StatusComputado`, no fuso do usuário, nunca persistida).
+  Datas guardadas em UTC.
+- **Recorrência:** `TipoRecorrencia` = Nenhuma/Semanal/Mensal (qtd até 4). **Implementada** no domínio
+  (`GerarOcorrenciasFuturas`), mas foi feita pelo Lucas e **não é prioridade** — validar antes de confiar/evoluir.
+- **Regras:** excluir categoria é **bloqueado** se houver tarefa pendente vinculada; concluir tarefa **mantém o
+  usuário na tela** (concluir várias em sequência); a IA só escolhe entre categorias do usuário (null se não infere)
+  e **não re-categoriza** ao editar.
+
+## 8. Posicionamento (essência — usar como norte de produto)
+
+- Liriun é um **vertical de produtividade pessoal por voz**, com identidade e tom próprios. Não é Todoist/Notion,
+  nem clone do app do Gemini.
+- **Concorrente-referência:** o **app do Google Gemini** já faz o core (voz, criar/consultar tarefas, grátis,
+  pré-instalado no Android). Liriun se diferencia por **foco vertical em tarefas + UX premium + tom próprio**.
+- **Público-alvo:** estudantes sobrecarregados, profissionais com fadiga digital, e pessoas com TDAH (captura por
+  voz reduz fricção).
+- *(Posicionamento/estratégia detalhados da era ToMore foram arquivados fora do repo — ver §12.)*
+
+## 9. Identidade visual & tom de voz
+
+- **Dark mode default**, gradiente roxo→azul accent, glassmorphism sutil, **sem emojis**, ícones lineares finos,
+  tipografia **Geist** / Geist Mono.
+- Brand kit em `docs/Identidade Visual/Rebranding/brand-kit/` — **provisório**: o rebranding **ainda não foi
+  finalizado** e vai mudar. Usar o que existe hoje, sabendo que muda.
+- **Tom de voz do Liriun** (estável, não deve mudar): mordomo digital seco e competente, primeira pessoa, nunca
+  emoji, nunca exclamação dupla, nome do usuário com parcimônia. Ex.: "Anotado, Pedro. Prazo até sexta, 23:59." /
+  "Não consegui entender dessa vez. Preenche manual que eu salvo."
+- Tagline "Sua próxima tarefa, na voz" = **rascunho** (vai mudar).
+
+## 10. Infra & operação
+
+- **Backend:** Render (Docker, free tier, cold start ~30-60s após idle). Deploy contínuo por push (hook do Render).
+- **Site:** Cloudflare Pages, domínio liriun.com. Deploy por push.
+- **Banco:** Supabase Postgres, banco único (dev=prod).
+- **Secrets:** variáveis de ambiente (Gemini key, connection string, JWT secret) — provavelmente no Render.
+- **CI:** GitHub Actions só builda o APK (`.github/workflows/build-apk.yml`). **Sem** suíte de testes rodando no PR ainda.
+- **Sem** monitoramento/error tracking (Sentry, etc) ainda.
+- **Git:** uma branch só (`main`), commit direto, tudo sobe pra `main` antes de ir pra produção. Melhorar depois
+  que o app estiver pronto.
+
+## 11. Parado / fora de escopo agora
+
+Não gastar energia nisto até chegar a hora (a maioria foi removida dos docs pra não confundir):
+
+- **Monetização / pricing / lojas** — só decidir perto de publicar.
+- **Google / Apple Sign-In** — não implementados.
+- **Push (FCM)** — estava no app antigo (que será refeito); reavaliar na reconstrução.
+- **Modo interativo** (perguntas de follow-up da IA) — flag desligado.
+- **Recorrência** — existe mas não priorizada; validar depois.
+- **Wake word, integração com calendários, lembretes por SMS/ligação** — futuro distante.
+- **Ideias futuras detalhadas** (backlog por tier) — arquivadas fora do repo (§12).
+
+## 12. Documentos do projeto
+
+**Ativos no repo:**
+- `CLAUDE.md` (raiz) + `backend/`, `site/`, `app/` `CLAUDE.md` — contexto e regras que o Claude carrega
+- `docs/CONTEXTO_APP.md` — **este arquivo** (fonte autoritativa)
+- `README.md` + `app/README.md` — setup e operação
+- `docs/Identidade Visual/Rebranding/` — brand kit (provisório) + prototypes
+- `docs/design-ref/` — style guide visual (PDF)
+- `docs/termos-de-uso/` — Termos de Uso + Política de Privacidade
+
+**Arquivados fora do repo** (`~/Desktop/arquivo liriun/`, ignorar até o Pedro pedir):
+- `docs-desatualizados/ESTRATEGIA_LIRIUN.md` — estratégia era-ToMore (posicionamento essencial já está no §8)
+- `docs-desatualizados/PLANO_NEGOCIO_TEMPLATE.md` — plano de negócio (monetização parada)
+- `docs-desatualizados/IDEIAS_FUTURO.md` — backlog de ideias futuras por tier
+- `guias-design/CLAUDE_CODE*.md` — guias de design antigos (contradiziam a realidade)
+- `ROTEIRO_ENTREVISTA_COMPASS.md` — material pessoal de entrevista

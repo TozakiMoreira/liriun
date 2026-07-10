@@ -1,6 +1,6 @@
 # Liriun · Rebranding
 
-Identidade visual canônica do Liriun. Organizada em 3 frentes:
+Identidade visual do Liriun. **Provisória** — o rebranding ainda não foi finalizado e vai mudar. Organizada em 2 frentes:
 
 ```
 Rebranding/
