@@ -105,11 +105,10 @@ Liriun/   (monorepo único — branch main)
 ├── docs/
 │   ├── CONTEXTO_APP.md                 # FONTE AUTORITATIVA — arquitetura e decisões
 │   ├── ESTRATEGIA_LIRIUN.md            # posicionamento, concorrência
-│   ├── STATUS_MIGRACAO.md              # tracking da migração V1 → produto novo
 │   ├── IDEIAS_FUTURO.md                # backlog priorizado por tier
 │   ├── PLANO_NEGOCIO_TEMPLATE.md       # PARKED até MVP
 │   ├── design-ref/                     # style guide visual oficial (PDF + ícones)
-│   ├── docs-arquivados/                # docs históricos do V1 (ARCHITECTURE, ENTREVISTA, etc)
+│   ├── Identidade Visual/Rebranding/   # brand kit + guias de implementação (app/site/webapp)
 │   └── termos-de-uso/                  # TERMOS_USO.md, POLITICA_PRIVACIDADE.md
 ├── CLAUDE.md                           # contexto resumido pra Claude Code
 ├── .env.example                        # template de variáveis do backend (copie pra .env.local)
@@ -326,14 +325,14 @@ Quando o plano pago for implementado, a leitura do flag migra de config global p
 ### Ativos
 - **[`docs/CONTEXTO_APP.md`](docs/CONTEXTO_APP.md)** — **fonte autoritativa** de arquitetura e decisões técnicas
 - **[`docs/ESTRATEGIA_LIRIUN.md`](docs/ESTRATEGIA_LIRIUN.md)** — posicionamento, pilares, concorrência
-- **[`docs/STATUS_MIGRACAO.md`](docs/STATUS_MIGRACAO.md)** — tracking da migração V1 → produto novo
 - **[`docs/IDEIAS_FUTURO.md`](docs/IDEIAS_FUTURO.md)** — backlog priorizado por tier
 - **[`docs/PLANO_NEGOCIO_TEMPLATE.md`](docs/PLANO_NEGOCIO_TEMPLATE.md)** — PARKED até MVP
 - **[`docs/design-ref/`](docs/design-ref/)** — style guide visual oficial (PDF + ícones)
+- **`docs/Identidade Visual/Rebranding/`** — brand kit + guias de implementação por plataforma
 - **[`CLAUDE.md`](CLAUDE.md)** — contexto resumido pra Claude Code
 
-### Arquivados (referência histórica V1 web)
-Em `docs/docs-arquivados/`: `ARCHITECTURE.md`, `CHECKLIST_PRODUCAO.md`, `CORRECOES_V1.md`, `DEPLOY.md`, `DESENVOLVIMENTO.md`, `ENTREVISTA.md`, `PROJETO.md`, `banco/MIGRATIONS.md`.
+### Removidos (só no histórico git)
+Os docs históricos do V1 web (`docs/docs-arquivados/` — `ARCHITECTURE.md`, `DEPLOY.md`, `PROJETO.md`, `banco/MIGRATIONS.md`, etc) e `docs/STATUS_MIGRACAO.md` foram removidos do disco. Seguem consultáveis no histórico git.
 
 ### Documentos legais
 Em `docs/termos-de-uso/`: `TERMOS_USO.md`, `POLITICA_PRIVACIDADE.md`.

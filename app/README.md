@@ -1,8 +1,8 @@
 # Liriun · App Flutter
 
-Mobile (iOS + Android) e web logado. Substitui Angular V1 (`front/`) na nova arquitetura.
+Mobile (Android + iOS APENAS — sem Web). Junto com o site Next.js (`site/`), substitui o Angular V1 na nova arquitetura.
 
-> V1 Angular continua em `front/` — **NÃO foi tocado**. Esta pasta é o destino. Arquivamento da V1 só na Fase D.
+> O Angular V1 (`front/`) foi **removido do disco** em 2026-06-15 — source preservado no histórico git (`3bad961^`) pra consulta.
 
 ## Stack
 
@@ -24,7 +24,7 @@ app/
 ├─ pubspec.yaml
 ├─ analysis_options.yaml
 ├─ lib/
-│  ├─ main.dart                       ← entry, Supabase.initialize, ProviderScope
+│  ├─ main.dart                       ← entry, ProviderScope
 │  ├─ core/
 │  │  ├─ theme/
 │  │  │  ├─ liriun_tokens.dart        ← cores, raios, durações brand kit
@@ -47,9 +47,9 @@ app/
 └─ assets/icons/
 ```
 
-Mapeamento das telas vs Angular V1:
+Mapeamento das telas vs Angular V1 (referência histórica — `front/` só existe no histórico git):
 
-| Flutter | Angular V1 (front/) |
+| Flutter | Angular V1 (histórico) |
 |---|---|
 | `/falar` | `/captura` (Modo Liriun) |
 | `/hoje` | `/visao-geral` |
@@ -72,7 +72,7 @@ flutter pub get
 flutter pub run build_runner build --delete-conflicting-outputs
 ```
 
-### Rodar dev (Android emulador / iOS / Chrome)
+### Rodar dev (Android emulador / iOS)
 
 A `API_BASE_URL` aponta pro backend `.NET`. Em emulador Android, `localhost` do PC é `10.0.2.2`.
 
@@ -80,7 +80,7 @@ A `API_BASE_URL` aponta pro backend `.NET`. Em emulador Android, `localhost` do 
 # Android emulador (backend rodando local na porta 5000)
 flutter run --dart-define=API_BASE_URL=http://10.0.2.2:5000
 
-# iOS simulator / Chrome / Linux desktop
+# iOS simulator
 flutter run --dart-define=API_BASE_URL=http://localhost:5000
 
 # Produção
@@ -93,25 +93,22 @@ flutter run --dart-define=API_BASE_URL=https://api.liriun.com
 # Android APK
 flutter build apk --release --dart-define=API_BASE_URL=https://api.liriun.com
 
-# iOS (precisa Mac + Xcode)
+# iOS (precisa Mac + Xcode — sócio testa)
 flutter build ios --release --dart-define=API_BASE_URL=https://api.liriun.com
-
-# Web
-flutter build web --release --dart-define=API_BASE_URL=https://api.liriun.com
 ```
 
 ## Pendências Fase B
 
-- [ ] `flutter create .` formal (preencher pastas nativas android/, ios/, web/, etc — só depois de instalar SDK)
+- [ ] `flutter create .` formal (preencher pastas nativas android/ e ios/ — só depois de instalar SDK)
 - [ ] Importar fontes Geist + Geist Mono em `assets/fonts/` + declarar em pubspec
-- [ ] Models freezed: Tarefa, Categoria, Usuario (mirror schema Supabase)
+- [ ] Models freezed: Tarefa, Categoria, Usuario (mirror dos contratos da API .NET)
 - [ ] Providers de dados: `tarefasRepository`, `categoriasRepository`
 - [ ] Tela Login: Google Sign-In + Apple Sign-In (obrigatório iOS)
-- [ ] Tela Falar: integração `speech_to_text` + chamada `interpretar-voz` Edge Function
-- [ ] Tela Hoje: query `from('tarefas').select().lte('data_prazo', today)`
+- [ ] Tela Falar: integração `speech_to_text` + chamada `POST /api/agente/interpretar` (backend .NET)
+- [ ] Tela Hoje: listar tarefas do dia via API .NET (`GET /tarefas` filtrado por prazo)
 - [ ] Tela Tarefas: 3 modos (Lista/Quadro/Semana)
 - [ ] Tela Atividade: query stats + lista conquistas
-- [ ] I18n: `lib/l10n/app_pt.arb` + `app_en.arb` (migrar ~280 chaves de `front/.../translations.ts`)
+- [ ] I18n: `lib/l10n/app_pt.arb` + `app_en.arb` (migrar ~280 chaves do `translations.ts` do Angular V1 — via histórico git `3bad961^`)
 - [ ] Onboarding pós-cadastro: escolher categorias padrão + tour das 5 abas
 - [ ] Push (FCM): permissão + lembretes prazo
 - [ ] Offline: SQLite via Brick OU PowerSync (decidir)

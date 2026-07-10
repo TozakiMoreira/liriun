@@ -94,7 +94,7 @@ Migrar mono→poly depois e tranquilo; juntar poly→mono e mais chato. Comeca j
 | Backend | **.NET 10** + ASP.NET Core Web API | Mantem codigo Clean Architecture ja construido (Result<T>, ProblemDetails, FluentValidation, Read/Write repos). Type-safe, escala infinita, padrao de mercado |
 | Banco | **Supabase Postgres do V1** (1 banco unico) | Mantemos o banco Supabase ja existente do V1. Sem criar projeto novo. Schema evolui durante a migracao |
 | Auth | **JWT proprio do .NET** | Ja implementado. Issuer `liriun-api` / audience `liriun-app`. Ainda decidir: Google/Apple Sign-In via OAuth no .NET |
-| Migracoes | **EF Core migrations** | Ja em uso. Comandos em `docs/docs-arquivados/banco/MIGRATIONS.md` |
+| Migracoes | **EF Core migrations** | Ja em uso. Comandos na secao Migrations do `README.md` |
 | IA/NLU | **Google Gemini API (Flash-Lite pago)** | Backend .NET chama Gemini. Mantem API key segura no servidor. ~$1.30/mes com 1000 usuarios |
 | Hosting (producao) | **Render** (Docker, free tier) | Cold start ~30-60s apos 15min idle (toleravel pra V1). Migrar pra Fly ~$4/mes se UX incomodar |
 | Cache (futuro) | Redis | So quando precisar (V2+) |
@@ -457,11 +457,9 @@ liriun/
                        Tailwind + shadcn/ui + Framer Motion + React Query
                        Comunica com backend .NET via REST + JWT
                        Responsabilidade: socio
-  front/            <- Angular V1 ATUAL (segue no ar durante migracao)
-                       Sera ARQUIVADO quando app + Next.js cobrirem todas funcionalidades
   docs/             <- Documentacao
     design-ref/     <- Style guide oficial (PDF, icones, glyph)
-    docs-arquivados/ <- Docs historicos do V1 web
+    Identidade Visual/Rebranding/ <- Brand kit + guias de implementacao por plataforma
     termos-de-uso/  <- TERMOS_USO.md, POLITICA_PRIVACIDADE.md
 ```
 
@@ -479,10 +477,67 @@ liriun/
 - `PLANO_NEGOCIO_TEMPLATE.md` — template parado ate MVP estar pronto
 - `design-ref/` — style guide oficial (PDF visual reference + icones)
 
-### Arquivados (docs/docs-arquivados/)
-- `ARCHITECTURE.md`, `CHECKLIST_PRODUCAO.md`, `CORRECOES_V1.md`, `DEPLOY.md`
-- `DESENVOLVIMENTO.md`, `ENTREVISTA.md`, `PROJETO.md`, `banco/MIGRATIONS.md`
+### Removidos (so no historico git)
+- `docs/docs-arquivados/` (docs historicos do V1 web) e `docs/STATUS_MIGRACAO.md` — apagados do disco; consultaveis no historico git
 
 ### Raiz
-- `CLAUDE.md` — contexto pro Claude Code (sera reescrito quando o user mandar)
-- `README.md` — README do repo (sera reescrito junto com o CLAUDE.md)
+- `CLAUDE.md` — contexto pro Claude Code
+- `README.md` — README operacional do repo
+
+---
+
+## 9. Apendice historico — V1 web (Angular) implementado
+
+> Inventario do que o produto pre-pivo (Angular + .NET) tinha pronto. O Angular V1 (`front/`)
+> foi removido do disco em 2026-06-15 (source no historico git `3bad961^`). O site Next.js novo
+> e o app Flutter devem cobrir tudo isso. Serve como checklist de paridade funcional.
+
+**Auth & Onboarding**
+- Cadastro/login com JWT + hash BCrypt
+- Onboarding bloqueante de categorias
+
+**Captura**
+- Modo Manual (form completo)
+- Modo Liriun (texto)
+- Modo Liriun por audio (Gemini multimodal): waveform AnalyserNode, preview/playback, auto-stop 60s, atalho Ctrl+Espaco
+- Auto-save quando user confirma sugestao
+- Quick-reply chips ("Salva", "Muda data", etc)
+- Persistencia rascunho/conversa em localStorage (TTL 1h)
+- Continuar conversa pos-save
+
+**Tarefas**
+- 3 visualizacoes: Lista, Quadro (Kanban), Semana (Seg-Dom com hora atual)
+- Atrasadas em destaque
+- Filtros (status, prioridade, categoria) em dropdown popover
+- Categorias com bloqueio de exclusao
+- Status atrasada respeita fuso BRT
+- Reabrir tarefa concluida
+- Detalhe modal + edit unificado
+- Concluidas com filtro por periodo
+
+**Visao geral**
+- Dashboard home: 4 stat cards, grafico atividade semana, donut categorias, agenda do dia (timeline com linha "agora"), pendentes por prioridade
+
+**UI/UX V1 (Angular)**
+- Tema claro/escuro togglavel (`ThemeService`)
+- Sidebar collapsible
+- Header global via `PageHeaderService`
+- Microanimacoes Tailwind keyframes
+- Date/Time pickers customizados (portal pro body)
+- Confirmacoes destrutivas: `<app-confirm-modal>` (NUNCA `confirm()` nativo)
+- Erros HTTP: helper `extrairProblemDetails(err, fallback)`
+
+**Backend** (mantido e evoluindo — nao e historico)
+- Clean Architecture (Core/Application/Infrastructure/Api) sem violations
+- Result<T> + ProblemDetails RFC 7807
+- FluentValidation
+- Migrations EF Core aplicadas no Supabase
+- Rate limit 429 do Gemini tratado
+
+**Rebrand Jarvis -> Liriun (2026-05-03)**
+- Namespaces `Liriun.{Core,Application,Infrastructure,Api}`
+- `LiriunDbContext`, `ConnectionStrings:Liriun`
+- JWT issuer `liriun-api` / audience `liriun-app`
+- Contract `papel: 'liriun'` (`PapelConversa.Liriun`)
+- ProblemDetails Type `https://liriun-api/erros/...`
+- Solution `Liriun.slnx`, http file `Liriun.Api.http`

@@ -5,9 +5,12 @@ Identidade visual canônica do Liriun. Organizada em 3 frentes:
 ```
 Rebranding/
 ├── brand-kit/      ← assets canônicos (logos, ícones, favicons, social, tokens, fontes)
-├── docs/           ← guias de implementação por plataforma
 └── prototypes/     ← mockups HTML+JSX (referência visual)
 ```
+
+> Os guias de implementação por plataforma (`CLAUDE_CODE*.md`) foram movidos pra fora do repo
+> (`~/Desktop/arquivo liriun/guias-design/`). Contradiziam decisões atuais (ex: estrutura de abas)
+> e o nome se confundia com config do Claude Code. Fonte autoritativa de arquitetura: `docs/CONTEXTO_APP.md`.
 
 ## brand-kit/
 Tokens, logos e assets oficiais. Source-of-truth pra qualquer decisão visual.
@@ -22,16 +25,6 @@ Tokens, logos e assets oficiais. Source-of-truth pra qualquer decisão visual.
 | `06-fonts.md` | Como instalar Geist em Next.js e Flutter |
 | `07-social-icons/` | Ícones lineares (color + mono) pra UI |
 | `README.md` | Estrutura completa do brand kit |
-
-## docs/
-Guias por plataforma. Cada Claude Code agent lê o guia do seu escopo.
-
-| Arquivo | Escopo |
-|---|---|
-| `CLAUDE_CODE.md` | Master — overview app + site |
-| `app/CLAUDE_CODE_APP.md` | App mobile Flutter |
-| `site/CLAUDE_CODE_SITE.md` | Site marketing Next.js (landing) |
-| `webapp/CLAUDE_CODE_WEBAPP.md` | Web app autenticado Next.js (Falar, Hoje, Tarefas, Atividade, Configurações) |
 
 ## prototypes/
 Mockups visuais HTML+JSX. Abre direto no navegador (Babel standalone).
