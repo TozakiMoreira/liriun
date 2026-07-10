@@ -149,7 +149,7 @@
     "secondary": "Já tenho conta"
   },
   "Footer": {
-    "tagline": "Companheiro digital de produtividade. Feito com cuidado em São Paulo pela ToMore.",
+    "tagline": "Companheiro digital de produtividade. Feito com cuidado em São Paulo.",
     "produto": "Produto",
     "empresa": "Empresa",
     "suporte": "Suporte",
@@ -173,71 +173,12 @@
       "lgpd": "LGPD"
     },
     "madeBy": "Site por",
-    "copyright": "© 2026 ToMore · todos os direitos reservados",
+    "copyright": "© 2026 Liriun · todos os direitos reservados",
     "version": "liriun.com · v 1.0"
-  },
-  "Empresa": {
-    "title": "A empresa",
-    "description": "ToMore — a empresa por trás do Liriun. Fundada em 2026 por Lucas Moreira e Pedro Tozaki em São Paulo.",
-    "eyebrow": "A empresa por trás do Liriun",
-    "heroLine1": "Somos a",
-    "heroBrand": "ToMore",
-    "heroLine2": ".",
-    "lead": "Em um mundo de notificações infinitas, listas que nunca terminam e mentes esgotadas, a ToMore nasceu em 2026 com uma missão: provar que tecnologia bem desenhada pode cuidar da mente das pessoas — e não o contrário.",
-    "founders": {
-      "eyebrow": "Quem fundou",
-      "title": "Dois sócios. Uma obsessão por software bem feito.",
-      "role": "Co-founder",
-      "pedroBio": "Engenheiro de software, apaixonado por sistemas que somem na hora certa. Lidera produto e arquitetura.",
-      "lucasBio": "Designer e estrategista. Cuida da experiência, da marca e da relação com a comunidade.",
-      "formulaCaption": "Tozaki + Moreira = ToMore"
-    },
-    "missao": {
-      "eyebrow": "Por quê",
-      "title": "Devolver tempo às pessoas.",
-      "p1": "Acreditamos que produtividade não pode custar saúde mental. A maioria dos apps que usamos é desenhada pra prender atenção; queremos o oposto — software que some quando o trabalho está feito.",
-      "p2": "A ToMore é movida por uma convicção simples: facilitar a vida das pessoas é cuidar da mente delas. Cada decisão de produto começa pela pergunta — isso pesa ou alivia? Nada entra no Liriun se não estiver a serviço de menos atrito, menos ruído, menos carga.",
-      "p3": "Por isso construímos o Liriun como um companheiro discreto: ele escuta, organiza, lembra. Você volta a viver, não a gerenciar listas."
-    },
-    "produto": {
-      "eyebrow": "O que fazemos hoje",
-      "titlePrefix": "Hoje:",
-      "titleBrand": "Liriun",
-      "body": "O Liriun é nosso primeiro produto: um organizador pessoal de tarefas com IA conversacional. Mais do que um app de produtividade, é uma extensão calma da sua mente — e o primeiro passo da nossa missão de devolver tempo às pessoas.",
-      "ctaSobre": "Conhecer o Liriun",
-      "ctaSignup": "Criar conta grátis"
-    },
-    "valores": {
-      "eyebrow": "No que acreditamos",
-      "title": "Os princípios que guiam o que fazemos.",
-      "v1": {
-        "title": "Software leve, vida leve",
-        "body": "Tecnologia bem feita não compete por atenção. Você abre quando precisa, ela se afasta quando não precisa."
-      },
-      "v2": {
-        "title": "Conversa antes de comando",
-        "body": "A forma mais natural de organizar a vida é falando dela. Substituímos formulários por linguagem sempre que possível."
-      },
-      "v3": {
-        "title": "Privacidade é direito",
-        "body": "Seus dados são seus. Não vendemos, não treinamos IA com eles, não compartilhamos. Quando você sai, levamos tudo embora."
-      },
-      "v4": {
-        "title": "Pessoa antes do produto",
-        "body": "Medimos sucesso pelo que você sente — não pelo tempo que passou no app. Se aliviou, acertamos."
-      }
-    },
-    "contato": {
-      "eyebrow": "Falar com a gente",
-      "title": "Estamos aqui.",
-      "body": "Para parcerias, imprensa, sugestões ou apenas para dizer olá — estamos disponíveis em",
-      "cta": "Mandar e-mail",
-      "footer": "Lemos cada mensagem. Resposta em até 48h úteis."
-    }
   },
   "Termos": {
     "title": "Termos de Uso",
-    "description": "Termos de Uso do Liriun — assistente pessoal de tarefas por voz da ToMore.",
+    "description": "Termos de Uso do Liriun — assistente pessoal de tarefas por voz.",
     "lastUpdate": "Última atualização: 9 de maio de 2026 · V1",
     "notice": "Documento elaborado com base no Marco Civil da Internet (Lei 12.965/2014), CDC (Lei 8.078/1990) e LGPD (Lei 13.709/2018). Antes do cadastro público, será revisto por advogado especializado em direito digital.",
     "doubts": "Dúvidas? Escreva para"

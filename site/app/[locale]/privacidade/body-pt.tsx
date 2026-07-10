@@ -3,7 +3,7 @@ export function PrivacidadeBodyPT() {
     <>
       <h2>1. Quem somos</h2>
       <ul>
-        <li><strong>Controlador dos dados:</strong> ToMore</li>
+        <li><strong>Controlador dos dados:</strong> Pedro Tozaki</li>
         <li><strong>CNPJ:</strong> [a definir — registro em andamento]</li>
         <li><strong>Sede:</strong> São Paulo, SP, Brasil</li>
         <li>

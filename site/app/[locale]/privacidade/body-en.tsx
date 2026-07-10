@@ -3,7 +3,7 @@ export function PrivacidadeBodyEN() {
     <>
       <h2>1. Who we are</h2>
       <ul>
-        <li><strong>Data controller:</strong> ToMore</li>
+        <li><strong>Data controller:</strong> Pedro Tozaki</li>
         <li><strong>CNPJ (BR tax ID):</strong> [TBD — registration in progress]</li>
         <li><strong>Headquarters:</strong> São Paulo, SP, Brazil</li>
         <li>

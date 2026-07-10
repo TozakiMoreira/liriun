@@ -16,7 +16,7 @@ export function TermosBodyPT() {
       <h2>2. Identificação do prestador</h2>
       <ul>
         <li><strong>Serviço:</strong> Liriun — assistente pessoal de tarefas por voz</li>
-        <li><strong>Razão social:</strong> ToMore</li>
+        <li><strong>Responsável:</strong> Pedro Tozaki</li>
         <li><strong>CNPJ:</strong> [a definir — registro em andamento]</li>
         <li><strong>Sede:</strong> São Paulo, SP, Brasil</li>
         <li><strong>Suporte:</strong> contato@liriun.com</li>

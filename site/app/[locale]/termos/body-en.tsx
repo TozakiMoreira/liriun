@@ -16,7 +16,7 @@ export function TermosBodyEN() {
       <h2>2. Provider identification</h2>
       <ul>
         <li><strong>Service:</strong> Liriun — voice-first personal task assistant</li>
-        <li><strong>Legal entity:</strong> ToMore</li>
+        <li><strong>Responsible:</strong> Pedro Tozaki</li>
         <li><strong>CNPJ (BR tax ID):</strong> [TBD — registration in progress]</li>
         <li><strong>Headquarters:</strong> São Paulo, SP, Brazil</li>
         <li><strong>Support:</strong> contato@liriun.com</li>

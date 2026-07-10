@@ -36,9 +36,9 @@ export async function generateMetadata({
       "AI conversational",
       "Liriun",
     ],
-    authors: [{ name: "ToMore" }],
-    creator: "ToMore",
-    publisher: "ToMore",
+    authors: [{ name: "Pedro Tozaki" }],
+    creator: "Pedro Tozaki",
+    publisher: "Liriun",
     metadataBase: new URL("https://liriun.com"),
     alternates: {
       canonical: locale === routing.defaultLocale ? "/" : `/${locale}`,

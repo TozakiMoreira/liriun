@@ -149,7 +149,7 @@
     "secondary": "I already have an account"
   },
   "Footer": {
-    "tagline": "Digital productivity companion. Crafted with care in São Paulo by ToMore.",
+    "tagline": "Digital productivity companion. Crafted with care in São Paulo.",
     "produto": "Product",
     "empresa": "Company",
     "suporte": "Support",
@@ -173,71 +173,12 @@
       "lgpd": "LGPD"
     },
     "madeBy": "Site by",
-    "copyright": "© 2026 ToMore · all rights reserved",
+    "copyright": "© 2026 Liriun · all rights reserved",
     "version": "liriun.com · v 1.0"
-  },
-  "Empresa": {
-    "title": "The company",
-    "description": "ToMore — the company behind Liriun. Founded in 2026 by Lucas Moreira and Pedro Tozaki in São Paulo.",
-    "eyebrow": "The company behind Liriun",
-    "heroLine1": "We are",
-    "heroBrand": "ToMore",
-    "heroLine2": ".",
-    "lead": "In a world of endless notifications, never-ending lists and exhausted minds, ToMore was born in 2026 with a mission: to prove that well-designed technology can take care of people's minds — instead of the other way around.",
-    "founders": {
-      "eyebrow": "Who founded it",
-      "title": "Two partners. One obsession with software done right.",
-      "role": "Co-founder",
-      "pedroBio": "Software engineer, in love with systems that disappear at the right time. Leads product and architecture.",
-      "lucasBio": "Designer and strategist. Owns experience, brand and the relationship with the community.",
-      "formulaCaption": "Tozaki + Moreira = ToMore"
-    },
-    "missao": {
-      "eyebrow": "Why",
-      "title": "Give people their time back.",
-      "p1": "We believe productivity should not cost your mental health. Most apps are designed to capture attention; we want the opposite — software that disappears when the work is done.",
-      "p2": "ToMore is driven by a simple conviction: making people's lives easier is taking care of their minds. Every product decision starts with a question — does this add weight or take it off? Nothing ships in Liriun unless it serves less friction, less noise, less load.",
-      "p3": "That is why we built Liriun as a discreet companion: it listens, organizes, remembers. You go back to living, not managing lists."
-    },
-    "produto": {
-      "eyebrow": "What we do today",
-      "titlePrefix": "Today:",
-      "titleBrand": "Liriun",
-      "body": "Liriun is our first product: a personal task organizer with conversational AI. More than a productivity app, it's a calm extension of your mind — and the first step of our mission to give people their time back.",
-      "ctaSobre": "Discover Liriun",
-      "ctaSignup": "Create a free account"
-    },
-    "valores": {
-      "eyebrow": "What we believe",
-      "title": "The principles that guide what we do.",
-      "v1": {
-        "title": "Light software, light life",
-        "body": "Well-built technology doesn't compete for attention. You open it when you need to; it steps back when you don't."
-      },
-      "v2": {
-        "title": "Conversation before commands",
-        "body": "The most natural way to organize life is by talking about it. We replace forms with language whenever possible."
-      },
-      "v3": {
-        "title": "Privacy is a right",
-        "body": "Your data is yours. We don't sell it, we don't train AI on it, we don't share it. When you leave, we wipe everything."
-      },
-      "v4": {
-        "title": "People before product",
-        "body": "We measure success by how you feel — not by the time spent in the app. If you felt relieved, we got it right."
-      }
-    },
-    "contato": {
-      "eyebrow": "Reach out",
-      "title": "We are here.",
-      "body": "For partnerships, press, suggestions or just to say hi — we're available at",
-      "cta": "Send email",
-      "footer": "We read every message. Reply within 48 business hours."
-    }
   },
   "Termos": {
     "title": "Terms of Service",
-    "description": "Liriun Terms of Service — voice-first task assistant by ToMore.",
+    "description": "Liriun Terms of Service — voice-first task assistant.",
     "lastUpdate": "Last updated: May 9, 2026 · V1",
     "notice": "Document drafted under Brazilian Internet Bill of Rights (Law 12.965/2014), Consumer Code (Law 8.078/1990) and General Data Protection Law (Law 13.709/2018). Will be reviewed by digital-law counsel before public launch.",
     "doubts": "Questions? Write to"
